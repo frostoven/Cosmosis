@@ -1,0 +1,62 @@
+{
+  "name": "space-junkie",
+  "version": "0.0.1",
+  "main": "index.html",
+  "window": {
+    "title": "SpaceJunkie",
+    "toolbar": false,
+    "width": 816,
+    "height": 624,
+    "icon": "icon.png"
+  },
+  "chromium-args": "--enable-logging=stderr",
+  "description": "Drugs. Control. Concubines.",
+  "scripts": {
+    "start": "nw",
+    "clean": "rm build/bundle.js",
+    "build": "browserify --external fs app/index.js -o build/bundle.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aggregate1166877/RSB3-NW"
+  },
+  "keywords": [
+    "SpaceJunkie"
+  ],
+  "author": "aggregate1166877",
+  "license": "MIT",
+  "browserify": {
+    "transform": [
+      [
+        "babelify",
+        {
+          "presets": [
+            "@babel/preset-env",
+            "@babel/react"
+          ],
+          "plugins": [
+            "@babel/plugin-proposal-class-properties"
+          ]
+        }
+      ]
+    ]
+  },
+  "devDependencies": {
+    "@babel/core": "7.2.2",
+    "@babel/plugin-proposal-class-properties": "7.5.5",
+    "@babel/preset-env": "7.5.5",
+    "@babel/preset-react": "7.0.0",
+    "@babel/preset-stage-2": "7.0.0",
+    "babel-core": "7.0.0-bridge.0",
+    "babelify": "9.0.0",
+    "browserify": "11.2.0",
+    "prop-types": "15.6.2",
+    "react": "16.13.1",
+    "react-dom": "16.13.1",
+    "react-three-fiber": "4.2.21",
+    "nw": "0.44.1-sdk",
+    "semantic-ui-css": "2.4.1",
+    "semantic-ui-react": "0.87.3",
+    "three": "0.120.1"
+  }
+}

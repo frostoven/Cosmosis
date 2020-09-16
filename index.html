@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="node_modules/semantic-ui-css/semantic.min.css" />
+
+    <style type="text/css">
+        .version {
+            font-weight: bold;
+            position: fixed;
+            bottom: 12px;
+            right: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div id="react-element"></div>
+    <script type="text/javascript" src="build/bundle.js"></script>
+
+    <div class="version">
+        Using node.js version: <script>document.write(process.version)</script>
+    </div>
+</body>
+</html>
