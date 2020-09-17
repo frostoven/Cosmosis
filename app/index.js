@@ -2,9 +2,10 @@ import ReactDOM from 'react-dom';
 import React from 'react';
 import { Canvas } from 'react-three-fiber';
 
-import globals from './local/globals';
+import core from './local/core';
 import BoxScene from './scenes/BoxScene';
 import SpaceScene from './scenes/SpaceScene';
+import Effects from "./scenes/components/Effects";
 
 /* Main
 /* --------------------------------- */
@@ -21,7 +22,7 @@ class Game extends React.Component {
 	}
 
 	componentDidMount() {
-		globals.registerGlobalAction({
+		core.registerGlobalAction({
 			action: 'changeSceneTo',
 			item: {
 				boxScene: () => { this.setState({ activeScene: BoxScene }) },
@@ -31,7 +32,7 @@ class Game extends React.Component {
 	}
 
 	componentWillUnmount() {
-		globals.deregisterGlobalAction({ action: 'changeSceneTo' });
+		core.deregisterGlobalAction({ action: 'changeSceneTo' });
 	}
 
 	render() {
@@ -45,8 +46,15 @@ class Game extends React.Component {
 					left: 0,
 					right: 0,
 				}}
+				onCreated={(items) => {
+					const { gl, camera } = items;
+					// console.log('gl:', gl)
+					// console.log('cam:', camera)
+					core.initCanvas({ camera });
+				}}>
 			>
 				<ActiveScene />
+				<Effects />
 			</Canvas>
 		);
 	}
@@ -54,5 +62,5 @@ class Game extends React.Component {
 
 window.rootNode = ReactDOM.render(
 	<Game />,
-	document.getElementById('react-element')
+	document.getElementById('root')
 )
