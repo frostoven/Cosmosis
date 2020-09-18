@@ -1,11 +1,13 @@
 import ReactDOM from 'react-dom';
-import React from 'react';
+import React, { Suspense } from 'react';
 import { Canvas } from 'react-three-fiber';
 
 import core from './local/core';
 import BoxScene from './scenes/BoxScene';
 import SpaceScene from './scenes/SpaceScene';
-import Effects from "./scenes/components/Effects";
+import Effects from './scenes/components/Effects';
+
+import Ship from './models/Ship';
 
 /* Main
 /* --------------------------------- */
@@ -47,13 +49,14 @@ class Game extends React.Component {
 					right: 0,
 				}}
 				onCreated={(items) => {
-					const { gl, camera } = items;
-					// console.log('gl:', gl)
-					// console.log('cam:', camera)
-					core.initCanvas({ camera });
+					console.log('onCreated:', items);
+					core.initCanvas(items);
 				}}>
 			>
 				<ActiveScene />
+				<Suspense fallback={null}>
+					<Ship />
+				</Suspense>
 				<Effects />
 			</Canvas>
 		);

@@ -15,7 +15,7 @@ let moveRight = false;
 let moveUp = false;
 let moveDown = false;
 
-function keyChange({ key, isDown }) {
+function onKeyUpDown({ key, isDown }) {
     const ctrl = controls.freeCam;
     if (ctrl.forward.includes(key)) {
         moveForward = isDown;
@@ -66,5 +66,5 @@ function animateFreeCam({ ptrLockControls }) {
 
 module.exports = {
     animateFreeCam,
-    keyChange,
+    onKeyUpDown,
 }

@@ -5,18 +5,24 @@ import { ShaderPass } from '../../../node_modules/three/examples/jsm/postprocess
 import { RenderPass } from '../../../node_modules/three/examples/jsm/postprocessing/RenderPass'
 import { UnrealBloomPass } from '../../../node_modules/three/examples/jsm/postprocessing/UnrealBloomPass'
 import { FilmPass } from '../../../node_modules/three/examples/jsm/postprocessing/FilmPass'
+import Stats from '../../../node_modules/three/examples/jsm/libs/stats.module.js';
 
 import { animateFreeCam } from '../../local/core';
 
 extend({ EffectComposer, ShaderPass, RenderPass, UnrealBloomPass, FilmPass })
+
+// FPS counter.
+const stats = new Stats();
+document.body.append(stats.dom);
 
 export default function Effects() {
     const composer = useRef()
     const { scene, gl, size, camera } = useThree()
     useEffect(() => void composer.current.setSize(size.width, size.height), [size])
     useFrame(() => {
-        animateFreeCam(scene);
+        animateFreeCam();
         composer.current.render();
+        stats.update();
     }, 2)
     return (
         <effectComposer ref={composer} args={[gl]}>
