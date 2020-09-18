@@ -1,5 +1,7 @@
+import * as THREE from "three";
 import { PointerLockControls } from '../../node_modules/three/examples/jsm/controls/PointerLockControls.js';
 
+import { controls } from './controls';
 import freeCam from './freeCam';
 
 const actions = {};
@@ -11,28 +13,97 @@ const modes = {
 let ptrLockControls;
 let mode = modes.freeCam;
 
-function onKeyChange(event, isDown) {
+// Make it easier to determine key positions (i.e. left ctrl vs right ctrl.
+const keyLoc = [
+    0,    // Unique key.
+    1000, // Left side of keyboard.
+    2000, // Right side of keyboard.
+    3000, // Numpad key.
+]
+
+// Used to differentiate between key presses and holding keys down.
+const pressedButtons = new Array(4000).fill(false);
+
+function onKeyUpDown(event, isDown) {
+  let key = event.keyCode;
+  // Make it easier to determine key positions (i.e. left ctrl vs right ctrl.
+  key += keyLoc[event.location];
+
   if (mode === modes.freeCam) {
-    freeCam.keyChange({ key: event.keyCode, isDown })
+    freeCam.onKeyUpDown({ key, isDown })
   }
 }
 
+function onKeyPressTracker(event, isDown) {
+  let key = event.keyCode;
+  // Make it easier to determine key positions (i.e. left ctrl vs right ctrl.
+  key += keyLoc[event.location];
+
+  if (!isDown) {
+    console.log(`${key} has been released.`);
+    pressedButtons[key] = false;
+    return;
+  }
+
+  if (pressedButtons[key]) {
+    console.log(`ignoring: ${key}.`);
+    return;
+  }
+
+  // --- external functions here ------------------------
+
+  coreKeyPress({ key });
+
+  // ----------------------------------------------------
+
+  pressedButtons[key] = true;
+}
+
 function onGameKeyDown(event) {
-  onKeyChange(event, true);
+  onKeyUpDown(event, true);
+  onKeyPressTracker(event, true);
 }
 
 function onGameKeyUp(event) {
-  onKeyChange(event, false);
+  onKeyUpDown(event, false);
+  onKeyPressTracker(event, false);
 }
 
-function initCanvas({ camera }) {
+function coreKeyPress({ key }) {
+  // console.log(`i should not activate often. key`, key)
+  // Mouse lock.
+  if (controls.allModes.lockMouse.includes(key)) {
+    console.log(`i should not activate ONCE. key`, key)
+    if (ptrLockControls.isLocked) {
+      unlockMousePointer();
+    }
+    else {
+      lockMousePointer();
+    }
+  }
+}
+
+function initCanvas({ camera, scene, gl }) {
   console.log('Initialising core.');
+
+  // Default skybox.
+  const loader = new THREE.TextureLoader();
+  const texture = loader.load(
+      '/assets/skyboxes/panoramic_dark.png',
+      () => {
+        const rt = new THREE.WebGLCubeRenderTarget(texture.image.height);
+        const renderer = gl;
+        rt.fromEquirectangularTexture(renderer, texture);
+        scene.background = rt;
+      });
 
   // Controls.
   document.removeEventListener('keydown', onGameKeyDown);
   document.removeEventListener('keyup', onGameKeyUp);
+  // document.removeEventListener('keypress', onKeyPress);
   document.addEventListener('keydown', onGameKeyDown);
   document.addEventListener('keyup', onGameKeyUp);
+  // document.addEventListener('keypress', onKeyPress);
 
   ptrLockControls = new PointerLockControls(camera, document.body);
 }
