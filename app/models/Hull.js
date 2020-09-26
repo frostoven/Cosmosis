@@ -1,8 +1,8 @@
 import React from 'react';
 import * as CANNON from 'cannon';
 
-import { GLTFLoader } from '../../node_modules/three/examples/jsm/loaders/GLTFLoader';
-import { DRACOLoader } from '../../node_modules/three/examples/jsm/loaders/DRACOLoader';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 
 import { useCannon, Provider } from '../local/useCannon';
 import { useLoader } from "react-three-fiber";
@@ -16,7 +16,7 @@ export default function Ship({ position }) {
     '/assets/models/hull_low_poly.gltf',
     (loader) => {
       const dracoLoader = new DRACOLoader();
-      dracoLoader.setDecoderPath('../../node_modules/three/examples/js/libs/draco/');
+      dracoLoader.setDecoderPath('three/examples/js/libs/draco/');
       dracoLoader.preload();
       loader.setDRACOLoader(dracoLoader);
       dracoLoader.dispose();

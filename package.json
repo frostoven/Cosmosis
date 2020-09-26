@@ -1,7 +1,7 @@
 {
   "name": "space-junkie",
   "version": "0.0.1",
-  "main": "index.html",
+  "main": "main_process.js",
   "window": {
     "title": "SpaceJunkie",
     "toolbar": false,
@@ -12,9 +12,9 @@
   "chromium-args": "--enable-logging=stderr",
   "description": "Drugs. Control. Concubines.",
   "scripts": {
-    "start": "nw",
-    "clean": "rm build/bundle.js",
-    "build": "browserify --external fs app/index.js -o build/bundle.js"
+    "bundle": "webpack --mode development",
+    "serve": "electron .",
+    "start": "npm-run-all --parallel bundle serve"
   },
   "repository": {
     "type": "git",
@@ -25,42 +25,30 @@
   ],
   "author": "aggregate1166877",
   "license": "All rights reserved",
-  "browserify": {
-    "transform": [
-      [
-        "babelify",
-        {
-          "presets": [
-            "@babel/preset-env",
-            "@babel/react"
-          ],
-          "plugins": [
-            "@babel/plugin-proposal-class-properties",
-            "@babel/plugin-transform-runtime"
-          ]
-        }
-      ]
-    ]
-  },
   "devDependencies": {
     "@babel/core": "7.2.2",
     "@babel/plugin-proposal-class-properties": "7.5.5",
     "@babel/plugin-transform-runtime": "7.5.5",
-    "@babel/preset-env": "7.5.5",
+    "@babel/preset-env": "7.2.3",
     "@babel/preset-react": "7.0.0",
     "@babel/preset-stage-2": "7.0.0",
-    "babel-core": "7.0.0-bridge.0",
-    "babelify": "9.0.0",
-    "browserify": "11.2.0",
-    "prop-types": "15.6.2",
+    "@babel/register": "7.0.0",
+    "babel-loader": "8.0.5",
+    "css-loader": "0.28.10",
+    "extract-text-webpack-plugin": "4.0.0-beta.0",
+    "file-loader": "1.1.10",
+    "npm-run-all": "4.1.2",
+    "webpack": "4.28.4",
+    "webpack-cli": "3.2.1"
+  },
+  "dependencies": {
+    "cannon": "0.6.2",
+    "drei": "1.5.7",
+    "electron": "10.1.2",
+    "electron-reload": "1.2.2",
     "react": "16.13.1",
     "react-dom": "16.13.1",
     "react-three-fiber": "4.2.21",
-    "nw": "0.44.1-sdk",
-    "semantic-ui-css": "2.4.1",
-    "semantic-ui-react": "0.87.3",
-    "three": "0.120.1",
-    "cannon": "0.6.2",
-    "drei": "1.5.7"
+    "three": "0.120.1"
   }
 }

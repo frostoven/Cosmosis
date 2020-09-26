@@ -1,8 +1,9 @@
 import * as THREE from "three";
-import { PointerLockControls } from '../../node_modules/three/examples/jsm/controls/PointerLockControls';
+import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls';
+// import { PointerLockControls } from '../../node_modules/three/examples/jsm/controls/PointerLockControls';
 // import { AmmoPhysics } from '../../node_modules/three/examples/jsm/physics/AmmoPhysics';
 
-import { initPhysics } from './physics';
+// import { initPhysics } from './physics';
 import { controls } from './controls';
 import freeCam from './freeCam';
 
@@ -92,7 +93,7 @@ function initCanvas({ camera, scene, gl }) {
   // Default skybox.
   const loader = new THREE.TextureLoader();
   const texture = loader.load(
-      '/assets/skyboxes/panoramic_dark.png',
+      'assets/skyboxes/panoramic_dark.png',
       () => {
         const rt = new THREE.WebGLCubeRenderTarget(texture.image.height);
         const renderer = gl;
@@ -123,7 +124,7 @@ function getPhysicsInst(onReady) {
   //     onReady({ physics });
   //   }
   // });
-  initPhysics(onReady);
+  // initPhysics(onReady);
 
   /*
   async function test() {
@@ -154,7 +155,7 @@ function deregisterGlobalAction({ action }) {
   actions[action] = {};
 }
 
-const exports = {
+export default {
   initCanvas,
   actions,
   registerGlobalAction,
@@ -164,10 +165,3 @@ const exports = {
   unlockMousePointer,
   getPhysicsInst,
 }
-
-/**
- * Used for easy console debugging. Please do not use this line in actual code.
- */
-window.gameCore = exports;
-
-module.exports = exports;
