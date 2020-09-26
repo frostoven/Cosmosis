@@ -11,7 +11,6 @@ import { draco } from 'drei';
 import { useCannon } from '../local/useCannon';
 
 export default function Ship(props) {
-  const group = useRef();
   const { nodes, materials } = useLoader(
     GLTFLoader,
     `assets/models/${props.model}.gltf`,
@@ -19,13 +18,13 @@ export default function Ship(props) {
   );
 
   // Register box as a physics body with mass
-  const ref = useCannon({ mass: 100000 }, body => {
+  const ref = useCannon({ mass: 10000 }, body => {
     body.addShape(new CANNON.Box(new CANNON.Vec3(1, 1, 1)));
     body.position.set(...props.position);
   });
 
   return (
-    <group ref={group} {...props} dispose={null}>
+    <group ref={ref} {...props}>
       <group position={[-0.31, 0.53, 0.22]}>
         <primitive object={nodes.Point001_Orientation} />
       </group>
