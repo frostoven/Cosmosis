@@ -5,7 +5,7 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel="stylesheet" href="node_modules/semantic-ui-css/semantic.min.css" />
+<!--    <link rel="stylesheet" href="node_modules/semantic-ui-css/semantic.min.css" />-->
 
     <style type="text/css">
         .version {
@@ -15,6 +15,16 @@
             right: 12px;
         }
     </style>
+
+    <script type="application/javascript">
+      // Disable annoying messages about downloading react dev tools.
+      __REACT_DEVTOOLS_GLOBAL_HOOK__ = {
+        supportsFiber: true,
+        inject: function() {},
+        onCommitFiberRoot: function() {},
+        onCommitFiberUnmount: function() {},
+      };
+    </script>
     <!-- <script src="node_modules/three/examples/js/libs/ammo.wasm.js"></script> -->
     <script src="hackedlibs/ammo/ammo.wasm.js"></script>
 </head>

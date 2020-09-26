@@ -1,13 +1,13 @@
 import React, { useRef, useEffect } from 'react'
 import { extend, useThree, useFrame } from 'react-three-fiber'
-import { EffectComposer } from '../../../node_modules/three/examples/jsm/postprocessing/EffectComposer'
-import { ShaderPass } from '../../../node_modules/three/examples/jsm/postprocessing/ShaderPass'
-import { RenderPass } from '../../../node_modules/three/examples/jsm/postprocessing/RenderPass'
-import { UnrealBloomPass } from '../../../node_modules/three/examples/jsm/postprocessing/UnrealBloomPass'
-import { FilmPass } from '../../../node_modules/three/examples/jsm/postprocessing/FilmPass'
-import Stats from '../../../node_modules/three/examples/jsm/libs/stats.module.js';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer'
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass'
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass'
+import { FilmPass } from 'three/examples/jsm/postprocessing/FilmPass'
+import Stats from 'three/examples/jsm/libs/stats.module.js';
 
-import { animateFreeCam } from '../../local/core';
+import core from '../../local/core';
 
 extend({ EffectComposer, ShaderPass, RenderPass, UnrealBloomPass, FilmPass })
 
@@ -20,7 +20,7 @@ export default function Effects() {
     const { scene, gl, size, camera } = useThree()
     useEffect(() => void composer.current.setSize(size.width, size.height), [size])
     useFrame((state, deltaTime) => {
-        animateFreeCam();
+        core.animateFreeCam();
         composer.current.render();
         stats.update();
     }, 2)

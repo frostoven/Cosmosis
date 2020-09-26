@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 import React, { useRef } from 'react';
 import { useLoader, useFrame } from 'react-three-fiber';
-import { GLTFLoader } from '../../node_modules/three/examples/jsm/loaders/GLTFLoader';
-import { DRACOLoader } from '../../node_modules/three/examples/jsm/loaders/DRACOLoader';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 
 const geometry = new THREE.BoxBufferGeometry(1, 1, 40)
 const lightgreen = new THREE.Color('lightgreen')
@@ -36,7 +36,7 @@ export default function Ship(props) {
       '/assets/models/hull_low_poly.gltf',
       (loader) => {
         const dracoLoader = new DRACOLoader();
-        dracoLoader.setDecoderPath('../../node_modules/three/examples/js/libs/draco/');
+        dracoLoader.setDecoderPath('three/examples/js/libs/draco/');
         dracoLoader.preload();
         loader.setDRACOLoader(dracoLoader);
         dracoLoader.dispose();

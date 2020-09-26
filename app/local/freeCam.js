@@ -64,7 +64,7 @@ function animateFreeCam({ ptrLockControls }) {
     prevTime = time;
 }
 
-module.exports = {
+export default {
     animateFreeCam,
     onKeyUpDown,
 }
