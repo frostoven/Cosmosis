@@ -1,0 +1,7 @@
+ammo.wasm.js incorrectly assumes that any node-based process has `__dirname`
+and other node features defined. This is a terrible assumption and causes
+crashes under certain conditions.
+
+This directory contains a copy-paste `from node_modules/three/examples/js/libs/ammo*`.
+All instances of `typeof process` is replaced with `typeof false`.
+This is a highly unfortunate work-around and needs to be addressed properly.

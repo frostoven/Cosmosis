@@ -1,13 +1,16 @@
 import ReactDOM from 'react-dom';
 import React, { Suspense } from 'react';
 import { Canvas } from 'react-three-fiber';
+// import * as THREE from 'three';
 
 import core from './local/core';
 import BoxScene from './scenes/BoxScene';
 import SpaceScene from './scenes/SpaceScene';
 import Effects from './scenes/components/Effects';
 
+import PhysicsBox from './models/PhysicsBox';
 import Ship from './models/Ship';
+import {Provider} from "./local/useCannon";
 
 /* Main
 /* --------------------------------- */
@@ -19,18 +22,22 @@ class Game extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = {
-			activeScene: BoxScene
+			activeScene: BoxScene,
+			physics: null,
 		};
 	}
 
 	componentDidMount() {
+		core.getPhysicsInst((physics) => {
+			this.setState({ physics });
+		});
 		core.registerGlobalAction({
 			action: 'changeSceneTo',
 			item: {
 				boxScene: () => { this.setState({ activeScene: BoxScene }) },
 				spaceScene: () => { this.setState({ activeScene: SpaceScene }) },
 			}
-		})
+		});
 	}
 
 	componentWillUnmount() {
@@ -38,6 +45,19 @@ class Game extends React.Component {
 	}
 
 	render() {
+		if (!this.state.physics) {
+			return (
+				<h1 style={{
+					position: 'fixed',
+					color: '#ffa5a5',
+					textAlign: 'center',
+					left: 0,
+					right: 0,
+					bottom: '50%'
+				}}>Loading physics engine...</h1>
+			)
+		}
+
 		const ActiveScene = this.state.activeScene;
 		return (
 			<Canvas
@@ -51,11 +71,16 @@ class Game extends React.Component {
 				onCreated={(items) => {
 					console.log('onCreated:', items);
 					core.initCanvas(items);
+					// items.gl.toneMapping = THREE.ACESFilmicToneMapping
+					// items.gl.outputEncoding = THREE.sRGBEncoding
 				}}>
 			>
 				<ActiveScene />
 				<Suspense fallback={null}>
-					<Ship />
+					<Provider>
+						<PhysicsBox position={[1, 0, -10]} />
+						<Ship position={[0, -1, 0]} />
+					</Provider>
 				</Suspense>
 				<Effects />
 			</Canvas>
@@ -66,4 +91,4 @@ class Game extends React.Component {
 window.rootNode = ReactDOM.render(
 	<Game />,
 	document.getElementById('root')
-)
+);

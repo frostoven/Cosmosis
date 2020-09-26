@@ -19,7 +19,7 @@ export default function Effects() {
     const composer = useRef()
     const { scene, gl, size, camera } = useThree()
     useEffect(() => void composer.current.setSize(size.width, size.height), [size])
-    useFrame(() => {
+    useFrame((state, deltaTime) => {
         animateFreeCam();
         composer.current.render();
         stats.update();

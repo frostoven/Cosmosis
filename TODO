@@ -1,0 +1,72 @@
+Implement physics in a universally easy to use way.
+
+Create a standard mesh loading mechanism.
+
+Detail a standard for mesh creation. Maybe with a json file that describes how
+the mesh is the be loaded, example:
+{
+  "main": { "label": "cube.001" },
+  "captainSeat": { "label": "cube.002" },
+  "navMonitor": ...
+  "combatMonitor": ...
+  "statusMonitor": ...
+  "shipMonitor": ...
+  "generic_seats": [
+    { "label": "rear_observation_seat"  }
+  ],
+  "doors": [
+    { "label": "loading_bay", "switch": "loading_bay_switch" }
+  ]
+}
+Check if GLTF supports collections. If so place internal ship lights into those
+collections, like "cockpitLights" etc and see if other lights like individual
+crew quarters can be tagged somehow. This would allow for highly dynamic ship
+function with zero additional coding needed for new ships. Maybe tagged via
+specially named materials (which 100% would fail in engines like godot, because
+material names are global and therefore need to be unique).
+
+Implement mode switches correctly WRT ship controls, then follow that with menu
+controls.
+
+Implement switching between body cam and free cam. Make body cam the default.
+
+either of these first: [
+    - Implement ship modular power systems.
+    - Create in-ship computer interface:
+        * Navigation
+        * Combat
+        * Status
+        * Ship
+]
+
+create weapon modules.
+
+implement firing groups.
+
+create some environments:
+    - saturn, to scale. hexagon storm demo.
+    - something akin to ME citadel, to scale, with some landing spots.
+    - implement orbital station, orbiting star.
+
+implement hyper relays (star gate).
+
+implement hyper drive.
+
+implement multiplayer.
+
+implement ai.
+
+make procedural universe.
+
+make galaxy map.
+
+
+
+--------------------------------------------------------------------
+
+Technical debt
+==============
+
+ammo.js was copied from node_modules to hackedlibs to fix a crash. See its
+readme for more details.
+

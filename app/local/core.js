@@ -1,9 +1,12 @@
 import * as THREE from "three";
-import { PointerLockControls } from '../../node_modules/three/examples/jsm/controls/PointerLockControls.js';
+import { PointerLockControls } from '../../node_modules/three/examples/jsm/controls/PointerLockControls';
+// import { AmmoPhysics } from '../../node_modules/three/examples/jsm/physics/AmmoPhysics';
 
+import { initPhysics } from './physics';
 import { controls } from './controls';
 import freeCam from './freeCam';
 
+// let physics;
 const actions = {};
 
 const modes = {
@@ -108,6 +111,29 @@ function initCanvas({ camera, scene, gl }) {
   ptrLockControls = new PointerLockControls(camera, document.body);
 }
 
+function getPhysicsInst(onReady) {
+  // if (physics) {
+  //   return onReady({ physics });
+  // }
+
+  // AmmoPhysics(/*{ gravity: { x:0, y:0, z:0 }*/).then((phyInst) => {
+  //   console.log('got physics object:', phyInst);
+  //   physics = phyInst;
+  //   if (onReady) {
+  //     onReady({ physics });
+  //   }
+  // });
+  initPhysics(onReady);
+
+  /*
+  async function test() {
+    console.log('running');
+    return 5;
+}
+test().then((num) => { console.log('fullfilled:', num); });
+*/
+}
+
 function animateFreeCam() {
   freeCam.animateFreeCam({ ptrLockControls });
 }
@@ -136,6 +162,7 @@ const exports = {
   animateFreeCam,
   lockMousePointer,
   unlockMousePointer,
+  getPhysicsInst,
 }
 
 /**
