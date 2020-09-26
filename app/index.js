@@ -12,6 +12,19 @@ import PhysicsBox from './models/PhysicsBox';
 import PlayerShip from './models/PlayerShip';
 import {Provider} from "./local/useCannon";
 
+/* Auto dev reloading
+/* --------------------------------- */
+
+if (process.env && process.env.NODE_ENV !== 'production') {
+	const fs = require('fs');
+	fs.watch('./build/bundle.js', (event, filename) => {
+		if (filename) {
+			// console.log(`${filename} file Changed`);
+			nw.Window.get().reload();
+		}
+	});
+}
+
 /* Main
 /* --------------------------------- */
 
