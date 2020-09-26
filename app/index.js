@@ -79,8 +79,8 @@ class Game extends React.Component {
 				<Suspense fallback={null}>
 					<Provider>
 						<PhysicsBox position={[1, 0, -10]} />
-						<PlayerShip position={[1, 0, -10]} rotation={[ 0, 3, 0 ]} />
-						{/*<PlayerShip position={[0, -1, 0]} rotation={[ 0, 3, 0 ]} />*/}
+						<PlayerShip position={[1, 0, -9]}/>
+						<PlayerShip position={[0, -1, 0]} rotation={[ 0, 3, 0 ]} />
 					</Provider>
 				</Suspense>
 				<Effects />

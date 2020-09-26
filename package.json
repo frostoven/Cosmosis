@@ -1,7 +1,7 @@
 {
   "name": "space-junkie",
   "version": "0.0.1",
-  "main": "main_process.js",
+  "main": "index.html",
   "window": {
     "title": "SpaceJunkie",
     "toolbar": false,
@@ -13,7 +13,7 @@
   "description": "Drugs. Control. Concubines.",
   "scripts": {
     "bundle": "webpack --mode development",
-    "serve": "electron .",
+    "serve": "nw",
     "start": "npm-run-all --parallel bundle serve"
   },
   "repository": {
@@ -44,8 +44,7 @@
   "dependencies": {
     "cannon": "0.6.2",
     "drei": "1.5.7",
-    "electron": "10.1.2",
-    "electron-reload": "1.2.2",
+    "nw": "0.44.1-sdk",
     "react": "16.13.1",
     "react-dom": "16.13.1",
     "react-three-fiber": "4.2.21",
