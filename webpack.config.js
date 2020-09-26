@@ -53,5 +53,13 @@ module.exports = {
 
     resolve: {
       extensions: ['.js', '.json', '.jsx']
+    },
+
+    stats: {
+        // Silence warnings which are actually false positives.
+        warningsFilter: [
+            '"export \'CannonDebugRenderer\' (imported as \'THREE\') was not found in \'three\'',
+            (warning) => false
+        ]
     }
 }
