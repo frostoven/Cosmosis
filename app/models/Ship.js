@@ -11,20 +11,35 @@ import { draco } from 'drei';
 import { useCannon } from '../local/useCannon';
 
 export default function Ship(props) {
-  const { nodes, materials } = useLoader(
+  const gltf = useLoader(
     GLTFLoader,
     `assets/models/${props.model}.gltf`,
     draco('node_modules/three/examples/js/libs/draco/gltf/')
   );
+  const { nodes, materials } = gltf;
+  console.log('Ship GLTF:', gltf);
 
   // Register box as a physics body with mass
   const ref = useCannon({ mass: 10000 }, body => {
-    body.addShape(new CANNON.Box(new CANNON.Vec3(1, 1, 1)));
+    const shape = new CANNON.Box(new CANNON.Vec3(1, 1, 1));
+    body.addShape(shape);
     body.position.set(...props.position);
+
+    // https://stackoverflow.com/questions/39560851/handling-proper-rotation-of-cannon-body-based-on-quaternion
+    if (props.rotation) {
+      // FIXME: this only applies correctly for y values.
+      const axis = new CANNON.Vec3(...props.rotation);
+      const angle = Math.PI;
+      body.quaternion.setFromAxisAngle(axis, angle);
+    }
   });
 
+  if (props.onUpdate) {
+    props.onUpdate({ model: gltf });
+  }
+
   return (
-    <group ref={ref} {...props}>
+    <group ref={ref}>
       <group position={[-0.31, 0.53, 0.22]}>
         <primitive object={nodes.Point001_Orientation} />
       </group>

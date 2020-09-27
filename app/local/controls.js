@@ -37,6 +37,12 @@ const controls = {
   allModes: {
     lockMouse: [ keyMap.ctrl_left ],
   },
+  shipPilot: {
+    thrustInc: [ keyMap.w ],
+    thrustDec: [ keyMap.s ],
+    back_renameme: [ keyMap.a ],
+    right_renameme: [ keyMap.d ],
+  },
   freeCam: {
     _description: 'Free camera',
     forward: [ keyMap.w, keyMap.up ],

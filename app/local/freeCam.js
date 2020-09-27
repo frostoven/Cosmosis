@@ -1,5 +1,4 @@
 import * as THREE from "three";
-// import { performance } from 'three/build/three.module';
 
 import { controls } from './controls';
 
