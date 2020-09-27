@@ -17,9 +17,16 @@ import {Provider} from "./local/useCannon";
 /* --------------------------------- */
 
 if (process.env && process.env.NODE_ENV !== 'production') {
+	// This flag allows us to disable HMR when we don't want reloads during
+	// debugging.
+	window.hmrEnabled = true;
+
 	const fs = require('fs');
 	fs.watch('./build/bundle.js', (event, filename) => {
 		if (filename) {
+			if (!window.hmrEnabled) {
+				return console.log('HMR: Ignoring external changes.');
+			}
 			// console.log(`${filename} file Changed`);
 			setTimeout(() => {
 				// Webpack sometimes modifies files multiple times in a short span,
@@ -97,7 +104,7 @@ class Game extends React.Component {
 				<Suspense fallback={null}>
 					<Provider>
 						<PhysicsBox position={[1, 0, -10]} />
-						<PhysicsBox position={[1, 0, -9]}/>
+						{/*<PhysicsBox position={[1, 0, -9]}/>*/}
 						<PlayerShip position={[0, -1, 0]} rotation={[ 0, 3, 0 ]} />
 						{/*<Ship position={[0, -1, 0]} rotation={[ 0, 3, 0 ]} model="DS69F" />*/}
 					</Provider>

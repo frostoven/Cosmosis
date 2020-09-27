@@ -11,11 +11,24 @@ import freeCam from './freeCam';
 const actions = {};
 
 const modes = {
-  freeCam: 1,
+  /** Used to indicate that the action is mode-independent. */
+  any: 0,
+  /** Refers do being locked in a seat. Used for bridge seats, usually. */
+  shipPilot: 1,
+  /** Free roam in space, and on non-rotating spacecraft. */
+  zeroGFreeRoam: 2,
+  /** Free roam in an environment where you're stuck to the floor. Can be magnetic shoes on a hull. */
+  gravityFreeRoam: 3,
+  /** Dev haxxx. */
+  freeCam: 9,
 };
 
+const modeListeners = [];
+const keyUpDownListeners = [/* { mode, cb } */];
+const keyPressListeners = [/* { mode, cb } */];
+
 let ptrLockControls;
-let mode = modes.freeCam;
+let currmode = modes.shipPilot;
 
 // Make it easier to determine key positions (i.e. left ctrl vs right ctrl.
 const keyLoc = [
@@ -33,8 +46,15 @@ function onKeyUpDown(event, isDown) {
   // Make it easier to determine key positions (i.e. left ctrl vs right ctrl.
   key += keyLoc[event.location];
 
-  if (mode === modes.freeCam) {
+  if (currmode === modes.freeCam) {
     freeCam.onKeyUpDown({ key, isDown })
+  }
+
+  for (let i = 0, len = keyUpDownListeners.length; i < len; i++) {
+    const { mode, cb } = keyUpDownListeners[i];
+    if (mode === modes.any || mode === currmode) {
+      cb({ key, isDown });
+    }
   }
 }
 
@@ -44,19 +64,26 @@ function onKeyPressTracker(event, isDown) {
   key += keyLoc[event.location];
 
   if (!isDown) {
-    console.log(`${key} has been released.`);
+    // console.log(`${key} has been released.`);
     pressedButtons[key] = false;
     return;
   }
 
   if (pressedButtons[key]) {
-    console.log(`ignoring: ${key}.`);
+    // console.log(`ignoring: ${key}.`);
     return;
   }
 
   // --- external functions here ------------------------
 
   coreKeyPress({ key });
+
+  for (let i = 0, len = keyPressListeners.length; i < len; i++) {
+    const { mode, cb } = keyPressListeners[i];
+    if (mode === modes.any || mode === currmode) {
+      cb({ key, isDown });
+    }
+  }
 
   // ----------------------------------------------------
 
@@ -74,10 +101,8 @@ function onGameKeyUp(event) {
 }
 
 function coreKeyPress({ key }) {
-  // console.log(`i should not activate often. key`, key)
   // Mouse lock.
   if (controls.allModes.lockMouse.includes(key)) {
-    console.log(`i should not activate ONCE. key`, key)
     if (ptrLockControls.isLocked) {
       unlockMousePointer();
     }
@@ -109,6 +134,8 @@ function initCanvas({ camera, scene, gl }) {
   document.addEventListener('keyup', onGameKeyUp);
   // document.addEventListener('keypress', onKeyPress);
 
+  // TODO: use this only with free cam. We need to be able to lock the pointer
+  //  for ship navigation as well.
   ptrLockControls = new PointerLockControls(camera, document.body);
 }
 
@@ -155,6 +182,63 @@ function deregisterGlobalAction({ action }) {
   actions[action] = {};
 }
 
+function registerKeyUpDown({ mode, cb }) {
+  keyUpDownListeners.push({ mode, cb });
+}
+
+function deregisterKeyUpDown({ mode, cb }) {
+  for (let i = 0, len = keyUpDownListeners.length; i < len; i++) {
+    if (keyUpDownListeners[i].mode === mode && keyUpDownListeners[i].cb === cb) {
+      keyUpDownListeners.splice(index, 1);
+      return true;
+    }
+  }
+  return false;
+}
+
+function registerKeyPress({ mode, cb }) {
+  keyPressListeners.push({ mode, cb });
+}
+
+function deregisterKeyPress({ mode, cb }) {
+  for (let i = 0, len = keyPressListeners.length; i < len; i++) {
+    if (keyPressListeners[i].mode === mode && keyPressListeners[i].cb === cb) {
+      keyPressListeners.splice(index, 1);
+      return true;
+    }
+  }
+  return false;
+}
+
+function registerModeListener(cb) {
+  modeListeners.push(cb);
+}
+
+function deregisterModeListener(cb) {
+  for (let i = 0, len = modeListeners.length; i < len; i++) {
+    if (modeListeners[i] === cb) {
+      modeListeners.splice(index, 1);
+      return true;
+    }
+  }
+  return false;
+}
+
+function getMode() {
+  return currmode;
+}
+
+function setMode(mode) {
+  const prevMode = currmode;
+  currmode = mode;
+
+  // Inform all listeners of the change.
+  for (let i = 0, len = modeListeners.length; i < len; i++) {
+    const cb = modeListeners[i];
+    cb({ mode: currmode, prevMode });
+  }
+}
+
 export default {
   initCanvas,
   actions,
@@ -164,4 +248,13 @@ export default {
   lockMousePointer,
   unlockMousePointer,
   getPhysicsInst,
+  modes,
+  getMode,
+  setMode,
+  registerModeListener,
+  deregisterModeListener,
+  registerKeyUpDown,
+  deregisterKeyUpDown,
+  registerKeyPress,
+  deregisterKeyPress,
 }
