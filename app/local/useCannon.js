@@ -25,6 +25,7 @@ export function Provider({ children }) {
 
   // Run world stepper every frame
   useFrame(() => {
+    // TODO: check if this is correct. We probably need deltaTime instead.
     world.step(1 / 60);
     cannonDebugRenderer.update();
   })

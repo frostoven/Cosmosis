@@ -70,3 +70,33 @@ Technical debt
 ammo.js was copied from node_modules to hackedlibs to fix a crash. See its
 readme for more details.
 
+--------------------------------------------------------------------
+
+Misc
+==============
+
+Find a good way to limit frame rate
+-----------------------------------
+
+The application's frame rate is currently controlled by
+`node_modules/react-three-fiber/web.js` -> renderLoop()
+
+To limit the frame rate, this line:
+`if (repeat !== 0) return requestAnimationFrame(renderLoop);else {`
+
+can be replaced with this this block:
+```js
+if (repeat !== 0) {
+    // return requestAnimationFrame(renderLoop);
+    return setTimeout( function() {
+      requestAnimationFrame(renderLoop);
+    }, 1000 / 30 );
+  }
+  else {
+```
+
+which limits the frame rate to 30fps in this case. The game HAS TO BE frame
+rate independent. This is not optional. The problem is that, testing on lower
+frame rates, is really difficult when the functionality is hidden away in a
+module. Find a way to make this as simple as changing a parameter. Submit a PR
+on the issue maybe?
