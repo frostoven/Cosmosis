@@ -79,3 +79,44 @@ crash and burn the moment your internet drops for a second. The crash will
 happen for things as fundamental as mesh loading. When making changes involving
 drei, please always test offline with cache disabled (Dev tools [Ctrl+Shift+I] -> Network -> Disable cache)
 to ensure your changes aren't online-only.
+
+#### Setting up three.js auto-completion
+
+A tutorial for VSCode is available here:
+* http://shrekshao.github.io/2016/06/20/vscode-01/
+
+Code dump:
+```bash
+We will use Typings to install these files.
+
+Make sure you’ve installed node.js and run:
+
+  npm install typings --global
+Go to your project directory, run:
+
+  typings init
+There will be a typings.json file generated.
+
+Now search for the three.js syntax file in DefinitelyTyped:
+
+  typings search three
+It will show all matched results. Find the one we need, the name is three
+
+Install three
+
+  typings install three --save --global
+If this doesn’t work, try specify a domain for the typings, use this:
+  typings install dt~three --save --global
+Now with 1.x.x VSCode, we need to generate a jsconfig.json file in the root of the project folder by clicking the light bulb button at the bottom right.
+```
+
+For WebStorm, follow the above VSCode tutorial. By the time you reach the
+VSCode-specific stuff, everything should already magically be working. If not:
+* https://intellij-support.jetbrains.com/hc/en-us/community/posts/360000150644-Use-typescript-typings-for-javascript-code-completion
+
+Code dump:
+```bash
+[...] Just add them to your project - this should normally be enough. Either
+place them in your project folder, or add as Javascript libraries
+(File | Settings | Languages & Frameworks | JavaScript | Libraries, Add...)
+```
