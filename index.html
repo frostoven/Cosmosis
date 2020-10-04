@@ -8,6 +8,10 @@
 <!--    <link rel="stylesheet" href="node_modules/semantic-ui-css/semantic.min.css" />-->
 
     <style type="text/css">
+        * {
+            font-family: Helvetica, Arial, sans-serif;
+        }
+
         .version {
             font-weight: bold;
             position: fixed;
@@ -60,6 +64,20 @@
         /*    border: 1px inset #ccc;*/
         /*    cursor: col-resize;*/
         /*}*/
+
+        #camDevArea {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            z-index: 10000;
+            padding: 4px;
+            font-size: 10pt;
+            font-weight: bold;
+            border: thin solid green;
+            margin: 3px;
+            color: white;
+        }
     </style>
 
     <script type="application/javascript">
@@ -82,5 +100,7 @@
 <!--    <div class="version">-->
 <!--        Using node.js version: <script>document.write(process.version)</script>-->
 <!--    </div>-->
+
+    <div id="camDevArea">--</div>
 </body>
 </html>

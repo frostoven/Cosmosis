@@ -2,6 +2,7 @@ import * as THREE from "three";
 
 import { controls } from '../local/controls';
 import core from "../local/core";
+import speedTracker from "./utils/speedTracker";
 
 const mode = core.modes.freeCam;
 
@@ -9,7 +10,7 @@ let prevTime = performance.now();
 let velocity = new THREE.Vector3();
 let direction = new THREE.Vector3();
 let vertex = new THREE.Vector3();
-let speed = 10;
+let speed = 120 / 14.388; // 120KM/h
 
 let doRender = false;
 
@@ -19,6 +20,14 @@ let moveLeft = false;
 let moveRight = false;
 let moveUp = false;
 let moveDown = false;
+
+let turnLeft = false;
+let turnRight = false;
+let turnUp = false;
+let turnDown = false;
+let spinLeft = false;
+let spinRight = false;
+
 let accelerate = false;
 let decelerate = false;
 
@@ -29,6 +38,17 @@ function register() {
 
     core.registerKeyUpDown({
         mode, cb: onKeyUpDown,
+    });
+
+    // Only render if mode is freeCam.
+    core.registerModeListener((change) => {
+        doRender = change.mode === mode;
+        if (doRender) {
+            speedTracker.trackCameraSpeed();
+        }
+        else {
+            speedTracker.clearSpeedTracker();
+        }
     });
 }
 
@@ -50,17 +70,40 @@ function onKeyUpDown({ key, amount, isDown }) {
     else if (ctrl.up.includes(key)) {
         moveUp = isDown;
     }
+    else if (ctrl.down.includes(key)) {
+        moveDown = isDown;
+    }
+    else if (ctrl.turnLeft.includes(key)) {
+        turnLeft = isDown;
+    }
+    else if (ctrl.turnRight.includes(key)) {
+        turnRight = isDown;
+    }
+    else if (ctrl.turnUp.includes(key)) {
+        turnUp = isDown;
+    }
+    else if (ctrl.turnDown.includes(key)) {
+        turnDown = isDown;
+    }
+    else if (ctrl.spinLeft.includes(key)) {
+        spinLeft = isDown;
+    }
+    else if (ctrl.spinRight.includes(key)) {
+        spinRight = isDown;
+    }
     else if (ctrl.speedUp.includes(key)) {
         accelerate = isDown;
-        console.log('speed:', speed);
     }
     else if (ctrl.speedDown.includes(key)) {
         decelerate = isDown;
-        console.log('speed:', speed);
     }
 }
 
 function render(delta) {
+    if (!doRender) {
+        return;
+    }
+
     const { scene, camera, renderer } = $gameView;
 
     // const time = performance.now();
@@ -69,10 +112,10 @@ function render(delta) {
     // const delta = (time - prevTime) / 1000;
 
     if (accelerate) {
-        speed += (delta * 1000) + (speed * 0.01);
+        speed += (delta * 200) + (speed * 0.01);
     }
     else if (decelerate) {
-        speed -= (delta * 1000) + (speed * 0.01);
+        speed -= (delta * 200) + (speed * 0.01);
         if (speed < 0) {
             speed = 0;
         }
@@ -92,19 +135,16 @@ function render(delta) {
     if (moveLeft || moveRight) velocity.x -= direction.x * speed * 40.0 * delta;
     if (moveUp || moveDown) velocity.y -= direction.y * speed * 40.0 * delta;
 
-    camera.position.x += (-velocity.x * delta);
-    camera.position.y += (velocity.y * delta);
-    camera.position.z += (velocity.z * delta);
+    camera.translateX(-velocity.x * delta);
+    camera.translateY(velocity.y * delta);
+    camera.translateZ(velocity.z * delta);
 
-    // moveRight(-velocity.x * delta);
-    // moveForward(-velocity.z * delta);
-    // getObject().position.y += (velocity.y * delta);
-
-    // ptrLockControls.moveRight(-velocity.x * delta);
-    // ptrLockControls.moveForward(-velocity.z * delta);
-    // ptrLockControls.getObject().position.y += (velocity.y * delta);
-    // }
-    // prevTime = time;
+    if (turnLeft) camera.rotateY( +delta * 1.5);
+    if (turnRight) camera.rotateY( -delta * 1.5);
+    if (turnUp) camera.rotateX( +delta * 1.5);
+    if (turnDown) camera.rotateX(-delta * 1.5);
+    if (spinLeft) camera.rotateZ(+delta * 1.5);
+    if (spinRight) camera.rotateZ( -delta * 1.5);
 }
 
 export default {
