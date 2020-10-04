@@ -1,12 +1,13 @@
 // Non-unique key [ctrl/alt/shift/super], on the left side of the keyboard.
 const leftInc = 1000;
 // Non-unique key [ctrl/alt/shift/super], on the right side of the keyboard.
-const rightInc = 2000;
+const rightInc = 3000;
 // Key belongs to the numpad.
-const numpadInc = 5000;
+const numpadInc = 7000;
 // Used to differentiate mouse buttons.
-const mouseInc = 9000;
+const mouseInc = 15000;
 
+// https://keycode.info/
 const keymap = {
   // Arrows
   up: 38,
@@ -22,6 +23,16 @@ const keymap = {
   mouse5: 5 + mouseInc,
   // ^^ this continues below at assignMouseExtra.
 
+  // Mouse scroll
+  scrollUp: 99 + mouseInc,
+  scrollDown: 101 + mouseInc,
+
+  // Mouse movement
+  mouseNorth: 200 + mouseInc,
+  mouseEast: 202 + mouseInc,
+  mouseSouth: 203 + mouseInc,
+  mouseWest: 201 + mouseInc,
+
   // Misc
   space: 32,
 
@@ -36,6 +47,10 @@ const keymap = {
   alt: 18,
   altLeft: 18 + leftInc,
   altRight: 18 + rightInc,
+
+  // Numpad
+  numpadPlus: 107 + numpadInc,
+  numpadMinus: 109 + numpadInc,
 
   // Alphabet
   a: 65,
@@ -79,6 +94,12 @@ const controls = {
     right: [ keymap.d, keymap.right ],
     up: [ keymap.r, keymap.space ],
     down: [ keymap.f ],
+    speedUp: [ keymap.numpadPlus ],
+    speedDown: [ keymap.numpadMinus ],
+  },
+  godCam: {
+    _description: 'Celestial god cam',
+    noNeedForControlsWhenOmnipotent: [],
   }
 }
 
