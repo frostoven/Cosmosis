@@ -7,6 +7,7 @@ import * as THREE from 'three';
 
 import core from '../local/core';
 import { controls } from '../local/controls';
+import speedTracker from "./utils/speedTracker";
 
 const mode = core.modes.godCam;
 
@@ -30,6 +31,12 @@ function register() {
   // Only render if mode is godCam.
   core.registerModeListener((change) => {
     doRender = change.mode === mode;
+    if (doRender) {
+      speedTracker.trackCameraSpeed();
+    }
+    else {
+      speedTracker.clearSpeedTracker();
+    }
   });
 
   core.registerAnalogListener({ mode, cb: onMouseMove });

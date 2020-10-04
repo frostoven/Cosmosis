@@ -23,8 +23,12 @@ let prevTime = Date.now();
  * Global vars
  * ================================= */
 
-window.$gameView = {};
 window.$stats = null;
+window.$gameView = {
+  scene: null,
+  camera: null,
+  renderer: null,
+};
 window.$options = {
   // 0=off, 1=basic, 2=full
   hudDetailLevel: 0,

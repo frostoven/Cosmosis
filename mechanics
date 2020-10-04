@@ -1,0 +1,32 @@
+Space ships
+===========
+
+[tba]
+
+Space ship combat
+=================
+
+[tba]
+[tba: large ships can have ai cores, HUGE things, can communicate across hyper relays]
+
+Player combat
+=============
+
+Combat is souls like. Loadouts can be combined, and determine roll types. Loadouts are as follows:
+* Hunter (bloodborne like, has rally)
+* Hollow (souls like, has shields)
+* Rifleman (fps like, has guns and limited ammo)
+
+Choosing only one loadout will give you light rolling, subject to these conditions:
+* Hollow shields and armour contribute to weight, and can make you medium or fat roll.
+* Rifle ammo contribute to weight, and can make you medium or fat roll.
+
+Hunter gear never contributes to roll weight in and of itself. Combining it with other loadout options will.
+
+Some combination examples:
+* Hunter only - light roll.
+* Shield only, with light shield and armour - light roll.
+* Guns only, with 50% ammo capacity - light roll.
+* Hunter and shield, with lightest options - fat roll.
+* Hunter and rifle, with one pistol and 12 bullet - light roll. 24 bullets, fat roll.
+* Shield with and rifle combination - medium or fat roll.
