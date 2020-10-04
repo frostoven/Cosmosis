@@ -1,0 +1,4 @@
+Forked from the three examples dir.
+
+This was forked because getting FPS values were needed, but the default module
+hides those values.
