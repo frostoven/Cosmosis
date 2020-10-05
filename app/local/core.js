@@ -7,7 +7,7 @@
 import * as THREE from 'three';
 
 import Stats from '../../hackedlibs/stats/stats.module.js';
-import { controls, keymap } from './controls';
+import { controls } from './controls';
 
 const gameFont = 'node_modules/three/examples/fonts/helvetiker_regular.typeface.json';
 
@@ -17,7 +17,11 @@ const NEAR = 1e-6, FAR = 1e27;
 let SCREEN_WIDTH = window.innerWidth;
 let SCREEN_HEIGHT = window.innerHeight;
 
-let prevTime = Date.now();
+// Used be coreKeyPress.
+const coreControls = controls.allModes;
+
+// Used to generate delta.
+let deltaPrevTime = Date.now();
 
 /*
  * Global vars
@@ -91,23 +95,23 @@ const keyPressListeners = [/* { mode, cb } */];
 
 // Make it easier to determine key positions (i.e. left ctrl vs right ctrl.
 const keyLoc = [
-  0,    // Unique key.
-  1000, // Left side of keyboard.
-  3000, // Right side of keyboard.
+  // 0,    // Unique key.
+  // 1000, // Left side of keyboard.
+  // 3000, // Right side of keyboard.
   7000, // Numpad key.
 ];
 
 // Used to differentiate between key presses and holding keys down.
 const pressedButtons = new Array(4000).fill(false);
 
+const coreKeyActions = {
+  lockMouse: () => {
+    // TODO: reimplement pointer lock.
+    console.log('TBA: mouse lock');
+  }
+};
+
 function onKeyUpDown(key, location, amount, isDown) {
-  // Make it easier to determine key positions (i.e. left ctrl vs right ctrl.
-  key += keyLoc[location];
-
-  // if (currmode === modes.freeCam) {
-  //   freeCam.onKeyUpDown({ key, amount, isDown })
-  // }
-
   for (let i = 0, len = keyUpDownListeners.length; i < len; i++) {
     const { mode, cb } = keyUpDownListeners[i];
     if (mode === modes.any || mode === currmode) {
@@ -123,7 +127,7 @@ function onKeyUpDown(key, location, amount, isDown) {
  * @param isDown
  */
 function onKeyPress(key, amount, isDown) {
-  coreKeyPress({ key });
+  coreKeyPress(key, amount, isDown);
   for (let i = 0, len = keyPressListeners.length; i < len; i++) {
     const { mode, cb } = keyPressListeners[i];
     if (mode === modes.any || mode === currmode) {
@@ -145,22 +149,23 @@ function onMouseMove(event) {
   const x = event.clientX;
   const y = event.clientY;
 
+  // Below: sp means 'special'. Or 'somewhat promiscuous'. Whatever.
   if (y > prevMouseY) {
     // console.log('mouse downward');
-    onAnalogInput(keymap.mouseSouth, x, y, x - prevMouseX, y - prevMouseY);
+    onAnalogInput('spMouseSouth', x, y, x - prevMouseX, y - prevMouseY);
   }
   else if (y < prevMouseY) {
     // console.log('mouse upward');
-    onAnalogInput(keymap.mouseNorth, x, y, x - prevMouseX, y - prevMouseY);
+    onAnalogInput('spMouseNorth', x, y, x - prevMouseX, y - prevMouseY);
   }
 
   if (x > prevMouseX) {
     // console.log('mouse right');
-    onAnalogInput(keymap.mouseEast, x, y, x - prevMouseX, y - prevMouseY);
+    onAnalogInput('spMouseEast', x, y, x - prevMouseX, y - prevMouseY);
   }
   else if (x < prevMouseX) {
     // console.log('mouse left');
-    onAnalogInput(keymap.mouseWest, x, y, x - prevMouseX, y - prevMouseY);
+    onAnalogInput('spMouseWest', x, y, x - prevMouseX, y - prevMouseY);
   }
 
   prevMouseX = x;
@@ -175,9 +180,6 @@ function onMouseMove(event) {
  * @param isDown
  */
 function onKeyPressTracker(key, location, isDown) {
-  // Make it easier to determine key positions (i.e. left ctrl vs right ctrl.
-  key += keyLoc[location];
-
   if (!isDown) {
     // console.log(`${key} has been released.`);
     pressedButtons[key] = false;
@@ -195,13 +197,13 @@ function onKeyPressTracker(key, location, isDown) {
 }
 
 function onGameKeyDown(event) {
-  onKeyUpDown(event.keyCode, event.location, 1, true);
-  onKeyPressTracker(event.keyCode, event.location, true);
+  onKeyUpDown(event.code, event.location, 1, true);
+  onKeyPressTracker(event.code, event.location, true);
 }
 
 function onGameKeyUp(event) {
-  onKeyUpDown(event.keyCode, event.location, 1, false);
-  onKeyPressTracker(event.keyCode, event.location, false);
+  onKeyUpDown(event.code, event.location, 1, false);
+  onKeyPressTracker(event.code, event.location, false);
 }
 
 /**
@@ -215,11 +217,11 @@ function onMouseWheel(event) {
   }
   else if (amount > 0) {
     // Scrolling down.
-    onKeyPress(keymap.scrollDown, amount, true);
+    onKeyPress('spScrollDown', amount, true);
   }
   else {
     // Scrolling up.
-    onKeyPress(keymap.scrollUp, amount, true);
+    onKeyPress('spScrollUp', amount, true);
   }
   // console.log('scroll:', amount);
 
@@ -230,15 +232,11 @@ function onMouseWheel(event) {
   // minZoomSpeed = 0.001;
 }
 
-function coreKeyPress({ key }) {
-  // Mouse lock.
-  if (controls.allModes.lockMouse.includes(key)) {
-    if (ptrLockControls.isLocked) {
-      unlockMousePointer();
-    }
-    else {
-      lockMousePointer();
-    }
+function coreKeyPress(key, amount, isDown) {
+  const control = coreControls[key];
+  const action = coreKeyActions[control];
+  if (action) {
+    action();
   }
 }
 
@@ -489,7 +487,7 @@ function updateRendererSizes() {
 
 function animate() {
   const time = performance.now();
-  const delta = (time - prevTime) / 1000;
+  const delta = (time - deltaPrevTime) / 1000;
 
   requestAnimationFrame(() => {
     if ($displayOptions.limitFps) {
@@ -499,7 +497,7 @@ function animate() {
       animate();
     }
   });
-  prevTime = time;
+  deltaPrevTime = time;
 
   // Run external renderers.
   for (let i = 0, len = cachedCamList.length; i < len; i++) {

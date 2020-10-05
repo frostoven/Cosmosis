@@ -1,77 +1,5 @@
-// Non-unique key [ctrl/alt/shift/super], on the left side of the keyboard.
-const leftInc = 1000;
-// Non-unique key [ctrl/alt/shift/super], on the right side of the keyboard.
-const rightInc = 3000;
-// Key belongs to the numpad.
-const numpadInc = 7000;
 // Used to differentiate mouse buttons.
 const mouseInc = 15000;
-
-// https://keycode.info/
-const keymap = {
-  // Arrows
-  up: 38,
-  left: 37,
-  right: 39,
-  down: 40,
-
-  // Mouse (using: which)
-  leftClick: 1 + mouseInc,
-  middleClick: 2 + mouseInc,
-  rightClick: 3 + mouseInc,
-  mouse4: 4 + mouseInc,
-  mouse5: 5 + mouseInc,
-  // ^^ this continues below at assignMouseExtra.
-
-  // Mouse scroll
-  scrollUp: 99 + mouseInc,
-  scrollDown: 101 + mouseInc,
-
-  // Mouse movement
-  mouseNorth: 200 + mouseInc,
-  mouseEast: 202 + mouseInc,
-  mouseSouth: 203 + mouseInc,
-  mouseWest: 201 + mouseInc,
-
-  // Misc
-  space: 32,
-
-  // Modifiers - these are overridden by core.js with fake values for
-  // simplicity sake.
-  shift: 16,
-  shiftLeft: 16 + leftInc,
-  shiftRight: 16 + rightInc,
-  ctrl: 17,
-  ctrlLeft: 17 + leftInc,
-  ctrlRight: 17 + rightInc,
-  alt: 18,
-  altLeft: 18 + leftInc,
-  altRight: 18 + rightInc,
-
-  // Numpad
-  numpad0: 96 + numpadInc,
-  numpad1: 97 + numpadInc,
-  numpad2: 98 + numpadInc,
-  numpad3: 99 + numpadInc,
-  numpad4: 100 + numpadInc,
-  numpad5: 101 + numpadInc,
-  numpad6: 102 + numpadInc,
-  numpad7: 103 + numpadInc,
-  numpad8: 104 + numpadInc,
-  numpad9: 105 + numpadInc,
-  numpadPlus: 107 + numpadInc,
-  numpadMinus: 109 + numpadInc,
-
-  // Alphabet
-  a: 65,
-  d: 68,
-  e: 69,
-  f: 70,
-  q: 81,
-  r: 82,
-  s: 83,
-  w: 87,
-};
 
 /**
  * There are some insane pieces of mouse tech out there that go a bit too far
@@ -80,51 +8,102 @@ const keymap = {
  * @param min
  * @param max
  */
-function assignMouseExtra(min, max) {
-  for (; min <= max; min++) {
-    keymap[`mouse${min}`] = min + mouseInc;
-  }
-}
-assignMouseExtra(6, 20);
+// function assignMouseExtra(min, max) {
+//   for (; min <= max; min++) {
+//     keymap[`mouse${min}`] = min + mouseInc;
+//   }
+// }
+// assignMouseExtra(6, 20);
 
+// Setting that allows the user to force assigning the same key to multiple
+// actions within the same mode.
+// It's niche, but I aim to please, baby.
+const doublePresses = {
+  freeCam: [
+    'tba', 'tba',
+  ]
+}
+
+// Allows client to know what the player can configure. This is not optional
+// and is validated during integration tests. Missing keys will be printed in
+// the console.
+const keySchema = {
+  allModes: [
+    'lockMouse'
+  ],
+  shipPilot: [
+    'thrustInc',
+    'thrustDec',
+    'thrustReset',
+    'left_renameme',
+    'right_renameme',
+  ],
+  freeCam: [
+    'moveForward',
+    'moveBackward',
+    'moveLeft',
+    'moveRight',
+    'moveUp',
+    'moveDown',
+    'turnLeft',
+    'turnRight',
+    'lookUp',
+    'lookDown',
+    'spinLeft',
+    'spinRight',
+    'speedUp',
+    'speedDown',
+  ],
+  godCam: [],
+}
+
+// https://keycode.info/
 const controls = {
   allModes: {
-    lockMouse: [ keymap.ctrlLeft ],
+    ControlLeft: 'lockMouse',
   },
   shipPilot: {
-    thrustInc: [ keymap.w ],
-    thrustDec: [ keymap.s ],
-    thrustReset: [ keymap.middleClick ],
-    left_renameme: [ keymap.a ],
-    right_renameme: [ keymap.d ],
+    _description: 'Mode used when user is locked to seat.',
+    KeyW: 'thrustInc',
+    KeyS: 'thrustDec',
+    TBA_MIDDLE_CLICK: 'thrustReset',
+    KeyA: 'left_renameme',
+    KeyD: 'right_renameme',
   },
   freeCam: {
     _description: 'Free camera',
-    forward: [ keymap.w, keymap.up ],
-    back: [ keymap.s, keymap.down ],
-    left: [ keymap.q, keymap.left ],
-    right: [ keymap.e, keymap.right ],
-    up: [ keymap.r, keymap.space ],
-    down: [ keymap.f ],
-    turnLeft: [ keymap.numpad4 ],
-    turnRight: [ keymap.numpad6 ],
+    KeyW: 'moveForward',
+    ArrowUp: 'moveForward',
+    KeyS: 'moveBackward',
+    ArrowDown: 'moveBackward',
+    KeyQ: 'moveLeft',
+    ArrowLeft: 'moveLeft',
+    KeyE: 'moveRight',
+    ArrowRight: 'moveRight',
+    KeyR: 'moveUp',
+    Space: 'moveUp',
+    KeyF: 'moveDown',
+    Numpad4: 'turnLeft',
+    Numpad6: 'turnRight',
     // TODO: look up the actual terms of this shit.
-    turnUp: [ keymap.numpad8 ],
-    turnDown: [ keymap.numpad2 ],
-    spinLeft: [ keymap.a ],
-    spinRight: [ keymap.d ],
-    speedUp: [ keymap.numpadPlus ],
-    speedDown: [ keymap.numpadMinus ],
+    Numpad8: 'lookUp',
+    Numpad2: 'lookDown',
+    KeyA: 'spinLeft',
+    KeyD: 'spinRight',
+    NumpadAdd: 'speedUp',
+    NumpadSubtract: 'speedDown',
   },
   godCam: {
     _description: 'Celestial god cam',
     noNeedForControlsWhenOmnipotent: [],
   }
-}
+};
 
 /**
  * Used to convert literal names like 'Right' to something a bit more
  * meaningful like 'Right Arrow'.
+ * TODO: keys have since been change to use `key` instead of `keyCode` - update
+ *  this map to reflect that.
  */
 const friendlierKeyName = {
   'Up': 'Up Arrow',
@@ -176,29 +155,7 @@ function keymapFriendlyName(key) {
   else {
     return result;
   }
-
-  // let currentWord = '';
-  // const words = [];
-  // for (let i of key) {
-  //   if (!i.match(/^[a-z]+$/)) {
-  //     words.push(currentWord);
-  //     currentWord = '';
-  //   }
-  //   currentWord += i.toLocaleLowerCase();
-  // }
-  //
-  // if (currentWord) {
-  //   words.push(currentWord);
-  // }
-  //
-  // // Capitilise first word.
-  // if (words.length > 0) {
-  //   words[0] = words[0].charAt(0).toUpperCase() + words[0].slice(1);
-  // }
-  //
-  // return words.join(' ');
 }
-// window.keymapFriendlyName = keymapFriendlyName;
 
 /**
  * Takes user input, and check if it's defined in keymap above. If not, ignores
