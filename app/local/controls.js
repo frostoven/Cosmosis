@@ -168,7 +168,47 @@ function detectKeyPress({ ignoreKeyLocation=false }={}, onPress) {
   // TODO
 }
 
+// --- tests ------------------------------------------------------------------
+
+const tests = {
+  validateSchema: () => {
+    let errors = 0;
+    for (const [mode, allMappings] of Object.entries(controls)) {
+      const modeSchema = keySchema[mode];
+      if (!modeSchema) {
+        console.error(
+          `[272] Mode "${mode}" has key mappings but isn't defined in the ` +
+          'schema. This means that the mapped keys won\'t show up in the ' +
+          `controls menu! Please add a "${mode}" entry to \`controls.js\` ` +
+          '-> `keySchema`.'
+        );
+        errors++;
+        continue;
+      }
+      for (const [button, action] of Object.entries(allMappings)) {
+        if (button === '_description' || !action.length) {
+          // Special reserved key or empty value.
+          continue;
+        }
+        if (!Array.isArray(modeSchema) || !modeSchema.includes(action)) {
+          console.error(
+            `[287] Mode "${mode}" does not have action "${action}" defined` +
+            'in the schema. This means that it won\'t show up in controls ' +
+            'menu! Please add "${action}" to `controls.js` -> `keySchema`. ' +
+            `Debug info: key is currently mapped as "${button}".`
+          );
+          errors++;
+        }
+      }
+    }
+    if (!errors) {
+      console.log('Control schema valid.');
+    }
+    return errors === 0;
+  },
+};
+
 module.exports = {
-  keymap,
+  tests,
   controls,
 };
