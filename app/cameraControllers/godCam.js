@@ -81,6 +81,12 @@ function render(delta) {
 }
 
 function onMouseWheel({ key, amount, isDown }) {
+  console.log(key)
+  if (key !== 'spScrollUp' && key !== 'spScrollDown') {
+    // Exclude keyboard events.
+    return;
+  }
+
   const dir = amount / Math.abs(amount);
   zoomSpeed = dir / 10;
   // Slow down default zoom speed after user starts zooming, to give the user
