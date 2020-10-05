@@ -1,5 +1,6 @@
 import ReactDOM from 'react-dom';
 import React, { Suspense } from 'react';
+import powerOnSelfTest from './test';
 // import { Canvas } from 'react-three-fiber';
 // import * as THREE from 'three';
 
@@ -10,6 +11,11 @@ import scenes from './scenes';
 import cameraControllers from './cameraControllers';
 
 const defaultScene = 'logDepthDemo';
+
+// Integration tests. Note that these won't actually by itself. The user
+// manually runs these by opening the dev console and entering
+// 'powerOnSelfTest()'.
+window.powerOnSelfTest = powerOnSelfTest;
 
 // import core from './local/core';
 // import BoxScene from './scenes/BoxScene';
