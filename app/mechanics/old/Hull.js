@@ -13,7 +13,7 @@ export default function Ship({ position }) {
   // https://github.com/pmndrs/react-three-fiber/issues/376
   const gltf = useLoader(
     GLTFLoader,
-    '/assets/models/hull_low_poly.gltf',
+    '/potatoLqAssets/models/hull_low_poly.gltf',
     (loader) => {
       const dracoLoader = new DRACOLoader();
       dracoLoader.setDecoderPath('three/examples/js/libs/draco/');
@@ -40,7 +40,7 @@ export default function Ship({ position }) {
       ref={ref}
       castShadow
       receiveShadow
-      geometry={nodes.main.geometry}
+      geometry={nodes.hull.geometry}
       material={material}
       >
     </mesh>

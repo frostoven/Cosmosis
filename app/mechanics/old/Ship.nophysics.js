@@ -14,7 +14,7 @@ const direction = new THREE.Vector3()
 
 const loader = new GLTFLoader();
 
-// dracoLoader.load( '/assets/models/hull_low_poly.gltf', function ( geometry ) {
+// dracoLoader.load( '/potatoLqAssets/models/hull_low_poly.gltf', function ( geometry ) {
 //
 //   geometry.computeVertexNormals();
 //
@@ -33,7 +33,7 @@ export default function Ship(props) {
     // https://github.com/pmndrs/react-three-fiber/issues/376
   const gltf = useLoader(
       GLTFLoader,
-      '/assets/models/hull_low_poly.gltf',
+      '/potatoLqAssets/models/hull_low_poly.gltf',
       (loader) => {
         const dracoLoader = new DRACOLoader();
         dracoLoader.setDecoderPath('three/examples/js/libs/draco/');

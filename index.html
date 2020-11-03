@@ -5,6 +5,7 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Space Junkie</title>
 <!--    <link rel="stylesheet" href="node_modules/semantic-ui-css/semantic.min.css" />-->
 
     <style type="text/css">
@@ -78,6 +79,31 @@
             margin: 3px;
             color: white;
         }
+
+        #crosshairs {
+            pointer-events: none;
+            position: fixed;
+            z-index: 1000;
+            right: 0;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            margin: auto;
+            text-align: center;
+        }
+
+        #crosshairs > img {
+            opacity: 0;
+            display: block;
+            position: absolute;
+            right: 0;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            margin: auto;
+            width: 128px;
+            height: 128px;
+        }
     </style>
 
     <script type="application/javascript">
@@ -91,11 +117,14 @@
     </script>
     <!-- <script src="node_modules/three/examples/js/libs/ammo.wasm.js"></script> -->
     <script src="hackedlibs/ammo/ammo.wasm.js"></script>
+
 </head>
 <body style="background-color:#111111;">
 <!--    <div id="reactRoot"></div>-->
 
     <script type="text/javascript" src="build/bundle.js"></script>
+
+    <div id="crosshairs"></div>
 
 <!--    <div class="version">-->
 <!--        Using node.js version: <script>document.write(process.version)</script>-->

@@ -8,11 +8,11 @@ const mode = core.modes.freeCam;
 const camControls = controls.freeCam;
 let speedTimer = null;
 
-let prevTime = performance.now();
 let velocity = new THREE.Vector3();
 let direction = new THREE.Vector3();
-let vertex = new THREE.Vector3();
-let speed = 120 / 14.388; // 120KM/h
+let speed = 10 / 14.388; // 10KM/h
+// let speed = 120 / 14.388; // 120KM/h
+// let speed = 25e6 / 14.388;
 
 let doRender = false;
 
@@ -45,7 +45,7 @@ function register() {
     });
 
     // Only render if mode is freeCam.
-    core.registerModeListener((change) => {
+    core.modeListeners.register((change) => {
         doRender = change.mode === mode;
         if (doRender) {
             speedTimer = speedTracker.trackCameraSpeed();
@@ -72,11 +72,6 @@ function render(delta) {
     }
 
     const { scene, camera, renderer } = $gameView;
-
-    // const time = performance.now();
-    // if (ptrLockControls.isLocked) {
-    // const { velocity, direction, moveForward, moveBackward, moveLeft, moveRight, moveDown, moveUp } = freeCam;
-    // const delta = (time - prevTime) / 1000;
 
     if (ctrl.speedUp) {
         speed += (delta * 200) + (speed * 0.01);

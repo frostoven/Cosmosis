@@ -1,13 +1,18 @@
-// Original concept taken from here:
+// Original concept and core engine based almost entirely on this:
 // https://github.com/mrdoob/three.js/blob/master/examples/webgl_camera_logarithmicdepthbuffer.html
 //
 // I hope to make you proud, Senpai. Alas, I'll likely horrify you with my
-// code.
+// code. I'm so sorry.
 
 import * as THREE from 'three';
+import * as CANNON from 'cannon';
 
 import Stats from '../../hackedlibs/stats/stats.module.js';
+import CbQueue from "./CbQueue";
+import physics from './physics';
 import { controls } from './controls';
+import {createSpaceShip} from "../mechanics/spaceShipLoader";
+import {PointerLockControls} from "./PointerLockControls";
 
 const gameFont = 'node_modules/three/examples/fonts/helvetiker_regular.typeface.json';
 
@@ -29,9 +34,16 @@ let deltaPrevTime = Date.now();
 
 window.$stats = null;
 window.$gameView = {
+  // Set to true once the world is fully initialised.
+  ready: false,
   scene: null,
   camera: null,
   renderer: null,
+  spaceWorld: null,
+  gravityWorld: null,
+  // attachCamTo: null,
+  playerShip: null,
+  ptrLockControls: null,
 };
 window.$options = {
   // 0=off, 1=basic, 2=full
@@ -40,7 +52,7 @@ window.$options = {
 };
 window.$displayOptions = {
   // Rendering resolution scale. Great for developers and wood PCs alike.
-  resolutionScale: 0.5,
+  resolutionScale: 1.5,
 
   limitFps: false,
   // On my machine, the frame limiter itself actually causes a 9% performance
@@ -52,6 +64,11 @@ window.$displayOptions = {
 window.$rendererParams = {
   antialias: true,
 }
+
+// Debug reference to three.
+window.$THREE = THREE;
+// Debug reference to cannon.
+window.$CANNON = CANNON;
 
 /* =================================
  * End global vars
@@ -79,39 +96,65 @@ const modes = {
   godCam: 10,
 };
 
-let currmode = modes.freeCam;
+// TODO: This was a design mistake that needs to be addressed. Modes are not
+//  mutually exclusive. You can have more than one active at a time, with
+//  preference based on some predefined [hardcoded] priority. Dark Souls
+//  example: you can run around while in ANY menu, but they arrow and
+//  interaction keys stop working because they're now snatched by the menu;
+//  elite and others do something similar.
+//  #
+//  It comes down to this: for each active mode, send the key pressed. The loop
+//  order is determined by priority. If the key is intercepted, offer the
+//  option to preventDefault [sticking with js jargon]. The easiest solution is
+//  likely to make this var a bitmask.
+let currmode = modes.shipPilot;
 
 let prevMouseX = 0;
 let prevMouseY = 0;
 
 /** Triggers on mode change. */
-const modeListeners = [];
+const modeListeners = new CbQueue();
 /** Anything with graph numbers, like mouse, analog stick, etc. */
 const analogListeners = [];
 /** Triggers when keys are pressed, and when they are released. */
 const keyUpDownListeners = [/* { mode, cb } */];
 /** Triggers when keys are pressed, but not when they are released. */
 const keyPressListeners = [/* { mode, cb } */];
-
-// Make it easier to determine key positions (i.e. left ctrl vs right ctrl.
-const keyLoc = [
-  // 0,    // Unique key.
-  // 1000, // Left side of keyboard.
-  // 3000, // Right side of keyboard.
-  7000, // Numpad key.
-];
+/** Called after this computer's player's ship has been loaded. */
+const playerShipReadyListeners = new CbQueue();
 
 // Used to differentiate between key presses and holding keys down.
 const pressedButtons = new Array(4000).fill(false);
 
 const coreKeyActions = {
-  lockMouse: () => {
-    // TODO: reimplement pointer lock.
-    console.log('TBA: mouse lock');
-  }
+  enterFullScreen: () => {
+    //   require('nw.gui').Window.get().maximize();
+    const body = document.body.requestFullscreen();
+    if (body.requestFullscreen) {
+      body.requestFullscreen();
+    }
+  },
+  // lockMouse now handled by individual modes.
+  // lockMouse: () => {
+  //   console.log('reimplement pointer lock.');
+  // },
+  _devChangeMode: () => {
+    console.log('currmode:', currmode);
+    if (currmode === modes.freeCam) {
+      // setMode(modes.godCam);
+      setMode(modes.shipPilot);
+    }
+    // else if (currmode === modes.godCam) {
+    //   setMode(modes.shipPilot);
+    // }
+    else if (currmode === modes.shipPilot) {
+      setMode(modes.freeCam);
+    }
+    console.log('Changed mode to:', currmode);
+  },
 };
 
-function onKeyUpDown(key, location, amount, isDown) {
+function onKeyUpDown(key, metadata, amount, isDown) {
   for (let i = 0, len = keyUpDownListeners.length; i < len; i++) {
     const { mode, cb } = keyUpDownListeners[i];
     if (mode === modes.any || mode === currmode) {
@@ -145,27 +188,28 @@ function onAnalogInput(key, xAbs, yAbs, xDelta, yDelta) {
   }
 }
 
-function onMouseMove(event) {
-  const x = event.clientX;
-  const y = event.clientY;
+function onMouseMove(x, y) {
+  // const x = event.clientX;
+  // const y = event.clientY;
 
-  // Below: sp means 'special'. Or 'somewhat promiscuous'. Whatever.
+  // Below: sp means 'special'. Or 'somewhat promiscuous'. Whatever. Used to
+  // indicate the 'key' is non-standard.
   if (y > prevMouseY) {
     // console.log('mouse downward');
-    onAnalogInput('spMouseSouth', x, y, x - prevMouseX, y - prevMouseY);
+    onAnalogInput('spSouth', x, y, x - prevMouseX, y - prevMouseY);
   }
   else if (y < prevMouseY) {
     // console.log('mouse upward');
-    onAnalogInput('spMouseNorth', x, y, x - prevMouseX, y - prevMouseY);
+    onAnalogInput('spNorth', x, y, x - prevMouseX, y - prevMouseY);
   }
 
   if (x > prevMouseX) {
     // console.log('mouse right');
-    onAnalogInput('spMouseEast', x, y, x - prevMouseX, y - prevMouseY);
+    onAnalogInput('spEast', x, y, x - prevMouseX, y - prevMouseY);
   }
   else if (x < prevMouseX) {
     // console.log('mouse left');
-    onAnalogInput('spMouseWest', x, y, x - prevMouseX, y - prevMouseY);
+    onAnalogInput('spWest', x, y, x - prevMouseX, y - prevMouseY);
   }
 
   prevMouseX = x;
@@ -176,10 +220,10 @@ function onMouseMove(event) {
  * Keeps track of key presses and releases. Signals presses, but not releases.
  * Does not handle mouse scroll wheel. Should support gamepads in future.
  * @param key
- * @param location
+ * @param metadata
  * @param isDown
  */
-function onKeyPressTracker(key, location, isDown) {
+function onKeyPressTracker(key, metadata, isDown) {
   if (!isDown) {
     // console.log(`${key} has been released.`);
     pressedButtons[key] = false;
@@ -204,6 +248,16 @@ function onGameKeyDown(event) {
 function onGameKeyUp(event) {
   onKeyUpDown(event.code, event.location, 1, false);
   onKeyPressTracker(event.code, event.location, false);
+}
+
+function onMouseDown(event) {
+  onKeyUpDown(`spMouse${event.button}`, event, 1, true);
+  onKeyPressTracker(`spMouse${event.button}`, event, true);
+}
+
+function onMouseUp(event) {
+  onKeyUpDown(`spMouse${event.button}`, event, 1, false);
+  onKeyPressTracker(`spMouse${event.button}`, event, false);
 }
 
 /**
@@ -342,19 +396,8 @@ function deregisterKeyPress({ mode, cb }) {
   return false;
 }
 
-function registerModeListener(cb) {
-  modeListeners.push(cb);
-}
-
-function deregisterModeListener(cb) {
-  for (let i = 0, len = modeListeners.length; i < len; i++) {
-    if (modeListeners[i] === cb) {
-      modeListeners.splice(index, 1);
-      return true;
-    }
-  }
-  return false;
-}
+// const registerModeListener = cb => modeListeners.registerListener(cb);
+// const deregisterModeListener = cb => modeListeners.deregisterModeListener(cb);
 
 function getMode() {
   return currmode;
@@ -365,10 +408,14 @@ function setMode(mode) {
   currmode = mode;
 
   // Inform all listeners of the change.
-  for (let i = 0, len = modeListeners.length; i < len; i++) {
-    const cb = modeListeners[i];
-    cb({ mode: currmode, prevMode });
-  }
+  modeListeners.notifyAll((cb) =>
+      cb({ mode: currmode, prevMode })
+  );
+
+  // for (let i = 0, len = modeListeners.length; i < len; i++) {
+  //   const cb = modeListeners[i];
+  //   cb({ mode: currmode, prevMode });
+  // }
 }
 
 function registerAnalogListener({ mode, cb }) {
@@ -378,7 +425,7 @@ function registerAnalogListener({ mode, cb }) {
 function deregisterAnalogListener({ mode, cb }) {
   for (let i = 0, len = analogListeners.length; i < len; i++) {
     if (analogListeners[i].mode === mode && analogListeners[i].cb === cb) {
-      analogListeners.splice(index, 1);
+      analogListeners.splice(i, 1);
       return true;
     }
   }
@@ -389,12 +436,8 @@ function runLoaders(loaders, onLoad) {
   //
 }
 
-function init(sceneName) {
+function init({ sceneName, pos, rot }) {
   console.log('Initialising core.');
-
-  // =============================================================================================================
-  // =============================================================================================================
-
   activeScene = sceneName;
 
   // Default graphics font.
@@ -407,24 +450,34 @@ function init(sceneName) {
     // const scene = initScene({ font });
     const scene = startupScene.init({ font });
 
+    if (!pos) {
+      // TODO: implement scene default pos/rot, 0,0,0 in case of legDepthDemo.
+      //  For localCluster: x:392813413, y:15716456, z:-2821306
+      //               rot: x:-1.8765, y:1.1128, z:0.2457
+      console.log('Setting cam position to scene default: 0,0,0');
+      // pos = new THREE.Vector3(0, 0, 0);
+      pos = new THREE.Vector3(392813413, 15716456, -2821306);
+    }
+    if (!rot) {
+      console.log('Setting cam position to scene default: 0,0,0');
+      rot = new THREE.Vector3(-1.8160, 0.9793, 0.1847);
+    }
+
     // Initialize two copies of the same scene, one with normal z-buffer and one with logarithmic z-buffer
     // objects.normal = initView( scene, 'normal', false );
-    $gameView = initView(scene);
+    $gameView = initView({ scene, pos, rot });
+    // TODO: make this a callback instead, chain initPlayer into that callback,
+    //  and make the ready callback fire globally when initPlayer is done.
+    $gameView.ready = true;
+    initPlayer();
     animate();
   });
 
   $stats = new Stats();
   document.body.appendChild($stats.dom);
 
-  // TODO: turns these into a godcam modeswitch.
+  // TODO: turn these into a godcam modeswitch.
   window.addEventListener('resize', onWindowResize, false);
-
-
-  // =============================================================================================================
-  // =============================================================================================================
-
-
-
 
   // Controls.
   document.removeEventListener('keydown', onGameKeyDown);
@@ -433,21 +486,23 @@ function init(sceneName) {
   document.addEventListener('keydown', onGameKeyDown);
   document.addEventListener('keyup', onGameKeyUp);
   // document.addEventListener('keypress', onKeyPress);
+  window.addEventListener('mousedown', onMouseDown, false);
+  window.addEventListener('mouseup', onMouseUp, false);
   window.addEventListener('wheel', onMouseWheel, false);
-  window.addEventListener('mousemove', onMouseMove, false);
 
-
-  // TODO: use this only with free cam. We need to be able to lock the pointer
-  //  for ship navigation as well.
-  // ptrLockControls = new PointerLockControls(camera, document.body);
+  // Now handled by ptrLockControls instead.
+  // window.addEventListener('mousemove', onMouseMove, false);
 
   // Send out mode trigger.
   setMode(currmode);
 }
 
-function initView(scene) {
+function initView({ scene, pos, rot }) {
   const camera = new THREE.PerspectiveCamera(75, SCREEN_WIDTH / SCREEN_HEIGHT, NEAR, FAR);
+  camera.position.copy(pos);
+  camera.rotation.setFromVector3(rot);
   scene.add(camera);
+  const ptrLockControls = new PointerLockControls(camera, document.body, onMouseMove);
 
   const renderer = new THREE.WebGLRenderer({...$rendererParams, logarithmicDepthBuffer: true});
   renderer.setPixelRatio(window.devicePixelRatio);
@@ -462,16 +517,35 @@ function initView(scene) {
   //  Need to find some sort of fix.
   const textureLoader = new THREE.TextureLoader();
   const texture = textureLoader.load(
-    'assets/skyboxes/panoramic_dark.png',
+    'potatoLqAssets/skyboxes/panoramic_dark.png',
     () => {
       const renderTarget = new THREE.WebGLCubeRenderTarget(texture.image.height);
       renderTarget.fromEquirectangularTexture(renderer, texture);
       scene.background = renderTarget;
     });
 
-  return { renderer: renderer, scene: scene, camera: camera };
+  const spaceWorld = physics.initSpacePhysics({ scene, debug: true });
+
+  return { renderer, scene, camera, ptrLockControls, spaceWorld };
 }
 
+function initPlayer() {
+  // // Externals.
+  // spaceShipLoader.getMesh('DS69F', (mesh) => {
+  //   mesh.scene.position.copy($gameView.camera.position);
+  //   scene.add(mesh.scene);
+  //   console.log('=> DS69F added to scene.');
+  // });
+  createSpaceShip({
+    modelName: 'DS69F', onReady: (mesh) => {
+      $gameView.playerShip = mesh;
+      playerShipReadyListeners.notifyAll((cb) => {
+        cb(mesh);
+      });
+      // console.log('==> ship stored in $gameView.');
+    }
+  });
+}
 
 function updateRendererSizes() {
   // Recalculate size for both renderers when screen size or split location changes
@@ -505,7 +579,16 @@ function animate() {
     cam.render(delta);
   }
 
-  const { scene, camera, renderer } = $gameView;
+  const { scene, camera, renderer, spaceWorld, gravityWorld, /*attachCamTo*/ } = $gameView;
+  spaceWorld && physics.renderPhysics(delta, spaceWorld);
+  gravityWorld && physics.renderPhysics(delta, gravityWorld);
+
+  // if (attachCamTo) {
+  //   const targetPos = new THREE.Vector3(0, 0, 0,);
+  //   attachCamTo.getWorldPosition(targetPos);
+  //   attachCamTo && camera.position.copy(targetPos);
+  // }
+
   renderer.render(scene, camera);
   $stats.update();
 }
@@ -525,8 +608,7 @@ export default {
   modes,
   getMode,
   setMode,
-  registerModeListener,
-  deregisterModeListener,
+  modeListeners,
   registerKeyUpDown,
   deregisterKeyUpDown,
   registerKeyPress,
@@ -536,4 +618,5 @@ export default {
   registerCamControl,
   registerAnalogListener,
   deregisterAnalogListener,
+  playerShipReadyListeners,
 };
