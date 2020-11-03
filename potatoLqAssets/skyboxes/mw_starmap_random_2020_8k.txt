@@ -1,0 +1,29 @@
+Credit:
+NASA's Scientific Visualization Studio
+Gaia team/ESA
+
+Visualization Credits:
+Ernie Wright (USRA): Lead Visualizer
+Tom Bridgman (GST): Visualizer
+Laurence Schuler (ADNET): Technical Support
+Ian Jones (ADNET): Technical Support
+
+Short URL to share this page:
+https://svs.gsfc.nasa.gov/4856
+
+Data Used:
+Gaia/Data Release 2
+Hipparcos/Telescope/Tycho 2 Catalogue
+Note: While we identify the data sets used in these visualizations, we do not store any further details nor the data sets themselves on our site.
+
+This item is part of this series:
+Astrophysics Stills
+
+Keywords:
+SVS >> Galaxy
+SVS >> Astrophysics
+SVS >> Sky Map
+SVS >> Space
+SVS >> Star
+SVS >> Astronomy >> Milky Way
+NASA Science >> Universe

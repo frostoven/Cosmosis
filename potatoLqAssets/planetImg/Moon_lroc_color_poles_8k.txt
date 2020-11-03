@@ -1,0 +1,12 @@
+Credit:
+NASA's Scientific Visualization Studio
+Ernie Wright (USRA): Lead Visualizer
+Noah Petro (NASA/GSFC): Scientist
+
+Short URL to share this page:
+https://svs.gsfc.nasa.gov/4720
+
+Data Used:
+LRO/LOLA/Digital Elevation Map
+Lunar Reconnaissance Orbiter/LRO Camera/Natural Color Hapke Normalized WAC Mosaic
+Note: While we identify the data sets used in these visualizations, we do not store any further details nor the data sets themselves on our site.

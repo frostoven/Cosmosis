@@ -1,0 +1,32 @@
+https://svs.gsfc.nasa.gov/30362
+
+http://stereo-ssc.nascom.nasa.gov/beacon/beacon_secchi.shtml
+
+Credit:
+NASA JPL
+Marit Jentoft-Nilsen: Technical Support
+
+Short URL to share this page:
+https://svs.gsfc.nasa.gov/30362
+
+Missions:
+STEREO
+SDO
+
+Data Used:
+STEREO/Extreme UltraViolet Imager (EUVI)/304 Angstroms
+SDO/AIA/304 Filter
+Note: While we identify the data sets used in these visualizations, we do not store any further details nor the data sets themselves on our site.
+
+Keywords:
+SVS >> HDTV
+GCMD >> Earth Science >> Sun-earth Interactions >> Solar Activity
+GCMD >> Earth Science >> Sun-earth Interactions >> Solar Activity >> Solar Imagery
+GCMD >> Earth Science >> Sun-earth Interactions >> Solar Activity >> Solar Ultraviolet
+SVS >> Hyperwall
+SVS >> Heliophysics
+NASA Science >> Sun
+SVS >> Extreme Ultraviolet Imaging
+SVS >> EUV Imaging
+
+GCMD keywords can be found on the Internet with the following citation: Olsen, L.M., G. Major, K. Shein, J. Scialdone, S. Ritz, T. Stevens, M. Morahan, A. Aleman, R. Vogel, S. Leicester, H. Weir, M. Meaux, S. Grebas, C.Solomon, M. Holland, T. Northcutt, R. A. Restrepo, R. Bilodeau, 2013. NASA/Global Change Master Directory (GCMD) Earth Science Keywords. Version 8.0.0.0.0
