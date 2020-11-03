@@ -6,6 +6,7 @@ import speedTracker from "./utils/speedTracker";
 
 const mode = core.modes.freeCam;
 const camControls = controls.freeCam;
+let speedTimer = null;
 
 let prevTime = performance.now();
 let velocity = new THREE.Vector3();
@@ -47,10 +48,10 @@ function register() {
     core.registerModeListener((change) => {
         doRender = change.mode === mode;
         if (doRender) {
-            speedTracker.trackCameraSpeed();
+            speedTimer = speedTracker.trackCameraSpeed();
         }
-        else {
-            speedTracker.clearSpeedTracker();
+        else if (speedTimer) {
+            speedTracker.clearSpeedTracker(speedTimer);
         }
     });
 }
