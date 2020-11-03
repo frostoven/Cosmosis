@@ -7,12 +7,15 @@ module.exports = {
 
     target: 'node-webkit',
 
-    entry: './app/index.js',
+    entry: {
+        bundle: './app/index.js',
+        // worker: './app/physicsWorker.js',
+    },
 
     output: {
         path: __dirname + '/build',
         publicPath: 'build/',
-        filename: 'bundle.js'
+        filename: '[name].js'
     },
 
     module: {

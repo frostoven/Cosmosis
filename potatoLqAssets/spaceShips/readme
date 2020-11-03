@@ -1,0 +1,3 @@
+We could technically place all space ships in the models directory and call it
+a day. However, space ships take priority and are preloaded aggressively. They
+are therefore separated to make their difference apparent.
