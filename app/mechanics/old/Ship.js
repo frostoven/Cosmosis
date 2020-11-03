@@ -13,7 +13,7 @@ import { useCannon } from '../local/useCannon';
 export default function Ship(props) {
   const gltf = useLoader(
     GLTFLoader,
-    `assets/models/${props.model}.gltf`,
+    `potatoLqAssets/models/${props.model}.gltf`,
     draco('node_modules/three/examples/js/libs/draco/gltf/')
   );
   const { nodes, materials } = gltf;

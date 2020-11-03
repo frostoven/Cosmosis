@@ -1,6 +1,3 @@
-// Used to differentiate mouse buttons.
-const mouseInc = 15000;
-
 /**
  * There are some insane pieces of mouse tech out there that go a bit too far
  * and curse us with their existence, such as this 20 button abomination:
@@ -18,6 +15,7 @@ const mouseInc = 15000;
 // Setting that allows the user to force assigning the same key to multiple
 // actions within the same mode.
 // It's niche, but I aim to please, baby.
+  // TODO: implement me.
 const doublePresses = {
   freeCam: [
     'tba', 'tba',
@@ -29,12 +27,17 @@ const doublePresses = {
 // the console.
 const keySchema = {
   allModes: [
-    'lockMouse'
+    'enterFullScreen',
+    'lockMouse',
+    '_devChangeMode',
   ],
   shipPilot: [
     'thrustInc',
     'thrustDec',
     'thrustReset',
+    'thrustUp10',
+    'toggleMouseControl',
+    'toggleMousePointer',
     'left_renameme',
     'right_renameme',
   ],
@@ -57,18 +60,23 @@ const keySchema = {
   godCam: [],
 }
 
-// https://keycode.info/
+// Use `event.code`. Easy reference: https://keycode.info/
 const controls = {
   allModes: {
     ControlLeft: 'lockMouse',
+    F11: 'enterFullScreen',
+    F8: '_devChangeMode',
   },
   shipPilot: {
     _description: 'Mode used when user is locked to seat.',
     KeyW: 'thrustInc',
     KeyS: 'thrustDec',
-    TBA_MIDDLE_CLICK: 'thrustReset',
+    TBA_MIDDLE_CLICK: 'toggleMouseControl',
+    TBA_SCROLL_UP: 'thrustUp10',
+    TBA_SCROLL_DOWN: 'thrustReset',
     KeyA: 'left_renameme',
     KeyD: 'right_renameme',
+    ControlLeft: 'toggleMousePointer', // a.k.a. PointerLockControls.
   },
   freeCam: {
     _description: 'Free camera',
@@ -85,7 +93,7 @@ const controls = {
     KeyF: 'moveDown',
     Numpad4: 'turnLeft',
     Numpad6: 'turnRight',
-    // TODO: look up the actual terms of this shit.
+    // TODO: look up the actual terms of this shit - x,y,z -> pitch,yaw,roll ?
     Numpad8: 'lookUp',
     Numpad2: 'lookDown',
     KeyA: 'spinLeft',
@@ -194,7 +202,7 @@ const tests = {
           console.error(
             `[287] Mode "${mode}" does not have action "${action}" defined` +
             'in the schema. This means that it won\'t show up in controls ' +
-            'menu! Please add "${action}" to `controls.js` -> `keySchema`. ' +
+            `menu! Please add "${action}" to \`controls.js\` -> \`keySchema\`. ` +
             `Debug info: key is currently mapped as "${button}".`
           );
           errors++;

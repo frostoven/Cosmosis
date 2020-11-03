@@ -17,7 +17,6 @@ let zoomPos = 1; //-100;
 let minZoomSpeed = .015;
 let zoomSpeed = minZoomSpeed;
 
-const ctrl = controls.godCam;
 let speedTimer = null;
 
 function register() {
@@ -30,7 +29,7 @@ function register() {
   });
 
   // Only render if mode is godCam.
-  core.registerModeListener((change) => {
+  core.modeListeners.register((change) => {
     doRender = change.mode === mode;
     if (doRender) {
       speedTimer = speedTracker.trackCameraSpeed();
