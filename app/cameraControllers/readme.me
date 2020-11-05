@@ -1,0 +1,14 @@
+## Standard
+All camera controllers have similar goals, but thend to end up with very
+different implementations. To help keep some code sanity, some conventions
+should be followed unless infeasible.
+
+Please see the example.js controller for boilerplate.
+
+## Conventions
+* Place keyUpDown flags inside a `const ctrl = {}` schema.
+* Place a keyPress logic inside a `const toggles = {}` schema.
+
+## Activating your cam controller.
+This is done by registering it as a mode in `core.js`. TODO: detail this
+process.
