@@ -71,9 +71,9 @@ const controls = {
     _description: 'Mode used when user is locked to seat.',
     KeyW: 'thrustInc',
     KeyS: 'thrustDec',
-    TBA_MIDDLE_CLICK: 'toggleMouseControl',
-    TBA_SCROLL_UP: 'thrustUp10',
-    TBA_SCROLL_DOWN: 'thrustReset',
+    spMouseMiddle: 'toggleMouseControl',
+    spScrollUp : 'thrustUp10',
+    spScrollDown: 'thrustReset',
     KeyA: 'left_renameme',
     KeyD: 'right_renameme',
     ControlLeft: 'toggleMousePointer', // a.k.a. PointerLockControls.

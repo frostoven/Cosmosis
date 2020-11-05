@@ -120,3 +120,6 @@ build/worker.js
 # terrabytes. Offer as separate download, and leave the rest to runtime
 # tests.
 prodHqAssets/
+
+# Incomprehensible notes I write for myself.
+madRamblings.txt

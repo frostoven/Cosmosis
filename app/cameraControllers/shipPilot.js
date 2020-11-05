@@ -8,10 +8,6 @@ const mode = core.modes.shipPilot;
 const camControls = controls.shipPilot;
 let speedTimer = null;
 
-let prevTime = performance.now();
-let velocity = new THREE.Vector3();
-let direction = new THREE.Vector3();
-let vertex = new THREE.Vector3();
 let speed = 120 / 14.388; // 120KM/h
 // let speed = 25e6 / 14.388;
 
@@ -33,14 +29,6 @@ const ctrl = {
   spinRight: false,
 }
 
-// const flags = {
-//   // Only checked if toggleMousePointer===true. If free look is true, moving
-//   // the mouse moves the camera. If free look is false, moving the mouse acts
-//   // as like analog controller.
-//   mouseControlEnabled: false,
-//   // If true, the mouse pointer is not visible.
-//   mousePointerEnabled: false,
-// }
 const toggles = {
   toggleMouseControl: () => $gameView.ptrLockControls.toggleCamLock(),
   toggleMousePointer: () => $gameView.ptrLockControls.toggle(),
@@ -88,20 +76,6 @@ function onShipLoaded(mesh) {
   $gameView.camera.rotation.setFromVector3(new THREE.Vector3(-3.1, 0.03, 3.13));
 }
 
-// function attachCamera(mesh) {
-//     if (!mesh) {
-//         return;
-//     }
-//     $gameView.attachCamTo = mesh.cameras[0];
-//     $gameView.camera.rotation.setFromVector3(new THREE.Vector3(-3.1, 0.03, 3.13));
-// }
-//
-// function detachCamera(mesh) {
-//     // TODO: this may need to become a little smarter if we allow more modes to
-//     //  force cam attachment.
-//     $gameView.attachCamTo = null;
-// }
-
 function updateCamAttach(attachCamTo, copyPosTo) {
     const targetPos = new THREE.Vector3(0, 0, 0,);
     attachCamTo.getWorldPosition(targetPos);
@@ -109,7 +83,7 @@ function updateCamAttach(attachCamTo, copyPosTo) {
 }
 
 function onKeyPress({ key, amount }) {
-  console.log('[shipPilot] key press:', key, '->', camControls[key]);
+  console.log('[shipPilot 1] key press:', key, '->', camControls[key]);
 
   const control = camControls[key];
   if (!control) {
@@ -127,7 +101,7 @@ function onKeyPress({ key, amount }) {
 }
 
 function onKeyUpDown({ key, amount, isDown }) {
-  console.log('[shipPilot] key:', key, '->', camControls[key], isDown ? '(down)' : '(up)');
+  // console.log('[shipPilot 2] key:', key, '->', camControls[key], isDown ? '(down)' : '(up)');
 
   const control = camControls[key];
   if (!control) {
