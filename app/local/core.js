@@ -123,6 +123,11 @@ const keyPressListeners = [/* { mode, cb } */];
 /** Called after this computer's player's ship has been loaded. */
 const playerShipReadyListeners = new CbQueue();
 
+/** Give mouse 1-3 friendlier names. */
+const mouseFriendly = [
+  'Left', 'Middle', 'Right',
+];
+
 // Used to differentiate between key presses and holding keys down.
 const pressedButtons = new Array(4000).fill(false);
 
@@ -251,13 +256,17 @@ function onGameKeyUp(event) {
 }
 
 function onMouseDown(event) {
-  onKeyUpDown(`spMouse${event.button}`, event, 1, true);
-  onKeyPressTracker(`spMouse${event.button}`, event, true);
+  let name = mouseFriendly[event.button];
+  if (!name) name = event.button;
+  onKeyUpDown(`spMouse${name}`, event, 1, true);
+  onKeyPressTracker(`spMouse${name}`, event, true);
 }
 
 function onMouseUp(event) {
-  onKeyUpDown(`spMouse${event.button}`, event, 1, false);
-  onKeyPressTracker(`spMouse${event.button}`, event, false);
+  let name = mouseFriendly[event.button];
+  if (!name) name = event.button;
+  onKeyUpDown(`spMouse${name}`, event, 1, false);
+  onKeyPressTracker(`spMouse${name}`, event, false);
 }
 
 /**
