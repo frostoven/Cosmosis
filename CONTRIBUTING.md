@@ -69,9 +69,51 @@ Ultimately, you may make the license and attribute your work any which way you
 please so long as it's compatible with this project and comes with a license file as
 described above.
 
-## Programming gotchas and problems
+## Art style
 
-#### Three.js imports
+
+
+
+
+
+Please [raise an issue](https://github.com/aggregate1166877/SpaceJunkie/issues)
+before starting work. This game's art style has a very specific direction. Even
+if you create art much better than what's already in the project, it might
+simply be rejected on the basis that it does not match existing style. Once
+direction has been agreed upon, follow the [asset submission process](page does not exist yet)
+to get your work into the production builds.
+
+## Music style
+Unlike with visual art, any music style goes because the user can pick and
+choose what they want. 
+
+
+## Voice packs
+Anyone who can donate their voice probably should :). Submission details TBA.
+[]
+
+## Programming
+
+#### Development
+* Please use [official Node.js sources](https://nodejs.org/en/download/) to
+install Node 8 or higher, LTS. On Windows the installer should ask if you'd
+like to install Chocolatey and Python - say yes unless you have your own custom
+setup.
+* Install git. On Windows, it will ask you how you'd like to handle CR/LF. You
+want any option that converts to Unix LF when committing; at time of writing
+the default option does exactly the right thing.
+** This project uses pre-commit hooks. The bash that comes with Windows git
+should be fine, though is currently untested by itself. If the build number
+does not increase after a commit, try installing
+[Cygwin](https://cygwin.com/install.html) (which is what the lead contributor
+currently uses).
+* Please consider testing your changes on both Windows and Linux. It isn't
+a strict requirement, but makes PRs to master easier for those who test the
+proposed changes because some small issues will already have been caught.
+
+#### Gotchas and problems
+
+##### Three.js imports
 Be careful when using the drei library. It has the incredibly annoying habit
 of downloading sane defaults from the internet if you forget some function
 parameters. This means that the game will work fine for days, just to then
