@@ -32,7 +32,8 @@ function fuzzyFindFile(
   fs.readdir(path, (error, files) => {
     if (error) {
       onFind(error, null);
-      return console.error(error);
+      // return console.error(error);
+      return;
     }
 
     let extRegex = '\\..*';
@@ -49,26 +50,72 @@ function fuzzyFindFile(
       }
     }
 
-    onFind(null, null);
+    onFind(new Error('No matching files found.'), null);
   });
 }
 
 /**
- * Creates a mechanism similar to async.waterfall.
- * @param {array} functions - Array of functions to run.
- * @param {function} callback
+ * Runs callback functions in sequence, only calling the next function once the
+ * previous completes. If cb returns false, the loop terminates.
+ * @param {Array.<function>} functions - List of functions to execute.
+ * @param {function} cb - Run after every function completes. If cb returns
+ *  false, the loop immediately terminates.
+ * @param {function} onReachEnd - Called if the loop runs all the way to the
+ * end, of if a fatal error occurs.
+ * @param {number} limit - Maximum number of iterations. Make this the size of
+ *  the function array to execute all functions.
+ * @param {number} index - Index to start iterating from.
+ * @param {boolean} defer - If true, each reiteration will be done as a
+ *  setImmediate. Please note that doing so is incredibly slow at large scales.
  */
-function waterfall(functions=[], callback) {
-  for (let i = 0, len = functions.length; i < len; i++) {
-    const fn = functions[i];
-    const stop = fn(callback);
-    if (stop === false) {
+function forEachFnLimit(functions=[], cb=()=>{}, onReachEnd=()=>{}, limit, index, defer=false) {
+  console.log(`forEachFnLimit: limit=${limit}, index=${index}`)
+  if (isNaN(index) || isNaN(limit)) {
+    return onReachEnd(
+      new Error('forEachFnLimit: limit and index should be numbers.')
+    );
+  }
+  if (index >= limit) {
+    return onReachEnd(null);
+  }
+
+  const fn = functions[index];
+
+  fn(function() {
+    const signal = cb.apply(null, arguments);
+    if (signal === false) {
       return;
     }
-  }
+
+    if (defer) {
+      // TODO: make this setTimeout if in browser instead.
+      setImmediate(() => {
+        forEachFnLimit(functions, cb, onReachEnd, limit, index + 1, defer);
+      });
+    }
+    else {
+      forEachFnLimit(functions, cb, onReachEnd, limit, index + 1, defer);
+    }
+  });
+}
+
+/**
+ * Runs callback functions in sequence, only calling the next function once the
+ * previous completes. If cb returns false, the loop terminates.
+ * @param {Array.<function>} functions - List of functions to execute.
+ * @param {function} cb - Run after every function completes. If cb returns
+ *  false, the loop immediately terminates.
+ * @param {function} onReachEnd - Called if the loop runs all the way to the
+ * end, of if a fatal error occurs.
+ * @param {boolean} defer - If true, each reiteration will be done as a
+ *  setImmediate. Please note that doing so is incredibly slow at large scales.
+ */
+function forEachFn(functions=[], cb=()=>{}, onReachEnd=()=>{}, defer=false) {
+  forEachFnLimit(functions, cb, onReachEnd, functions.length, 0);
 }
 
 export {
   fuzzyFindFile,
-  waterfall,
+  forEachFn,
+  forEachFnLimit,
 }
