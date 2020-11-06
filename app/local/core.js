@@ -10,6 +10,7 @@ import * as CANNON from 'cannon';
 import Stats from '../../hackedlibs/stats/stats.module.js';
 import CbQueue from "./CbQueue";
 import physics from './physics';
+import res from "./resLoader";
 import { controls } from './controls';
 import {createSpaceShip} from "../mechanics/spaceShipLoader";
 import {PointerLockControls} from "./PointerLockControls";
@@ -525,13 +526,18 @@ function initView({ scene, pos, rot }) {
   // TODO: This thing really, REALLY hates being zoomed out beyond 1LY.
   //  Need to find some sort of fix.
   const textureLoader = new THREE.TextureLoader();
-  const texture = textureLoader.load(
-    'potatoLqAssets/skyboxes/panoramic_dark.png',
-    () => {
-      const renderTarget = new THREE.WebGLCubeRenderTarget(texture.image.height);
-      renderTarget.fromEquirectangularTexture(renderer, texture);
-      scene.background = renderTarget;
-    });
+  res.getSkybox('panoramic_dark', (error, filename, dir) => {
+    if (error) {
+      return console.error(error);
+    }
+    const texture = textureLoader.load(
+      `${dir}/${filename}`,
+      () => {
+        const renderTarget = new THREE.WebGLCubeRenderTarget(texture.image.height);
+        renderTarget.fromEquirectangularTexture(renderer, texture);
+        scene.background = renderTarget;
+      });
+  })
 
   const spaceWorld = physics.initSpacePhysics({ scene, debug: true });
 

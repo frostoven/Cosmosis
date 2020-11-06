@@ -31,7 +31,7 @@ function fuzzyFindFile(
 
   fs.readdir(path, (error, files) => {
     if (error) {
-      onFind(error, null);
+      onFind(error, null, null);
       // return console.error(error);
       return;
     }
@@ -46,11 +46,11 @@ function fuzzyFindFile(
     for (let i = 0, len = files.length; i < len; i++) {
       const fileName = files[i];
       if (fileName.match(regex)) {
-        return onFind(null, `${path}/${fileName}`);
+        return onFind(null, fileName, path);
       }
     }
 
-    onFind(new Error('No matching files found.'), null);
+    onFind(new Error('No matching files found.'), null, null);
   });
 }
 
