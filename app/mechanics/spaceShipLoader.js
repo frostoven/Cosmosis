@@ -3,13 +3,16 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 
 import { makePhysical, shapeTemplates } from '../local/physics';
+import res from "../local/resLoader";
 
 // Configure and create Draco decoder.
 // var dracoLoader = new DRACOLoader();
 // dracoLoader.setDecoderPath( 'three/examples/js/libs/draco/' );
 // dracoLoader.setDecoderConfig( { type: 'js' } );
 
-var loader = new GLTFLoader().setPath( 'potatoLqAssets/spaceShips/' );
+// var loader = new GLTFLoader().setPath( 'potatoLqAssets/spaceShips/' );
+const loader = new GLTFLoader();
+
 // loader.load( 'DamagedHelmet.gltf', function ( gltf ) {
 //
 //   gltf.scene.traverse(function (child) {
@@ -47,20 +50,24 @@ dracoLoader.preload();
 loader.setDRACOLoader(dracoLoader);
 // dracoLoader.dispose();
 
-loader.load( 'DS69F.gltf', function ( gltf ) {
+res.getSpaceShip('DS69F', (error, filename, dir) => {
+  loader.setPath(dir + '/');
+  loader.load(filename, function (gltf) {
 
-  // gltf.scene.traverse(function (child) {
-  //   if (child.isMesh) {
-  //     console.log(child);
-  //   }
-  // });
+    // gltf.scene.traverse(function (child) {
+    //   if (child.isMesh) {
+    //     console.log(child);
+    //   }
+    // });
 
+    //
+
+    console.log('[Debug] GLTF:', gltf);
+    storeMesh(gltf);
+
+    // dracoLoader.dispose();
+  });
   //
-
-  console.log('[Debug] GLTF:', gltf);
-  storeMesh(gltf);
-
-  // dracoLoader.dispose();
 });
 
 const waitingRoom = {

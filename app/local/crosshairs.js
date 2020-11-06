@@ -1,3 +1,5 @@
+import resLoader from "./resLoader";
+
 const tags = {
   aimCenter: null,
   aimDown: null,
@@ -11,12 +13,18 @@ const tags = {
  * @param {string} name
  * @returns {HTMLImageElement}
  */
-function createImgTag(name) {
+function createImgTag(name, callback) {
   // const id = image.split('.')[0];
   const img = document.createElement('img');
   img.id = name;
-  img.src = `potatoLqAssets/icons/${name}.png`;
-  return img;
+  // img.src = `potatoLqAssets/icons/${name}.png`;
+  resLoader.getIcon(name, (error, fileName, dir) => {
+    if (error) {
+      return console.error(error);
+    }
+    img.src = `${dir}/${fileName}`;
+    callback(null, img);
+  });
 }
 
 /**
@@ -26,9 +34,10 @@ function loadAllCrosshairImages(element) {
   const keys = Object.keys(tags);
   for (let i = 0, len = keys.length; i < len; i++) {
     const name = keys[i];
-    const tag = createImgTag(name);
-    tags[name] = tag;
-    element.appendChild(tag);
+    createImgTag(name, (error, tag) => {
+      tags[name] = tag;
+      element.appendChild(tag);
+    });
   }
 }
 
