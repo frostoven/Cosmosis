@@ -29,6 +29,13 @@ The above allows easy community modding with little required technical
 expertise. Having said that, any contributions are highly appreciated, so use
 whatever you're comfortable with.
 
+#### Common issues
+##### GLTF export crash
+* Blender can sometimes crash if you try to use GLTF compression with messed up
+geometry (such as orphaned vertices and lines). The solution here is to find
+the bad geometry, fix it, and try again. Deleting objects one by one in a
+backup file can help narrow down the issue.
+
 #### Legal crap
 
 ##### Using assets with different licenses
