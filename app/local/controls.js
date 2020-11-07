@@ -1,17 +1,3 @@
-/**
- * There are some insane pieces of mouse tech out there that go a bit too far
- * and curse us with their existence, such as this 20 button abomination:
- * https://www.amazon.com/Logitech-Gaming-Backlit-Programmable-Buttons/dp/B0086UK7IQ#:~:text=For%20complete%20control%20in%20your,for%20mastering%20your%20favorite%20MMOs.
- * @param min
- * @param max
- */
-// function assignMouseExtra(min, max) {
-//   for (; min <= max; min++) {
-//     keymap[`mouse${min}`] = min + mouseInc;
-//   }
-// }
-// assignMouseExtra(6, 20);
-
 // Setting that allows the user to force assigning the same key to multiple
 // actions within the same mode.
 // It's niche, but I aim to please, baby.
@@ -28,7 +14,7 @@ const doublePresses = {
 const keySchema = {
   allModes: [
     'enterFullScreen',
-    'lockMouse',
+    'toggleMousePointer', // a.k.a. PointerLockControls.
     '_devChangeMode',
   ],
   shipPilot: [
@@ -37,7 +23,7 @@ const keySchema = {
     'thrustReset',
     'thrustUp10',
     'toggleMouseControl',
-    'toggleMousePointer',
+    // 'toggleMousePointer', // a.k.a. PointerLockControls.
     'left_renameme',
     'right_renameme',
   ],
@@ -63,7 +49,7 @@ const keySchema = {
 // Use `event.code`. Easy reference: https://keycode.info/
 const controls = {
   allModes: {
-    ControlLeft: 'lockMouse',
+    ControlLeft: 'toggleMousePointer', // a.k.a. PointerLockControls.
     F11: 'enterFullScreen',
     F8: '_devChangeMode',
   },
@@ -76,7 +62,7 @@ const controls = {
     spScrollDown: 'thrustReset',
     KeyA: 'left_renameme',
     KeyD: 'right_renameme',
-    ControlLeft: 'toggleMousePointer', // a.k.a. PointerLockControls.
+    // ControlLeft: 'toggleMousePointer', // a.k.a. PointerLockControls.
   },
   freeCam: {
     _description: 'Free camera',
@@ -84,9 +70,9 @@ const controls = {
     ArrowUp: 'moveForward',
     KeyS: 'moveBackward',
     ArrowDown: 'moveBackward',
-    KeyQ: 'moveLeft',
+    KeyQ: 'spinLeft',
     ArrowLeft: 'moveLeft',
-    KeyE: 'moveRight',
+    KeyE: 'spinRight',
     ArrowRight: 'moveRight',
     KeyR: 'moveUp',
     Space: 'moveUp',
@@ -96,8 +82,8 @@ const controls = {
     // TODO: look up the actual terms of this shit - x,y,z -> pitch,yaw,roll ?
     Numpad8: 'lookUp',
     Numpad2: 'lookDown',
-    KeyA: 'spinLeft',
-    KeyD: 'spinRight',
+    KeyA: 'moveLeft',
+    KeyD: 'moveRight',
     NumpadAdd: 'speedUp',
     NumpadSubtract: 'speedDown',
   },
@@ -219,4 +205,5 @@ const tests = {
 module.exports = {
   tests,
   controls,
+  keySchema,
 };

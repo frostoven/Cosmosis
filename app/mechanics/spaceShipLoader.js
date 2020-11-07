@@ -50,7 +50,7 @@ dracoLoader.preload();
 loader.setDRACOLoader(dracoLoader);
 // dracoLoader.dispose();
 
-res.getSpaceShip('DS69F', (error, filename, dir) => {
+res.getSpaceShip('devFlyer', (error, filename, dir) => {
   loader.setPath(dir + '/');
   loader.load(filename, function (gltf) {
 
@@ -125,10 +125,17 @@ export function createSpaceShip({ modelName, pos, scene, world, onReady }) {
     // const warmWhite = 0xefebd8;
     // const warmWhite = 0xfff5b6;
     const warmWhite = 0xfff5b6;
-    const light = new THREE.PointLight( warmWhite, 1.5, 100 );
+    // const light = new THREE.PointLight( warmWhite, 1.5, 100 );
+    const light = new THREE.PointLight( warmWhite, 2, 100 );
     // light.position.set(pos.x, pos.y + 2, pos.z);
-    light.position.set(0, 2, 0);
-    mesh.scene.add( light );
+    // light.position.set(0, 2, 0);
+    light.position.set(0, 2, -5);
+    mesh.scene.add(light);
+    //
+    const light2 = new THREE.PointLight( warmWhite, 2, 100 );
+    // light.position.set(pos.x, pos.y + 2, pos.z);
+    light2.position.set(0, 2, 3);
+    mesh.scene.add(light2);
     //
     scene.add(mesh.scene);
 
