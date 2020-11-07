@@ -8,12 +8,12 @@ import * as THREE from 'three';
 import * as CANNON from 'cannon';
 
 import Stats from '../../hackedlibs/stats/stats.module.js';
-import CbQueue from "./CbQueue";
+import CbQueue from './CbQueue';
 import physics from './physics';
-import res from "./resLoader";
+import res from './resLoader';
 import { controls } from './controls';
-import {createSpaceShip} from "../mechanics/spaceShipLoader";
-import {PointerLockControls} from "./PointerLockControls";
+import { createSpaceShip } from '../mechanics/spaceShipLoader';
+import { PointerLockControls } from './PointerLockControls';
 
 const gameFont = 'node_modules/three/examples/fonts/helvetiker_regular.typeface.json';
 
@@ -80,6 +80,7 @@ let activeScene = '';
 
 const allCamControllers = {};
 let cachedCamList = [];
+let actionTriggers = [];
 
 const actions = {};
 
@@ -132,7 +133,7 @@ const mouseFriendly = [
 // Used to differentiate between key presses and holding keys down.
 const pressedButtons = new Array(4000).fill(false);
 
-const coreKeyActions = {
+const coreKeyToggles = {
   enterFullScreen: () => {
     //   require('nw.gui').Window.get().maximize();
     const body = document.body.requestFullscreen();
@@ -140,20 +141,24 @@ const coreKeyActions = {
       body.requestFullscreen();
     }
   },
-  // lockMouse now handled by individual modes.
+  // lockMouse now handled by toggleMousePointer in individual modes.
   // lockMouse: () => {
   //   console.log('reimplement pointer lock.');
   // },
+  // toggleMouseControl: () => $gameView.ptrLockControls.toggleCamLock(),
+  toggleMousePointer: () => $gameView.ptrLockControls.toggle(),
   _devChangeMode: () => {
     console.log('currmode:', currmode);
     if (currmode === modes.freeCam) {
       // setMode(modes.godCam);
       setMode(modes.shipPilot);
+      toast('Mode set to pilot.');
     }
     // else if (currmode === modes.godCam) {
     //   setMode(modes.shipPilot);
     // }
     else if (currmode === modes.shipPilot) {
+      toast('Mode set to free cam.');
       setMode(modes.freeCam);
     }
     console.log('Changed mode to:', currmode);
@@ -296,9 +301,9 @@ function onMouseWheel(event) {
   // minZoomSpeed = 0.001;
 }
 
-function coreKeyPress(key, amount, isDown) {
+function coreKeyPress(key) {
   const control = coreControls[key];
-  const action = coreKeyActions[control];
+  const action = coreKeyToggles[control];
   if (action) {
     action();
   }
@@ -354,6 +359,9 @@ function registerCamControl(camInfo={}) {
 
   allCamControllers[camInfo.name] = camInfo;
   cachedCamList.push(camInfo);
+  if (camInfo.triggerAction) {
+    actionTriggers.push(camInfo.triggerAction);
+  }
 }
 
 function registerGlobalAction({ action, item }) {
@@ -432,6 +440,50 @@ function registerAnalogListener({ mode, cb }) {
   analogListeners.push({ mode, cb });
 }
 
+/**
+ * @param {string} key - There are 2 variants; standard (i.e. KeyA or Digit1)
+ *  and special (i.e. spMouseLeft or spScrollUp).
+ */
+function simulateKeyPress(key) {
+  onKeyPress(key, 0, true);
+}
+
+/**
+ * @param {string} key - There are 2 variants; standard (i.e. KeyA) and special
+ *  (i.e. spMouseLeft).
+ */
+function simulateKeyDown(key) {
+  onKeyUpDown(key, 0, 1, true);
+  onKeyPressTracker(key, 0, true);
+}
+
+/**
+ * @param {string} key - There are 2 variants; standard (i.e. KeyA) and special
+ *  (i.e. spMouseLeft).
+ */
+function simulateKeyUp(key) {
+  onKeyUpDown(key, 0, 1, false);
+  onKeyPressTracker(key, 0, false);
+}
+
+function simulateAnalog() {
+  console.log('TBA - use onAnalogInput in the mean time.');
+}
+
+/**
+ * Triggers an action in all action controllers currently active. Actions in
+ * this context relate to the kind of functionality you bind to the keyboard or
+ * mouse, i.e. controls.
+ * @param {string} action - Examples: thrustReset, lookUp, enterFullScreen.
+ *  See controls/keySchema.*.{string} for examples.
+ */
+function triggerAction(action) {
+  for (let i = 0, len = actionTriggers.length; i < len; i++) {
+    const trigger = actionTriggers[i];
+    trigger(action);
+  }
+}
+
 function deregisterAnalogListener({ mode, cb }) {
   for (let i = 0, len = analogListeners.length; i < len; i++) {
     if (analogListeners[i].mode === mode && analogListeners[i].cb === cb) {
@@ -448,6 +500,12 @@ function runLoaders(loaders, onLoad) {
 
 function init({ sceneName, pos, rot }) {
   console.log('Initialising core.');
+  actionTriggers.push((action) => {
+    const fn = coreKeyToggles[action];
+    if (fn) {
+      fn();
+    }
+  });
   activeScene = sceneName;
 
   // Default graphics font.
@@ -608,7 +666,6 @@ function animate() {
   $stats.update();
 }
 
-
 function onWindowResize() {
   updateRendererSizes();
 }
@@ -634,4 +691,9 @@ export default {
   registerAnalogListener,
   deregisterAnalogListener,
   playerShipReadyListeners,
+  simulateKeyPress,
+  simulateKeyDown,
+  simulateKeyUp,
+  simulateAnalog,
+  triggerAction,
 };

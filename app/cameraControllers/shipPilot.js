@@ -30,13 +30,13 @@ const ctrl = {
 }
 
 const toggles = {
+  // TODO: think about whether or not this belongs in core instead.
   toggleMouseControl: () => $gameView.ptrLockControls.toggleCamLock(),
-  toggleMousePointer: () => $gameView.ptrLockControls.toggle(),
 };
 
 function register() {
   core.registerCamControl({
-    name: 'shipPilot', render,
+    name: 'shipPilot', render, triggerAction,
   });
 
   core.registerKeyPress({
@@ -113,6 +113,15 @@ function onKeyUpDown({ key, amount, isDown }) {
 
 function onAnalogInput(key, xAbs, yAbs, xDelta, yDelta) {
   console.log('[shipPilot] analog:', key, xAbs, yAbs, xDelta, yDelta);
+}
+
+function triggerAction(action) {
+  if (modeActive) {
+    const fn = toggles[action];
+    if (fn) {
+      fn();
+    }
+  }
 }
 
 function render(delta) {

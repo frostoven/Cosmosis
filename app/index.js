@@ -7,6 +7,7 @@ import powerOnSelfTest from './test';
 // Game modules.
 import scenes from './scenes';
 import cameraControllers from './cameraControllers';
+import './local/toast';
 
 const defaultScene = 'localCluster';
 
@@ -70,6 +71,18 @@ window.onload = function() {
     console.error('Could not find #crosshairs div.');
   }
 }
+
+// Temp dev overrides. Remove these eventually.
+setTimeout(() => {
+  core.triggerAction('toggleMousePointer');
+
+  setTimeout(() => {
+    core.triggerAction('toggleMouseControl');
+    setTimeout(() => {
+      core.triggerAction('_devChangeMode');
+    }, 1200)
+  }, 300);
+}, 500);
 
 class Hud extends React.Component {
   // static propTypes = {};
