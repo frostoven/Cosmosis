@@ -38,6 +38,20 @@
             text-align: center;
         }
 
+        #mode {
+            color: white;
+            width: 176px;
+            height: 18px;
+            position: fixed;
+            top: 0;
+            right: 0;
+            z-index: 1000;
+            text-align: right;
+            pointer-events: none;
+            padding: 5px;
+            text-shadow: 1px 1px 1px black;
+        }
+
         #container {
             display: flex;
         }
@@ -78,6 +92,7 @@
             border: thin solid green;
             margin: 3px;
             color: white;
+            text-shadow: 0px 0px 8px black;
         }
 
         #crosshairs {
@@ -170,6 +185,7 @@
 
     <script type="text/javascript" src="build/bundle.js"></script>
 
+    <div id="mode">--</div>
     <div id="snackbar">toast area</div>
     <div id="crosshairs"></div>
     <div id="camDevArea">--</div>

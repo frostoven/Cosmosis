@@ -12,6 +12,7 @@ import { RenderPass  } from 'three/examples/jsm/postprocessing/RenderPass';
 
 import Stats from '../../hackedlibs/stats/stats.module.js';
 import CbQueue from './CbQueue';
+import { forEachFn } from './utils';
 import physics from './physics';
 import res from './resLoader';
 import { controls } from './controls';
@@ -100,10 +101,14 @@ const modes = {
   any: 0,
   /** Refers do being locked in a seat. Used for bridge seats, usually. */
   shipPilot: 1,
+  /** Free roam in space, with an intelligently pulsing weak magnetic field
+   * activating just enough to keep you from floating away.. until you get too
+   * far from it and float away. */
+  zeroGMagnetic: 2,
   /** Free roam in space, and on non-rotating spacecraft. */
-  zeroGFreeRoam: 2,
+  zeroGFreeRoam: 3,
   /** Free roam in an environment where you're stuck to the floor. Can be magnetic shoes on a hull. */
-  gravityFreeRoam: 3,
+  gravityFreeRoam: 4,
   /** Dev haxxx. */
   freeCam: 9,
   godCam: 10,
@@ -135,6 +140,28 @@ const keyUpDownListeners = [/* { mode, cb } */];
 const keyPressListeners = [/* { mode, cb } */];
 /** Called after this computer's player's ship has been loaded. */
 const playerShipReadyListeners = new CbQueue();
+/** Used to notify different parts of the application that different pieces of
+ * the application has been loaded. */
+const loadProgressListeners = [];
+
+// Bitmask used to keep track of what's been loaded.
+let loadProgress = 0;
+// Used to generate the progressActions enum.
+let _progActCount = 1;
+// Contains actions used by notifyLoadProgress and onLoadProgress.
+const progressActions = {
+  // Please only add numbers that are powers of 2 as they're bitmasked and will
+  // break otherwise.
+  /** The cosmos awakens.*/
+  skyBoxLoaded: 2 ** _progActCount++,
+  /** Includes things like the camera and scene. */
+  gameViewReady: 2 ** _progActCount++,
+  playerShipLoaded: 2 ** _progActCount++,
+  /** Game is fully loaded. first animation frame is about to be rendered. */
+  ready: 2 ** _progActCount++,
+  /** The first animation() frame has been rendered. */
+  firstFrameRendered: 2 ** _progActCount++,
+};
 
 /** Give mouse 1-3 friendlier names. */
 const mouseFriendly = [
@@ -446,6 +473,21 @@ function setMode(mode) {
   //   const cb = modeListeners[i];
   //   cb({ mode: currmode, prevMode });
   // }
+
+  updateModeDebugText();
+}
+
+// TODO: remove me once the game is more stable.
+function updateModeDebugText() {
+  const div = document.getElementById('mode');
+  if (!div) return;
+  if (currmode === modes.shipPilot) div.innerText = 'Mode: Ship pilot';
+  else if (currmode === modes.zeroGMagnetic) div.innerText = 'Mode: Zero-G magnetic';
+  else if (currmode === modes.zeroGFreeRoam) div.innerText = 'Mode: No gravity';
+  else if (currmode === modes.gravityFreeRoam) div.innerText = 'Mode: Gravity';
+  else if (currmode === modes.freeCam) div.innerText = 'Mode: Free cam';
+  else if (currmode === modes.godCam) div.innerText = 'Mode: God cam';
+  else div.innerText = `INVALID MODE: ${currmode}`;
 }
 
 function registerAnalogListener({ mode, cb }) {
@@ -543,14 +585,16 @@ function init({ sceneName, pos, rot }) {
       rot = new THREE.Vector3(-1.8160, 0.9793, 0.1847);
     }
 
-    // Initialize two copies of the same scene, one with normal z-buffer and one with logarithmic z-buffer
-    // objects.normal = initView( scene, 'normal', false );
-    $gameView = initView({ scene, pos, rot });
-    // TODO: make this a callback instead, chain initPlayer into that callback,
-    //  and make the ready callback fire globally when initPlayer is done.
-    $gameView.ready = true;
+    // Contains all the essential game variables.
+    window.$gameView = initView({ scene, pos, rot });
+    notifyLoadProgress(progressActions.gameViewReady);
+
     initPlayer();
+    updateModeDebugText();
+    notifyLoadProgress(progressActions.ready);
+
     animate();
+    notifyLoadProgress(progressActions.firstFrameRendered);
   });
 
   $stats = new Stats();
@@ -593,6 +637,10 @@ function initView({ scene, pos, rot }) {
   document.body.appendChild(renderer.domElement);
 
   // Postprocessing.
+  // FIXME: something with post-processing is causing webgl warnings to be
+  //  spammed en-mass. I don't see any in-game side-effects, but I can imagine
+  //  it's not healthy. This only happens when outlinePass.selectedObjects is
+  //  set and starts rendering.
   composer = new EffectComposer( renderer );
   const renderPass = new RenderPass(scene, camera);
   composer.addPass(renderPass);
@@ -623,6 +671,7 @@ function initView({ scene, pos, rot }) {
         const renderTarget = new THREE.WebGLCubeRenderTarget(texture.image.height);
         renderTarget.fromEquirectangularTexture(renderer, texture);
         scene.background = renderTarget;
+        notifyLoadProgress(progressActions.skyBoxLoaded);
       });
   })
 
@@ -637,6 +686,9 @@ function initPlayer() {
   createSpaceShip({
     modelName: 'devFlyer', onReady: (mesh) => {
       $gameView.playerShip = mesh;
+      notifyLoadProgress(progressActions.playerShipLoaded);
+
+      // TODO: replace all occurrences of mw with onLoadProgress.
       playerShipReadyListeners.notifyAll((cb) => {
         cb(mesh);
       });
@@ -702,6 +754,79 @@ function onWindowResize() {
   updateRendererSizes();
 }
 
+/**
+ * Notifies all listener that part of the application has loaded.
+ * @param {number} action - progressActions item.
+ */
+function notifyLoadProgress(action) {
+  if (typeof action === 'undefined') {
+    // I typo this particular param enough that it's become a necessity :/
+    return console.error('notifyLoadProgress received an invalid action.');
+  }
+  // A part of the application booted. Store the id, then notify all the
+  // listeners.
+  loadProgress |= action;
+  for (let i = 0, len = loadProgressListeners.length; i < len; i++) {
+    const item = loadProgressListeners[i];
+    if (item.action === action) {
+      item.callback();
+      loadProgressListeners.splice(i, 1);
+      i--;
+      len--;
+    }
+  }
+}
+
+/**
+ * Notify requesters when a part of the application has loaded.
+ *
+ * If you request to be notified when something loads, but it has already
+ * finished loading, then you'll be notified as soon as you make the request.
+ * This allows you to safely check application state at any time regardless of
+ * current load state.
+ *
+ * @param {number} action
+ * @param {function} callback
+ */
+function onLoadProgress(action, callback) {
+  if (typeof action === 'undefined') {
+    return console.error('onLoadProgress received an invalid action.');
+  }
+  if ((action & loadProgress) === action) {
+    // Action has already happened.
+    callback();
+  }
+  else {
+    // Log request.
+    loadProgressListeners.push({ action, callback });
+  }
+}
+
+// Little runtime test to ensure everything actually loads.
+function testAllLoaded() {
+  let time = 2000;
+  let count = 0;
+  forEachFn([
+    (cb) => onLoadProgress(progressActions.skyBoxLoaded, cb),
+    (cb) => onLoadProgress(progressActions.gameViewReady, cb),
+    (cb) => onLoadProgress(progressActions.playerShipLoaded, cb),
+    (cb) => onLoadProgress(progressActions.ready, cb),
+    (cb) => onLoadProgress(progressActions.firstFrameRendered, cb),
+  ], () => {
+    count++;
+  }, () => {
+  });
+  setTimeout(() => {
+    if (count !== Object.keys(progressActions).length) {
+      console.warn(
+        `Game hasn't finished loading after ${time/1000} seconds. Please investigate.`
+      );
+    }
+    // else console.log('Game test: all fully loaded.');
+  }, time);
+}
+testAllLoaded();
+
 export default {
   actions,
   registerGlobalAction,
@@ -728,4 +853,6 @@ export default {
   simulateKeyUp,
   simulateAnalog,
   triggerAction,
+  progressActions,
+  onLoadProgress,
 };

@@ -83,9 +83,9 @@ setTimeout(() => {
 
   setTimeout(() => {
     core.triggerAction('toggleMouseControl');
-    setTimeout(() => {
-      core.triggerAction('_devChangeMode');
-    }, 1200)
+    // setTimeout(() => {
+    //   core.triggerAction('_devChangeMode');
+    // }, 1200)
   }, 300);
 }, 500);
 
