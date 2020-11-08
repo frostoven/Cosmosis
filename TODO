@@ -1,5 +1,3 @@
-Implement animations triggered by interacting with a switch.
-
 Set up a spacecube field and make the ship travel through it (just via brute
 force, no need for physics right now). Then ensure the player stays on the ship
 and doesn't get left behind, in all modes. Maybe give to option to let one

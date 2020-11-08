@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 
+import core from '../local/core';
 import { makePhysical, shapeTemplates } from '../local/physics';
 import res from '../local/resLoader';
 import { setup as meshCodeSetup } from './meshCodeProcessor';
@@ -178,24 +179,19 @@ function processMeshCodes(name, gltf, isPlayer) {
  * @param {function} onReady
  */
 export function createSpaceShip({ modelName, pos, scene, world, isPlayer, onReady }) {
-  // TODO: replace this with a proper callback.
-  if (!$gameView.ready) {
-    return setTimeout(() => {
-      createSpaceShip({ modelName, pos, scene, world, onReady });
-    }, 50);
-  }
+  core.onLoadProgress(core.progressActions.gameViewReady, () => {
+    if (!modelName) return console.error('createSpaceShip needs a model name.');
+    if (!pos) pos = $gameView.camera.position;
+    if (!scene) scene = $gameView.scene;
+    if (!world) world = $gameView.spaceWorld;
+    if (!onReady) onReady = () => {};
 
-  if (!modelName) return console.error('createSpaceShip needs a model name.');
-  if (!pos) pos = $gameView.camera.position;
-  if (!scene) scene = $gameView.scene;
-  if (!world) world = $gameView.spaceWorld;
-  if (!onReady) onReady = () => {};
-
-  createDefaults(modelName);
-  loadModel(modelName, (gltf) => {
-    processMeshCodes(modelName, gltf, isPlayer);
-    modelPostSetup(modelName, gltf, pos, scene, world, onReady);
-  })
+    createDefaults(modelName);
+    loadModel(modelName, (gltf) => {
+      processMeshCodes(modelName, gltf, isPlayer);
+      modelPostSetup(modelName, gltf, pos, scene, world, onReady);
+    })
+  });
 }
 
 export default {
