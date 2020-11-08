@@ -6,13 +6,16 @@
 
 import * as THREE from 'three';
 import * as CANNON from 'cannon';
+import { EffectComposer  } from 'three/examples/jsm/postprocessing/EffectComposer';
+import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass';
+import { RenderPass  } from 'three/examples/jsm/postprocessing/RenderPass';
 
 import Stats from '../../hackedlibs/stats/stats.module.js';
 import CbQueue from './CbQueue';
 import physics from './physics';
 import res from './resLoader';
 import { controls } from './controls';
-import { createSpaceShip } from '../mechanics/spaceShipLoader';
+import { createSpaceShip } from '../levelLogic/spaceShipLoader';
 import { PointerLockControls } from './PointerLockControls';
 
 const gameFont = 'node_modules/three/examples/fonts/helvetiker_regular.typeface.json';
@@ -28,6 +31,8 @@ const coreControls = controls.allModes;
 
 // Used to generate delta.
 let deltaPrevTime = Date.now();
+
+let composer;
 
 /*
  * Global vars
@@ -45,6 +50,12 @@ window.$gameView = {
   // attachCamTo: null,
   playerShip: null,
   ptrLockControls: null,
+  // The term 'level' here is used very loosely. It's any interactable
+  // environment. Space ships as well planet sectors count as levels. Note that
+  // only *your own* ship is a level - another players ship is not interactable
+  // and just a prop in your world.
+  level: null,
+  outlinePass: null,
 };
 window.$options = {
   // 0=off, 1=basic, 2=full
@@ -148,7 +159,6 @@ const coreKeyToggles = {
   // toggleMouseControl: () => $gameView.ptrLockControls.toggleCamLock(),
   toggleMousePointer: () => $gameView.ptrLockControls.toggle(),
   _devChangeMode: () => {
-    console.log('currmode:', currmode);
     if (currmode === modes.freeCam) {
       // setMode(modes.godCam);
       setMode(modes.shipPilot);
@@ -161,7 +171,6 @@ const coreKeyToggles = {
       toast('Mode set to free cam.');
       setMode(modes.freeCam);
     }
-    console.log('Changed mode to:', currmode);
   },
 };
 
@@ -422,6 +431,9 @@ function getMode() {
 }
 
 function setMode(mode) {
+  if ($gameView.ptrLockControls) {
+    $gameView.ptrLockControls.unlockCamera();
+  }
   const prevMode = currmode;
   currmode = mode;
 
@@ -522,12 +534,12 @@ function init({ sceneName, pos, rot }) {
       // TODO: implement scene default pos/rot, 0,0,0 in case of legDepthDemo.
       //  For localCluster: x:392813413, y:15716456, z:-2821306
       //               rot: x:-1.8765, y:1.1128, z:0.2457
-      console.log('Setting cam position to scene default: 0,0,0');
+      // console.log('Setting cam position to scene default: 0,0,0');
       // pos = new THREE.Vector3(0, 0, 0);
       pos = new THREE.Vector3(392813413, 15716456, -2821306);
     }
     if (!rot) {
-      console.log('Setting cam position to scene default: 0,0,0');
+      // console.log('Setting cam position to scene default: 0,0,0');
       rot = new THREE.Vector3(-1.8160, 0.9793, 0.1847);
     }
 
@@ -580,6 +592,23 @@ function initView({ scene, pos, rot }) {
   renderer.domElement.id = 'canvas';
   document.body.appendChild(renderer.domElement);
 
+  // Postprocessing.
+  composer = new EffectComposer( renderer );
+  const renderPass = new RenderPass(scene, camera);
+  composer.addPass(renderPass);
+
+  // TODO: check if this needs recreating when window resizes.
+  // Outline pass. Used for highlighting interactable objects.
+  const outlinePass = new OutlinePass(new THREE.Vector2(SCREEN_WIDTH / SCREEN_HEIGHT), scene, camera);
+  outlinePass.edgeStrength = 10; //3;
+  outlinePass.edgeGlow = 1; //0;
+  outlinePass.edgeThickness = 4; //1;
+  outlinePass.pulsePeriod = 2;
+  outlinePass.visibleEdgeColor = new THREE.Color(0x00ff5a);
+  outlinePass.hiddenEdgeColor = new THREE.Color(0x00ff5a); // seems it always thinks we're hidden :/
+  // outlinePass.hiddenEdgeColor = new THREE.Color(0x190a05);
+  composer.addPass(outlinePass);
+
   // Default skybox.
   // TODO: This thing really, REALLY hates being zoomed out beyond 1LY.
   //  Need to find some sort of fix.
@@ -599,18 +628,14 @@ function initView({ scene, pos, rot }) {
 
   const spaceWorld = physics.initSpacePhysics({ scene, debug: true });
 
-  return { renderer, scene, camera, ptrLockControls, spaceWorld };
+  return { renderer, scene, camera, ptrLockControls, spaceWorld, outlinePass };
 }
 
 function initPlayer() {
-  // // Externals.
-  // spaceShipLoader.getMesh('DS69F', (mesh) => {
-  //   mesh.scene.position.copy($gameView.camera.position);
-  //   scene.add(mesh.scene);
-  //   console.log('=> DS69F added to scene.');
-  // });
+  // TODO: create mechanism to inform rest of game when the space ship is done
+  //  loading.
   createSpaceShip({
-    modelName: 'DS69F', onReady: (mesh) => {
+    modelName: 'devFlyer', onReady: (mesh) => {
       $gameView.playerShip = mesh;
       playerShipReadyListeners.notifyAll((cb) => {
         cb(mesh);
@@ -632,6 +657,9 @@ function updateRendererSizes() {
   $gameView.camera.updateProjectionMatrix();
 }
 
+/**
+ * Invokes all registered render functions.
+ */
 function animate() {
   const time = performance.now();
   const delta = (time - deltaPrevTime) / 1000;
@@ -652,7 +680,7 @@ function animate() {
     cam.render(delta);
   }
 
-  const { scene, camera, renderer, spaceWorld, gravityWorld, /*attachCamTo*/ } = $gameView;
+  const { scene, camera, renderer, spaceWorld, gravityWorld, level } = $gameView;
   spaceWorld && physics.renderPhysics(delta, spaceWorld);
   gravityWorld && physics.renderPhysics(delta, gravityWorld);
 
@@ -661,9 +689,13 @@ function animate() {
   //   attachCamTo.getWorldPosition(targetPos);
   //   attachCamTo && camera.position.copy(targetPos);
   // }
+  if (level) {
+    level.process(delta);
+  }
 
   renderer.render(scene, camera);
   $stats.update();
+  composer.render();
 }
 
 function onWindowResize() {

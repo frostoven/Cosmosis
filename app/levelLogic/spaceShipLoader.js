@@ -3,7 +3,9 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 
 import { makePhysical, shapeTemplates } from '../local/physics';
-import res from "../local/resLoader";
+import res from '../local/resLoader';
+import { setup as meshCodeSetup } from './meshCodeProcessor';
+import Level from './level';
 
 // Configure and create Draco decoder.
 // var dracoLoader = new DRACOLoader();
@@ -50,40 +52,21 @@ dracoLoader.preload();
 loader.setDRACOLoader(dracoLoader);
 // dracoLoader.dispose();
 
-res.getSpaceShip('devFlyer', (error, filename, dir) => {
-  loader.setPath(dir + '/');
-  loader.load(filename, function (gltf) {
+const waitingRoom = {};
+const _mesh = {};
 
-    // gltf.scene.traverse(function (child) {
-    //   if (child.isMesh) {
-    //     console.log(child);
-    //   }
-    // });
+function createDefaults(name) {
+  if (!waitingRoom[name]) {
+    waitingRoom[name] = [];
+  }
+}
 
-    //
-
-    console.log('[Debug] GLTF:', gltf);
-    storeMesh(gltf);
-
-    // dracoLoader.dispose();
-  });
-  //
-});
-
-const waitingRoom = {
-  DS69F: [],
-};
-
-const _mesh = {
-  DS69F: null,
-};
-
-function storeMesh(gltf) {
-  _mesh.DS69F = gltf;
-  if (waitingRoom.DS69F.length > 0) {
+function storeMesh(name, gltf) {
+  _mesh[name] = gltf;
+  if (waitingRoom[name].length > 0) {
     let callback;
-    while (callback = waitingRoom.DS69F.shift()) {
-      callback(_mesh.DS69F);
+    while (callback = waitingRoom[name].shift()) {
+      callback(_mesh[name]);
     }
   }
 }
@@ -97,27 +80,28 @@ export function getMesh(modelName, callback) {
   }
 }
 
-/**
- *
- * @param {string} modelName
- * @param {THREE.Vector3} pos
- * @param {THREE.scene} scene
- * @param {CANNON.World} world
- * @param {function} onReady
- */
-export function createSpaceShip({ modelName, pos, scene, world, onReady }) {
-  if (!$gameView.ready) {
-    return setTimeout(() => {
-      createSpaceShip({ modelName, pos, scene, world, onReady });
-    }, 50);
-  }
+function loadModel(name, callback) {
+  res.getSpaceShip(name, (error, filename, dir) => {
+    loader.setPath(dir + '/');
+    loader.load(filename, function (gltf) {
 
-  if (!modelName) return console.error('createSpaceShip needs a model name.');
-  if (!pos) pos = $gameView.camera.position;
-  if (!scene) scene = $gameView.scene;
-  if (!world) world = $gameView.spaceWorld;
-  if (!onReady) onReady = () => {};
+      // gltf.scene.traverse(function (child) {
+      //   if (child.isMesh) {
+      //     console.log(child);
+      //   }
+      // });
 
+      console.log('[Debug] GLTF:', gltf);
+      storeMesh(name, gltf);
+      callback(gltf);
+
+      // dracoLoader.dispose();
+    });
+    //
+  });
+}
+
+function modelPostSetup(modelName, gltf, pos, scene, world, onReady) {
   getMesh(modelName, (mesh) => {
     mesh.scene.position.copy($gameView.camera.position);
     //
@@ -150,8 +134,67 @@ export function createSpaceShip({ modelName, pos, scene, world, onReady }) {
     });
 
     const { x, y, z } = mesh.scene.position;
-    console.log(`=> Physical ship ${modelName} created at ${x},${y},${z};`, mesh);
+    // console.log(`=> Physical ship ${modelName} created at ${x},${y},${z};`, mesh);
     onReady(mesh);
+  });
+}
+
+function processMeshCodes(name, gltf, isPlayer) {
+  // Concept vars:
+  // gltf.csmNodes
+  // gltf.csmUsable
+  // gltf.csmDestructibles
+
+  const level = new Level(gltf);
+  const nameMap = {};
+
+  // console.log('=========> [processMeshCodes] GLTF:', gltf);
+  // const nodes = gltf.parser.json.nodes;
+  const nodes = gltf.scene.children;
+  for (let i = 0, len = nodes.length; i < len; i++) {
+    const node = nodes[i];
+    // if (node.name === 'switchForTheDoor' || node.name === 'theDoor') {
+    //   console.log('=========> [processMeshCodes] GLTF:', node);
+    // }
+    nameMap[node.name] = i;
+    meshCodeSetup(node, isPlayer, level);
+
+    //*  if not player, exclude interactables (and test to make sure it's not actually processing distance).
+    //*  even if not player, still check for destructibility and process things like collision.
+    //*  make hitboxes invisible or delete them entirely and tell the physics engine to load them in.
+  }
+  level.setNameMap(nameMap);
+
+  $gameView.level = level;
+}
+
+/**
+ *
+ * @param {string} modelName
+ * @param {THREE.Vector3} pos
+ * @param {THREE.scene} scene
+ * @param {CANNON.World} world
+ * @param {boolean} isPlayer - If true, this is the player's ship.
+ * @param {function} onReady
+ */
+export function createSpaceShip({ modelName, pos, scene, world, isPlayer, onReady }) {
+  // TODO: replace this with a proper callback.
+  if (!$gameView.ready) {
+    return setTimeout(() => {
+      createSpaceShip({ modelName, pos, scene, world, onReady });
+    }, 50);
+  }
+
+  if (!modelName) return console.error('createSpaceShip needs a model name.');
+  if (!pos) pos = $gameView.camera.position;
+  if (!scene) scene = $gameView.scene;
+  if (!world) world = $gameView.spaceWorld;
+  if (!onReady) onReady = () => {};
+
+  createDefaults(modelName);
+  loadModel(modelName, (gltf) => {
+    processMeshCodes(modelName, gltf, isPlayer);
+    modelPostSetup(modelName, gltf, pos, scene, world, onReady);
   })
 }
 

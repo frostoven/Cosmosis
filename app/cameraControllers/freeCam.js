@@ -35,14 +35,14 @@ const ctrl = {
     speedDown: false,
 }
 
-function register() {
-    core.registerCamControl({
-        name: 'freeCam', render,
-    });
+const toggles = {
+    interact: () => $gameView.level.useNext(),
+};
 
-    core.registerKeyUpDown({
-        mode, cb: onKeyUpDown,
-    });
+function register() {
+    core.registerCamControl({ name: 'freeCam', render });
+    core.registerKeyPress({ mode, cb: onKeyPress });
+    core.registerKeyUpDown({mode, cb: onKeyUpDown });
 
     // Only render if mode is freeCam.
     core.modeListeners.register((change) => {
@@ -54,6 +54,20 @@ function register() {
             speedTracker.clearSpeedTracker(speedTimer);
         }
     });
+}
+
+
+function onKeyPress({ key, amount }) {
+    const control = camControls[key];
+    if (!control) {
+        // No control mapped for pressed button.
+        return;
+    }
+    // Ex. 'interact'
+    const toggleFn = toggles[control];
+    if (toggleFn) {
+        toggleFn();
+    }
 }
 
 function onKeyUpDown({ key, amount, isDown }) {
