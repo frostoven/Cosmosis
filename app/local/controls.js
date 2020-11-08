@@ -42,6 +42,7 @@ const keySchema = {
     'spinRight',
     'speedUp',
     'speedDown',
+    'use',
   ],
   godCam: [],
 }
@@ -70,9 +71,9 @@ const controls = {
     ArrowUp: 'moveForward',
     KeyS: 'moveBackward',
     ArrowDown: 'moveBackward',
-    KeyQ: 'spinLeft',
+    Numpad7: 'spinLeft',
     ArrowLeft: 'moveLeft',
-    KeyE: 'spinRight',
+    Numpad9: 'spinRight',
     ArrowRight: 'moveRight',
     KeyR: 'moveUp',
     Space: 'moveUp',
@@ -86,6 +87,7 @@ const controls = {
     KeyD: 'moveRight',
     NumpadAdd: 'speedUp',
     NumpadSubtract: 'speedDown',
+    KeyE: 'interact',
   },
   godCam: {
     _description: 'Celestial god cam',

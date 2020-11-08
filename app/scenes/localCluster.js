@@ -5,7 +5,6 @@ import * as THREE from 'three';
 import * as CANNON from 'cannon';
 
 import core from '../local/core';
-import { createSpaceShip } from '../mechanics/spaceShipLoader';
 
 // const demo = new CANNON.Demo();
 // console.log(demo)
@@ -90,7 +89,7 @@ function init({ font }) {
       group.add(textMesh);
     }
 
-    console.log(`[z] ${body.label}:`, -body.size * scale);
+    // console.log(`[z] ${body.label}:`, -body.size * scale);
 
     if (body.image) {
       const loader = new THREE.TextureLoader();

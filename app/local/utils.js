@@ -69,7 +69,7 @@ function fuzzyFindFile(
  *  setImmediate. Please note that doing so is incredibly slow at large scales.
  */
 function forEachFnLimit(functions=[], cb=()=>{}, onReachEnd=()=>{}, limit, index, defer=false) {
-  console.log(`forEachFnLimit: limit=${limit}, index=${index}`)
+  // console.log(`forEachFnLimit: limit=${limit}, index=${index}`)
   if (isNaN(index) || isNaN(limit)) {
     return onReachEnd(
       new Error('forEachFnLimit: limit and index should be numbers.')

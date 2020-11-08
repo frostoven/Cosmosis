@@ -1,8 +1,9 @@
-Get basic mesh loading going.
+Implement animations triggered by interacting with a switch.
 
-Add mechanism to allow the user to load optional high quality assets, maybe as
-assetsProd. Make sure this directory is gitignored. Also make sure that every
-high quality asset has a low quality counterpart.
+Set up a spacecube field and make the ship travel through it (just via brute
+force, no need for physics right now). Then ensure the player stays on the ship
+and doesn't get left behind, in all modes. Maybe give to option to let one
+detach from ship in free cam mode.
 
 Implement physics in a universally easy to use way.
 

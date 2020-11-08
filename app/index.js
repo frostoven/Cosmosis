@@ -3,6 +3,7 @@ import React from 'react';
 import core from './local/core';
 import { loadAllCrosshairImages } from "./local/crosshairs";
 import powerOnSelfTest from './test';
+import build from '../build.json';
 
 // Game modules.
 import scenes from './scenes';
@@ -43,6 +44,8 @@ if (process.env && process.env.NODE_ENV !== 'production') {
 /* Main
 /* --------------------------------- */
 
+console.groupCollapsed(`Pre-init (build number: ${build.buildNumber}).`);
+
 // Register all scenes.
 for (let scene of scenes) {
   console.log('Registering scene', scene.name);
@@ -53,6 +56,8 @@ for (let ctrl of cameraControllers) {
   console.log('Registering cam controller', ctrl.name);
   ctrl.register();
 }
+
+console.groupEnd();
 
 // Glue it together, and start the rendering process.
 core.init({

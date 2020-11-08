@@ -145,7 +145,7 @@ const PointerLockControls = function (camera, domElement, onMouseCb) {
   }
 
   this.unlockCamera = function () {
-    this.isCamLocked = true;
+    this.isCamLocked = false;
     this.lockChange();
   }
 

@@ -8,13 +8,7 @@ const mode = core.modes.shipPilot;
 const camControls = controls.shipPilot;
 let speedTimer = null;
 
-let speed = 120 / 14.388; // 120KM/h
-// let speed = 25e6 / 14.388;
-
 let modeActive = false;
-// If true, the mouse is used to look around the ship. If false, it's used for
-// ship controls.
-let lookMode = false;
 
 const ctrl = {
   thrustInc: false,
@@ -39,21 +33,12 @@ function register() {
     name: 'shipPilot', render, triggerAction,
   });
 
-  core.registerKeyPress({
-    mode, cb: onKeyPress,
-  })
-
-  core.registerKeyUpDown({
-    mode, cb: onKeyUpDown,
-  });
-
-  core.registerAnalogListener({
-    mode, cb: onAnalogInput,
-  });
+  core.registerKeyPress({ mode, cb: onKeyPress });
+  core.registerKeyUpDown({ mode, cb: onKeyUpDown });
+  core.registerAnalogListener({ mode, cb: onAnalogInput });
 
   // Only render if mode is shipPilot.
   core.modeListeners.register((change) => {
-    console.log('==> shipPilot registerModeListener activated.');
     modeActive = change.mode === mode;
     if (modeActive) {
       // attachCamera($gameView.playerShip);
@@ -71,7 +56,7 @@ function register() {
 }
 
 function onShipLoaded(mesh) {
-  console.log('shipPilot got mesh:', mesh);
+  // console.log('shipPilot got mesh:', mesh);
   // attachCamera(mesh);
   $gameView.camera.rotation.setFromVector3(new THREE.Vector3(-3.1, 0.03, 3.13));
 }
@@ -112,7 +97,7 @@ function onKeyUpDown({ key, amount, isDown }) {
 }
 
 function onAnalogInput(key, xAbs, yAbs, xDelta, yDelta) {
-  console.log('[shipPilot] analog:', key, xAbs, yAbs, xDelta, yDelta);
+  // console.log('[shipPilot] analog:', key, xAbs, yAbs, xDelta, yDelta);
 }
 
 function triggerAction(action) {
