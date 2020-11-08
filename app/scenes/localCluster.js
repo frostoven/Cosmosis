@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import * as CANNON from 'cannon';
 
 import core from '../local/core';
+import generateCubeField from './procedural/cubeField';
 
 // const demo = new CANNON.Demo();
 // console.log(demo)
@@ -137,6 +138,14 @@ function init({ font }) {
 
   return scene;
 }
+
+core.onLoadProgress(core.progressActions.ready, () => {
+  const objects = generateCubeField({
+    scene: $gameView.scene,
+    position: $gameView.camera.position,
+  });
+  console.log('cube space:', objects);
+});
 
 // https://stackoverflow.com/questions/18363357/apply-heightmap-to-spheregeometry-in-three-js
 function generateHeight( width, height ) {
