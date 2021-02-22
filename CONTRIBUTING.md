@@ -34,7 +34,31 @@ whatever you're comfortable with.
 * Blender can sometimes crash if you try to use GLTF compression with messed up
 geometry (such as orphaned vertices and lines). The solution here is to find
 the bad geometry, fix it, and try again. Deleting objects one by one in a
-backup file can help narrow down the issue.
+backup file can help narrow down the issue. It also doesn't like certain
+primitives, like bezier lines. Be sure to convert everything to mesh before
+export.
+
+##### Memory limits
+Due to current Chromium restrictions, any file that would be greater than
+around 1.8GB uncompressed (around 170MB compressed) cannot be uncompressed (the
+loader aborts and logs an error). There are work-arounds, but these avoid the
+core issue. 1.8GB is around 15 million verts, which runs at 40FPS on a 2080TI
+(not to mention horrendous loading times). As a general rule of thumb, a scene
+shouldn't exceed 1 million verts.
+
+Where keeping under 1 million verts is possible:
+* A small to medium sized space ship. Subtle details can be replaced with
+normal maps, bevels with more than 2 divisions can't be seen anyway, subsurf
+modifiers should have geo cleaned up with tools like hardops, etc.
+
+Where keeping under 1 million verts is *not* possible:
+* A large map, perhaps with many detailed buildings. In this cased the solution
+is to split the file into smaller ones and use LODs to remove verts that are
+far away. Instead of distributing the map (or ginormous space station) as a
+single file, you then instead distribute it as a directory. That way the entire
+scene in all its glory can be loaded into the scene with, hopefully, less than
+a million verts. Note that slightly going over 1m isn't a problem in and of
+itself, but rather something we should work hard to avoid.
 
 #### Legal crap
 
@@ -117,6 +141,13 @@ currently uses).
 * Please consider testing your changes on both Windows and Linux. It isn't
 a strict requirement, but makes PRs to master easier for those who test the
 proposed changes because some small issues will already have been caught.
+
+#### Conventions
+When creating an object that [] please try to define it somewhere with null
+values. `core.js -> $gameView` and `[cam] -> ctrl` are examples of this.
+This has 2 advantages:
+* Any semi-decent IDE will produce full auto-completion and documentation.
+* Other coders know what kind of structure to expect.
 
 #### Gotchas and problems
 

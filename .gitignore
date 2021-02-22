@@ -123,3 +123,7 @@ prodHqAssets/
 
 # Incomprehensible notes I write for myself.
 madRamblings.txt
+
+# Contains things like temporary files copied from the internet to test all
+# sorts of concepts, functions, formulas, etc.
+offline_dev

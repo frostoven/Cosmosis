@@ -34,3 +34,19 @@ mesh codes. Blender does not even need any add-ons for this to work.
 If you are a coder, coded modding support is planned but currently low priority
 due to the fact the game is still rapidly changing. Adding such support in
 future is trivial, because the game is written in JavaScript.
+
+#### Why this game is open sourced
+There are two niches out there that get poor development: space sims, and
+souls-likes. The developers of space sims seem incredibly out of touch with
+what their fans want, and souls clones do things in ways that completely miss
+the point of Miyazaki's vision (in this author's subjective opinion, of
+course). Reviews reflect this, littered with "I really liked GameX because of
+feature x, but grew to hate it because of y and z."
+
+The founder of this project will probably make the exact same mistakes. The
+difference here is that Cosmosis is not a locked behind closed source corporate
+red tape. You don't like what's been done, mod it out. Tweak it. Change it.
+Make it yours and release your changes as a better fork, perhaps propose those
+changes make their way back here. The point here is that control is in your
+hands, not some developer who's stopped caring about you and the promises they
+made during their Kickstarter.
