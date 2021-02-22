@@ -22,9 +22,13 @@ const labelData = [
   // {size: 1000, scale: 1.0, label: "medium (1km)"},
   // {size: 10000, scale: 1.0, label: "city-sized (10km)"},
   // https://www.scientificamerican.com/article/why-do-the-moon-and-the-s/#:~:text=Because%20the%20moon%20is%20changing,the%20moon%20appear%20very%20large.
-  {size: 3474000, scale: 1.0, label: "moon-sized (3,474 Km)", grouped: false, nogroupOffset: 384400000, image: 'potatoLqAssets/planetImg/Moon_lroc_color_poles_8k.jpg'},
-  {size: 12742000, scale: 1.0, label: "earth-sized (12,742 km)", grouped: false, nogroupOffset: 0, image: 'potatoLqAssets/planetImg/Land_ocean_ice_cloud_hires.jpg'},
-  {size: 1392700000, scale: 1.0, label: "sun-sized (1,392,700 km)", brightness: 1e6, grouped: false, nogroupOffset: -149540000000, image: 'potatoLqAssets/planetImg/sun_euvi_aia304_2012_carrington.jpg'},
+  // TODO: make these use the res loader.
+  // {size: 3474000, scale: 1.0, label: "moon-sized (3,474 Km)", grouped: false, nogroupOffset: 384400000, image: 'potatoLqAssets/planetImg/Moon_lroc_color_poles_8k.jpg'},
+  // {size: 12742000, scale: 1.0, label: "earth-sized (12,742 km)", grouped: false, nogroupOffset: 0, image: 'potatoLqAssets/planetImg/Land_ocean_ice_cloud_hires.jpg'},
+  // {size: 1392700000, scale: 1.0, label: "sun-sized (1,392,700 km)", brightness: 1e6, grouped: false, nogroupOffset: -149540000000, image: 'potatoLqAssets/planetImg/sun_euvi_aia304_2012_carrington.jpg'},
+  {size: 3474000, scale: 1.0, label: "moon-sized (3,474 Km)", grouped: false, nogroupOffset: 384400000, image: 'prodHqAssets/planetImg/Moon_lroc_color_poles_8k.jpg'},
+  {size: 12742000, scale: 1.0, label: "earth-sized (12,742 km)", grouped: false, nogroupOffset: 0, image: 'prodHqAssets/planetImg/Land_ocean_ice_cloud_hires.jpg'},
+  {size: 1392700000, scale: 1.0, label: "sun-sized (1,392,700 km)", brightness: 1e6, grouped: false, nogroupOffset: -149540000000, image: 'prodHqAssets/planetImg/sun_euvi_aia304_2012_carrington.jpg'},
   {size: 7.47e12, scale: 1.0, label: "solar system-sized (50Au)"},
   {size: 9.4605284e15, scale: 1.0, label: "gargantuan (1 light year)"},
   {size: 3.08567758e16, scale: 1.0, label: "ludicrous (1 parsec)"},
@@ -139,12 +143,26 @@ function init({ font }) {
   return scene;
 }
 
+// TODO: figure out wtf is going on here.
+//  So, very simply: 3000 cubes @ 4 verts each = 12,000 verts = 11fps on an RTX 2080TI.
+//  Or, add a compressed gltf scene from blender with 2 million verts - 60 fps constant. wut..?
+//  The real confusing part here is the actual resourse usage - CPU 10%, GPU 20%, RAM 50%. I.e system
+//  not being utilised.
+// core.onLoadProgress(core.progressActions.ready, () => {
+//   const objects = generateCubeField({
+//     scene: $gameView.scene,
+//     position: $gameView.camera.position,
+//   });
+//   console.log('cube space:', objects);
+// });
+
 core.onLoadProgress(core.progressActions.ready, () => {
-  const objects = generateCubeField({
-    scene: $gameView.scene,
-    position: $gameView.camera.position,
-  });
-  console.log('cube space:', objects);
+  // const objects = generateCubeField({
+  //   scene: $gameView.scene,
+  //   position: $gameView.camera.position,
+  //   cubeCount: 100,
+  // });
+  // console.log('cube space:', objects);
 });
 
 // https://stackoverflow.com/questions/18363357/apply-heightmap-to-spheregeometry-in-three-js

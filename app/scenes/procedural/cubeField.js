@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 // Taken from: https://threejs.org/examples/?q=pointer#misc_controls_pointerlock
-export default function generate({ position, scene, multiplier=1 }) {
+export default function generate({ position, scene, cubeCount=3000, distanceMultiplier=1 }) {
   const {x,y,z} = position;
   console.log(`using position: ${x},${y},${z}`);
 
@@ -41,20 +41,28 @@ export default function generate({ position, scene, multiplier=1 }) {
 
   boxGeometry.setAttribute( 'color', new THREE.Float32BufferAttribute( colorsBox, 3 ) );
 
-  for ( let i = 0; i < (3000 * multiplier); i ++ ) {
+  for (let i = 0; i < (cubeCount); i++) {
 
-    const boxMaterial = new THREE.MeshPhongMaterial( { specular: 0xffffff, flatShading: true, vertexColors: true } );
+    const colour = Math.floor(Math.random() * (16777215 + 1));
+    // const boxMaterial = new THREE.MeshPhongMaterial( { specular: 0xffffff, flatShading: true, vertexColors: true } );
+    const boxMaterial = new THREE.MeshLambertMaterial( { emissive: colour, flatShading: true, vertexColors: true } );
     boxMaterial.color.setHSL( Math.random() * 0.2 + 0.5, 0.75, Math.random() * 0.25 + 0.75 );
 
     const box = new THREE.Mesh( boxGeometry, boxMaterial );
-    box.position.x = ((Math.floor( Math.random() * 20 - 10 ) * 35 * multiplier) + position.x);
-    box.position.y = ((Math.floor( Math.random() * 20 - 10 ) * 35 * multiplier) + position.y);
-    box.position.z = ((Math.floor( Math.random() * 20 - 10 ) * 35 * multiplier) + position.z);
-    console.log(box.position)
+    box.position.x = ((Math.floor( Math.random() * 20 - 10 ) * 35 * distanceMultiplier) + position.x);
+    box.position.y = ((Math.floor( Math.random() * 20 - 10 ) * 35 * distanceMultiplier) + position.y);
+    box.position.z = ((Math.floor( Math.random() * 20 - 10 ) * 35 * distanceMultiplier) + position.z);
+    // console.log(box.position)
+    box.rotation.setFromVector3(new THREE.Vector3(rrad(), rrad(), rrad()));
 
     scene.add( box );
     objects.push( box );
   }
 
   return objects;
+}
+
+/** Returns a random radian (0-1.5780) */
+function rrad() {
+  return Math.random() * 1.5780;
 }

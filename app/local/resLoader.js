@@ -77,7 +77,7 @@ Loader.prototype.getSkybox = function getSkybox(name, callback=()=>{}) {
 };
 
 Loader.prototype.getSpaceShip = function getSpaceShip(name, callback=()=>{}) {
-  this.getRes('spaceShips', name, [ 'gltf' ], callback);
+  this.getRes('spaceShips', name, [ 'gltf', 'glb' ], callback);
 };
 
 Loader.prototype.getVoiceFile = function getVoiceFile(name, callback=()=>{}) {

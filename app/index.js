@@ -10,6 +10,7 @@ import scenes from './scenes';
 import cameraControllers from './cameraControllers';
 import './local/toast';
 
+// const defaultScene = 'logDepthDemo';
 const defaultScene = 'localCluster';
 
 // Integration tests. Note that these won't actually by itself. The user
