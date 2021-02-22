@@ -1,0 +1,6 @@
+const trophies = [
+  {
+    name: "Impossible. I only started playing yesterday.",
+    description: "Clock 100 hours in the game.",
+  },
+];
