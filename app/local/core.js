@@ -43,6 +43,8 @@ window.$stats = null;
 window.$gameView = {
   // Set to true once the world is fully initialised.
   ready: false,
+  // Contains the scene. Mainly used for movement optimisation.
+  group: null,
   scene: null,
   camera: null,
   renderer: null,
@@ -57,6 +59,11 @@ window.$gameView = {
   // and just a prop in your world.
   level: null,
   outlinePass: null,
+  // If false, the ship and player moves in a static universe. If true, the
+  // ship and player is stationary and the universe moves instead. This is to
+  // overcome camera glitches. The ship can accelerate up to about about 3000c
+  // before hyperspeed becomes non-optional.
+  hyperMovement: true,
 };
 window.$options = {
   // 0=off, 1=basic, 2=full
@@ -65,7 +72,7 @@ window.$options = {
 };
 window.$displayOptions = {
   // Rendering resolution scale. Great for developers and wood PCs alike.
-  resolutionScale: 1.5,
+  resolutionScale: 1,
 
   limitFps: false,
   // On my machine, the frame limiter itself actually causes a 9% performance
@@ -183,8 +190,12 @@ const coreKeyToggles = {
   // lockMouse: () => {
   //   console.log('reimplement pointer lock.');
   // },
-  // toggleMouseControl: () => $gameView.ptrLockControls.toggleCamLock(),
+  toggleMouseControl: () => $gameView.ptrLockControls.toggleCamLock(),
   toggleMousePointer: () => $gameView.ptrLockControls.toggle(),
+  toggleHyperMovement: () => {
+    $gameView.hyperMovement = !$gameView.hyperMovement;
+    updateHyperdriveDebugText();
+  },
   _devChangeMode: () => {
     if (currmode === modes.freeCam) {
       // setMode(modes.godCam);
@@ -226,11 +237,19 @@ function onKeyPress(key, amount, isDown) {
   }
 }
 
-function onAnalogInput(key, xAbs, yAbs, xDelta, yDelta) {
+/**
+ *
+ * @param key
+ * @param {number} delta - Change in position.
+ * @param {number} invDelta - Change in position of opposite axis.
+ * @param {number} gravDelta - Change in position, snaps back.
+ * @param {number} gravInvDelta - Change in position of opposite axis, snaps back.
+ */
+function onAnalogInput(key, delta, invDelta, gravDelta, gravInvDelta) {
   for (let i = 0, len = analogListeners.length; i < len; i++) {
     const { mode, cb } = analogListeners[i];
     if (mode === modes.any || mode === currmode) {
-      cb(key, xAbs, yAbs, xDelta, yDelta);
+      cb(key, delta, invDelta, gravDelta, gravInvDelta);
     }
   }
 }
@@ -239,15 +258,18 @@ function onMouseMove(x, y) {
   // const x = event.clientX;
   // const y = event.clientY;
 
+  let deltaX = x - prevMouseX;
+  let deltaY = y - prevMouseY;
+
   // Below: sp means 'special'. Or 'somewhat promiscuous'. Whatever. Used to
   // indicate the 'key' is non-standard.
   if (y > prevMouseY) {
     // console.log('mouse downward');
-    onAnalogInput('spSouth', x, y, x - prevMouseX, y - prevMouseY);
+    onAnalogInput('spSouth', y, x, y - prevMouseY, x - prevMouseX);
   }
   else if (y < prevMouseY) {
     // console.log('mouse upward');
-    onAnalogInput('spNorth', x, y, x - prevMouseX, y - prevMouseY);
+    onAnalogInput('spNorth', y, x, y - prevMouseY, x - prevMouseX);
   }
 
   if (x > prevMouseX) {
@@ -490,6 +512,14 @@ function updateModeDebugText() {
   else div.innerText = `INVALID MODE: ${currmode}`;
 }
 
+// TODO: remove me once the game is more stable.
+function updateHyperdriveDebugText() {
+  const div = document.getElementById('hyperdrive');
+  if (!div) return;
+  // if ($gameView.hyperMovement)
+  div.innerText = `Hyperdrive: ${$gameView.hyperMovement ? 'active' : 'standby'}`;
+}
+
 function registerAnalogListener({ mode, cb }) {
   analogListeners.push({ mode, cb });
 }
@@ -582,7 +612,8 @@ function init({ sceneName, pos, rot }) {
     }
     if (!rot) {
       // console.log('Setting cam position to scene default: 0,0,0');
-      rot = new THREE.Vector3(-1.8160, 0.9793, 0.1847);
+      // rot = new THREE.Vector3(-1.8160, 0.9793, 0.1847);
+      rot = new THREE.Vector3(0, 0, 0);
     }
 
     // Contains all the essential game variables.
@@ -631,6 +662,11 @@ function initView({ scene, pos, rot }) {
   const renderer = new THREE.WebGLRenderer({...$rendererParams, logarithmicDepthBuffer: true});
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(SCREEN_WIDTH * $displayOptions.resolutionScale, SCREEN_HEIGHT * $displayOptions.resolutionScale);
+
+  // TODO: give options for shaders 'colourful' vs 'filmic'.
+  // renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMapping = THREE.NoToneMapping;
+
   renderer.domElement.style.width = '100%';
   renderer.domElement.style.height = '100%';
   renderer.domElement.id = 'canvas';
@@ -676,15 +712,18 @@ function initView({ scene, pos, rot }) {
   })
 
   const spaceWorld = physics.initSpacePhysics({ scene, debug: true });
+  const group = new THREE.Group();
+  group.add(scene);
 
-  return { renderer, scene, camera, ptrLockControls, spaceWorld, outlinePass };
+  return { renderer, scene, camera, ptrLockControls, spaceWorld, outlinePass, group };
 }
 
 function initPlayer() {
-  // TODO: create mechanism to inform rest of game when the space ship is done
-  //  loading.
   createSpaceShip({
-    modelName: 'devFlyer', onReady: (mesh) => {
+    modelName: 'DS69F', onReady: (mesh) => {
+    // modelName: 'devFlyer', onReady: (mesh) => {
+    // modelName: 'devFlyer2', onReady: (mesh) => {
+    // modelName: 'tentacleHull', onReady: (mesh) => {
       $gameView.playerShip = mesh;
       notifyLoadProgress(progressActions.playerShipLoaded);
 
@@ -726,13 +765,7 @@ function animate() {
   });
   deltaPrevTime = time;
 
-  // Run external renderers.
-  for (let i = 0, len = cachedCamList.length; i < len; i++) {
-    const cam = cachedCamList[i];
-    cam.render(delta);
-  }
-
-  const { scene, camera, renderer, spaceWorld, gravityWorld, level } = $gameView;
+  const { scene, camera, renderer, spaceWorld, group, gravityWorld, level, playerShip } = $gameView;
   spaceWorld && physics.renderPhysics(delta, spaceWorld);
   gravityWorld && physics.renderPhysics(delta, gravityWorld);
 
@@ -745,9 +778,61 @@ function animate() {
     level.process(delta);
   }
 
-  renderer.render(scene, camera);
+  // TODO: REMOVE ME - this is here to test the cam attaching to the bridge.
+  // if ($gameView.playerShip) {
+  //   $gameView.playerShip.scene.rotateY(0.001);
+  //   $gameView.playerShip.scene.rotateX(0.001);
+  //   $gameView.playerShip.scene.rotateZ(0.001);
+  // }
+
+  // Brute move ship forward.
+  // moveShip_DELETEME(delta, playerShip);
+
+  // How can we see if out eyes aren't real. Move universe.
+  // moveUniverse_DELELEME(delta);
+
+  // renderer.render(scene, camera);
+  renderer.render(group, camera);
+
+  // Run external renderers. We place this after the scene render to prevent
+  // the camera from jumping around.
+  // TODO: move world, not ship.
+  for (let i = 0, len = cachedCamList.length; i < len; i++) {
+    const cam = cachedCamList[i];
+    cam.render(delta);
+  }
+
+  // renderer.render(scene, camera);
+  renderer.render(group, camera);
+
   $stats.update();
   composer.render();
+}
+
+function moveShip_DELETEME(delta, playerShip) {
+  console.log('[moveShip_DELETEME] delta:', delta);
+  if (playerShip) {
+    const pos = playerShip.scene.position;
+    // let {x, y, z} = $gameView.playerShip.scene.position;
+    // z += 100;
+    // $gameView.playerShip.scene.position.set(x, y, z);
+    playerShip.scene.translateZ(delta*-10);
+  }
+}
+
+let dgfdsd = 0;
+function moveUniverse_DELELEME(delta) {
+  // console.log('[moveUniverse_DELELEME] delta:', delta);
+  const speed = 100;
+  // const speed = 1e15; // 3m c
+  // const speed = 1e18; //
+  if ($gameView.playerShip) {
+    $gameView.scene.translateZ(delta*speed);
+    $gameView.playerShip.scene.translateZ(delta*-speed);
+  }
+  if (dgfdsd++ === 550) {
+    console.log('moveUniverse scene:', $gameView.scene);
+  }
 }
 
 function onWindowResize() {
@@ -802,6 +887,11 @@ function onLoadProgress(action, callback) {
   }
 }
 
+// TODO: remove me once the game is more stable.
+onLoadProgress(progressActions.playerShipLoaded, () => {
+  updateHyperdriveDebugText();
+});
+
 // Little runtime test to ensure everything actually loads.
 function testAllLoaded() {
   let time = 2000;
@@ -855,4 +945,5 @@ export default {
   triggerAction,
   progressActions,
   onLoadProgress,
+  coreKeyToggles,
 };

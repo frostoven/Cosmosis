@@ -26,6 +26,7 @@ const keySchema = {
     // 'toggleMousePointer', // a.k.a. PointerLockControls.
     'left_renameme',
     'right_renameme',
+    'hyperdrive',
   ],
   freeCam: [
     'moveForward',
@@ -64,6 +65,8 @@ const controls = {
     spScrollDown: 'thrustReset',
     KeyA: 'left_renameme',
     KeyD: 'right_renameme',
+    KeyJ: 'hyperdrive',
+    KeyG: 'debugGravity',
     // ControlLeft: 'toggleMousePointer', // a.k.a. PointerLockControls.
   },
   freeCam: {
