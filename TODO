@@ -1,11 +1,77 @@
-Set up a spacecube field and make the ship travel through it (just via brute
+Implement dynamic cam rotation.
+
+Enable cam look-around in ship pilot mode using middle click.
+
+Make ship movable with physics using keyboard controls.
+
+Test bridge cam attach in both local and world transform.
+
+Test switching between hyperdrive and regular.
+
+Implement world position reset when switching to/form hyperdrive.
+
+Implement physics in a universally easy to use way.
+
+-- Set up a spacecube field and make the ship travel through it (just via brute
 force, no need for physics right now). Then ensure the player stays on the ship
 and doesn't get left behind, in all modes. Maybe give to option to let one
 detach from ship in free cam mode.
 
-Implement physics in a universally easy to use way.
+Implement full warp drive controls.
 
-Create a standard mesh loading mechanism.
+Implement an analog logarithmic speedometer (or at least a relative one).
+Show all speeds underneath, but make the font smallers as the numbers grow.
+Move position and rotation to left bottom.
+
+Implement dynamic gravity.
+Address the walking through wall problem.
+Consider implementing invisible floors to make walking smoother.
+
+Create indicator that shows "Press [] to interact." or "[] Interact."
+Make the border be in the direction of the switch highlighted.
+Maybe place an actual arrow next the border closer the the interactable, but
+this last one is optional.
+
+100km/h -> 3000c -> 3 billion c
+[messes up past about 50% galaxy width, but it's consistent and can likely be worked around]
+
+Some technical problems to consider:
+Moving at 3000c causes the camera to jump around *slightly*. \[Note that this was
+*after* render order optimisations which fixed glitches showing at 100km/h
+already.] This get worse until the game is eventually unplayable. Some tests I
+did suggest that the problem gets far worse as distance to the world coords
+0,0,0 goes into the multimillions. A solution was found: don't move the space
+ship at all - move the entire universe in opposite direction instead. This
+completely solves not only the jumpiness, but means the skybox is now stable
+too. The results were good even at 3 billion times the speed of
+light (I stopped there because we'll never need nearly that much). The
+glitchiness vanished, but there is one last problem. At exactly 2 specific
+distances from 0,0,0, the camera first jumps about around 3 meters forward
+from where is should be, and then jumps 3 meters back from where it should be.
+I don't have exact values, happens at around 75,000ly and 150,000ly. Note
+however it isn't glitchy and stays stable despite the bad cam positions,
+meaning we can hopefully code around it when the time comes.
+At the time of writing, I have no clue if you can make physics system
+(cannon.js) account for this. Even if you could, it's likely unnecessary.
+Instead, I propose a solution where the player movement vs universe movement
+is done dynamically based on certain conditions, which disables physics as needed.
+* [Ship movement] Player can accelerate infinitely using normal engines, but make
+this infeasible. Basically, accelerate about as fast as the Parker Solar Probe,
+which would take about 3.5 years to travel 1AU. Also limit ship speed to 400m/s
+by default using safety mechanisms, but allow the player to unlock acceleration
+via ship hack. Maybe have the ship automatically engage hyperdrive past a
+certain speed (if equipped).
+* [Universe movement] To travel as reasonable speeds, jump into hyperdrive.
+When doing this, disable all physics. This allows us to transform the world
+instead of the ship. We'll need to ensure the entire game is compatible with
+the change in ref calculations.
+* Hyperspace (IID) of course just instantly teleports you, so it does what
+hyperdrive does.
+* When the player exits hyper\[*], parent it to a new group and transform it to
+world 0,0,0. Then transform the universe such that the player is the center of
+the universe just like my ex. Reactivate physics at the new center of
+universe.
+* Profit.
 
 Detail a standard for mesh creation. Maybe with a json file that describes how
 the mesh is the be loaded, example:

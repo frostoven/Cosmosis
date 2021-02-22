@@ -44,7 +44,7 @@
   "dependencies": {
     "cannon": "0.6.2",
     "drei": "1.5.7",
-    "nw": "0.44.1-sdk",
+    "nw": "0.50.2-sdk",
     "react": "16.13.1",
     "react-dom": "16.13.1",
     "react-three-fiber": "4.2.21",

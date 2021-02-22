@@ -2,6 +2,15 @@
  * Visually tracks current camera speed.
  */
 
+/*
+ * TODO:
+ *  consider doing the following.
+ *  top, mid, bottom bar.
+ *  top bar: c, ALWAYS 6 chars regardless.
+ *  mid: MM/s
+ *  bottom: m/s up to 10, then km/s. bottom scales font smaller as value gets bigger.
+ */
+
 import * as THREE from "three";
 
 // Used to calculate meters per second.
@@ -24,6 +33,11 @@ function showStats() {
  * Used to track camera speed. Gives visual feedback as a status bar.
  */
 function trackCameraSpeed() {
+  // How often we calculate distance. This is variable, change as needed.
+  const freq = 500;
+  // Per second.  (i.e. per 1000 milliseconds). This is constant, don't change.
+  const perUnit = 1000;
+
   const timer = setInterval(() => {
     const statusDiv = document.getElementById('camDevArea');
     if (!statusDiv || !$gameView.camera) {
@@ -36,10 +50,9 @@ function trackCameraSpeed() {
     const camPs = $gameView.camera.position;
     const camRt = $gameView.camera.rotation;
 
-    const dist = camPs.distanceTo(prevPosition);
-    // if (dist !== 0) {
-    //   console.log(dist);
-    // }
+    let dist = camPs.distanceTo(prevPosition);
+    dist = dist / (freq / perUnit);
+
     statusDiv.innerText =
       dist.toFixed(1) + ' m/s ' +
       '[' + (dist * 3.6).toFixed(1) + 'km/h' + '] ' +
@@ -47,7 +60,7 @@ function trackCameraSpeed() {
       `{Ps} x:${Math.floor(camPs.x)}, y:${Math.floor(camPs.y)}, z:${Math.floor(camPs.z)}\n` +
       `{Rt} x:${camRt.x.toFixed(4)}, y:${camRt.y.toFixed(4)}, z:${camRt.z.toFixed(4)}`;
     prevPosition.copy(camPs);
-  }, 1000);
+  }, freq);
 
   return timer;
 }
