@@ -124,15 +124,16 @@ function modelPostSetup(modelName, gltf, pos, scene, world, onReady) {
     //
     scene.add(mesh.scene);
 
-    const body = makePhysical({
-      mesh: mesh.scene,
-      // TODO: for now we use a simple cube shape just to get the framework up.
-      //  This needs to become a compound shape in future using the p[a]_ tags
-      //  (see mesh codes -> Physics collision node codes).
-      bodyShape: shapeTemplates.cubeShape(1.2, 1, 1.8),
-      options: { mass: 1 },
-      world,
-    });
+    // TODO: continue from here.
+    // const body = makePhysical({
+    //   mesh: mesh.scene,
+    //   // TODO: for now we use a simple cube shape just to get the framework up.
+    //   //  This needs to become a compound shape in future using the p[a]_ tags
+    //   //  (see mesh codes -> Physics collision node codes).
+    //   bodyShape: shapeTemplates.cubeShape(1.2, 1, 1.8),
+    //   options: { mass: 1 },
+    //   world,
+    // });
 
     const { x, y, z } = mesh.scene.position;
     // console.log(`=> Physical ship ${modelName} created at ${x},${y},${z};`, mesh);
