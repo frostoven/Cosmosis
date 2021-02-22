@@ -43,6 +43,7 @@ const keySchema = {
     'speedUp',
     'speedDown',
     'use',
+    'doubleSpeed',
   ],
   godCam: [],
 }
@@ -88,6 +89,8 @@ const controls = {
     NumpadAdd: 'speedUp',
     NumpadSubtract: 'speedDown',
     KeyE: 'interact',
+    ShiftLeft: 'doubleSpeed',
+    ShiftRight: 'doubleSpeed',
   },
   godCam: {
     _description: 'Celestial god cam',

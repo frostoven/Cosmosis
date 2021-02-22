@@ -33,6 +33,7 @@ const ctrl = {
     //
     speedUp: false,
     speedDown: false,
+    doubleSpeed: false,
 }
 
 const toggles = {
@@ -96,6 +97,7 @@ function render(delta) {
             speed = 0;
         }
     }
+    const effSpeed = speed * (ctrl.doubleSpeed ? 2 : 1);
 
     velocity.x -= velocity.x * 10 * delta;
     velocity.z -= velocity.z * 10 * delta;
@@ -107,9 +109,9 @@ function render(delta) {
     // This ensures consistent movements in all directions.
     direction.normalize();
 
-    if (ctrl.moveForward || ctrl.moveBackward) velocity.z -= direction.z * speed * 40.0 * delta;
-    if (ctrl.moveLeft || ctrl.moveRight) velocity.x -= direction.x * speed * 40.0 * delta;
-    if (ctrl.moveUp || ctrl.moveDown) velocity.y -= direction.y * speed * 40.0 * delta;
+    if (ctrl.moveForward || ctrl.moveBackward) velocity.z -= direction.z * effSpeed * 40.0 * delta;
+    if (ctrl.moveLeft || ctrl.moveRight) velocity.x -= direction.x * effSpeed * 40.0 * delta;
+    if (ctrl.moveUp || ctrl.moveDown) velocity.y -= direction.y * effSpeed * 40.0 * delta;
 
     camera.translateX(-velocity.x * delta);
     camera.translateY(velocity.y * delta);
