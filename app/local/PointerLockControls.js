@@ -4,9 +4,19 @@
  * things like thrust) without dictating it be used only as a camera mover.
  */
 
-import { Euler, EventDispatcher, Vector3 } from 'three';
+import { Euler, EventDispatcher, Quaternion, Vector3 } from 'three';
 
 import { opacity as aimOpacity } from "./crosshairs";
+
+const lockModes = {
+  // Mouse does not cause the camera to move in this mode.
+  // TODO: currently shows visuals too, please visuals move elsewhere.
+  frozen: 2,
+  // Can look freely in all directions without restriction.
+  freeLook: 4,
+  // Can look 110 degrees from origin before mouse stops moving.
+  headLook: 8,
+};
 
 const PointerLockControls = function (camera, domElement, onMouseCb) {
   if (domElement === undefined) {
@@ -20,13 +30,24 @@ const PointerLockControls = function (camera, domElement, onMouseCb) {
   }
 
   this.domElement = domElement;
-  this.isLocked = false;
-  this.isCamLocked = true;
+  // If true, the browser will hide the cursor.
+  this.isPointerLocked = false;
+  // Visually draws the crosshairs with html and css. TODO: move me elsewhere.
+  this.enableCrosshairs = false;
+  this.lockMode = lockModes.freeLook;
 
   // Set to constrain the pitch of the camera
   // Range is 0 to Math.PI radians
   this.minPolarAngle = 0; // radians
   this.maxPolarAngle = Math.PI; // radians
+
+  // Constrain pitch in headlook mode.
+  this.headXMax = 1565;
+  this.headYMax = 1110;
+
+  this.camRefQuat = null;
+  this.mouseX = 100;
+  this.mouseY = 100;
 
   //
   // internals
@@ -43,22 +64,26 @@ const PointerLockControls = function (camera, domElement, onMouseCb) {
   const PI_2 = Math.PI / 2;
 
   function onMouseMove(event) {
-    if (scope.isLocked === false) {
+    if (scope.isPointerLocked === false) {
       return;
     }
 
-    const mouseX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
-    const mouseY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
-
-    if (!scope.isCamLocked) {
-      euler.setFromQuaternion(camera.quaternion);
-      euler.y -= mouseX * 0.002;
-      euler.x -= mouseY * 0.002;
-      euler.x = Math.max(PI_2 - scope.maxPolarAngle, Math.min(PI_2 - scope.minPolarAngle, euler.x));
-      camera.quaternion.setFromEuler(euler);
+    if (!scope.camRefQuat) {
+      // This block is used if the camera is working independantly
+      scope.mouseX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
+      scope.mouseY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
+      scope.updateIndependently();
     }
     else {
-      onMouseCb(mouseX, mouseY);
+      // Headlook mode. Used when the camera is locked to i.e. the bridge cam.
+      const mx = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
+      const my = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
+      if (Math.abs(scope.mouseX + mx) < scope.headXMax) {
+        scope.mouseX += mx;
+      }
+      if (Math.abs(scope.mouseY + my) < scope.headYMax) {
+        scope.mouseY += my;
+      }
     }
 
     scope.dispatchEvent(changeEvent);
@@ -67,17 +92,15 @@ const PointerLockControls = function (camera, domElement, onMouseCb) {
   function onPointerlockChange() {
     if (scope.domElement.ownerDocument.pointerLockElement === scope.domElement) {
       scope.dispatchEvent(lockEvent);
-      scope.isLocked = true;
+      scope.isPointerLocked = true;
     } else {
       scope.dispatchEvent(unlockEvent);
-      scope.isLocked = false;
+      scope.isPointerLocked = false;
     }
-    scope.lockChange();
   }
 
   function onPointerlockError() {
     console.error('THREE.PointerLockControls: Unable to use Pointer Lock API');
-    scope.lockChange();
   }
 
   this.connect = function () {
@@ -93,9 +116,7 @@ const PointerLockControls = function (camera, domElement, onMouseCb) {
   };
 
   this.dispose = function () {
-
     this.disconnect();
-
   };
 
   this.getObject = function () { // retaining this method for backward compatibility
@@ -123,46 +144,83 @@ const PointerLockControls = function (camera, domElement, onMouseCb) {
     camera.position.addScaledVector(vec, distance);
   };
 
+  // Locks the mouse pointer.
   this.lock = function () {
     this.domElement.requestPointerLock();
   };
 
+  // Unlocks the mouse pointer.
   this.unlock = function () {
     scope.domElement.ownerDocument.exitPointerLock();
   };
 
+  // Locks or unlocks the mouse pointer.
   this.toggle = function () {
-    if (this.isLocked) {
+    if (this.isPointerLocked) {
       this.unlock();
     } else {
       this.lock();
     }
   }
 
-  this.lockCamera = function () {
-    this.isCamLocked = true;
-    this.lockChange();
+  this.getLockMode = function() {
+    return this.lockMode;
   }
 
-  this.unlockCamera = function () {
-    this.isCamLocked = false;
-    this.lockChange();
+  // Sets the lock mode and undoes any external quaternion references.
+  this.setLockMode = function(mode) {
+    this.resetCamRefQuat();
+    this.lockMode = mode;
   }
 
-  this.toggleCamLock = function () {
-    if (this.isLocked) {
-      scope.isCamLocked = !scope.isCamLocked;
-      scope.lockChange();
-    }
+  this.setCamRefQuat = function (quaternion) {
+    this.camRefQuat = quaternion;
+    this.updateWithRef();
   }
 
-  this.lockChange = function () {
-    if (scope.isLocked && scope.isCamLocked) {
+  this.updateIndependently = function () {
+    euler.setFromQuaternion(camera.quaternion);
+    euler.y -= scope.mouseX * 0.002;
+    euler.x -= scope.mouseY * 0.002;
+    euler.x = Math.max(PI_2 - scope.maxPolarAngle, Math.min(PI_2 - scope.minPolarAngle, euler.x));
+    camera.quaternion.setFromEuler(euler);
+  }
+
+  this.updateWithRef = function () {
+    camera.quaternion.copy(scope.camRefQuat);
+    camera.rotateY(scope.mouseX * -0.002);
+    camera.rotateX(scope.mouseY * -0.002);
+  }
+
+  this.getCamRefQuat = function () {
+    return this.camRefQuat;
+  }
+
+  this.resetCamRefQuat = function () {
+    this.camRefQuat = null;
+  }
+
+  // TODO: move this to a better place.
+  this.toggleCrosshairs = function () {
+    scope.enableCrosshairs = !scope.enableCrosshairs;
+    if (scope.enableCrosshairs) {
       aimOpacity('aimCenter', 0.25);
     }
     else {
       aimOpacity('aimCenter', 0);
     }
+  }
+  //
+  // TODO: move this to a better place.
+  this.showCrosshairs = function () {
+    scope.enableCrosshairs = true;
+    aimOpacity('aimCenter', 0.25);
+  }
+  //
+  // TODO: move this to a better place.
+  this.hideCrosshairs = function () {
+    scope.enableCrosshairs = false;
+    aimOpacity('aimCenter', 0);
   }
 
   this.connect();
@@ -171,4 +229,7 @@ const PointerLockControls = function (camera, domElement, onMouseCb) {
 PointerLockControls.prototype = Object.create( EventDispatcher.prototype );
 PointerLockControls.prototype.constructor = PointerLockControls;
 
-export { PointerLockControls };
+export {
+  PointerLockControls,
+  lockModes,
+};

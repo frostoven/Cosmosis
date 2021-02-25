@@ -3,6 +3,7 @@ import * as THREE from "three";
 import { controls } from '../local/controls';
 import core from "../local/core";
 import speedTracker from "./utils/speedTracker";
+import { lockModes } from "../local/PointerLockControls";
 
 const mode = core.modes.freeCam;
 const camControls = controls.freeCam;
@@ -43,12 +44,17 @@ const toggles = {
 function register() {
     core.registerCamControl({ name: 'freeCam', render });
     core.registerKeyPress({ mode, cb: onKeyPress });
-    core.registerKeyUpDown({mode, cb: onKeyUpDown });
+    core.registerKeyUpDown({ mode, cb: onKeyUpDown });
 
     // Only render if mode is freeCam.
     core.modeListeners.register((change) => {
         doRender = change.mode === mode;
         if (doRender) {
+            // Set game lock only when the game is ready.
+            core.onLoadProgress(core.progressActions.gameViewReady, () => {
+                $gameView.ptrLockControls.setLockMode(lockModes.freeLook);
+            });
+
             speedTimer = speedTracker.trackCameraSpeed();
         }
         else if (speedTimer) {
@@ -98,6 +104,9 @@ function render(delta) {
         }
     }
     const effSpeed = speed * (ctrl.doubleSpeed ? 2 : 1);
+
+    // The rest of this function is for keyboard controls. Note that the mouse
+    // is not handled in this function.
 
     velocity.x -= velocity.x * 10 * delta;
     velocity.z -= velocity.z * 10 * delta;

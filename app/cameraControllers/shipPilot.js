@@ -3,6 +3,7 @@ import * as THREE from "three";
 import { controls } from '../local/controls';
 import core from "../local/core";
 import speedTracker from "./utils/speedTracker";
+import { lockModes } from "../local/PointerLockControls";
 
 const mode = core.modes.shipPilot;
 const camControls = controls.shipPilot;
@@ -58,21 +59,59 @@ const ctrl = {
 
 const toggles = {
   // TODO: think about whether or not this belongs in core instead.
-  // toggleMouseControl: () => $gameView.ptrLockControls.toggleCamLock(),
-  toggleMouseControl: core.coreKeyToggles.toggleMouseControl,
+  // toggleMouseSteering: () => $gameView.ptrLockControls.toggleCamLock(),
+  toggleMouseSteering: () => {
+    // core.coreKeyToggles.toggleMouseSteering();
+    const curLock = $gameView.ptrLockControls.getLockMode();
+    if (curLock === lockModes.headLook) {
+      $gameView.ptrLockControls.setLockMode(lockModes.frozen);
+      $gameView.ptrLockControls.showCrosshairs();
+    }
+    else {
+      $gameView.ptrLockControls.setLockMode(lockModes.headLook);
+      $gameView.ptrLockControls.hideCrosshairs();
+    }
+    // cycleAnalogMode();
+  },
   hyperdrive: core.coreKeyToggles.toggleHyperMovement,
   // TODO: remove me
   debugGravity: () => { if (ambientGravity === 10) { ambientGravity = 1; }  else { ambientGravity = 10; } },
 };
 
-const analog = { x: 0, y: 0 };
+const steerModes = {
+  steer: 'steer',
+  look: 'look',
+}
 
-const analogSteer = {
-  spNorth: (d) => { analog.y += d; if (analog.y > 100) analog.y = 100; },
-  spSouth: (d) => { analog.y += d; if (analog.y < -100) analog.y = -100;  },
-  spEast: (d) => { analog.x += d; if (analog.x > 100) analog.x = 100; },
-  spWest: (d) => { analog.x += d; if (analog.x < -100) analog.x = -100; },
+const analog = {
+  steer: { x: 0, y: 0 },
+  look: { x: 0, y: 0 },
 };
+
+let analogMode = steerModes.steer;
+function cycleAnalogMode() {
+  if (analogMode === steerModes.steer) {
+    analogMode = steerModes.look;
+  }
+  else {
+    analogMode = steerModes.steer;
+  }
+  analog.look.x = 0;
+  analog.look.y = 0;
+}
+
+// TODO: DRY this, and add mouse sensitivity adjuster. IMPORTANT: separate
+//  mouse look sensitivity from steer sensitivity.
+const analogSteer = {
+  spNorth: (d) => { const target = analog[analogMode]; target.y += d; if (target.y > 100) target.y = 100; },
+  spSouth: (d) => { const target = analog[analogMode]; target.y += d; if (target.y < -100) target.y = -100;  },
+  spEast: (d) => { const target = analog[analogMode]; target.x += d; if (target.x > 100) target.x = 100; },
+  spWest: (d) => { const target = analog[analogMode]; target.x += d; if (target.x < -100) target.x = -100; },
+};
+
+// setInterval(() => {
+//   console.log('lock mode:', $gameView.ptrLockControls.getLockMode());
+// })
 
 function register() {
   core.registerCamControl({
@@ -85,8 +124,14 @@ function register() {
 
   // Only render if mode is shipPilot.
   core.modeListeners.register((change) => {
+
     modeActive = change.mode === mode;
     if (modeActive) {
+      // Set game lock only when the game is ready.
+      core.onLoadProgress(core.progressActions.gameViewReady, () => {
+        $gameView.ptrLockControls.setLockMode(lockModes.freeLook);
+      });
+
       // attachCamera($gameView.playerShip);
       speedTimer = speedTracker.trackCameraSpeed();
     }
@@ -125,20 +170,14 @@ function snapCamToLocal() {
 function updateCamAttach(attachCamTo, copyPosTo) {
   const targetPos = new THREE.Vector3(0, 0, 0,);
   let position = new THREE.Vector3();
-  let quaternion = new THREE.Quaternion();
+  let quaternion = new TtodHREE.Quaternion();
   let scale = new THREE.Vector3();
 
   attachCamTo.getWorldPosition(targetPos);
   copyPosTo.copy(targetPos);
 
   attachCamTo.matrixWorld.decompose(position, quaternion, scale);
-  $gameView.camera.rotation.setFromQuaternion(quaternion);
-
-  // Mouse rotation can then be done with something like:
-  // $gameView.camera.rotateY(90)
-
-  // Working original snap to ship:
-  // $gameView.camera.rotation.copy($gameView.playerShip.scene.rotation);
+  $gameView.ptrLockControls.setCamRefQuat(quaternion);
 }
 
 function onKeyPress({ key, amount }) {
@@ -152,7 +191,7 @@ function onKeyPress({ key, amount }) {
   // This below should possibly be checked inside the render function, but it
   // feels complicated and wasteful doing so..
 
-  // Ex. 'toggleMouseControl' or 'toggleMousePointer' etc.
+  // Ex. 'toggleMouseSteering' or 'toggleMousePointer' etc.
   const toggleFn = toggles[control];
   if (toggleFn) {
     toggleFn();
@@ -293,8 +332,8 @@ function handleHyper(delta, scene, playerShip) {
 
   // bookm
   // Steering.
-  const rotX = max100(analog.x);
-  const rotY = max100(analog.y);
+  const rotX = max100(analog.steer.x);
+  const rotY = max100(analog.steer.y);
 }
 
 /** Returns the number, or 100 (sign preserved) if it's more than 100. */
@@ -310,7 +349,7 @@ function handleLocal(delta) {
 
 let updateCount_DELETEME = 0;
 function render(delta) {
-  // console.log(analog); // analogSteer
+  // console.log(steer); // analogSteer
 
   const { playerShip } = $gameView;
   if (!playerShip) {
@@ -328,7 +367,7 @@ function render(delta) {
     const throttle = Math.round((currentThrottle / maxThrottle) * 100);
     // |
     div.innerText = `
-      y: ${throttle}% (${analog.y})
+      y: ${throttle}% (${analog.steer.y})
       Player throttle: ${throttle}% (${Math.round(currentThrottle)}/${maxThrottle})
       Actual throttle: ${actualThrottle.toFixed(1)}
       Microgravity: ${(((10**-(1/ambientGravity))-0.1)*10).toFixed(2)}G [factor ${ambientGravity}]

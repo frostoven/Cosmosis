@@ -190,7 +190,7 @@ const coreKeyToggles = {
   // lockMouse: () => {
   //   console.log('reimplement pointer lock.');
   // },
-  toggleMouseControl: () => $gameView.ptrLockControls.toggleCamLock(),
+  // toggleMouseControl: () => $gameView.ptrLockControls.toggleCamLock(),
   toggleMousePointer: () => $gameView.ptrLockControls.toggle(),
   toggleHyperMovement: () => {
     $gameView.hyperMovement = !$gameView.hyperMovement;
@@ -480,9 +480,7 @@ function getMode() {
 }
 
 function setMode(mode) {
-  if ($gameView.ptrLockControls) {
-    $gameView.ptrLockControls.unlockCamera();
-  }
+
   const prevMode = currmode;
   currmode = mode;
 
@@ -778,7 +776,7 @@ function animate() {
     level.process(delta);
   }
 
-  // TODO: REMOVE ME - this is here to test the cam attaching to the bridge.
+  // TODO: REMOVE ME - this is here to test the cam attaching to the bridge with rotation.
   // if ($gameView.playerShip) {
   //   $gameView.playerShip.scene.rotateY(0.001);
   //   $gameView.playerShip.scene.rotateX(0.001);
@@ -906,6 +904,7 @@ function testAllLoaded() {
     count++;
   }, () => {
   });
+
   setTimeout(() => {
     if (count !== Object.keys(progressActions).length) {
       console.warn(
