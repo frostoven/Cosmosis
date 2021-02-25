@@ -22,7 +22,7 @@ const keySchema = {
     'thrustDec',
     'thrustReset',
     'thrustUp10',
-    'toggleMouseControl',
+    'toggleMouseSteering',
     // 'toggleMousePointer', // a.k.a. PointerLockControls.
     'left_renameme',
     'right_renameme',
@@ -60,7 +60,8 @@ const controls = {
     _description: 'Mode used when user is locked to seat.',
     KeyW: 'thrustInc',
     KeyS: 'thrustDec',
-    spMouseMiddle: 'toggleMouseControl',
+    spMouseMiddle: 'toggleMouseSteering',
+    Numpad5: 'toggleMouseSteering',
     spScrollUp : 'thrustUp10',
     spScrollDown: 'thrustReset',
     KeyA: 'left_renameme',
@@ -98,6 +99,16 @@ const controls = {
   godCam: {
     _description: 'Celestial god cam',
     noNeedForControlsWhenOmnipotent: [],
+  }
+};
+
+/**
+ * For use in the keybinding menu. Meant to explain to the player what
+ * everything does.
+ */
+const keyManual = {
+  shipPilot: {
+    toggleMouseSteering: 'Switches between using the mouse for steering and looking around.',
   }
 };
 
