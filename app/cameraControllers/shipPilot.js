@@ -61,16 +61,16 @@ const toggles = {
   // TODO: think about whether or not this belongs in core instead.
   // toggleMouseSteering: () => $gameView.ptrLockControls.toggleCamLock(),
   toggleMouseSteering: () => {
+    const ptr = $gameView.ptrLockControls;
     // core.coreKeyToggles.toggleMouseSteering();
-    const curLock = $gameView.ptrLockControls.getLockMode();
+    const curLock = ptr.getLockMode();
     if (curLock === lockModes.headLook) {
-      $gameView.ptrLockControls.setLockMode(lockModes.frozen);
-      $gameView.ptrLockControls.showCrosshairs();
+      ptr.setLockMode(lockModes.frozen);
     }
     else {
-      $gameView.ptrLockControls.setLockMode(lockModes.headLook);
-      $gameView.ptrLockControls.hideCrosshairs();
+      ptr.setLockMode(lockModes.headLook);
     }
+    ptr.resetMouse();
     // cycleAnalogMode();
   },
   hyperdrive: core.coreKeyToggles.toggleHyperMovement,
@@ -109,10 +109,6 @@ const analogSteer = {
   spWest: (d) => { const target = analog[analogMode]; target.x += d; if (target.x < -100) target.x = -100; },
 };
 
-// setInterval(() => {
-//   console.log('lock mode:', $gameView.ptrLockControls.getLockMode());
-// })
-
 function register() {
   core.registerCamControl({
     name: 'shipPilot', render, triggerAction,
@@ -129,7 +125,11 @@ function register() {
     if (modeActive) {
       // Set game lock only when the game is ready.
       core.onLoadProgress(core.progressActions.gameViewReady, () => {
-        $gameView.ptrLockControls.setLockMode(lockModes.freeLook);
+        $gameView.ptrLockControls.setLockMode(lockModes.headLook);
+        $gameView.ptrLockControls.updateAnchor();
+      });
+      core.onLoadProgress(core.progressActions.playerShipLoaded, () => {
+        $gameView.ptrLockControls.attachToAnchor($gameView.playerShip.cameras[0]);
       });
 
       // attachCamera($gameView.playerShip);
@@ -164,20 +164,6 @@ function snapCamToLocal() {
   // keep a vector of your local coords.
   // snap a tmp vector to ship origin.
   // snap your cam to a position relative to the difference of local and tmp.
-}
-
-// TODO: test current code with both world and local transform.
-function updateCamAttach(attachCamTo, copyPosTo) {
-  const targetPos = new THREE.Vector3(0, 0, 0,);
-  let position = new THREE.Vector3();
-  let quaternion = new TtodHREE.Quaternion();
-  let scale = new THREE.Vector3();
-
-  attachCamTo.getWorldPosition(targetPos);
-  copyPosTo.copy(targetPos);
-
-  attachCamTo.matrixWorld.decompose(position, quaternion, scale);
-  $gameView.ptrLockControls.setCamRefQuat(quaternion);
 }
 
 function onKeyPress({ key, amount }) {
@@ -389,10 +375,6 @@ function render(delta) {
     // PLEASE GIVE ME PHYSICS
     handleLocal(delta);
   }
-
-  // Note: always put this after ship position modifications or the camera will
-  // lag a frame behind and appear extremely glitchy.
-  updateCamAttach(playerShip.cameras[0], camera.position);
 }
 
 export default {
