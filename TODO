@@ -1,8 +1,4 @@
-Move relative cam rotation to core.js.
-
 Put first load mode in index.js.
-
-Enable cam look-around in ship pilot mode using middle click.
 
 Make ship movable with physics using keyboard controls.
 

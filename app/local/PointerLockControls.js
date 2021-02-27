@@ -33,7 +33,7 @@ const PointerLockControls = function (camera, domElement, onMouseCb) {
   // If true, the browser will hide the cursor.
   this.isPointerLocked = false;
   // Visually draws the crosshairs with html and css. TODO: move me elsewhere.
-  this.enableCrosshairs = false;
+  this.showCrosshairs = false;
   this.lockMode = lockModes.freeLook;
 
   // Set to constrain the pitch of the camera
@@ -46,8 +46,10 @@ const PointerLockControls = function (camera, domElement, onMouseCb) {
   this.headYMax = 1110;
 
   this.camRefQuat = null;
-  this.mouseX = 100;
-  this.mouseY = 100;
+  this.camAnchor = null;
+  // 0 here actually means center of the screen.
+  this.mouseX = 0;
+  this.mouseY = 0;
 
   //
   // internals
@@ -78,10 +80,17 @@ const PointerLockControls = function (camera, domElement, onMouseCb) {
       // Headlook mode. Used when the camera is locked to i.e. the bridge cam.
       const mx = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
       const my = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
-      if (Math.abs(scope.mouseX + mx) < scope.headXMax) {
-        scope.mouseX += mx;
+
+      if (scope.lockMode === lockModes.headLook) {
+        if (Math.abs(scope.mouseX + mx) < scope.headXMax) {
+          scope.mouseX += mx;
+        }
+        if (Math.abs(scope.mouseY + my) < scope.headYMax) {
+          scope.mouseY += my;
+        }
       }
-      if (Math.abs(scope.mouseY + my) < scope.headYMax) {
+      else {
+        scope.mouseX += mx;
         scope.mouseY += my;
       }
     }
@@ -171,55 +180,97 @@ const PointerLockControls = function (camera, domElement, onMouseCb) {
   this.setLockMode = function(mode) {
     this.resetCamRefQuat();
     this.lockMode = mode;
-  }
-
-  this.setCamRefQuat = function (quaternion) {
-    this.camRefQuat = quaternion;
-    this.updateWithRef();
+    if (mode === lockModes.frozen) {
+      this.enableCrosshairs();
+    }
+    else {
+      this.disableCrosshairs();
+    }
   }
 
   this.updateIndependently = function () {
+    let x = scope.mouseX;
+    let y = scope.mouseY;
+    if (scope.lockMode === lockModes.frozen) {
+      x = y = 0;
+    }
     euler.setFromQuaternion(camera.quaternion);
-    euler.y -= scope.mouseX * 0.002;
-    euler.x -= scope.mouseY * 0.002;
+    euler.y -= x * 0.002;
+    euler.x -= y * 0.002;
     euler.x = Math.max(PI_2 - scope.maxPolarAngle, Math.min(PI_2 - scope.minPolarAngle, euler.x));
     camera.quaternion.setFromEuler(euler);
   }
 
   this.updateWithRef = function () {
+    let x = scope.mouseX;
+    let y = scope.mouseY;
+    if (scope.lockMode === lockModes.frozen) {
+      x = y = 0;
+    }
     camera.quaternion.copy(scope.camRefQuat);
-    camera.rotateY(scope.mouseX * -0.002);
-    camera.rotateX(scope.mouseY * -0.002);
+    camera.rotateY(x * -0.002);
+    camera.rotateX(y * -0.002);
   }
 
   this.getCamRefQuat = function () {
     return this.camRefQuat;
   }
 
+  // this.setCamRefQuat = function (quaternion) {
+  //   this.camRefQuat = quaternion;
+  //   this.updateWithRef();
+  // }
+
   this.resetCamRefQuat = function () {
     this.camRefQuat = null;
   }
 
-  // TODO: move this to a better place.
-  this.toggleCrosshairs = function () {
-    scope.enableCrosshairs = !scope.enableCrosshairs;
-    if (scope.enableCrosshairs) {
-      aimOpacity('aimCenter', 0.25);
-    }
-    else {
-      aimOpacity('aimCenter', 0);
-    }
+  // Attaching the camera to an anchor almost like parenting.
+  this.attachToAnchor = function(obj) {
+    this.camAnchor = obj;
   }
+
+  this.unsetAnchor = function() {
+    this.camAnchor = null;
+  }
+
+  // TODO: test current code with both world and local transform.
+  // Should be called from the core animate function.
+  this.updateAnchor = function (attachCamTo) {
+    if (!this.camAnchor) {
+      return;
+    }
+
+    const targetPos = new Vector3(0, 0, 0,);
+    let position = new Vector3();
+    let quaternion = new Quaternion();
+    let scale = new Vector3();
+
+    const anchor = this.camAnchor;
+    anchor.getWorldPosition(targetPos);
+    camera.position.copy(targetPos);
+
+    anchor.matrixWorld.decompose(position, quaternion, scale);
+    this.camRefQuat = quaternion;
+    this.updateWithRef();
+  }
+
+  // Sets mouse to center of screen.
+  this.resetMouse = function() {
+    this.mouseX = 0;
+    this.mouseY = 0;
+  }
+
   //
   // TODO: move this to a better place.
-  this.showCrosshairs = function () {
-    scope.enableCrosshairs = true;
+  this.enableCrosshairs = function () {
+    scope.showCrosshairs = true;
     aimOpacity('aimCenter', 0.25);
   }
   //
   // TODO: move this to a better place.
-  this.hideCrosshairs = function () {
-    scope.enableCrosshairs = false;
+  this.disableCrosshairs = function () {
+    scope.showCrosshairs = false;
     aimOpacity('aimCenter', 0);
   }
 

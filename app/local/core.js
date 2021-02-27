@@ -725,7 +725,8 @@ function initPlayer() {
       $gameView.playerShip = mesh;
       notifyLoadProgress(progressActions.playerShipLoaded);
 
-      // TODO: replace all occurrences of mw with onLoadProgress.
+      // TODO: replace all external occurrences of notifyAll with
+      //  onLoadProgress, then delete this.
       playerShipReadyListeners.notifyAll((cb) => {
         cb(mesh);
       });
@@ -777,11 +778,11 @@ function animate() {
   }
 
   // TODO: REMOVE ME - this is here to test the cam attaching to the bridge with rotation.
-  // if ($gameView.playerShip) {
-  //   $gameView.playerShip.scene.rotateY(0.001);
-  //   $gameView.playerShip.scene.rotateX(0.001);
-  //   $gameView.playerShip.scene.rotateZ(0.001);
-  // }
+  if ($gameView.playerShip) {
+    $gameView.playerShip.scene.rotateY(0.001);
+    $gameView.playerShip.scene.rotateX(0.001);
+    $gameView.playerShip.scene.rotateZ(0.001);
+  }
 
   // Brute move ship forward.
   // moveShip_DELETEME(delta, playerShip);
@@ -799,6 +800,11 @@ function animate() {
     const cam = cachedCamList[i];
     cam.render(delta);
   }
+
+  // If the camera is currently anchored to something, update position. Note:
+  // always put this after all physics have been calculated or we'll end up
+  // with glitchy movement.
+  $gameView.ptrLockControls.updateAnchor();
 
   // renderer.render(scene, camera);
   renderer.render(group, camera);
