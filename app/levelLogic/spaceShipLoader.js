@@ -104,7 +104,7 @@ function loadModel(name, callback) {
 
 function modelPostSetup(modelName, gltf, pos, scene, world, onReady) {
   getMesh(modelName, (mesh) => {
-    mesh.scene.position.copy($gameView.camera.position);
+    mesh.scene.position.copy($game.camera.position);
     //
     // TODO: remove this light. This is only here until lights become dynamic.
     // const warmWhite = 0xefebd8;
@@ -167,7 +167,7 @@ function processMeshCodes(name, gltf, isPlayer) {
   }
   level.setNameMap(nameMap);
 
-  $gameView.level = level;
+  $game.level = level;
 }
 
 /**
@@ -182,9 +182,9 @@ function processMeshCodes(name, gltf, isPlayer) {
 export function createSpaceShip({ modelName, pos, scene, world, isPlayer, onReady }) {
   core.onLoadProgress(core.progressActions.gameViewReady, () => {
     if (!modelName) return console.error('createSpaceShip needs a model name.');
-    if (!pos) pos = $gameView.camera.position;
-    if (!scene) scene = $gameView.scene;
-    if (!world) world = $gameView.spaceWorld;
+    if (!pos) pos = $game.camera.position;
+    if (!scene) scene = $game.scene;
+    if (!world) world = $game.spaceWorld;
     if (!onReady) onReady = () => {};
 
     createDefaults(modelName);
