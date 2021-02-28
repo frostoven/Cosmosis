@@ -66,15 +66,15 @@ Level.prototype.triggerAnimation = function triggerAnimation(action) {
  */
 Level.prototype.process = function process(delta) {
   const tmpVec3 = new THREE.Vector3(0, 0, 0);
-  // console.log('**** dist to ship:', levelPos.distanceTo($gameView.camera.position));
-  // const relPos = levelPos.distanceTo($gameView.camera.position);
+  // console.log('**** dist to ship:', levelPos.distanceTo($game.camera.position));
+  // const relPos = levelPos.distanceTo($game.camera.position);
   for (let i = 0, len = this.interactables.length; i < len; i++) {
     const node = this.interactables[i];
     node.getWorldPosition(tmpVec3);
-    const dist = tmpVec3.distanceTo($gameView.camera.position);
+    const dist = tmpVec3.distanceTo($game.camera.position);
     if (dist <= ACTION_DIST) {
       // console.log(`**** dist to ${node.name}:`, dist);
-      $gameView.outlinePass.selectedObjects = [node];
+      $game.outlinePass.selectedObjects = [node];
       if (this._useNext) {
         let clip;
         // Switches have targets, which are other 3D objects. Items like chairs
@@ -100,7 +100,7 @@ Level.prototype.process = function process(delta) {
       }
     }
     else {
-      $gameView.outlinePass.selectedObjects = [];
+      $game.outlinePass.selectedObjects = [];
     }
     this._useNext = false;
   }

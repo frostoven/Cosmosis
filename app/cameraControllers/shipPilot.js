@@ -59,9 +59,9 @@ const ctrl = {
 
 const toggles = {
   // TODO: think about whether or not this belongs in core instead.
-  // toggleMouseSteering: () => $gameView.ptrLockControls.toggleCamLock(),
+  // toggleMouseSteering: () => $game.ptrLockControls.toggleCamLock(),
   toggleMouseSteering: () => {
-    const ptr = $gameView.ptrLockControls;
+    const ptr = $game.ptrLockControls;
     // core.coreKeyToggles.toggleMouseSteering();
     const curLock = ptr.getLockMode();
     if (curLock === lockModes.headLook) {
@@ -125,18 +125,18 @@ function register() {
     if (modeActive) {
       // Set game lock only when the game is ready.
       core.onLoadProgress(core.progressActions.gameViewReady, () => {
-        $gameView.ptrLockControls.setLockMode(lockModes.headLook);
-        $gameView.ptrLockControls.updateAnchor();
+        $game.ptrLockControls.setLockMode(lockModes.headLook);
+        $game.ptrLockControls.updateAnchor();
       });
       core.onLoadProgress(core.progressActions.playerShipLoaded, () => {
-        $gameView.ptrLockControls.attachToAnchor($gameView.playerShip.cameras[0]);
+        $game.ptrLockControls.attachToAnchor($game.playerShip.cameras[0]);
       });
 
-      // attachCamera($gameView.playerShip);
+      // attachCamera($game.playerShip);
       speedTimer = speedTracker.trackCameraSpeed();
     }
     else {
-      // detachCamera($gameView.playerShip);
+      // detachCamera($game.playerShip);
       if (speedTimer) {
         speedTracker.clearSpeedTracker(speedTimer);
       }
@@ -149,12 +149,12 @@ function register() {
 function onShipLoaded(mesh) {
   // console.log('shipPilot got mesh:', mesh);
   // attachCamera(mesh);
-  // $gameView.camera.rotation.setFromVector3(new THREE.Vector3(-3.1, 0.03, 3.13));
+  // $game.camera.rotation.setFromVector3(new THREE.Vector3(-3.1, 0.03, 3.13));
   const vec = mesh.cameras[0].rotation.clone();
   // Camera direction in Blender is weird; a level camera looking straight has
   // rotation 90,0,0.
   vec.x += 1.5708; // 90 degrees
-  $gameView.camera.rotation.setFromVector3(vec);
+  $game.camera.rotation.setFromVector3(vec);
 }
 
 // Snap camera to local frame of reference. Not really needed for ship pilot as we're doing this anyway.
@@ -337,7 +337,7 @@ let updateCount_DELETEME = 0;
 function render(delta) {
   // console.log(steer); // analogSteer
 
-  const { playerShip } = $gameView;
+  const { playerShip } = $game;
   if (!playerShip) {
     return;
   }
@@ -360,7 +360,7 @@ function render(delta) {
     `;
   }
 
-  const { scene, camera, renderer, hyperMovement } = $gameView;
+  const { scene, camera, renderer, hyperMovement } = $game;
 
   // TODO: make it so that you cannot hop into hyperdrive without first
   //  speeding up, but once you're in hyperdrive you can actually float with

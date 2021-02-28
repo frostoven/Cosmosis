@@ -144,7 +144,7 @@ proposed changes because some small issues will already have been caught.
 
 #### Conventions
 When creating an object that [] please try to define it somewhere with null
-values. `core.js -> $gameView` and `[cam] -> ctrl` are examples of this.
+values. `core.js -> $game` and `[cam] -> ctrl` are examples of this.
 This has 2 advantages:
 * Any semi-decent IDE will produce full auto-completion and documentation.
 * Other coders know what kind of structure to expect.

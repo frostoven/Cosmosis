@@ -150,16 +150,16 @@ function init({ font }) {
 //  not being utilised.
 // core.onLoadProgress(core.progressActions.ready, () => {
 //   const objects = generateCubeField({
-//     scene: $gameView.scene,
-//     position: $gameView.camera.position,
+//     scene: $game.scene,
+//     position: $game.camera.position,
 //   });
 //   console.log('cube space:', objects);
 // });
 
 core.onLoadProgress(core.progressActions.ready, () => {
   // const objects = generateCubeField({
-  //   scene: $gameView.scene,
-  //   position: $gameView.camera.position,
+  //   scene: $game.scene,
+  //   position: $game.camera.position,
   //   cubeCount: 100,
   // });
   // console.log('cube space:', objects);

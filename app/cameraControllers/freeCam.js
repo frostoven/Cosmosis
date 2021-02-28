@@ -38,7 +38,7 @@ const ctrl = {
 }
 
 const toggles = {
-    interact: () => $gameView.level.useNext(),
+    interact: () => $game.level.useNext(),
 };
 
 function register() {
@@ -52,8 +52,8 @@ function register() {
         if (doRender) {
             // Set game lock only when the game is ready.
             core.onLoadProgress(core.progressActions.gameViewReady, () => {
-                $gameView.ptrLockControls.setLockMode(lockModes.freeLook);
-                $gameView.ptrLockControls.unsetAnchor();
+                $game.ptrLockControls.setLockMode(lockModes.freeLook);
+                $game.ptrLockControls.unsetAnchor();
             });
 
             speedTimer = speedTracker.trackCameraSpeed();
@@ -93,7 +93,7 @@ function render(delta) {
         return;
     }
 
-    const { scene, camera, renderer } = $gameView;
+    const { scene, camera, renderer } = $game;
 
     if (ctrl.speedUp) {
         speed += (delta * 200) + (speed * 0.01);

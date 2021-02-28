@@ -47,7 +47,7 @@ function render(delta) {
     return;
   }
 
-  const { scene, camera, renderer } = $gameView;
+  const { scene, camera, renderer } = $game;
 
   // Put some limits on zooming
   // const minZoom = labelData[0].size * labelData[0].scale * 1;

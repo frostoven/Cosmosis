@@ -40,15 +40,15 @@ function trackCameraSpeed() {
 
   const timer = setInterval(() => {
     const statusDiv = document.getElementById('camDevArea');
-    if (!statusDiv || !$gameView.camera) {
+    if (!statusDiv || !$game.camera) {
       // This sometimes happens right after the game has loaded.
       console.log('Waiting for camera to become ready...');
       return;
     }
     showStats();
 
-    const camPs = $gameView.camera.position;
-    const camRt = $gameView.camera.rotation;
+    const camPs = $game.camera.position;
+    const camRt = $game.camera.rotation;
 
     let dist = camPs.distanceTo(prevPosition);
     dist = dist / (freq / perUnit);

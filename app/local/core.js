@@ -40,7 +40,7 @@ let composer;
  * ================================= */
 
 window.$stats = null;
-window.$gameView = {
+window.$game = {
   // Set to true once the world is fully initialised.
   ready: false,
   // Contains the scene. Mainly used for movement optimisation.
@@ -190,10 +190,10 @@ const coreKeyToggles = {
   // lockMouse: () => {
   //   console.log('reimplement pointer lock.');
   // },
-  // toggleMouseControl: () => $gameView.ptrLockControls.toggleCamLock(),
-  toggleMousePointer: () => $gameView.ptrLockControls.toggle(),
+  // toggleMouseControl: () => $game.ptrLockControls.toggleCamLock(),
+  toggleMousePointer: () => $game.ptrLockControls.toggle(),
   toggleHyperMovement: () => {
-    $gameView.hyperMovement = !$gameView.hyperMovement;
+    $game.hyperMovement = !$game.hyperMovement;
     updateHyperdriveDebugText();
   },
   _devChangeMode: () => {
@@ -514,8 +514,8 @@ function updateModeDebugText() {
 function updateHyperdriveDebugText() {
   const div = document.getElementById('hyperdrive');
   if (!div) return;
-  // if ($gameView.hyperMovement)
-  div.innerText = `Hyperdrive: ${$gameView.hyperMovement ? 'active' : 'standby'}`;
+  // if ($game.hyperMovement)
+  div.innerText = `Hyperdrive: ${$game.hyperMovement ? 'active' : 'standby'}`;
 }
 
 function registerAnalogListener({ mode, cb }) {
@@ -615,7 +615,7 @@ function init({ sceneName, pos, rot }) {
     }
 
     // Contains all the essential game variables.
-    window.$gameView = initView({ scene, pos, rot });
+    window.$game = initView({ scene, pos, rot });
     notifyLoadProgress(progressActions.gameViewReady);
 
     initPlayer();
@@ -722,7 +722,7 @@ function initPlayer() {
     // modelName: 'devFlyer', onReady: (mesh) => {
     // modelName: 'devFlyer2', onReady: (mesh) => {
     // modelName: 'tentacleHull', onReady: (mesh) => {
-      $gameView.playerShip = mesh;
+      $game.playerShip = mesh;
       notifyLoadProgress(progressActions.playerShipLoaded);
 
       // TODO: replace all external occurrences of notifyAll with
@@ -730,7 +730,7 @@ function initPlayer() {
       playerShipReadyListeners.notifyAll((cb) => {
         cb(mesh);
       });
-      // console.log('==> ship stored in $gameView.');
+      // console.log('==> ship stored in $game.');
     }
   });
 }
@@ -740,11 +740,11 @@ function updateRendererSizes() {
   SCREEN_WIDTH = window.innerWidth;
   SCREEN_HEIGHT = window.innerHeight;
 
-  $gameView.renderer.setSize( SCREEN_WIDTH * $displayOptions.resolutionScale, SCREEN_HEIGHT * $displayOptions.resolutionScale);
-  $gameView.renderer.domElement.style.width = '100%';
-  $gameView.renderer.domElement.style.height = '100%';
-  $gameView.camera.aspect = SCREEN_WIDTH / SCREEN_HEIGHT;
-  $gameView.camera.updateProjectionMatrix();
+  $game.renderer.setSize( SCREEN_WIDTH * $displayOptions.resolutionScale, SCREEN_HEIGHT * $displayOptions.resolutionScale);
+  $game.renderer.domElement.style.width = '100%';
+  $game.renderer.domElement.style.height = '100%';
+  $game.camera.aspect = SCREEN_WIDTH / SCREEN_HEIGHT;
+  $game.camera.updateProjectionMatrix();
 }
 
 /**
@@ -764,7 +764,7 @@ function animate() {
   });
   deltaPrevTime = time;
 
-  const { scene, camera, renderer, spaceWorld, group, gravityWorld, level, playerShip } = $gameView;
+  const { scene, camera, renderer, spaceWorld, group, gravityWorld, level, playerShip } = $game;
   spaceWorld && physics.renderPhysics(delta, spaceWorld);
   gravityWorld && physics.renderPhysics(delta, gravityWorld);
 
@@ -778,10 +778,10 @@ function animate() {
   }
 
   // TODO: REMOVE ME - this is here to test the cam attaching to the bridge with rotation.
-  if ($gameView.playerShip) {
-    $gameView.playerShip.scene.rotateY(0.001);
-    $gameView.playerShip.scene.rotateX(0.001);
-    $gameView.playerShip.scene.rotateZ(0.001);
+  if ($game.playerShip) {
+    $game.playerShip.scene.rotateY(0.001);
+    $game.playerShip.scene.rotateX(0.001);
+    $game.playerShip.scene.rotateZ(0.001);
   }
 
   // Brute move ship forward.
@@ -804,7 +804,7 @@ function animate() {
   // If the camera is currently anchored to something, update position. Note:
   // always put this after all physics have been calculated or we'll end up
   // with glitchy movement.
-  $gameView.ptrLockControls.updateAnchor();
+  $game.ptrLockControls.updateAnchor();
 
   // renderer.render(scene, camera);
   renderer.render(group, camera);
@@ -817,9 +817,9 @@ function moveShip_DELETEME(delta, playerShip) {
   console.log('[moveShip_DELETEME] delta:', delta);
   if (playerShip) {
     const pos = playerShip.scene.position;
-    // let {x, y, z} = $gameView.playerShip.scene.position;
+    // let {x, y, z} = $game.playerShip.scene.position;
     // z += 100;
-    // $gameView.playerShip.scene.position.set(x, y, z);
+    // $game.playerShip.scene.position.set(x, y, z);
     playerShip.scene.translateZ(delta*-10);
   }
 }
@@ -830,12 +830,12 @@ function moveUniverse_DELELEME(delta) {
   const speed = 100;
   // const speed = 1e15; // 3m c
   // const speed = 1e18; //
-  if ($gameView.playerShip) {
-    $gameView.scene.translateZ(delta*speed);
-    $gameView.playerShip.scene.translateZ(delta*-speed);
+  if ($game.playerShip) {
+    $game.scene.translateZ(delta*speed);
+    $game.playerShip.scene.translateZ(delta*-speed);
   }
   if (dgfdsd++ === 550) {
-    console.log('moveUniverse scene:', $gameView.scene);
+    console.log('moveUniverse scene:', $game.scene);
   }
 }
 
