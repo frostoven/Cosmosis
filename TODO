@@ -1,3 +1,7 @@
+Clean up ptrLockControls (remove unused functions etc).
+
+Fix speedometer measurements being frame-dependent.
+
 Put first load mode in index.js.
 
 Make ship movable with physics using keyboard controls.

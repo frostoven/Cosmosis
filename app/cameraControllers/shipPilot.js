@@ -23,6 +23,12 @@ let currentSpeed = 0;
 let currentThrottle = 0;
 // 0-100 - lags behind real throttle, and struggles at higher numbers.
 let actualThrottle = 0;
+// Hyperdrive rotation speed. TODO: rename to correct technical terms.
+const rotationSpeed = 0.00005;
+// When pressing A and D. TODO: rename to correct technical terms.
+const spinSpeed = 0.01;
+// Used to ease in/out of spinning.
+let spinBuildup = 0;
 
 // Same top speed as WARP_EXPONENTIAL, but acceleration is constant.
 // Reaches 0.1c at 2% power with strongest engine (4c max).
@@ -71,43 +77,19 @@ const toggles = {
       ptr.setLockMode(lockModes.headLook);
     }
     ptr.resetMouse();
-    // cycleAnalogMode();
+    steer.upDown = 0;
+    steer.leftRight = 0;
   },
   hyperdrive: core.coreKeyToggles.toggleHyperMovement,
   // TODO: remove me
   debugGravity: () => { if (ambientGravity === 10) { ambientGravity = 1; }  else { ambientGravity = 10; } },
 };
 
-const steerModes = {
-  steer: 'steer',
-  look: 'look',
+const steer = {
+  // TODO: get the proper technical terms for this.
+  upDown: 0,
+  leftRight: 0,
 }
-
-const analog = {
-  steer: { x: 0, y: 0 },
-  look: { x: 0, y: 0 },
-};
-
-let analogMode = steerModes.steer;
-function cycleAnalogMode() {
-  if (analogMode === steerModes.steer) {
-    analogMode = steerModes.look;
-  }
-  else {
-    analogMode = steerModes.steer;
-  }
-  analog.look.x = 0;
-  analog.look.y = 0;
-}
-
-// TODO: DRY this, and add mouse sensitivity adjuster. IMPORTANT: separate
-//  mouse look sensitivity from steer sensitivity.
-const analogSteer = {
-  spNorth: (d) => { const target = analog[analogMode]; target.y += d; if (target.y > 100) target.y = 100; },
-  spSouth: (d) => { const target = analog[analogMode]; target.y += d; if (target.y < -100) target.y = -100;  },
-  spEast: (d) => { const target = analog[analogMode]; target.x += d; if (target.x > 100) target.x = 100; },
-  spWest: (d) => { const target = analog[analogMode]; target.x += d; if (target.x < -100) target.x = -100; },
-};
 
 function register() {
   core.registerCamControl({
@@ -130,13 +112,17 @@ function register() {
       });
       core.onLoadProgress(core.progressActions.playerShipLoaded, () => {
         $game.ptrLockControls.attachToAnchor($game.playerShip.cameras[0]);
-      });
 
-      // attachCamera($game.playerShip);
+        // TODO: move this into the level loader. It needs to be dynamic based on
+        //  the level itself (in this case we attach the player to the main cam).
+        $game.playerShip.cameras[0].attach($game.camera);
+        $game.camera.position.x = 0;
+        $game.camera.position.y = 0;
+        $game.camera.position.z = 0;
+      });
       speedTimer = speedTracker.trackCameraSpeed();
     }
     else {
-      // detachCamera($game.playerShip);
       if (speedTimer) {
         speedTracker.clearSpeedTracker(speedTimer);
       }
@@ -185,7 +171,7 @@ function onKeyPress({ key, amount }) {
 }
 
 function onKeyUpDown({ key, amount, isDown }) {
-  // console.log('[shipPilot 2] key:', key, '->', camControls[key], isDown ? '(down)' : '(up)');
+  console.log('[shipPilot 2] key:', key, '->', camControls[key], isDown ? '(down)' : '(up)');
 
   const control = camControls[key];
   if (!control) {
@@ -196,8 +182,13 @@ function onKeyUpDown({ key, amount, isDown }) {
 }
 
 function onAnalogInput(key, delta, invDelta, gravDelta, gravInvDelta) {
-  // console.log('[shipPilot] analog:', key, delta, invDelta, gravDelta, gravInvDelta);
-  analogSteer[key](delta);
+  if (key === 'spNorth' || key === 'spSouth') {
+    // console.log(`[shipPilot] analog:, ${key}, d=${delta}, ~d=${invDelta}, gd=${gravDelta}, ~gd${gravInvDelta}`);
+    steer.upDown = maxN(steer.upDown + gravDelta, 200);
+  }
+  if (key === 'spEast' || key === 'spWest') {
+    steer.leftRight = maxN(steer.leftRight + (gravDelta * -1), 200);
+  }
 }
 
 function triggerAction(action) {
@@ -242,7 +233,8 @@ function dampenTorque(delta, value, target, growthSpeed) {
  */
 function dampenByFactor(delta, value, target) {
   let result = 0;
-  const warpFactor = 4; // 0.016 delta * 250 growth.
+  // Do not use delta here - it's applied in dampenTorque.
+  const warpFactor = 4; // equivalent to delta [at 0.016] * 250 growth.
   if (target > value) {
     const ratio = -((actualThrottle / (maxThrottle / ambientGravity)) - 1);
     result = dampenTorque(delta, value, target, ratio * warpFactor);
@@ -267,10 +259,36 @@ function scaleHyperSpeed(amount) {
 }
 
 function handleHyper(delta, scene, playerShip) {
-  // console.log('[handleHyper] delta:', delta);
-  // TODO: make this whatever the ship considers to be 'forward'. We might
-  //  define this as something such as camera[0]'s rotation, or the rotation of
-  //  an object with a specific name.
+  if (steer.leftRight) {
+    const lr = (steer.leftRight * delta) * 65.2;
+    playerShip.scene.rotateY(lr * rotationSpeed);
+  }
+  if (steer.upDown) {
+    const ud = (steer.upDown * delta) * 65.2;
+    playerShip.scene.rotateX(ud * rotationSpeed);
+  }
+
+  const effectiveSpin = (spinSpeed * delta) * 65.2;
+  if (ctrl.left_renameme) {
+    spinBuildup -= effectiveSpin;
+    if (spinBuildup < -effectiveSpin) {
+      spinBuildup = -effectiveSpin;
+    }
+  }
+  if (ctrl.right_renameme) {
+    spinBuildup += effectiveSpin;
+    if (spinBuildup > effectiveSpin) {
+      spinBuildup = effectiveSpin;
+    }
+  }
+  playerShip.scene.rotateZ(spinBuildup);
+  if (Math.abs(spinBuildup) < 0.0001) {
+    spinBuildup = 0;
+  }
+  else {
+    spinBuildup /= 1 + (10 * delta);
+  }
+
   if (ctrl.thrustInc) {
     currentThrottle += changeThrottle(delta, 0.01);
     if (currentThrottle > maxThrottle) {
@@ -312,14 +330,17 @@ function handleHyper(delta, scene, playerShip) {
     hyperSpeed = currentSpeed;
   }
 
-  // Move the world around the ship.
-  scene.translateZ(delta * hyperSpeed);
-  playerShip.scene.translateZ(delta * -hyperSpeed);
+  // TODO: using addScaledVector messes with the units. The speed is a (crudely
+  //  measured) 99.9666..7 times faster. Measure this better and adjust as
+  //  needed.
+  const vectorFactor = 61.5;
+  hyperSpeed /= vectorFactor;
 
-  // bookm
-  // Steering.
-  const rotX = max100(analog.steer.x);
-  const rotY = max100(analog.steer.y);
+  // Move the world around the ship.
+  let direction = new THREE.Vector3();
+  $game.playerShip.cameras[0].getWorldDirection(direction);
+  $game.scene.position.addScaledVector(direction, -hyperSpeed);
+  $game.playerShip.scene.position.addScaledVector(direction, hyperSpeed);
 }
 
 /** Returns the number, or 100 (sign preserved) if it's more than 100. */
@@ -329,23 +350,29 @@ function max100(amount) {
   else return amount;
 }
 
+/** Returns the number, or 100 (sign preserved) if it's more than 100. */
+function maxN(amount, max) {
+  if (amount > max) return max;
+  else if (amount < -max) return -max;
+  else return amount;
+}
+
 function handleLocal(delta) {
   // TODO: implement me.
 }
 
 let updateCount_DELETEME = 0;
 function render(delta) {
-  // console.log(steer); // analogSteer
-
   const { playerShip } = $game;
   if (!playerShip) {
     return;
   }
-  // TODO: implement ship controls.
-
-  if (!modeActive) {
-    return;
-  }
+  // TODO: check if we ever need to uncomment this. If render turns out to
+  //  necessary for controls, we should probably have checks for specifically
+  //  this when applying the effects of controls.
+  // if (!modeActive) {
+  //   return;
+  // }
 
   // update debug ui
   const div = document.getElementById('hyperdrive-stats');
@@ -353,7 +380,8 @@ function render(delta) {
     const throttle = Math.round((currentThrottle / maxThrottle) * 100);
     // |
     div.innerText = `
-      y: ${throttle}% (${analog.steer.y})
+      y: ${throttle}%
+      u/d=${steer.upDown}, l/r=${steer.leftRight}
       Player throttle: ${throttle}% (${Math.round(currentThrottle)}/${maxThrottle})
       Actual throttle: ${actualThrottle.toFixed(1)}
       Microgravity: ${(((10**-(1/ambientGravity))-0.1)*10).toFixed(2)}G [factor ${ambientGravity}]
