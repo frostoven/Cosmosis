@@ -21,6 +21,7 @@ const keySchema = {
     'thrustInc',
     'thrustDec',
     'thrustReset',
+    'debugFullWarpSpeed',
     'thrustUp10',
     'toggleMouseSteering',
     // 'toggleMousePointer', // a.k.a. PointerLockControls.
@@ -64,6 +65,7 @@ const controls = {
     Numpad5: 'toggleMouseSteering',
     spScrollUp : 'thrustUp10',
     spScrollDown: 'thrustReset',
+    ScrollLock: 'debugFullWarpSpeed',
     KeyA: 'left_renameme',
     KeyD: 'right_renameme',
     KeyJ: 'hyperdrive',
