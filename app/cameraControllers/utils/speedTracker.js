@@ -34,21 +34,21 @@ function showStats() {
  */
 function trackCameraSpeed() {
   // How often we calculate distance. This is variable, change as needed.
-  const freq = 500;
+  const freq = 1000;
   // Per second.  (i.e. per 1000 milliseconds). This is constant, don't change.
   const perUnit = 1000;
 
   const timer = setInterval(() => {
     const statusDiv = document.getElementById('camDevArea');
-    if (!statusDiv || !$game.camera) {
+    if (!statusDiv || !$game.playerShip) {
       // This sometimes happens right after the game has loaded.
       console.log('Waiting for camera to become ready...');
       return;
     }
     showStats();
 
-    const camPs = $game.camera.position;
-    const camRt = $game.camera.rotation;
+    const camPs = $game.playerShip.scene.position;
+    const camRt = $game.playerShip.scene.rotation;
 
     let dist = camPs.distanceTo(prevPosition);
     dist = dist / (freq / perUnit);

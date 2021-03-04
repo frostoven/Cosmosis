@@ -50,6 +50,8 @@ const PointerLockControls = function (camera, domElement, onMouseCb) {
   // 0 here actually means center of the screen.
   this.mouseX = 0;
   this.mouseY = 0;
+  this.waitingX = 0;
+  this.waitingY = 0;
 
   //
   // internals
@@ -70,13 +72,13 @@ const PointerLockControls = function (camera, domElement, onMouseCb) {
       return;
     }
 
-    if (!scope.camRefQuat) {
-      // This block is used if the camera is working independantly
-      scope.mouseX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
-      scope.mouseY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
-      scope.updateIndependently();
-    }
-    else {
+    // if (!scope.camRefQuat) {
+    //   // This block is used if the camera is working independantly
+    //   scope.mouseX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
+    //   scope.mouseY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
+    //   scope.updateIndependently();
+    // }
+    // else {
       // Headlook mode. Used when the camera is locked to i.e. the bridge cam.
       const mx = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
       const my = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
@@ -84,16 +86,20 @@ const PointerLockControls = function (camera, domElement, onMouseCb) {
       if (scope.lockMode === lockModes.headLook) {
         if (Math.abs(scope.mouseX + mx) < scope.headXMax) {
           scope.mouseX += mx;
+          scope.waitingX = mx;
         }
         if (Math.abs(scope.mouseY + my) < scope.headYMax) {
           scope.mouseY += my;
+          scope.waitingY = my;
         }
       }
       else {
         scope.mouseX += mx;
         scope.mouseY += my;
+        scope.waitingX = mx;
+        scope.waitingY = my;
       }
-    }
+    // }
 
     scope.dispatchEvent(changeEvent);
   }
@@ -170,7 +176,7 @@ const PointerLockControls = function (camera, domElement, onMouseCb) {
     } else {
       this.lock();
     }
-  }
+  };
 
   this.getLockMode = function() {
     return this.lockMode;
@@ -186,12 +192,18 @@ const PointerLockControls = function (camera, domElement, onMouseCb) {
     else {
       this.disableCrosshairs();
     }
-  }
+  };
 
+  /**
+   * Use this when you have no anchors and the camera is not parented.
+   */
   this.updateIndependently = function () {
     let x = scope.mouseX;
     let y = scope.mouseY;
     if (scope.lockMode === lockModes.frozen) {
+      // This is intentional - only want mouse to fire if ptr lock isn't using
+      // it (i.e. frozen).
+      onMouseCb(x, y);
       x = y = 0;
     }
     euler.setFromQuaternion(camera.quaternion);
@@ -199,22 +211,47 @@ const PointerLockControls = function (camera, domElement, onMouseCb) {
     euler.x -= y * 0.002;
     euler.x = Math.max(PI_2 - scope.maxPolarAngle, Math.min(PI_2 - scope.minPolarAngle, euler.x));
     camera.quaternion.setFromEuler(euler);
-  }
+  };
 
+  /**
+   * Use this when you have an anchor reference and the camera is not parented.
+   */
   this.updateWithRef = function () {
     let x = scope.mouseX;
     let y = scope.mouseY;
     if (scope.lockMode === lockModes.frozen) {
+      // This is intentional - only want mouse to fire if ptr lock isn't using
+      // it (i.e. frozen).
+      onMouseCb(x, y);
       x = y = 0;
     }
     camera.quaternion.copy(scope.camRefQuat);
     camera.rotateY(x * -0.002);
     camera.rotateX(y * -0.002);
+  };
+
+  /**
+   * Use this if you have no anchor but the camera is parented.
+   */
+  this.updateAsChild = function () {
+    let x = scope.mouseX;
+    let y = scope.mouseY;
+    if (scope.lockMode === lockModes.frozen) {
+      // This is intentional - only want mouse to fire if ptr lock isn't using
+      // it (i.e. frozen).
+      onMouseCb(x, y);
+      x = y = 0;
+    }
+    euler.setFromQuaternion(camera.quaternion);
+    euler.y = x * -0.002;
+    euler.x = y * -0.002;
+    euler.x = Math.max(PI_2 - scope.maxPolarAngle, Math.min(PI_2 - scope.minPolarAngle, euler.x));
+    camera.quaternion.setFromEuler(euler);
   }
 
   this.getCamRefQuat = function () {
     return this.camRefQuat;
-  }
+  };
 
   // this.setCamRefQuat = function (quaternion) {
   //   this.camRefQuat = quaternion;
@@ -223,16 +260,20 @@ const PointerLockControls = function (camera, domElement, onMouseCb) {
 
   this.resetCamRefQuat = function () {
     this.camRefQuat = null;
-  }
+  };
 
   // Attaching the camera to an anchor almost like parenting.
   this.attachToAnchor = function(obj) {
     this.camAnchor = obj;
-  }
+  };
 
   this.unsetAnchor = function() {
     this.camAnchor = null;
-  }
+  };
+
+  this.getAnchor = function() {
+    return this.camAnchor;
+  };
 
   // TODO: test current code with both world and local transform.
   // Should be called from the core animate function.
@@ -248,11 +289,16 @@ const PointerLockControls = function (camera, domElement, onMouseCb) {
 
     const anchor = this.camAnchor;
     anchor.getWorldPosition(targetPos);
+    // Use this if you don't want to parent the camera:
     camera.position.copy(targetPos);
 
     anchor.matrixWorld.decompose(position, quaternion, scale);
     this.camRefQuat = quaternion;
     this.updateWithRef();
+
+    // Snap camera to new ship location.
+    // TODO: think of the best place to put this.
+    // $game.camera.position.copy(position);
   }
 
   // Sets mouse to center of screen.

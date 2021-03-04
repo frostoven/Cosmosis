@@ -195,6 +195,7 @@ const coreKeyToggles = {
   toggleHyperMovement: () => {
     $game.hyperMovement = !$game.hyperMovement;
     updateHyperdriveDebugText();
+    return $game.hyperMovement;
   },
   _devChangeMode: () => {
     if (currmode === modes.freeCam) {
@@ -778,11 +779,11 @@ function animate() {
   }
 
   // TODO: REMOVE ME - this is here to test the cam attaching to the bridge with rotation.
-  if ($game.playerShip) {
-    $game.playerShip.scene.rotateY(0.001);
-    $game.playerShip.scene.rotateX(0.001);
-    $game.playerShip.scene.rotateZ(0.001);
-  }
+  // if ($game.playerShip) {
+  //   $game.playerShip.scene.rotateY(0.001);
+  //   $game.playerShip.scene.rotateX(0.001);
+  //   $game.playerShip.scene.rotateZ(0.001);
+  // }
 
   // Brute move ship forward.
   // moveShip_DELETEME(delta, playerShip);
@@ -804,7 +805,9 @@ function animate() {
   // If the camera is currently anchored to something, update position. Note:
   // always put this after all physics have been calculated or we'll end up
   // with glitchy movement.
-  $game.ptrLockControls.updateAnchor();
+  // Use this if you want to update without parenting the camera:
+  // $game.ptrLockControls.updateAnchor(); // <- note that this requires setting an anchor first.
+  $game.ptrLockControls.updateAsChild();
 
   // renderer.render(scene, camera);
   renderer.render(group, camera);
