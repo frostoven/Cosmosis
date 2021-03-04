@@ -16,13 +16,16 @@ let modeActive = false;
 // huge falloff past 206 because every extra 0.1 eventually scales to 1c
 // faster. 195 is junk, 199 is beginner. 206 is end-game. 209 is something
 // achievable only through insane grind.
-let maxSpeed = 206;
+let maxSpeed = 202;
 // 195=1c, 199=1.5c, 202=2c, 206=3c, 209=4c.
 let currentSpeed = 0;
 // Throttle. 0-100.
 let currentThrottle = 0;
 // 0-100 - lags behind real throttle, and struggles at higher numbers.
 let actualThrottle = 0;
+// Instantly pushes warp speed to max, bypassing acceleration and gravitational
+// drag.
+let debugFullWarpSpeed = false;
 // Hyperdrive rotation speed. TODO: rename to correct technical terms.
 const rotationSpeed = 0.00005;
 // When pressing A and D. TODO: rename to correct technical terms.
@@ -83,6 +86,7 @@ const toggles = {
   hyperdrive: core.coreKeyToggles.toggleHyperMovement,
   // TODO: remove me
   debugGravity: () => { if (ambientGravity === 10) { ambientGravity = 1; }  else { ambientGravity = 10; } },
+  debugFullWarpSpeed: () => { debugFullWarpSpeed = !debugFullWarpSpeed; }
 };
 
 const steer = {
@@ -206,9 +210,6 @@ function triggerAction(action) {
  */
 function changeThrottle(delta, amount) {
   let change = (maxThrottle * amount) * (delta * 60);
-  // if (change + currentThrottle >= maxThrottle || change + currentThrottle <= -maxThrottle) {
-  //   return 0;
-  // }
   return change;
 }
 
@@ -315,6 +316,10 @@ function handleHyper(delta, scene, playerShip) {
     actualThrottle = throttle - 0.01;
   }
 
+  if (debugFullWarpSpeed) {
+    actualThrottle = maxThrottle;
+  }
+
   currentSpeed = (actualThrottle / 100) * maxSpeed;
 
   let hyperSpeed;
@@ -330,11 +335,7 @@ function handleHyper(delta, scene, playerShip) {
     hyperSpeed = currentSpeed;
   }
 
-  // TODO: using addScaledVector messes with the units. The speed is a (crudely
-  //  measured) 99.9666..7 times faster. Measure this better and adjust as
-  //  needed.
-  const vectorFactor = 61.5;
-  hyperSpeed /= vectorFactor;
+  hyperSpeed *= delta;
 
   // Move the world around the ship.
   let direction = new THREE.Vector3();
