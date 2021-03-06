@@ -1,4 +1,5 @@
-Clean up ptrLockControls (remove unused functions etc).
+Create the assetFinder / assetLoader system.
+ - Move crosshair related code out of ptrLockControls.
 
 Put first load mode in index.js.
 
@@ -11,6 +12,8 @@ Test switching between hyperdrive and regular.
 Implement world position reset when switching to/form hyperdrive.
 
 Implement physics in a universally easy to use way.
+
+Implement a ramp based spedometer and make sure distances measured with m/s check out.
 
 -- Set up a spacecube field and make the ship travel through it (just via brute
 force, no need for physics right now). Then ensure the player stays on the ship

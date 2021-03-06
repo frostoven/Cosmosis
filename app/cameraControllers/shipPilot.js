@@ -112,10 +112,8 @@ function register() {
       // Set game lock only when the game is ready.
       core.onLoadProgress(core.progressActions.gameViewReady, () => {
         $game.ptrLockControls.setLockMode(lockModes.headLook);
-        $game.ptrLockControls.updateAnchor();
       });
       core.onLoadProgress(core.progressActions.playerShipLoaded, () => {
-        $game.ptrLockControls.attachToAnchor($game.playerShip.cameras[0]);
 
         // TODO: move this into the level loader. It needs to be dynamic based on
         //  the level itself (in this case we attach the player to the main cam).

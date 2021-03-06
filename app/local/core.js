@@ -50,7 +50,6 @@ window.$game = {
   renderer: null,
   spaceWorld: null,
   gravityWorld: null,
-  // attachCamTo: null,
   playerShip: null,
   ptrLockControls: null,
   // The term 'level' here is used very loosely. It's any interactable
@@ -769,11 +768,6 @@ function animate() {
   spaceWorld && physics.renderPhysics(delta, spaceWorld);
   gravityWorld && physics.renderPhysics(delta, gravityWorld);
 
-  // if (attachCamTo) {
-  //   const targetPos = new THREE.Vector3(0, 0, 0,);
-  //   attachCamTo.getWorldPosition(targetPos);
-  //   attachCamTo && camera.position.copy(targetPos);
-  // }
   if (level) {
     level.process(delta);
   }
@@ -785,13 +779,6 @@ function animate() {
   //   $game.playerShip.scene.rotateZ(0.001);
   // }
 
-  // Brute move ship forward.
-  // moveShip_DELETEME(delta, playerShip);
-
-  // How can we see if out eyes aren't real. Move universe.
-  // moveUniverse_DELELEME(delta);
-
-  // renderer.render(scene, camera);
   renderer.render(group, camera);
 
   // Run external renderers. We place this after the scene render to prevent
@@ -807,7 +794,7 @@ function animate() {
   // with glitchy movement.
   // Use this if you want to update without parenting the camera:
   // $game.ptrLockControls.updateAnchor(); // <- note that this requires setting an anchor first.
-  $game.ptrLockControls.updateAsChild();
+  $game.ptrLockControls.updateOrientation();
 
   // renderer.render(scene, camera);
   renderer.render(group, camera);
@@ -824,21 +811,6 @@ function moveShip_DELETEME(delta, playerShip) {
     // z += 100;
     // $game.playerShip.scene.position.set(x, y, z);
     playerShip.scene.translateZ(delta*-10);
-  }
-}
-
-let dgfdsd = 0;
-function moveUniverse_DELELEME(delta) {
-  // console.log('[moveUniverse_DELELEME] delta:', delta);
-  const speed = 100;
-  // const speed = 1e15; // 3m c
-  // const speed = 1e18; //
-  if ($game.playerShip) {
-    $game.scene.translateZ(delta*speed);
-    $game.playerShip.scene.translateZ(delta*-speed);
-  }
-  if (dgfdsd++ === 550) {
-    console.log('moveUniverse scene:', $game.scene);
   }
 }
 
