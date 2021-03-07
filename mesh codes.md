@@ -50,7 +50,21 @@ Collision node: a shape that is used for collision detection. For example, shoot
 if you prefix the name of a blender object with one of the below, the engine
 will apply game logic to that object.
 
-##### Bridge
+##### Doors and entrances
+|code|Description
+|------|-----------
+|`e1`     | Door that slides left 98% (no animation baked into mesh).
+|`e2`     | Door that slides right 98% (no animation baked into mesh).
+|`e3`     | Door that slides up 98% (no animation baked into mesh).
+|`e4`     | Door that slides down 98% (no animation baked into mesh).
+|`e5`     | Door - uses animation built into the mesh.
+|`e6`     | Escape pod - no animation baked into mesh.
+|`e7`     | Escape pod - mesh has animation built in.
+
+##### Directional objects
+Directional objects are used as arrows. To keep them intuitive, it's
+recommended you use camera objects as your arrows because their direction is
+obvious and leave little room for error.
 |code|Description
 |------|-----------
 |`c1`     | Captain's seat (use a camera object). Interactable. Place it where the player's head goes.
@@ -65,25 +79,21 @@ will apply game logic to that object.
 |`d1`     | Partial destructible - scatter object upon ship destruction, but leave it in one peace.
 |`d2`     | Fully destructible - break the object into smaller pieces when the ship is destroyed.
 
-##### Doors and entrances
-|code|Description
-|------|-----------
-|`e1`     | Door that slides left 98% (no animation baked into mesh).
-|`e2`     | Door that slides right 98% (no animation baked into mesh).
-|`e3`     | Door that slides up 98% (no animation baked into mesh).
-|`e4`     | Door that slides down 98% (no animation baked into mesh).
-|`e5`     | Door - uses animation built into the mesh.
-|`e6`     | Escape pod - no animation baked into mesh.
-|`e7`     | Escape pod - mesh has animation built in.
-
 ##### Switches
+In the below table we use the term 'door' because it makes things easier to
+reason about. In reality, the target can be anything.
+
 <!-- TODO: implement this and then uncomment.
 Note: if you use target, it targets a single object. You may instead use
 targets, which triggers any amount of objects, comma separated.
 -->
+
+Note that switches can act as proxies that interact with other objects when you
+interact with the proxy. For example, you might use a chair as a proxy to
+activate a camera object's animation when the player gets into / out of a seat.
 |code|target|Description
 |----|------|-----------
-|`s1`   |`nameOfObject`| Switch that opens/closes a door, where `nameOfObject` is the door name. Note: 'door' here is only used for demonstration purposes. You can use a switch with any interactable mesh. If it's not a door, then instead of opening/closing, it will activate/deactivate the mesh.
+|`s1`   |`nameOfObject`| Switch that opens/closes a door, where `nameOfObject` is the door name.
 |`s2`   |`nameOfObject`| Like `s1_nn`, but only opens the door.
 |`s3`   |`nameOfObject`| Like `s1_nn`, but only closes the door.
 

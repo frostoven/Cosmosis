@@ -6,8 +6,6 @@
 
 import { Euler, EventDispatcher, Quaternion, Vector3 } from 'three';
 
-import { opacity as aimOpacity } from "./crosshairs";
-
 const lockModes = {
   // Mouse does not cause the camera to move in this mode.
   // TODO: currently shows visuals too, please visuals move elsewhere.
@@ -32,8 +30,6 @@ const PointerLockControls = function (camera, domElement, onMouseCb) {
   this.domElement = domElement;
   // If true, the browser will hide the cursor.
   this.isPointerLocked = false;
-  // Visually draws the crosshairs with html and css. TODO: move me elsewhere.
-  this.showCrosshairs = false;
   this.lockMode = lockModes.freeLook;
 
   // Set to constrain the pitch of the camera
@@ -148,12 +144,6 @@ const PointerLockControls = function (camera, domElement, onMouseCb) {
   // Sets the lock mode and undoes any external quaternion references.
   this.setLockMode = function(mode) {
     this.lockMode = mode;
-    if (mode === lockModes.frozen) {
-      this.enableCrosshairs();
-    }
-    else {
-      this.disableCrosshairs();
-    }
   };
 
   // Updates camera angle relative to parent.
@@ -177,18 +167,6 @@ const PointerLockControls = function (camera, domElement, onMouseCb) {
   this.resetMouse = function() {
     this.mouseX = 0;
     this.mouseY = 0;
-  }
-
-  // TODO: move this to a better place.
-  this.enableCrosshairs = function () {
-    scope.showCrosshairs = true;
-    aimOpacity('aimCenter', 0.25);
-  }
-  //
-  // TODO: move this to a better place.
-  this.disableCrosshairs = function () {
-    scope.showCrosshairs = false;
-    aimOpacity('aimCenter', 0);
   }
 
   this.connect();

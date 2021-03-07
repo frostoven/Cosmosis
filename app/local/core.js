@@ -14,7 +14,7 @@ import Stats from '../../hackedlibs/stats/stats.module.js';
 import CbQueue from './CbQueue';
 import { forEachFn } from './utils';
 import physics from './physics';
-import res from './resLoader';
+import res from './AssetFinder';
 import { controls } from './controls';
 import { createSpaceShip } from '../levelLogic/spaceShipLoader';
 import { PointerLockControls } from './PointerLockControls';

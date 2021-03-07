@@ -1,5 +1,15 @@
-Create the assetFinder / assetLoader system.
- - Move crosshair related code out of ptrLockControls.
+Move cam[0] logic into ship loader.
+ - Ship orientation cam.
+ - Initial cam.
+ - Bridge cam.
+ - Ship outside cam.
+
+Make the ship loader load gltf lights.
+
+Cam controllers currently have the option to be notified when they are loaded.
+They do however not have a direct mechanism to be notified if a different
+controller is being loaded, making checking verbose copy-pasta. Implement
+something in core to facilitate this.
 
 Put first load mode in index.js.
 
@@ -14,6 +24,13 @@ Implement world position reset when switching to/form hyperdrive.
 Implement physics in a universally easy to use way.
 
 Implement a ramp based spedometer and make sure distances measured with m/s check out.
+
+Add core controls top right below FPS:
+ - F1: show all controls.
+ - Middle click: or Num5 to lock mouse.
+ - J: jump into (and out of) hyperspace.
+ - WASD and EF: move ship.
+ - F2: show / hide this text.
 
 -- Set up a spacecube field and make the ship travel through it (just via brute
 force, no need for physics right now). Then ensure the player stays on the ship

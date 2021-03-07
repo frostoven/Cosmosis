@@ -1,10 +1,14 @@
-// Project resource loader.
+// Project resource loader. Figures out file extensions on your behalf, which
+// for example means you're allowed to use jpg for one image and png for
+// another (useful for dev builds where the size needs to be kept to a
+// minimum).
 //
-// Looks for assets in the production assets directory. If the requested asset
-// does not exist, looks for the requested assets in the dev path instead. It's
-// recommended the implemented run bootTest() when the application starts to
-// look for obvious problems such as no production directory existing at all,
-// indicating the user did a clone without obtaining the high quality assets.
+// First looks for assets in the production assets directory. If the requested
+// asset does not exist, looks for the requested assets in the dev path
+// instead. It's recommended the implemented run bootTest() when the
+// application starts to look for obvious problems such as no production
+// directory existing at all, indicating the user did a clone without obtaining
+// the high quality assets.
 
 import { fuzzyFindFile, forEachFn } from "./utils";
 
@@ -19,12 +23,12 @@ function getCache(dir, name) {
   }
 }
 
-function Loader() {}
+function AssetFinder() {}
 
-Loader.prototype.getRes = function getRes(dir, name, extensions, callback) {
+AssetFinder.prototype.getRes = function getRes(dir, name, extensions, callback) {
   const cache = getCache(dir, name);
   if (cache) {
-    console.log('--> [Loader.getRes] cached hit:', cache);
+    console.log('--> [AssetFinder.getRes] cached hit:', cache);
     return cache;
   }
 
@@ -52,42 +56,42 @@ Loader.prototype.getRes = function getRes(dir, name, extensions, callback) {
   });
 };
 
-Loader.prototype.getIcon = function getIcon(name, callback=()=>{}) {
+AssetFinder.prototype.getIcon = function getIcon(name, callback=()=>{}) {
   this.getRes('icons', name, [ 'jpg', 'png', 'gif' ], callback);
 };
 
-Loader.prototype.getModel = function getModel(name, callback=()=>{}) {
+AssetFinder.prototype.getModel = function getModel(name, callback=()=>{}) {
   this.getRes('models', name, [ 'gltf' ], callback);
 };
 
-Loader.prototype.getMusic = function getMusic(name, callback=()=>{}) {
+AssetFinder.prototype.getMusic = function getMusic(name, callback=()=>{}) {
   this.getRes('music', name, [ 'mp3', 'ogg' ], callback);
 };
 
-Loader.prototype.getPlanetImg = function getPlanetImg(name, callback=()=>{}) {
+AssetFinder.prototype.getPlanetImg = function getPlanetImg(name, callback=()=>{}) {
   this.getRes('planetImg', name, [ 'jpg', 'png', 'gif' ], callback);
 };
 
-Loader.prototype.getSfx = function getSfx(name, callback=()=>{}) {
+AssetFinder.prototype.getSfx = function getSfx(name, callback=()=>{}) {
   this.getRes('sfx', name, [ 'mp3', 'ogg' ], callback);
 };
 
-Loader.prototype.getSkybox = function getSkybox(name, callback=()=>{}) {
+AssetFinder.prototype.getSkybox = function getSkybox(name, callback=()=>{}) {
   this.getRes('skyboxes', name, [ 'jpg', 'png', 'gif' ], callback);
 };
 
-Loader.prototype.getSpaceShip = function getSpaceShip(name, callback=()=>{}) {
+AssetFinder.prototype.getSpaceShip = function getSpaceShip(name, callback=()=>{}) {
   this.getRes('spaceShips', name, [ 'gltf', 'glb' ], callback);
 };
 
-Loader.prototype.getVoiceFile = function getVoiceFile(name, callback=()=>{}) {
+AssetFinder.prototype.getVoiceFile = function getVoiceFile(name, callback=()=>{}) {
   this.getRes('voicePacks', name, [ 'mp3', 'ogg' ], callback);
 };
 
-const res = new Loader();
-export default res;
+const finder = new AssetFinder();
+export default finder;
 
-// TODO: tests should ensure that some obvious results are same. For example,
+// TODO: tests should ensure that some obvious results are sane. For example,
 //  an image over 50kb is obviously a mistake, whereas a 500kb space ship is
 //  normal. Tests should also check if the prod folder contains stuff that dev
 //  doesn't; this indicates the user forgot to make a low quality version.

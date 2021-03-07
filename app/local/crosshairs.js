@@ -1,4 +1,4 @@
-import resLoader from "./resLoader";
+import AssetFinder from "./AssetFinder";
 
 const tags = {
   aimCenter: null,
@@ -18,7 +18,7 @@ function createImgTag(name, callback) {
   const img = document.createElement('img');
   img.id = name;
   // img.src = `potatoLqAssets/icons/${name}.png`;
-  resLoader.getIcon(name, (error, fileName, dir) => {
+  AssetFinder.getIcon(name, (error, fileName, dir) => {
     if (error) {
       return console.error(error);
     }

@@ -2,8 +2,9 @@ import * as THREE from "three";
 
 import { controls } from '../local/controls';
 import core from "../local/core";
-import speedTracker from "./utils/speedTracker";
-import { lockModes } from "../local/PointerLockControls";
+import speedTracker from './utils/speedTracker';
+import { lockModes } from '../local/PointerLockControls';
+import AssetLoader from '../local/AssetLoader';
 
 const mode = core.modes.shipPilot;
 const camControls = controls.shipPilot;
@@ -75,9 +76,11 @@ const toggles = {
     const curLock = ptr.getLockMode();
     if (curLock === lockModes.headLook) {
       ptr.setLockMode(lockModes.frozen);
+      AssetLoader.enableCrosshairs();
     }
     else {
       ptr.setLockMode(lockModes.headLook);
+      AssetLoader.disableCrosshairs();
     }
     ptr.resetMouse();
     steer.upDown = 0;
