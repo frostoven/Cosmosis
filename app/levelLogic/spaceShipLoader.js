@@ -4,7 +4,7 @@ import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 
 import core from '../local/core';
 import { makePhysical, shapeTemplates } from '../local/physics';
-import res from '../local/resLoader';
+import AssetFinder from '../local/AssetFinder';
 import { setup as meshCodeSetup } from './meshCodeProcessor';
 import Level from './level';
 
@@ -82,7 +82,7 @@ export function getMesh(modelName, callback) {
 }
 
 function loadModel(name, callback) {
-  res.getSpaceShip(name, (error, filename, dir) => {
+  AssetFinder.getSpaceShip(name, (error, filename, dir) => {
     loader.setPath(dir + '/');
     loader.load(filename, function (gltf) {
 
