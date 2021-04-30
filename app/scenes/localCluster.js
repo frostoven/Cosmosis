@@ -146,7 +146,7 @@ function init({ font }) {
 // TODO: figure out wtf is going on here.
 //  So, very simply: 3000 cubes @ 4 verts each = 12,000 verts = 11fps on an RTX 2080TI.
 //  Or, add a compressed gltf scene from blender with 2 million verts - 60 fps constant. wut..?
-//  The real confusing part here is the actual resourse usage - CPU 10%, GPU 20%, RAM 50%. I.e system
+//  The real confusing part here is the actual resource usage - CPU 10%, GPU 20%, RAM 50%. I.e system
 //  not being utilised.
 // core.onLoadProgress(core.progressActions.ready, () => {
 //   const objects = generateCubeField({
@@ -154,6 +154,15 @@ function init({ font }) {
 //     position: $game.camera.position,
 //   });
 //   console.log('cube space:', objects);
+// });
+
+// core.onLoadProgress(core.progressActions.ready, () => {
+//   const objects = generateCubeField({
+//     scene: $game.scene,
+//     position: $game.camera.position,
+//     cubeCount: 25,
+//     distanceMultiplier: 0.5
+//   });
 // });
 
 core.onLoadProgress(core.progressActions.ready, () => {

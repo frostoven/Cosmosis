@@ -68,15 +68,16 @@ const PointerLockControls = function (camera, domElement, onMouseCb) {
     const my = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
 
     if (scope.lockMode === lockModes.headLook) {
+      // Limit how far the player can turn their necks.
       if (Math.abs(scope.mouseX + mx) < scope.headXMax) {
         scope.mouseX += mx;
-        scope.waitingX = mx;
       }
       if (Math.abs(scope.mouseY + my) < scope.headYMax) {
         scope.mouseY += my;
       }
     }
     else {
+      // Allow fracturing of vertebrae.
       scope.mouseX += mx;
       scope.mouseY += my;
     }

@@ -104,8 +104,35 @@ function loadModel(name, callback) {
 
 function modelPostSetup(modelName, gltf, pos, scene, world, onReady) {
   getMesh(modelName, (mesh) => {
-    mesh.scene.position.copy($game.camera.position);
-    //
+    // TODO: improve the way this is decided. The space ship designer should be
+    //  choosing what the standard arrow is.
+    const standardArrow = mesh.cameras[0];
+
+    // Space ship container.
+    const bubble = new THREE.Group();
+    bubble.add(mesh.scene);
+    scene.add(bubble);
+
+    // Get warp bubble world direction:
+    let bubbleDirection = new THREE.Vector3();
+    bubble.getWorldDirection(bubbleDirection);
+
+    // Get standard arrow world direction:
+    let camDirection = new THREE.Vector3();
+    standardArrow.getWorldDirection(camDirection);
+
+    // Define a rotation from their unit-length vectors:
+    let quaternion = new THREE.Quaternion();
+    quaternion.setFromUnitVectors(camDirection.normalize(), bubbleDirection.normalize());
+    // ^^ note: term order is important.
+
+    // Apply rotation to ship (ship rotates inside bubble, bubble stays
+    // stationary for this operation). This allows the artist to model the ship
+    // in any orientation.
+    let matrix = new THREE.Matrix4();
+    matrix.makeRotationFromQuaternion(quaternion);
+    mesh.scene.applyMatrix4(matrix);
+
     // TODO: remove this light. This is only here until lights become dynamic.
     // const warmWhite = 0xefebd8;
     // const warmWhite = 0xfff5b6;
@@ -121,10 +148,8 @@ function modelPostSetup(modelName, gltf, pos, scene, world, onReady) {
     // light.position.set(pos.x, pos.y + 2, pos.z);
     light2.position.set(0, 2, 3);
     mesh.scene.add(light2);
-    //
-    scene.add(mesh.scene);
 
-    // TODO: continue from here.
+    // TODO: implement the physics things.
     // const body = makePhysical({
     //   mesh: mesh.scene,
     //   // TODO: for now we use a simple cube shape just to get the framework up.
@@ -134,10 +159,7 @@ function modelPostSetup(modelName, gltf, pos, scene, world, onReady) {
     //   options: { mass: 1 },
     //   world,
     // });
-
-    const { x, y, z } = mesh.scene.position;
-    // console.log(`=> Physical ship ${modelName} created at ${x},${y},${z};`, mesh);
-    onReady(mesh);
+    onReady(mesh, bubble);
   });
 }
 

@@ -25,6 +25,14 @@
   ],
   "author": "aggregate1166877",
   "license": "MIT",
+  "dependencies": {
+    "cannon": "0.6.2",
+    "drei": "1.5.7",
+    "nw": "0.50.2-sdk",
+    "react": "16.13.1",
+    "react-dom": "16.13.1",
+    "three": "0.120.1"
+  },
   "devDependencies": {
     "@babel/core": "7.2.2",
     "@babel/plugin-proposal-class-properties": "7.5.5",
@@ -40,14 +48,5 @@
     "npm-run-all": "4.1.2",
     "webpack": "4.28.4",
     "webpack-cli": "3.2.1"
-  },
-  "dependencies": {
-    "cannon": "0.6.2",
-    "drei": "1.5.7",
-    "nw": "0.50.2-sdk",
-    "react": "16.13.1",
-    "react-dom": "16.13.1",
-    "react-three-fiber": "4.2.21",
-    "three": "0.120.1"
   }
 }

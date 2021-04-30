@@ -1,10 +1,23 @@
+Fix bug where switching to mouse steering uses old now-invalid analog numbers.
+
 Move cam[0] logic into ship loader.
+ - Create notion of a standard arrow.
  - Ship orientation cam.
  - Initial cam.
  - Bridge cam.
  - Ship outside cam.
 
 Make the ship loader load gltf lights.
+
+Make planets respect local star light.
+ * Implement a mechanism to differentiate between stars, light emitting
+   planets, and regular planets.
+ * Make stars light emitters.
+ * Give celestial bodies the materials needed to facilitate lighting.
+
+shipPilot.onShipLoaded:
+Many changes have been made since this was implemented; check if the cam
+rotation code in that function even does anything. Remove if not.
 
 Cam controllers currently have the option to be notified when they are loaded.
 They do however not have a direct mechanism to be notified if a different
@@ -25,19 +38,18 @@ Implement physics in a universally easy to use way.
 
 Implement a ramp based spedometer and make sure distances measured with m/s check out.
 
-Add core controls top right below FPS:
+Add core controls top left below FPS:
  - F1: show all controls.
  - Middle click: or Num5 to lock mouse.
  - J: jump into (and out of) hyperspace.
  - WASD and EF: move ship.
  - F2: show / hide this text.
+ - Right click in-ship menu for quick assign.
 
 -- Set up a spacecube field and make the ship travel through it (just via brute
 force, no need for physics right now). Then ensure the player stays on the ship
 and doesn't get left behind, in all modes. Maybe give to option to let one
 detach from ship in free cam mode.
-
-Implement full warp drive controls.
 
 Implement an analog logarithmic speedometer (or at least a relative one).
 Show all speeds underneath, but make the font smallers as the numbers grow.
@@ -52,8 +64,8 @@ Make the border be in the direction of the switch highlighted.
 Maybe place an actual arrow next the border closer the the interactable, but
 this last one is optional.
 
-100km/h -> 3000c -> 3 billion c
-[messes up past about 50% galaxy width, but it's consistent and can likely be worked around]
+spaceShipLoader.modelPostSetup:
+Implement mechanism to load player ship at specific world position.
 
 Some technical problems to consider:
 Moving at 3000c causes the camera to jump around *slightly*. \[Note that this was

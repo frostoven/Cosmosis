@@ -50,7 +50,13 @@ window.$game = {
   renderer: null,
   spaceWorld: null,
   gravityWorld: null,
+  // The loaded file. The 'real' space ship is playerShip.scene.
   playerShip: null,
+  // Container for the player ship. Used especially by the warp drive to know
+  // what the ship's 'forward' direction is. This allows the 3D artist to model
+  // their ship in any orientation, and then use a standard arrow to tell the
+  // engine which direction the ship is pointing.
+  playerShipBubble: null,
   ptrLockControls: null,
   // The term 'level' here is used very loosely. It's any interactable
   // environment. Space ships as well planet sectors count as levels. Note that
@@ -651,7 +657,7 @@ function init({ sceneName, pos, rot }) {
 }
 
 function initView({ scene, pos, rot }) {
-  const camera = new THREE.PerspectiveCamera(75, SCREEN_WIDTH / SCREEN_HEIGHT, NEAR, FAR);
+  const camera = new THREE.PerspectiveCamera(56.25, SCREEN_WIDTH / SCREEN_HEIGHT, NEAR, FAR);
   camera.position.copy(pos);
   camera.rotation.setFromVector3(rot);
   scene.add(camera);
@@ -718,17 +724,21 @@ function initView({ scene, pos, rot }) {
 
 function initPlayer() {
   createSpaceShip({
-    modelName: 'DS69F', onReady: (mesh) => {
-    // modelName: 'devFlyer', onReady: (mesh) => {
-    // modelName: 'devFlyer2', onReady: (mesh) => {
-    // modelName: 'tentacleHull', onReady: (mesh) => {
+    // modelName: 'DS69F', onReady: (mesh, bubble) => {
+    modelName: 'scorpion_d', onReady: (mesh, bubble) => {
+    // modelName: 'devFlyer', onReady: (mesh, bubble) => {
+    // modelName: 'devFlyer2', onReady: (mesh, bubble) => {
+    // modelName: 'devFlyer3', onReady: (mesh, bubble) => {
+    // modelName: 'tentacleHull', onReady: (mesh, bubble) => {
+    // modelName: 'test', onReady: (mesh, bubble) => {
       $game.playerShip = mesh;
+      $game.playerShipBubble = bubble;
       notifyLoadProgress(progressActions.playerShipLoaded);
 
       // TODO: replace all external occurrences of notifyAll with
       //  onLoadProgress, then delete this.
       playerShipReadyListeners.notifyAll((cb) => {
-        cb(mesh);
+        cb(mesh, bubble);
       });
       // console.log('==> ship stored in $game.');
     }
