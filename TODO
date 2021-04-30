@@ -15,6 +15,8 @@ Make planets respect local star light.
  * Make stars light emitters.
  * Give celestial bodies the materials needed to facilitate lighting.
 
+Create a linter setup to enforce project code consistency.
+
 shipPilot.onShipLoaded:
 Many changes have been made since this was implemented; check if the cam
 rotation code in that function even does anything. Remove if not.
