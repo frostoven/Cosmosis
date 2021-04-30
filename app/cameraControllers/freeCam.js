@@ -1,5 +1,6 @@
 import * as THREE from "three";
 
+import AssetLoader from '../local/AssetLoader';
 import { controls } from '../local/controls';
 import core from "../local/core";
 import speedTracker from "./utils/speedTracker";
