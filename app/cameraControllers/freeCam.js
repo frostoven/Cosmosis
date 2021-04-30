@@ -53,7 +53,7 @@ function register() {
             // Set game lock only when the game is ready.
             core.onLoadProgress(core.progressActions.gameViewReady, () => {
                 $game.ptrLockControls.setLockMode(lockModes.freeLook);
-                $game.ptrLockControls.unsetAnchor();
+                AssetLoader.disableCrosshairs();
             });
 
             speedTimer = speedTracker.trackCameraSpeed();
