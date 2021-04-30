@@ -17,6 +17,44 @@ const prodPath = 'prodHqAssets';
 
 const cachedPaths = {};
 
+const assetDefaults = {
+  icons: {
+    dir: 'icons',
+    extensions: [ 'jpg', 'png', 'gif' ],
+  },
+  models: {
+    dir: 'models',
+    extensions: [ 'gltf' ],
+  },
+  music: {
+    dir: 'music',
+    extensions: [ 'mp3', 'ogg' ],
+  },
+  planetImg: {
+    dir: 'planetImg',
+    extensions: [ 'jpg', 'png', 'gif' ],
+  },
+  sfx: {
+    dir: 'sfx',
+    extensions: [ 'mp3', 'ogg' ],
+  },
+  skyboxes: {
+    dir: 'skyboxes',
+    extensions: [ 'jpg', 'png', 'gif' ],
+  },
+  spaceShips: {
+    dir: 'spaceShips',
+    extensions: [ 'gltf', 'glb' ],
+    // Helps to make things 'just work' in dev builds, although doing this
+    // should always generate an error indicating that assets are missing.
+    placeholder: 'DS69F',
+  },
+  voicePacks: {
+    dir: 'voicePacks',
+    extensions: [ 'mp3', 'ogg' ],
+  },
+};
+
 function getCache(dir, name) {
   if (cachedPaths[dir] && cachedPaths[dir][name]) {
     return cachedPaths[dir][name];
@@ -25,7 +63,9 @@ function getCache(dir, name) {
 
 function AssetFinder() {}
 
-AssetFinder.prototype.getRes = function getRes(dir, name, extensions, callback) {
+AssetFinder.prototype.getRes = function getRes(name, options={}, callback) {
+  const { dir, extensions, placeholder } = options;
+
   const cache = getCache(dir, name);
   if (cache) {
     console.log('--> [AssetFinder.getRes] cached hit:', cache);
@@ -51,41 +91,52 @@ AssetFinder.prototype.getRes = function getRes(dir, name, extensions, callback) 
       console.error('forEachFn onReachEnd error:', error)
     }
     else {
-      console.error('No files found matching:', name)
+      let errorMessage = `No '${dir}' files found matching name: '${name}'.`
+      if (placeholder) {
+        errorMessage += ` Will instead try default placeholder '${placeholder}'.`;
+        console.error(errorMessage);
+        // Try once more with the default placeholder. Null it out to prevent
+        // further attempts if it fails.
+        const retryOpts = { ...options, placeholder: null };
+        this.getRes(placeholder, retryOpts, callback);
+      }
+      else {
+        console.error(errorMessage);
+      }
     }
   });
 };
 
 AssetFinder.prototype.getIcon = function getIcon(name, callback=()=>{}) {
-  this.getRes('icons', name, [ 'jpg', 'png', 'gif' ], callback);
+  this.getRes(name, assetDefaults.icons, callback);
 };
 
 AssetFinder.prototype.getModel = function getModel(name, callback=()=>{}) {
-  this.getRes('models', name, [ 'gltf' ], callback);
+  this.getRes(name, assetDefaults.models, callback);
 };
 
 AssetFinder.prototype.getMusic = function getMusic(name, callback=()=>{}) {
-  this.getRes('music', name, [ 'mp3', 'ogg' ], callback);
+  this.getRes(name, assetDefaults.music, callback);
 };
 
 AssetFinder.prototype.getPlanetImg = function getPlanetImg(name, callback=()=>{}) {
-  this.getRes('planetImg', name, [ 'jpg', 'png', 'gif' ], callback);
+  this.getRes(name, assetDefaults.planetImg, callback);
 };
 
 AssetFinder.prototype.getSfx = function getSfx(name, callback=()=>{}) {
-  this.getRes('sfx', name, [ 'mp3', 'ogg' ], callback);
+  this.getRes(name, assetDefaults.sfx, callback);
 };
 
 AssetFinder.prototype.getSkybox = function getSkybox(name, callback=()=>{}) {
-  this.getRes('skyboxes', name, [ 'jpg', 'png', 'gif' ], callback);
+  this.getRes(name, assetDefaults.skyboxes, callback);
 };
 
 AssetFinder.prototype.getSpaceShip = function getSpaceShip(name, callback=()=>{}) {
-  this.getRes('spaceShips', name, [ 'gltf', 'glb' ], callback);
+  this.getRes(name, assetDefaults.spaceShips, callback);
 };
 
 AssetFinder.prototype.getVoiceFile = function getVoiceFile(name, callback=()=>{}) {
-  this.getRes('voicePacks', name, [ 'mp3', 'ogg' ], callback);
+  this.getRes(name, assetDefaults.voicePacks, callback);
 };
 
 const finder = new AssetFinder();
