@@ -44,9 +44,7 @@
                 16,
                 17,
                 18,
-                19,
-                20,
-                21
+                19
             ]
         }
     ],
@@ -277,18 +275,6 @@
                 0.5,
                 0
             ]
-        },
-        {
-            "mesh" : 16,
-            "name" : "o1_test1"
-        },
-        {
-            "name" : "o1_test2",
-            "translation" : [
-                -0.06784066557884216,
-                0.747252345085144,
-                2.526871919631958
-            ]
         }
     ],
     "cameras" : [
@@ -327,9 +313,9 @@
             "name" : "roofAction",
             "samplers" : [
                 {
-                    "input" : 69,
+                    "input" : 65,
                     "interpolation" : "LINEAR",
-                    "output" : 70
+                    "output" : 66
                 }
             ]
         }
@@ -871,30 +857,6 @@
                     },
                     "indices" : 64,
                     "material" : 5,
-                    "mode" : 4
-                }
-            ]
-        },
-        {
-            "name" : "Cube.002",
-            "primitives" : [
-                {
-                    "attributes" : {
-                        "POSITION" : 65,
-                        "NORMAL" : 66,
-                        "TEXCOORD_0" : 67
-                    },
-                    "extensions" : {
-                        "KHR_draco_mesh_compression" : {
-                            "bufferView" : 23,
-                            "attributes" : {
-                                "POSITION" : 0,
-                                "NORMAL" : 1,
-                                "TEXCOORD_0" : 2
-                            }
-                        }
-                    },
-                    "indices" : 68,
                     "mode" : 4
                 }
             ]
@@ -1457,37 +1419,7 @@
             "type" : "SCALAR"
         },
         {
-            "componentType" : 5126,
-            "count" : 24,
-            "max" : [
-                0.01941409707069397,
-                1.2812209129333496,
-                -2.1385819911956787
-            ],
-            "min" : [
-                -0.1550954282283783,
-                1.1067113876342773,
-                -2.313091516494751
-            ],
-            "type" : "VEC3"
-        },
-        {
-            "componentType" : 5126,
-            "count" : 24,
-            "type" : "VEC3"
-        },
-        {
-            "componentType" : 5126,
-            "count" : 24,
-            "type" : "VEC2"
-        },
-        {
-            "componentType" : 5123,
-            "count" : 36,
-            "type" : "SCALAR"
-        },
-        {
-            "bufferView" : 24,
+            "bufferView" : 23,
             "componentType" : 5126,
             "count" : 60,
             "max" : [
@@ -1499,7 +1431,7 @@
             "type" : "SCALAR"
         },
         {
-            "bufferView" : 25,
+            "bufferView" : 24,
             "componentType" : 5126,
             "count" : 60,
             "type" : "VEC4"
@@ -1623,23 +1555,18 @@
         },
         {
             "buffer" : 0,
-            "byteLength" : 301,
+            "byteLength" : 240,
             "byteOffset" : 295460
         },
         {
             "buffer" : 0,
-            "byteLength" : 240,
-            "byteOffset" : 295764
-        },
-        {
-            "buffer" : 0,
             "byteLength" : 960,
-            "byteOffset" : 296004
+            "byteOffset" : 295700
         }
     ],
     "buffers" : [
         {
-            "byteLength" : 296964,
+            "byteLength" : 296660,
             "uri" : "DS69F.bin"
         }
     ]
