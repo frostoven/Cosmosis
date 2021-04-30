@@ -1,7 +1,7 @@
 import React from 'react';
 
 import core from './local/core';
-import { loadAllCrosshairImages } from "./local/crosshairs";
+import { loadAllCrosshairImages } from './local/crosshairs';
 import powerOnSelfTest from './test';
 import build from '../build.json';
 

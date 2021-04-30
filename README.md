@@ -29,7 +29,8 @@ no loading screens.
 #### Excellent modding support
 You can make a fully interactable space ship yourself **with zero programming
 experience**. All you need is a copy of Blender 2.8 and to follow the guide on
-mesh codes. Blender does not even need any add-ons for this to work.
+mesh codes. Blender does not even need any special add-ons for this to work,
+though a future add-on is on the roadmap to make some tedious tasks faster.
 
 If you are a coder, coded modding support is planned but currently low priority
 due to the fact the game is still rapidly changing. Adding such support in

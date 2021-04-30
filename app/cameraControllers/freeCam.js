@@ -2,9 +2,9 @@ import * as THREE from "three";
 
 import AssetLoader from '../local/AssetLoader';
 import { controls } from '../local/controls';
-import core from "../local/core";
-import speedTracker from "./utils/speedTracker";
-import { lockModes } from "../local/PointerLockControls";
+import core from '../local/core';
+import speedTracker from './utils/speedTracker';
+import { lockModes } from '../local/PointerLockControls';
 
 const mode = core.modes.freeCam;
 const camControls = controls.freeCam;

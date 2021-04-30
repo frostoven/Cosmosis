@@ -117,10 +117,10 @@ function register() {
         $game.ptrLockControls.setLockMode(lockModes.headLook);
       });
       core.onLoadProgress(core.progressActions.playerShipLoaded, () => {
-
         // TODO: move this into the level loader. It needs to be dynamic based on
         //  the level itself (in this case we attach the player to the main cam).
         $game.playerShip.cameras[0].attach($game.camera);
+        // $game.playerShip.scene.children[2].attach($game.camera);
         $game.camera.position.x = 0;
         $game.camera.position.y = 0;
         $game.camera.position.z = 0;
@@ -138,6 +138,9 @@ function register() {
 }
 
 function onShipLoaded(mesh) {
+  // TODO: many changes have been made since this was implemented; check if the
+  //  below still does anything at all.
+
   // console.log('shipPilot got mesh:', mesh);
   // attachCamera(mesh);
   // $game.camera.rotation.setFromVector3(new THREE.Vector3(-3.1, 0.03, 3.13));
@@ -260,14 +263,14 @@ function scaleHyperSpeed(amount) {
   return Math.exp(amount / 10);
 }
 
-function handleHyper(delta, scene, playerShip) {
+function handleHyper(delta, scene, playerShip, warpBubble) {
   if (steer.leftRight) {
     const lr = (steer.leftRight * delta) * 65.2;
-    playerShip.scene.rotateY(lr * rotationSpeed);
+    warpBubble.rotateY(lr * rotationSpeed);
   }
   if (steer.upDown) {
     const ud = (steer.upDown * delta) * 65.2;
-    playerShip.scene.rotateX(ud * rotationSpeed);
+    warpBubble.rotateX(ud * rotationSpeed);
   }
 
   const effectiveSpin = (spinSpeed * delta) * 65.2;
@@ -283,7 +286,7 @@ function handleHyper(delta, scene, playerShip) {
       spinBuildup = effectiveSpin;
     }
   }
-  playerShip.scene.rotateZ(spinBuildup);
+  warpBubble.rotateZ(spinBuildup);
   if (Math.abs(spinBuildup) < 0.0001) {
     spinBuildup = 0;
   }
@@ -340,9 +343,9 @@ function handleHyper(delta, scene, playerShip) {
 
   // Move the world around the ship.
   let direction = new THREE.Vector3();
-  $game.playerShip.cameras[0].getWorldDirection(direction);
-  $game.scene.position.addScaledVector(direction, -hyperSpeed);
-  $game.playerShip.scene.position.addScaledVector(direction, hyperSpeed);
+  playerShip.cameras[0].getWorldDirection(direction);
+  scene.position.addScaledVector(direction, -hyperSpeed);
+  warpBubble.position.addScaledVector(direction, hyperSpeed);
 }
 
 /** Returns the number, or 100 (sign preserved) if it's more than 100. */
@@ -365,7 +368,7 @@ function handleLocal(delta) {
 
 let updateCount_DELETEME = 0;
 function render(delta) {
-  const { playerShip } = $game;
+  const { playerShip, playerShipBubble } = $game;
   if (!playerShip) {
     return;
   }
@@ -399,7 +402,7 @@ function render(delta) {
     // Hyper-movement is similar to freecam, but has a concept of inertia. The
     // ship cannot strafe in this mode. The ship should have no physics in this
     // mode, and the universe moves instead of the ship.
-    handleHyper(delta, scene, playerShip);
+    handleHyper(delta, scene, playerShip, playerShipBubble);
   }
   else {
     // PLEASE GIVE ME PHYSICS
