@@ -12,9 +12,11 @@
   "chromium-args": "--enable-logging=stderr",
   "description": "Drugs. Control. Concubines.",
   "scripts": {
-    "bundle": "webpack --mode development",
+    "//": "prepare-dev is actually redundant, but it saves telling new users to reload nw after bundle.js first build.",
+    "prepare-dev": "webpack --mode development",
+    "dev": "webpack --mode development --watch",
     "serve": "nw",
-    "start": "npm-run-all --parallel bundle serve"
+    "start": "npm-run-all --parallel dev serve"
   },
   "repository": {
     "type": "git",

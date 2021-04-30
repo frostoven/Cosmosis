@@ -2,22 +2,17 @@ const webpack = require('webpack');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 module.exports = {
-
-    watch: true,
-
+    watch: false,
     target: 'node-webkit',
-
     entry: {
         bundle: './app/index.js',
         // worker: './app/physicsWorker.js',
     },
-
     output: {
         path: __dirname + '/build',
         publicPath: 'build/',
         filename: '[name].js'
     },
-
     module: {
         rules: [
             {
