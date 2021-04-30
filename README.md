@@ -18,8 +18,8 @@ system is being implemented.
 Planets and their (hostile Lovecraftian) inhabitants will be procedurally
 generated, and ground-based combat will be souls-like.
 
-This game is and will always be free and open source (see ['Why this game is
-open sourced'](README.md#Why we provide source code) below).
+The source is made available to all users for backup and modding purposes, but
+this project is not free (see [Why we provide source code](README.md#why-we-provide-source-code) below).
 
 ## Why this game?
 #### Intro
