@@ -45,10 +45,11 @@ Production assets are not be included with the source code. This is to keep it
 as small as possible (git gets slow with large binary files, and GitHub has
 horribly low file size limits).
 
-To get the production assets, head over to the releases section and download
-the 'Stand-Alone Production Assets.zip' package. You will see a folder named
-'prodHqAssets'. Copy that into the same directory as this build document and
-restart the game. The game will automatically load the better assets.
+To get the production assets, head over to the
+[releases section](https://github.com/aggregate1166877/Cosmosis/releases) and
+download the 'Stand-Alone Production Assets.zip' package. You will see a folder
+named 'prodHqAssets'. Copy that into the same directory as this build document
+and restart the game. The game will automatically load the better assets.
 
 Note that some parts of the application (such as the planet loaders) do not yet
 use the prod assets, so you will still see the low quality versions. This will

@@ -4,6 +4,8 @@
 See [BUILD_INSTRUCTIONS.md](BUILD_INSTRUCTIONS.md) for instructions on running
 this application.
 
+![Demo](demo.gif)
+
 ## What is Cosmosis?
 Cosmosis plans to eventually be a high quality open world space exploration
 game. It will have the Milky Way galaxy as its home and use real NASA data
