@@ -86,7 +86,7 @@ const toggles = {
     steer.upDown = 0;
     steer.leftRight = 0;
   },
-  hyperdrive: core.coreKeyToggles.toggleHyperMovement,
+  engageHyperdrive: core.coreKeyToggles.toggleHyperMovement,
   // TODO: remove me
   _debugGravity: () => { if (ambientGravity === 10) { ambientGravity = 1; }  else { ambientGravity = 10; } },
   debugFullWarpSpeed: () => { debugFullWarpSpeed = !debugFullWarpSpeed; }
@@ -274,13 +274,13 @@ function handleHyper(delta, scene, playerShip, warpBubble) {
   }
 
   const effectiveSpin = (spinSpeed * delta) * 65.2;
-  if (ctrl.left_renameme) {
+  if (ctrl.rollLeft) {
     spinBuildup -= effectiveSpin;
     if (spinBuildup < -effectiveSpin) {
       spinBuildup = -effectiveSpin;
     }
   }
-  if (ctrl.right_renameme) {
+  if (ctrl.rollRight) {
     spinBuildup += effectiveSpin;
     if (spinBuildup > effectiveSpin) {
       spinBuildup = effectiveSpin;
