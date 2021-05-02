@@ -141,33 +141,48 @@
             visibility: visible; /* Show the snackbar */
             /* Add animation: Take 0.5 seconds to fade in and out the snackbar.
             However, delay the fade out process for 2.5 seconds */
-            -webkit-animation: fadein 0.25s, fadeout 0.25s 1.25s;
             animation: fadein 0.25s, fadeout 0.25s 1.25s;
         }
 
-        /* Animations to fade the snackbar in and out */
-        @-webkit-keyframes fadein {
-            from {bottom: 0; opacity: 0;}
-            to {bottom: 30px; opacity: 1;}
+        .spinning {
+            animation-name: spin;
+            animation-duration: 2000ms;
+            animation-iteration-count: infinite;
+            animation-timing-function: linear;
+        }
+
+        .fadeout {
+            /*animation: fadeout 0.25s 1.25s;*/
+            animation-name: fadeout;
+            animation-duration: 0.5s;
+            animation-iteration-count: 1;
+            animation-fill-mode: both;
         }
 
         @keyframes fadein {
-            from {bottom: 0; opacity: 0;}
-            to {bottom: 30px; opacity: 1;}
-        }
-
-        @-webkit-keyframes fadeout {
-            from {bottom: 30px; opacity: 1;}
-            to {bottom: 0; opacity: 0;}
+            from {transform: translateY(30px); opacity: 0;}
+            to {transform: translateY(0px); opacity: 1;}
         }
 
         @keyframes fadeout {
-            from {bottom: 30px; opacity: 1;}
-            to {bottom: 0; opacity: 0;}
-        }html, body {
+            from {transform: translateY(0px); opacity: 1;}
+            to {transform: translateY(30px); opacity: 0;}
+        }
+
+        @keyframes spin {
+            from {
+                transform:rotate(0deg);
+            }
+            to {
+                transform:rotate(360deg);
+            }
+        }
+
+        html, body {
              height: 100%;
              margin: 0;
          }
+
         #c {
             width: 100%;
             height: 100%;
@@ -194,6 +209,40 @@
             top: 28px;
         }
 
+        .loading-indicator {
+            color: white;
+            pointer-events: none;
+            position: fixed;
+            z-index: 9000;
+            right: 0;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            margin: auto;
+            text-align: center;
+        }
+
+        .loading-indicator > div, .loading-indicator > img {
+            display: block;
+            position: absolute;
+            right: 0;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            margin: auto;
+            width: 512px;
+            height: 128px;
+        }
+
+        .loading-indicator > img {
+            top: -108px;
+        }
+
+        .loading-indicator > img {
+            width: 128px;
+            height: 128px;
+        }
+
     </style>
 
     <script type="application/javascript">
@@ -214,6 +263,18 @@
 
     <script type="text/javascript" src="build/bundle.js"></script>
 
+    <div>
+        <div class="loading-indicator">
+            <div id="loading-text">
+                Cosmosis build --<br>
+                Loading...<br>
+            </div>
+        </div>
+        <div class="loading-indicator">
+            <img class="spinning" src="/potatoLqAssets/icons/loader.png">
+        </div>
+    </div>
+
     <div id="mode">--</div>
     <div id="hyperdrive">Hyperdrive: initialising</div>
     <div id="hyperdrive-stats">---</div>
@@ -221,10 +282,6 @@
     <div id="crosshairs"></div>
     <div id="camDevArea">--</div>
     <canvas id="c"></canvas>
-
-<!--    <div class="version">-->
-<!--        Using node.js version: <script>document.write(process.version)</script>-->
-<!--    </div>-->
 
 </body>
 </html>
