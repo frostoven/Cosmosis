@@ -92,7 +92,6 @@ function loadModel(name, callback) {
       //   }
       // });
 
-      console.log('[Debug] GLTF:', gltf);
       storeMesh(name, gltf);
       callback(gltf);
 

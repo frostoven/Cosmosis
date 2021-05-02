@@ -114,8 +114,31 @@ function forEachFn(functions=[], cb=()=>{}, onReachEnd=()=>{}, defer=false) {
   forEachFnLimit(functions, cb, onReachEnd, functions.length, 0);
 }
 
+/**
+ * Example: 'thisIsAString' becomes 'this Is A String'.
+ * @param {string} string
+ */
+function addSpacesBetweenWords(string) {
+  let result = string.replace(/([A-Z])/g, " $1");
+  if (result[0] === ' ') {
+    // Remove leading space.
+    result = result.substring(1);
+  }
+  return result;
+}
+
+/**
+ * Example: 'thisString' becomes 'ThisString'.
+ * @param {string} string
+ */
+function toTitleCase(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
 export {
   fuzzyFindFile,
   forEachFn,
   forEachFnLimit,
+  addSpacesBetweenWords,
+  toTitleCase,
 }

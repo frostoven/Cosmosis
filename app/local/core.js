@@ -215,6 +215,18 @@ const coreKeyToggles = {
     updateHyperdriveDebugText();
     return $game.hyperMovement;
   },
+  showKeyBindings: () => {
+    $game.ptrLockControls.unlock();
+    const allControlsDiv = document.getElementById('all-controls-page');
+    if (allControlsDiv) {
+      if (allControlsDiv.style.display !== 'block') {
+        allControlsDiv.style.display = 'block';
+      }
+      else {
+        allControlsDiv.style.display = 'none';
+      }
+    }
+  },
   _devChangeMode: () => {
     if (currmode === modes.freeCam) {
       // setMode(modes.godCam);

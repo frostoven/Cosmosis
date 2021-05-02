@@ -1,11 +1,3 @@
-Add core controls top left below FPS:
- - F1: show all controls.
- - J: jump into (and out of) hyperspace.
- - Middle click or Num5: to lock mouse.
- - WASD and EF: move ship.
- - F2: show / hide this text.
- - Right click in-ship menu for quick assign.
-
 Make ship movable with physics using keyboard controls.
 Implement physics in a universally easy to use way.
 
@@ -47,6 +39,17 @@ Implement world position reset when switching to/form hyperdrive.
 
 Implement a ramp based spedometer and make sure distances measured with m/s check out.
 
+Fix bug where the game can sometimes grab the mouse pointer while the game is
+inactive.
+This seems to happen exclusively while the game is loading. We can probably fix
+this by preventing a lock during boot if it's found that the window is not
+focussed.
+
+Move all UI elements that do not need updates every frame (such as the control page)
+to React. Future menus need to be moved to React as well.
+
+Ensure React-based menus work in VR.
+
 -- Set up a spacecube field and make the ship travel through it (just via brute
 force, no need for physics right now). Then ensure the player stays on the ship
 and doesn't get left behind, in all modes. Maybe give to option to let one
@@ -67,6 +70,11 @@ this last one is optional.
 
 spaceShipLoader.modelPostSetup:
 Implement mechanism to load player ship at specific world position.
+
+Implement a queueable toast system.
+Current toast system only supports one message at a time. Requesting a second
+message causes existing text to be replaced while the toast message is still
+showing.
 
 Some technical problems to consider:
 Moving at 3000c causes the camera to jump around *slightly*. \[Note that this was
