@@ -18,6 +18,7 @@ const keySchema = {
     'enterFullScreen',
     'toggleMousePointer', // a.k.a. PointerLockControls.
     '_devChangeMode',
+    'showKeyBindings',
   ],
   shipPilot: [
     'thrustInc',
@@ -42,8 +43,8 @@ const keySchema = {
     'turnRight',
     'lookUp',
     'lookDown',
-    'spinLeft',
-    'spinRight',
+    'rollLeft',
+    'rollRight',
     'speedUp',
     'speedDown',
     'use',
