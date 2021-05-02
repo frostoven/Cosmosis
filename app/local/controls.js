@@ -1,7 +1,9 @@
+import { addSpacesBetweenWords, toTitleCase } from './utils';
+
 // Setting that allows the user to force assigning the same key to multiple
 // actions within the same mode.
 // It's niche, but I aim to please, baby.
-  // TODO: implement me.
+// TODO: implement me.
 const doublePresses = {
   freeCam: [
     'tba', 'tba',
@@ -55,8 +57,9 @@ const keySchema = {
 const controls = {
   allModes: {
     ControlLeft: 'toggleMousePointer', // a.k.a. PointerLockControls.
-    F11: 'enterFullScreen',
+    F1: 'showKeyBindings',
     F8: '_devChangeMode',
+    F11: 'enterFullScreen',
   },
   shipPilot: {
     _description: 'Mode used when user is locked to seat.',
@@ -123,55 +126,50 @@ const keyManual = {
  *  this map to reflect that.
  */
 const friendlierKeyName = {
-  'Up': 'Up Arrow',
-  'Left': 'Left Arrow',
-  'Right': 'Right Arrow',
-  'Down': 'Down Arrow',
+  'ArrowUp': 'Up arrow',
+  'ArrowLeft': 'Left arrow',
+  'ArrowRight': 'Right arrow',
+  'ArrowDown': 'Down arrow',
   //
-  'Shift Left': 'Left Shift',
-  'Shift Right': 'Right Shift',
-  'Ctrl Left': 'Left Ctrl',
-  'Ctrl Right': 'Right Ctrl',
-  'Alt Left': 'Left Alt',
-  'Alt Right': 'Right Alt',
+  'ShiftLeft': 'Left Shift',
+  'ShiftRight': 'Right Shift',
+  'ControlLeft': 'Left Ctrl',
+  'ControlRight': 'Right Ctrl',
+  'AltLeft': 'Left Alt',
+  'AltRight': 'Right Alt',
   //
-  'Mouse20': 'Mega mouse click',
+  'Mouse20': 'Mega mouse button',
+  'spMouseMiddle': 'Middle mouse button',
+  'spScrollUp': 'Mouse scroll up',
+  'spScrollDown': 'Mouse scroll down',
 };
 
 /**
  * Converts a keymap name to a friendlier name that can be displayed to the
  * user.
  * Note: this function is slow; please don't run it every frame.
- * @param {number|string} key - The key you want a name for. This can be text,
- *  or the actual numeric key as defined in keymap.
+ * @param {number|string} key - The key you want a name for.
  */
 function keymapFriendlyName(key) {
-  if (typeof key === 'number') {
-    // Start be converting the number to the string equivalent.
-    const mapKeys = Object.keys(keymap);
-    for (let i = 0, len = mapKeys.length; i < len; i++) {
-      const str = mapKeys[i];
-      if (key === keymap[str]) {
-        key = str;
-        break;
-      }
-    }
+  // Get a predefined name, if it exists, and return it.
+  const predefined = friendlierKeyName[key];
+  if (predefined) {
+    return predefined;
   }
 
-  if (typeof key === 'number') {
-    // Nothing was matched above.
-    return `Key ${key}`;
-  }
+  // Put spaces between words.
+  let result = addSpacesBetweenWords(key);
 
-  let result = key.replace( /([A-Z])/g, " $1" );
-  result = result.charAt(0).toUpperCase() + result.slice(1);
-  const friendlier = friendlierKeyName[result];
-  if (friendlier) {
-    return friendlier;
-  }
-  else {
-    return result;
-  }
+  // Uppercase each word.
+  result = toTitleCase(result);
+
+  // Change things like 'Key J' to 'J'.
+  result = result.replace(/^Key /, '');
+
+  // Change things like 'Numpad5' with 'Num5'.
+  result = result.replace(/^Numpad/, 'Num');
+
+  return result;
 }
 
 /**
@@ -242,8 +240,9 @@ const tests = {
   },
 };
 
-module.exports = {
+export {
   tests,
   controls,
   keySchema,
+  keymapFriendlyName,
 };

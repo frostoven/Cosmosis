@@ -39,16 +39,17 @@
     "@babel/preset-stage-2": "7.0.0",
     "@babel/register": "7.0.0",
     "babel-loader": "8.0.5",
+    "cannon": "0.6.2",
     "css-loader": "0.28.10",
+    "drei": "1.5.7",
     "extract-text-webpack-plugin": "4.0.0-beta.0",
     "file-loader": "1.1.10",
+    "lodash": "^4.17.21",
     "npm-run-all": "4.1.2",
-    "webpack": "4.28.4",
-    "webpack-cli": "3.2.1",
-    "cannon": "0.6.2",
-    "drei": "1.5.7",
     "nw": "0.50.2-sdk",
     "react": "16.13.1",
-    "react-dom": "16.13.1"
+    "react-dom": "16.13.1",
+    "webpack": "4.28.4",
+    "webpack-cli": "3.2.1"
   }
 }
