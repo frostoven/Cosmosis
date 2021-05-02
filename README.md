@@ -4,6 +4,7 @@
 See [BUILD_INSTRUCTIONS.md](BUILD_INSTRUCTIONS.md) for instructions on running
 this application.
 
+Demo:
 ![Demo](demo.gif)
 
 ## What is Cosmosis?
@@ -48,7 +49,7 @@ future is trivial, because the game is written in JavaScript.
 
 #### Why this game is open sourced
 There are two niches out there that get poor development: space sims, and
-souls-likes. The developers of space sims seem incredibly out of touch with
+souls clones. The developers of space sims seem incredibly out of touch with
 what their fans want (or just incredibly greedy, who knows ¯\_(ツ)_/¯), and
 souls clones do things in ways that completely miss the point of Miyazaki's
 vision (in this author's subjective opinion, of course).

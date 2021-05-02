@@ -38,7 +38,17 @@ You can now start the application:
 npm start
 ```
 If all works as it should, you should see the game window pop up, refresh, and
-find yourself in a space ship. Press 'J' to enter warp and start flying around.
+find yourself in a space ship.
+
+Unit tests may be performed by pressing F12 and runing `powerOnSelfTest()`.
+
+## Hot module reloading
+HMR is enabled by default, though it currently causes a full application
+reload. To disable HMR, press F12 to open the dev terminal and run:
+```javascript
+hmrEnabled = false;
+```
+This will disable HMR until you restart the application.
 
 ## Production assets
 Production assets are not be included with the source code. This is to keep it
