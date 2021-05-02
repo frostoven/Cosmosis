@@ -88,7 +88,7 @@ const toggles = {
   },
   hyperdrive: core.coreKeyToggles.toggleHyperMovement,
   // TODO: remove me
-  debugGravity: () => { if (ambientGravity === 10) { ambientGravity = 1; }  else { ambientGravity = 10; } },
+  _debugGravity: () => { if (ambientGravity === 10) { ambientGravity = 1; }  else { ambientGravity = 10; } },
   debugFullWarpSpeed: () => { debugFullWarpSpeed = !debugFullWarpSpeed; }
 };
 
