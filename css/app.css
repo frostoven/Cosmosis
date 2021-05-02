@@ -1,0 +1,76 @@
+/* Core application CSS. */
+
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+* {
+    font-family: Helvetica, Arial, sans-serif;
+}
+
+#canvas {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+/* Snackbar - a toast implementation.*/
+#snackbar {
+    visibility: hidden; /* Hidden by default. Visible on click */
+    min-width: 250px; /* Set a default minimum width */
+    margin-left: -125px; /* Divide value of min-width by 2 */
+    background-color: #333; /* Black background color */
+    color: #fff; /* White text color */
+    text-align: center; /* Centered text */
+    border-radius: 2px; /* Rounded borders */
+    padding: 16px; /* Padding */
+    position: fixed; /* Sit on top of the screen */
+    z-index: 1; /* Add a z-index if needed */
+    left: 50%; /* Center the snackbar */
+    bottom: 30px; /* 30px from the bottom */
+}
+
+/* Show the snackbar when clicking on a button (class added with JavaScript) */
+#snackbar.show {
+    visibility: visible; /* Show the snackbar */
+    /* Add animation: Take 0.5 seconds to fade in and out the snackbar.
+    However, delay the fade out process for 2.5 seconds */
+    animation: fadein 0.25s, fadeout 0.25s 1.25s;
+}
+
+.loading-indicator {
+    color: white;
+    pointer-events: none;
+    position: fixed;
+    z-index: 9000;
+    right: 0;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    text-align: center;
+}
+
+.loading-indicator > div, .loading-indicator > img {
+    display: block;
+    position: absolute;
+    right: 0;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    width: 512px;
+    height: 128px;
+}
+
+.loading-indicator > img {
+    top: -108px;
+}
+
+.loading-indicator > img {
+    width: 128px;
+    height: 128px;
+}

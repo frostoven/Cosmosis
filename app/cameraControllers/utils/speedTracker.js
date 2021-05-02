@@ -21,7 +21,7 @@ let prevPosition = new THREE.Vector3( 0, 0, 0 );
 const C = 299792458;
 
 function showStats() {
-  const statusDiv = document.getElementById('camDevArea');
+  const statusDiv = document.getElementById('speed-tracker');
   if (statusDiv && statusDiv.style.display !== 'block') {
     setTimeout(() => {
       statusDiv.style.display = 'block';
@@ -39,7 +39,7 @@ function trackCameraSpeed() {
   const perUnit = 1000;
 
   const timer = setInterval(() => {
-    const statusDiv = document.getElementById('camDevArea');
+    const statusDiv = document.getElementById('speed-tracker');
     if (!statusDiv || !$game.playerShip) {
       // This sometimes happens right after the game has loaded.
       console.log('Waiting for camera to become ready...');
@@ -73,7 +73,7 @@ function clearSpeedTracker(timer) {
     console.error('clearSpeedTracker needs a timer.');
     return;
   }
-  const statusDiv = document.getElementById('camDevArea');
+  const statusDiv = document.getElementById('speed-tracker');
   if (statusDiv) {
     statusDiv.style.display = 'none';
   }

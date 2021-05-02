@@ -1,0 +1,83 @@
+/*
+ * This file contains UI elements that were created in a quick / dirty fashion
+ * to make things 'just work' and should eventually be replaced with better
+ * solutions.
+ *
+ * These 'better' solutions may include using React components or using
+ * Three.js for rendering. Some of them are debug messages and should likely be
+ * hidden by default.
+ */
+
+#player-mode {
+    color: white;
+    width: 176px;
+    height: 18px;
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 1000;
+    text-align: right;
+    pointer-events: none;
+    padding: 5px;
+    text-shadow: 1px 1px 1px black;
+}
+
+#speed-tracker {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    z-index: 10000;
+    padding: 4px;
+    font-size: 10pt;
+    font-weight: bold;
+    border: thin solid green;
+    margin: 3px;
+    color: white;
+    text-shadow: 0px 0px 8px black;
+}
+
+#crosshairs {
+    pointer-events: none;
+    position: fixed;
+    z-index: 1000;
+    right: 0;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    text-align: center;
+}
+
+#crosshairs > img {
+    opacity: 0;
+    display: block;
+    position: absolute;
+    right: 0;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    width: 128px;
+    height: 128px;
+}
+
+#hyperdrive, #hyperdrive-stats {
+    color: white;
+    width: 240px;
+    height: 18px;
+    position: fixed;
+    margin: auto;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: 1000;
+    text-align: left;
+    pointer-events: none;
+    padding: 5px;
+    text-shadow: 1px 1px 1px black;
+}
+
+#hyperdrive-stats {
+    top: 28px;
+}

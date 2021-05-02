@@ -518,7 +518,7 @@ function setMode(mode) {
 
 // TODO: remove me once the game is more stable.
 function updateModeDebugText() {
-  const div = document.getElementById('mode');
+  const div = document.getElementById('player-mode');
   if (!div) return;
   if (currmode === modes.shipPilot) div.innerText = 'Mode: Ship pilot';
   else if (currmode === modes.zeroGMagnetic) div.innerText = 'Mode: Zero-G magnetic';
