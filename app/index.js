@@ -1,7 +1,7 @@
+import './local/windowLoadListener';
 import React from 'react';
 
 import core from './local/core';
-import { loadAllCrosshairImages } from './local/crosshairs';
 import powerOnSelfTest from './test';
 import build from '../build.json';
 
@@ -66,17 +66,6 @@ core.init({
   // pos: new THREE.Vector3(0, 0, 0),
   // rot: new THREE.Vector3(0, 0, 0),
 });
-
-// Load special HTML elements.
-window.onload = function() {
-  const crosshairsDiv = document.getElementById('crosshairs');
-  if (crosshairsDiv) {
-    loadAllCrosshairImages(crosshairsDiv);
-  }
-  else {
-    console.error('Could not find #crosshairs div.');
-  }
-}
 
 // Temp dev overrides. Remove these eventually.
 setTimeout(() => {

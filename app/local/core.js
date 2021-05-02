@@ -158,21 +158,34 @@ const loadProgressListeners = [];
 
 // Bitmask used to keep track of what's been loaded.
 let loadProgress = 0;
+
 // Used to generate the progressActions enum.
 let _progActCount = 1;
-// Contains actions used by notifyLoadProgress and onLoadProgress.
+
+// Contains actions used by notifyLoadProgress and onLoadProgress. Note that
+// progress is asynchronous, and actions are not guaranteed to happen in any
+// specific order. The exception to this is progressActions.ready, which will
+// always trigger last.
 const progressActions = {
   // Please only add numbers that are powers of 2 as they're bitmasked and will
   // break otherwise.
-  /** The cosmos awakens.*/
-  skyBoxLoaded: 2 ** _progActCount++,
+
   /** Includes things like the camera and scene. */
   gameViewReady: 2 ** _progActCount++,
-  playerShipLoaded: 2 ** _progActCount++,
-  /** Game is fully loaded. first animation frame is about to be rendered. */
-  ready: 2 ** _progActCount++,
+
   /** The first animation() frame has been rendered. */
   firstFrameRendered: 2 ** _progActCount++,
+
+  /** The cosmos awakens.*/
+  skyBoxLoaded: 2 ** _progActCount++,
+
+  /* This includes all GLTF preprocessing. */
+  playerShipLoaded: 2 ** _progActCount++,
+
+  /** Game is fully loaded, core functions (like rendering) is already
+   * happening.
+   */
+  ready: 2 ** _progActCount++,
 };
 
 /** Give mouse 1-3 friendlier names. */
@@ -524,6 +537,17 @@ function updateHyperdriveDebugText() {
   div.innerText = `Hyperdrive: ${$game.hyperMovement ? 'active' : 'standby'}`;
 }
 
+// TODO: remove me once the game is more stable.
+function closeLoadingScreen() {
+  const divs = document.getElementsByClassName('loading-indicator');
+  if (!divs) return;
+
+  for(let i = 0, len = divs.length; i < len; i++){
+    // divs[i].style.display = 'none';
+    divs[i].classList.add('fadeout');
+  }
+}
+
 function registerAnalogListener({ mode, cb }) {
   analogListeners.push({ mode, cb });
 }
@@ -626,7 +650,6 @@ function init({ sceneName, pos, rot }) {
 
     initPlayer();
     updateModeDebugText();
-    notifyLoadProgress(progressActions.ready);
 
     animate();
     notifyLoadProgress(progressActions.firstFrameRendered);
@@ -724,8 +747,8 @@ function initView({ scene, pos, rot }) {
 
 function initPlayer() {
   createSpaceShip({
-    // modelName: 'DS69F', onReady: (mesh, bubble) => {
-    modelName: 'scorpion_d', onReady: (mesh, bubble) => {
+    modelName: 'DS69F', onReady: (mesh, bubble) => {
+    // modelName: 'scorpion_d', onReady: (mesh, bubble) => {
     // modelName: 'devFlyer', onReady: (mesh, bubble) => {
     // modelName: 'devFlyer2', onReady: (mesh, bubble) => {
     // modelName: 'devFlyer3', onReady: (mesh, bubble) => {
@@ -881,19 +904,25 @@ onLoadProgress(progressActions.playerShipLoaded, () => {
   updateHyperdriveDebugText();
 });
 
-// Little runtime test to ensure everything actually loads.
-function testAllLoaded() {
+// TODO: remove me once the game is more stable.
+onLoadProgress(progressActions.ready, () => {
+  closeLoadingScreen();
+});
+
+// Waits for the game to load so that it can trigger progressActions.ready.
+function waitForAllLoaded() {
   let time = 2000;
   let count = 0;
   forEachFn([
     (cb) => onLoadProgress(progressActions.skyBoxLoaded, cb),
     (cb) => onLoadProgress(progressActions.gameViewReady, cb),
     (cb) => onLoadProgress(progressActions.playerShipLoaded, cb),
-    (cb) => onLoadProgress(progressActions.ready, cb),
     (cb) => onLoadProgress(progressActions.firstFrameRendered, cb),
   ], () => {
     count++;
   }, () => {
+    // Everything else has loaded.
+    notifyLoadProgress(progressActions.ready);
   });
 
   setTimeout(() => {
@@ -905,7 +934,7 @@ function testAllLoaded() {
     // else console.log('Game test: all fully loaded.');
   }, time);
 }
-testAllLoaded();
+waitForAllLoaded();
 
 export default {
   actions,

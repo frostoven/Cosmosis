@@ -1,3 +1,14 @@
+Add core controls top left below FPS:
+ - F1: show all controls.
+ - J: jump into (and out of) hyperspace.
+ - Middle click or Num5: to lock mouse.
+ - WASD and EF: move ship.
+ - F2: show / hide this text.
+ - Right click in-ship menu for quick assign.
+
+Make ship movable with physics using keyboard controls.
+Implement physics in a universally easy to use way.
+
 Fix bug where switching to mouse steering uses old now-invalid analog numbers.
 
 Move cam[0] logic into ship loader.
@@ -28,25 +39,13 @@ something in core to facilitate this.
 
 Put first load mode in index.js.
 
-Make ship movable with physics using keyboard controls.
-
 Test bridge cam attach in both local and world transform.
 
 Test switching between hyperdrive and regular.
 
 Implement world position reset when switching to/form hyperdrive.
 
-Implement physics in a universally easy to use way.
-
 Implement a ramp based spedometer and make sure distances measured with m/s check out.
-
-Add core controls top left below FPS:
- - F1: show all controls.
- - Middle click: or Num5 to lock mouse.
- - J: jump into (and out of) hyperspace.
- - WASD and EF: move ship.
- - F2: show / hide this text.
- - Right click in-ship menu for quick assign.
 
 -- Set up a spacecube field and make the ship travel through it (just via brute
 force, no need for physics right now). Then ensure the player stays on the ship
