@@ -200,3 +200,32 @@ Code dump:
 place them in your project folder, or add as Javascript libraries
 (File | Settings | Languages & Frameworks | JavaScript | Libraries, Add...)
 ```
+
+## Creating a distributable exe
+There are currently no automatic ways of doing this.
+
+#### Windows
+* Download the version of NW.js matching the version written in
+  [package.json](package.json). At the time of writing, this is
+  [nw.js version 0.50.2](https://nwjs.io/blog/v0.50.2/).
+* Extract the zip contents.
+* Open the extracted folder and rename `nwjs-sdk-v0.50.2-win-x64` to
+  `Cosmosis-win-x64`.
+* Clone the Cosmosis repo, and copy its contents into `Cosmosis-win-x64`. The
+  end result should have `.git` and `nw.exe` in the same directory.
+* Go to the [releases](https://github.com/aggregate1166877/Cosmosis/releases)
+  page and download the latest `Stand-Alone.Production.Assets.zip`. Extract
+  this and copy `prodHqAssets` into `Cosmosis-win-x64`.
+* Run `npm install`.
+* Run `npm run prepare-dev` (builds the main game js file; this needs to be
+  replaced with a prod version in future).
+* Run `npm prune --production` (removes about 400MB of dev tools not used by
+  the distributable).
+* Rename `nw.exe` to `Cosmosis.exe`.
+* Run `Cosmosis.exe`. Press F12 and make sure there are no errors in the
+  developer console.
+* Still in the dev console, run: `powerOnSelfTest()`. This runs unit tests
+  (i.e. looks for obvious bugs and problems). You should have no errors.
+* If all is good, zip it up, name the zip to `Cosmosis-win-x64.zip`.
+* Upload to the [releases](https://github.com/aggregate1166877/Cosmosis/releases)
+  page.
