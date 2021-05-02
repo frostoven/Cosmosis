@@ -46,6 +46,7 @@ const keySchema = {
     'speedDown',
     'use',
     'doubleSpeed',
+    'interact',
   ],
   godCam: [],
 }
@@ -69,7 +70,7 @@ const controls = {
     KeyA: 'left_renameme',
     KeyD: 'right_renameme',
     KeyJ: 'hyperdrive',
-    KeyG: 'debugGravity',
+    KeyG: '_debugGravity',
     // ControlLeft: 'toggleMousePointer', // a.k.a. PointerLockControls.
   },
   freeCam: {
@@ -100,7 +101,7 @@ const controls = {
   },
   godCam: {
     _description: 'Celestial god cam',
-    noNeedForControlsWhenOmnipotent: [],
+    // noNeedForControlsWhenOmnipotent()
   }
 };
 
@@ -186,7 +187,7 @@ function detectKeyPress({ ignoreKeyLocation=false }={}, onPress) {
 // --- tests ------------------------------------------------------------------
 
 const tests = {
-  validateSchema: () => {
+  validatePlayerControlsSchema: () => {
     let errors = 0;
     for (const [mode, allMappings] of Object.entries(controls)) {
       const modeSchema = keySchema[mode];
@@ -201,15 +202,32 @@ const tests = {
         continue;
       }
       for (const [button, action] of Object.entries(allMappings)) {
-        if (button === '_description' || !action.length) {
-          // Special reserved key or empty value.
+        // Example:
+        // button === 'KeyE', action === 'interact'
+
+        if ((button && button[0] === '_') || (action && (action[0] === '_'))) {
+          // Underscored buttons are ignored by the application. Underscored
+          // actions are functional but not displayed in the controls menu.
           continue;
         }
-        if (!Array.isArray(modeSchema) || !modeSchema.includes(action)) {
+
+        if (
+          typeof action !== 'string' || action === '' ||
+          typeof button !== 'string' || button === ''
+        ) {
+          console.error(
+            `Action definitions should not be null, undefined, or empty ` +
+            `strings. Debug info: action='${action}', 'button=${button}'`
+          );
+          errors++;
+        }
+        else if (!Array.isArray(modeSchema) || !modeSchema.includes(action)) {
           console.error(
             `[287] Mode "${mode}" does not have action "${action}" defined` +
             'in the schema. This means that it won\'t show up in controls ' +
             `menu! Please add "${action}" to \`controls.js\` -> \`keySchema\`. ` +
+            `If it's not meant to show up in the controls menu, name it ` +
+            `"_${action}" instead. ` +
             `Debug info: key is currently mapped as "${button}".`
           );
           errors++;
