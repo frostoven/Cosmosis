@@ -201,7 +201,7 @@ function processMeshCodes(name, gltf, isPlayer) {
  * @param {function} onReady
  */
 export function createSpaceShip({ modelName, pos, scene, world, isPlayer, onReady }) {
-  core.onLoadProgress(core.progressActions.gameViewReady, () => {
+  core.startupEmitter.on(core.startupEvent.gameViewReady, () => {
     if (!modelName) return console.error('createSpaceShip needs a model name.');
     if (!pos) pos = $game.camera.position;
     if (!scene) scene = $game.scene;

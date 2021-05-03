@@ -1,0 +1,135 @@
+/**
+ * Event emitter that offers the option to remember what has already been
+ * emitted. Useful for calling things like 'onGameReady' long after the
+ * onGameReady event has been emitted. Note that cached events do not store the
+ * original passed args to save on memory, and assume you have a different
+ * source of truth.
+ *
+ * Cached events use enums to the power of 2, while non-cached enums are
+ * in increments of 1.
+ * @constructor
+ */
+function CachedEmitter(
+  { rememberPastEvents=true } = {rememberPastEvents: true}
+) {
+  /** Used to notify different parts of the application that different pieces of
+   * the application has been loaded. */
+  this._listeners = [];
+
+  // Bitmask used to keep track of what's been loaded.
+  this._pastEvents = 0;
+
+  // Enables event caching.
+  this._rememberPastEvents = rememberPastEvents;
+
+  // Used to generate the startupEvent enum.
+  this._currentExp2Enum = 1;
+
+  // Used if remembering past events is not needed.
+  this._currentPlainEnum = 1;
+
+
+}
+
+CachedEmitter.prototype = {
+  get rememberPastEvents() {
+    return this._pastEvents;
+  },
+  set rememberPastEvents(b) {
+    // Remembered vs. not remembered uses different kinds of enums. Disallow
+    // mixing.
+    throw 'rememberPastEvents is read-only; please set it during ' +
+    'initialisation.\n' +
+    `Example: "new CachedEmitter({rememberPastEvents: ${b}})"`;
+  },
+}
+
+/**
+ * Returns next enum in powers of 2. Power of 2 are used for fast bitmask
+ * checking internally.
+ * @returns {number}
+ */
+CachedEmitter.prototype._nextExp2Enum = function nextExp2Enum() {
+  return 2 ** this._currentExp2Enum++;
+};
+
+/**
+ * Returns numbers current enum + 1.
+ * @returns {number}
+ * @private
+ */
+CachedEmitter.prototype._nextPlainEnum = function nextExp2Enum() {
+  return this._currentPlainEnum++;
+};
+
+/**
+ * Automatically figures out which enum to use. For cached emitters, these are
+ * numbers in powers of 2. Otherwise, they're simply in increments of 1.
+ */
+CachedEmitter.prototype.nextEnum = function nextEnum() {
+  if (this._rememberPastEvents) {
+    return this._nextExp2Enum();
+  }
+  else {
+    return this._nextPlainEnum();
+  }
+}
+
+/**
+ * Notify requesters when a part of the application has loaded.
+ *
+ * If you request to be notified when something loads, but it has already
+ * finished loading, then you'll be notified as soon as you make the request.
+ * This allows you to safely check application state at any time regardless of
+ * current load state.
+ *
+ * @param {number} action
+ * @param {function} callback
+ */
+CachedEmitter.prototype.on = function CachedEmitterOn(action, callback) {
+  if (typeof action === 'undefined') {
+    return console.error('CachedEmitter.on() received an invalid action.');
+  }
+  if ((action & this._pastEvents) === action) {
+    // Action has already happened.
+    callback();
+  }
+  else {
+    // Log request.
+    this._listeners.push({ action, callback });
+  }
+}
+
+/**
+ * Notifies all listener that part of the application has loaded.
+ * @param {number} action - startupEvent item.
+ */
+CachedEmitter.prototype.emit = function CachedEmitterEmit(action) {
+  if (typeof action === 'undefined') {
+    // I typo this particular param enough that it's become a necessity :/
+    return console.error('CachedEmitter.emit() received an invalid action.');
+  }
+  // A part of the application booted. Store the id, then notify all the
+  // listeners.
+  const listeners = this._listeners;
+  this._pastEvents |= action;
+  for (let i = 0, len = listeners.length; i < len; i++) {
+    const item = listeners[i];
+    if (item.action === action) {
+      item.callback();
+      listeners.splice(i, 1);
+      i--;
+      len--;
+    }
+  }
+}
+
+CachedEmitter.prototype.forgetCachedAction = function forgetCachedAction(action) {
+  if (!this.rememberPastEvents) {
+    return;
+  }
+  // TODO: implement action erasure.
+}
+
+export default CachedEmitter;
+

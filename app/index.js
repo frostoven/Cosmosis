@@ -82,7 +82,7 @@ setTimeout(() => {
 // Auto switch to hyperdrive for now because we do not yet have regular engines
 // going.
 // TODO: delete me.
-core.onLoadProgress(core.progressActions.ready, () => {
+core.startupEmitter.on(core.startupEvent.ready, () => {
   core.triggerAction('engageHyperdrive');
 })
 
