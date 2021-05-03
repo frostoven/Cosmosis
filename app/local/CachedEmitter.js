@@ -12,6 +12,11 @@
 function CachedEmitter(
   { rememberPastEvents=true } = {rememberPastEvents: true}
 ) {
+  if (!rememberPastEvents) {
+    // TODO: implement me.
+    throw 'CachedEmitter does not yet support use without caching';
+  }
+
   /** Used to notify different parts of the application that different pieces of
    * the application has been loaded. */
   this._listeners = [];
@@ -106,7 +111,6 @@ CachedEmitter.prototype.on = function CachedEmitterOn(action, callback) {
  */
 CachedEmitter.prototype.emit = function CachedEmitterEmit(action) {
   if (typeof action === 'undefined') {
-    // I typo this particular param enough that it's become a necessity :/
     return console.error('CachedEmitter.emit() received an invalid action.');
   }
   // A part of the application booted. Store the id, then notify all the
@@ -124,12 +128,23 @@ CachedEmitter.prototype.emit = function CachedEmitterEmit(action) {
   }
 }
 
+/**
+ * Removes a past action from the remembered cache. If this object does not use
+ * caching, then this function does nothing.
+ *
+ * This is used to unset events such as the player's space ship being loaded.
+ * When loading a new space ship, a new event is triggered.
+ *
+ * TODO: send out an event specifying that we're forgetting a cached action.
+ *  This may help with things like clean-up, loading indicators, etc.
+ * @param action
+ */
 CachedEmitter.prototype.forgetCachedAction = function forgetCachedAction(action) {
   if (!this.rememberPastEvents) {
     return;
   }
-  // TODO: implement action erasure.
+  // Remove the specified action.
+  this._pastEvents ^= action;
 }
 
 export default CachedEmitter;
-
