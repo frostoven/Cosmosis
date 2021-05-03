@@ -5,7 +5,7 @@
 // code. I'm so sorry.
 
 import * as THREE from 'three';
-import * as CANNON from 'cannon';
+// import * as CANNON from 'cannon';
 import { EffectComposer  } from 'three/examples/jsm/postprocessing/EffectComposer';
 import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass';
 import { RenderPass  } from 'three/examples/jsm/postprocessing/RenderPass';
@@ -90,11 +90,6 @@ window.$displayOptions = {
 window.$rendererParams = {
   antialias: true,
 }
-
-// Debug reference to three.
-window.$THREE = THREE;
-// Debug reference to cannon.
-window.$CANNON = CANNON;
 
 /* =================================
  * End global vars

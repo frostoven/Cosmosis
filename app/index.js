@@ -4,11 +4,22 @@ import React from 'react';
 import core from './local/core';
 import powerOnSelfTest from './test';
 import build from '../build.json';
+import api from './local/api';
 
 // Game modules.
 import scenes from './scenes';
 import cameraControllers from './cameraControllers';
 import './local/toast';
+import * as THREE from 'three';
+import * as CANNON from 'cannon';
+import { Vector3 } from 'three';
+
+// Debug reference to three.
+window.$THREE = THREE;
+// Debug reference to cannon.
+window.$CANNON = CANNON;
+// Debug reference to API.
+window.$API = api;
 
 // const defaultScene = 'logDepthDemo';
 const defaultScene = 'localCluster';
@@ -61,29 +72,18 @@ for (let ctrl of cameraControllers) {
 console.groupEnd();
 
 // Glue it together, and start the rendering process.
-core.init({
-  sceneName: defaultScene,
-  // pos: new THREE.Vector3(0, 0, 0),
-  // rot: new THREE.Vector3(0, 0, 0),
-});
-
-// Temp dev overrides. Remove these eventually.
-setTimeout(() => {
-  core.triggerAction('toggleMousePointer');
-
-  setTimeout(() => {
-    core.triggerAction('toggleMouseControl');
-    // setTimeout(() => {
-    //   core.triggerAction('_devChangeMode');
-    // }, 1200)
-  }, 300);
-}, 500);
+core.init({ sceneName: defaultScene });
 
 // Auto switch to hyperdrive for now because we do not yet have regular engines
 // going.
 // TODO: delete me.
 core.startupEmitter.on(core.startupEvent.ready, () => {
-  core.triggerAction('engageHyperdrive');
+  api.triggerAction('toggleMousePointer');
+  api.triggerAction('toggleMouseControl');
+  api.triggerAction('engageHyperdrive');
+  // Close to moon, good place to test lighting.
+  api.setPlayerShipLocation(new Vector3(390249080, 2468483, 5996841));
+  api.setPlayerShipRotation(new Vector3(2.5626, -1.2120, 2.6454));
 })
 
 class Hud extends React.Component {
