@@ -151,8 +151,6 @@ const analogListeners = [];
 const keyUpDownListeners = [/* { mode, cb } */];
 /** Triggers when keys are pressed, but not when they are released. */
 const keyPressListeners = [/* { mode, cb } */];
-/** Called after this computer's player's ship has been loaded. */
-const playerShipReadyListeners = new CbQueue();
 
 /** Give mouse 1-3 friendlier names. */
 const mouseFriendly = [
@@ -751,21 +749,15 @@ function initView({ scene, pos, rot }) {
 function initPlayer() {
   createSpaceShip({
     modelName: 'DS69F', onReady: (mesh, bubble) => {
-    // modelName: 'scorpion_d', onReady: (mesh, bubble) => {
-    // modelName: 'devFlyer', onReady: (mesh, bubble) => {
-    // modelName: 'devFlyer2', onReady: (mesh, bubble) => {
-    // modelName: 'devFlyer3', onReady: (mesh, bubble) => {
-    // modelName: 'tentacleHull', onReady: (mesh, bubble) => {
-    // modelName: 'test', onReady: (mesh, bubble) => {
+      // modelName: 'scorpion_d', onReady: (mesh, bubble) => {
+      // modelName: 'devFlyer', onReady: (mesh, bubble) => {
+      // modelName: 'devFlyer2', onReady: (mesh, bubble) => {
+      // modelName: 'devFlyer3', onReady: (mesh, bubble) => {
+      // modelName: 'tentacleHull', onReady: (mesh, bubble) => {
+      // modelName: 'test', onReady: (mesh, bubble) => {
       $game.playerShip = mesh;
       $game.playerShipBubble = bubble;
       startupEmitter.emit(startupEvent.playerShipLoaded);
-
-      // TODO: replace all external occurrences of notifyAll with
-      //  startupEmitter.on, then delete this.
-      playerShipReadyListeners.notifyAll((cb) => {
-        cb(mesh, bubble);
-      });
     }
   });
 }
@@ -910,7 +902,6 @@ export default {
   registerCamControl,
   registerAnalogListener,
   deregisterAnalogListener,
-  playerShipReadyListeners,
   simulateKeyPress,
   simulateKeyDown,
   simulateKeyUp,

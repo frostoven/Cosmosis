@@ -134,7 +134,9 @@ function register() {
     }
   });
 
-  core.playerShipReadyListeners.register(onShipLoaded);
+  core.startupEmitter.on(core.startupEvent.playerShipLoaded, () => {
+    onShipLoaded($game.playerShip);
+  });
 }
 
 function onShipLoaded(mesh) {
@@ -197,6 +199,7 @@ function onAnalogInput(key, delta, invDelta, gravDelta, gravInvDelta) {
   if (key === 'spEast' || key === 'spWest') {
     steer.leftRight = maxN(steer.leftRight + (gravDelta * -1), 200);
   }
+  console.log('xxx:', key, steer.upDown, steer.leftRight);
 }
 
 function triggerAction(action) {
