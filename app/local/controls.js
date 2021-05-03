@@ -15,7 +15,7 @@ const doublePresses = {
 // the console.
 const keySchema = {
   allModes: [
-    'enterFullScreen',
+    'toggleFullScreen',
     'toggleMousePointer', // a.k.a. PointerLockControls.
     '_devChangeMode',
     'showKeyBindings',
@@ -60,7 +60,7 @@ const controls = {
     ControlLeft: 'toggleMousePointer', // a.k.a. PointerLockControls.
     F1: 'showKeyBindings',
     F8: '_devChangeMode',
-    F11: 'enterFullScreen',
+    F11: 'toggleFullScreen',
   },
   shipPilot: {
     _description: 'Mode used when user is locked to seat.',
