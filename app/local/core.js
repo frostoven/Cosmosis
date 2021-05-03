@@ -197,12 +197,9 @@ const mouseFriendly = [
 const pressedButtons = new Array(4000).fill(false);
 
 const coreKeyToggles = {
-  enterFullScreen: () => {
-    //   require('nw.gui').Window.get().maximize();
-    const body = document.body.requestFullscreen();
-    if (body.requestFullscreen) {
-      body.requestFullscreen();
-    }
+  toggleFullScreen: () => {
+    const win = nw.Window.get();
+    win.toggleFullscreen();
   },
   // lockMouse now handled by toggleMousePointer in individual modes.
   // lockMouse: () => {
@@ -598,7 +595,7 @@ function simulateAnalog() {
  * Triggers an action in all action controllers currently active. Actions in
  * this context relate to the kind of functionality you bind to the keyboard or
  * mouse, i.e. controls.
- * @param {string} action - Examples: thrustReset, lookUp, enterFullScreen.
+ * @param {string} action - Examples: thrustReset, lookUp, toggleFullScreen.
  *  See controls/keySchema.*.{string} for examples.
  */
 function triggerAction(action) {
