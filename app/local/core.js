@@ -18,6 +18,7 @@ import res from './AssetFinder';
 import { controls } from './controls';
 import { createSpaceShip } from '../levelLogic/spaceShipLoader';
 import { PointerLockControls } from './PointerLockControls';
+import CachedEmitter from './CachedEmitter';
 
 const gameFont = 'node_modules/three/examples/fonts/helvetiker_regular.typeface.json';
 
@@ -152,47 +153,39 @@ const keyUpDownListeners = [/* { mode, cb } */];
 const keyPressListeners = [/* { mode, cb } */];
 /** Called after this computer's player's ship has been loaded. */
 const playerShipReadyListeners = new CbQueue();
-/** Used to notify different parts of the application that different pieces of
- * the application has been loaded. */
-const loadProgressListeners = [];
-
-// Bitmask used to keep track of what's been loaded.
-let loadProgress = 0;
-
-// Used to generate the progressActions enum.
-let _progActCount = 1;
-
-// Contains actions used by notifyLoadProgress and onLoadProgress. Note that
-// progress is asynchronous, and actions are not guaranteed to happen in any
-// specific order. The exception to this is progressActions.ready, which will
-// always trigger last.
-// TODO: add on camControllerReady.
-const progressActions = {
-  // Please only add numbers that are powers of 2 as they're bitmasked and will
-  // break otherwise.
-
-  /** Includes things like the camera and scene. */
-  gameViewReady: 2 ** _progActCount++,
-
-  /** The first animation() frame has been rendered. */
-  firstFrameRendered: 2 ** _progActCount++,
-
-  /** The cosmos awakens.*/
-  skyBoxLoaded: 2 ** _progActCount++,
-
-  /* This includes all GLTF preprocessing. */
-  playerShipLoaded: 2 ** _progActCount++,
-
-  /** Game is fully loaded, core functions (like rendering) is already
-   * happening.
-   */
-  ready: 2 ** _progActCount++,
-};
 
 /** Give mouse 1-3 friendlier names. */
 const mouseFriendly = [
   'Left', 'Middle', 'Right',
 ];
+
+/**
+ * Used to keep track of core application loading. Startup events are
+ * remembered, so you may use this completely asynchronously at any time as
+ * though your code runs early in the boot process (even after the event has
+ * already transpired).
+ * @type {CachedEmitter}
+ */
+const startupEmitter = new CachedEmitter({ rememberPastEvents: true });
+
+// Used to keep track of core load progress. Note that progress is
+// asynchronous, and actions are not guaranteed to happen in any specific
+// order. The exception to this is startupEvent.ready, which will always
+// trigger last.
+// TODO: add on camControllerReady.
+const startupEvent = {
+  /** Includes things like the camera and scene. */
+  gameViewReady: startupEmitter.nextEnum(),
+  /** The first animation() frame has been rendered. */
+  firstFrameRendered: startupEmitter.nextEnum(),
+  /** The cosmos awakens.*/
+  skyBoxLoaded: startupEmitter.nextEnum(),
+  /* This includes all GLTF preprocessing. */
+  playerShipLoaded: startupEmitter.nextEnum(),
+  /** Game is fully loaded, core functions (like rendering) is already
+   * happening. */
+  ready: startupEmitter.nextEnum(),
+};
 
 // Used to differentiate between key presses and holding keys down.
 const pressedButtons = new Array(4000).fill(false);
@@ -656,13 +649,13 @@ function init({ sceneName, pos, rot }) {
 
     // Contains all the essential game variables.
     window.$game = initView({ scene, pos, rot });
-    notifyLoadProgress(progressActions.gameViewReady);
+    startupEmitter.emit(startupEvent.gameViewReady);
 
     initPlayer();
     updateModeDebugText();
 
     animate();
-    notifyLoadProgress(progressActions.firstFrameRendered);
+    startupEmitter.emit(startupEvent.firstFrameRendered);
   });
 
   $stats = new Stats();
@@ -744,7 +737,7 @@ function initView({ scene, pos, rot }) {
         const renderTarget = new THREE.WebGLCubeRenderTarget(texture.image.height);
         renderTarget.fromEquirectangularTexture(renderer, texture);
         scene.background = renderTarget;
-        notifyLoadProgress(progressActions.skyBoxLoaded);
+        startupEmitter.emit(startupEvent.skyBoxLoaded);
       });
   })
 
@@ -766,14 +759,13 @@ function initPlayer() {
     // modelName: 'test', onReady: (mesh, bubble) => {
       $game.playerShip = mesh;
       $game.playerShipBubble = bubble;
-      notifyLoadProgress(progressActions.playerShipLoaded);
+      startupEmitter.emit(startupEvent.playerShipLoaded);
 
       // TODO: replace all external occurrences of notifyAll with
-      //  onLoadProgress, then delete this.
+      //  startupEmitter.on, then delete this.
       playerShipReadyListeners.notifyAll((cb) => {
         cb(mesh, bubble);
       });
-      // console.log('==> ship stored in $game.');
     }
   });
 }
@@ -861,82 +853,34 @@ function onWindowResize() {
   updateRendererSizes();
 }
 
-/**
- * Notifies all listener that part of the application has loaded.
- * @param {number} action - progressActions item.
- */
-function notifyLoadProgress(action) {
-  if (typeof action === 'undefined') {
-    // I typo this particular param enough that it's become a necessity :/
-    return console.error('notifyLoadProgress received an invalid action.');
-  }
-  // A part of the application booted. Store the id, then notify all the
-  // listeners.
-  loadProgress |= action;
-  for (let i = 0, len = loadProgressListeners.length; i < len; i++) {
-    const item = loadProgressListeners[i];
-    if (item.action === action) {
-      item.callback();
-      loadProgressListeners.splice(i, 1);
-      i--;
-      len--;
-    }
-  }
-}
-
-/**
- * Notify requesters when a part of the application has loaded.
- *
- * If you request to be notified when something loads, but it has already
- * finished loading, then you'll be notified as soon as you make the request.
- * This allows you to safely check application state at any time regardless of
- * current load state.
- *
- * @param {number} action
- * @param {function} callback
- */
-function onLoadProgress(action, callback) {
-  if (typeof action === 'undefined') {
-    return console.error('onLoadProgress received an invalid action.');
-  }
-  if ((action & loadProgress) === action) {
-    // Action has already happened.
-    callback();
-  }
-  else {
-    // Log request.
-    loadProgressListeners.push({ action, callback });
-  }
-}
-
 // TODO: remove me once the game is more stable.
-onLoadProgress(progressActions.playerShipLoaded, () => {
+startupEmitter.on(startupEvent.playerShipLoaded, () => {
   updateHyperdriveDebugText();
 });
 
 // TODO: remove me once the game is more stable.
-onLoadProgress(progressActions.ready, () => {
+startupEmitter.on(startupEvent.ready, () => {
   closeLoadingScreen();
 });
 
-// Waits for the game to load so that it can trigger progressActions.ready.
+// Waits for the game to load so that it can trigger startupEvent.ready.
 function waitForAllLoaded() {
   let time = 2000;
   let count = 0;
   forEachFn([
-    (cb) => onLoadProgress(progressActions.skyBoxLoaded, cb),
-    (cb) => onLoadProgress(progressActions.gameViewReady, cb),
-    (cb) => onLoadProgress(progressActions.playerShipLoaded, cb),
-    (cb) => onLoadProgress(progressActions.firstFrameRendered, cb),
+    (cb) => startupEmitter.on(startupEvent.skyBoxLoaded, cb),
+    (cb) => startupEmitter.on(startupEvent.gameViewReady, cb),
+    (cb) => startupEmitter.on(startupEvent.playerShipLoaded, cb),
+    (cb) => startupEmitter.on(startupEvent.firstFrameRendered, cb),
   ], () => {
     count++;
   }, () => {
     // Everything else has loaded.
-    notifyLoadProgress(progressActions.ready);
+    startupEmitter.emit(startupEvent.ready);
   });
 
   setTimeout(() => {
-    if (count !== Object.keys(progressActions).length) {
+    if (count !== Object.keys(startupEvent).length) {
       console.warn(
         `Game hasn't finished loading after ${time/1000} seconds. Please investigate.`
       );
@@ -972,7 +916,7 @@ export default {
   simulateKeyUp,
   simulateAnalog,
   triggerAction,
-  progressActions,
-  onLoadProgress,
+  startupEvent,
+  startupEmitter,
   coreKeyToggles,
 };

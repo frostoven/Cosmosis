@@ -4,7 +4,7 @@
 See [BUILD_INSTRUCTIONS.md](BUILD_INSTRUCTIONS.md) for instructions on running
 this application.
 
-Demo:
+Demo:<br>
 ![Demo](demo.gif)
 
 ## What is Cosmosis?
@@ -33,13 +33,14 @@ Cosmosis was brought into existence for the following reasons:
   you can't simply downgrade to a version you like and play offline.
 * None of the space games I'm personally interested in have good (if any)
   modding support.
-* Souls clones developers try add a little extra to something to make their
-  games unique. This project will to stay true to the original formulas as much
-  as possible.
+* Souls clones developers try add a little something extra to make their games
+  unique. This project will to stay true to the original formulas as much
+  as possible. Exceptions to the rule will be for _additional_ classes, not
+  traditional ones.
 
 #### Excellent modding support
 You can make a fully interactable space ship yourself **with zero programming
-experience**. All you need is a copy of Blender 2.8 and to follow the guide on
+experience**. All you need is a copy of Blender 2.8+ and to follow the guide on
 mesh codes. Blender does not even need any special add-ons for this to work,
 though a future add-on is on the roadmap to make some tedious tasks faster.
 

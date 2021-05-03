@@ -76,7 +76,7 @@ Current toast system only supports one message at a time. Requesting a second
 message causes existing text to be replaced while the toast message is still
 showing.
 
-Add on camControllerReady to core.progressActions.
+Add on camControllerReady to core.startupEvent.
 
 Some technical problems to consider:
 Moving at 3000c causes the camera to jump around *slightly*. \[Note that this was
