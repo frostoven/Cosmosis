@@ -78,7 +78,7 @@ export default function windowLoadListener() {
     controlsDiv.innerText =
       `- ${getKeyBindings({ targetMode: 'allModes', targetAction: 'showKeyBindings', useFriendly: true})}: show all controls.\n` + // F1
       `- ${getKeyBindings({ targetMode: 'allModes', targetAction: 'toggleMousePointer', useFriendly: true})}: show / hide mouse pointer.\n` + // F1
-      `- ${getKeyBindings({ targetMode: 'shipPilot', targetAction: 'engageHyperdrive', useFriendly: true})}: jump into (and out of) hyperspace.\n` + // J
+      `- ${getKeyBindings({ targetMode: 'shipPilot', targetAction: 'engageHyperdrive', useFriendly: true})}: engage hyperdrive.\n` + // J
       `- ${getKeyBindings({ targetMode: 'shipPilot', targetAction: 'toggleMouseSteering', useFriendly: true})}: lock mouse steering.\n` + // Middle click or Num5
       `- WASD / mouse: move ship.\n` + // We'll leave this one hardcoded for brevity.
       `- Right click in-ship menu for quick assign.`

@@ -166,6 +166,7 @@ let _progActCount = 1;
 // progress is asynchronous, and actions are not guaranteed to happen in any
 // specific order. The exception to this is progressActions.ready, which will
 // always trigger last.
+// TODO: add on camControllerReady.
 const progressActions = {
   // Please only add numbers that are powers of 2 as they're bitmasked and will
   // break otherwise.
