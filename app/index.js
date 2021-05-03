@@ -79,6 +79,13 @@ setTimeout(() => {
   }, 300);
 }, 500);
 
+// Auto switch to hyperdrive for now because we do not yet have regular engines
+// going.
+// TODO: delete me.
+core.onLoadProgress(core.progressActions.ready, () => {
+  core.triggerAction('engageHyperdrive');
+})
+
 class Hud extends React.Component {
   // static propTypes = {};
   // static defaultProps = {};
