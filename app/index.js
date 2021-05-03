@@ -3,8 +3,9 @@ import React from 'react';
 
 import core from './local/core';
 import powerOnSelfTest from './test';
-import build from '../build.json';
 import api from './local/api';
+import build from '../build.json';
+import packageJson from '../package.json';
 
 // Game modules.
 import scenes from './scenes';
@@ -51,6 +52,20 @@ if (process.env && process.env.NODE_ENV !== 'production') {
       }, 250);
     }
   });
+
+  // This should probably done with a CI pipeline or some automated process in
+  // future, but for now we do it here to easily keep things cross platform:
+  // keep package.json version up to date with build number.
+  const version = `0.${build.buildNumber}.0`;
+  if (packageJson.version !== version) {
+    console.log('=> Update version number in package.json <=');
+    packageJson.version = version;
+    fs.writeFile('./package.json', JSON.stringify(packageJson, null, 2), (error) => {
+      if (error) {
+        console.error('Could not update package.json to match build version.');
+      }
+    });
+  }
 }
 
 /* Main

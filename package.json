@@ -1,6 +1,6 @@
 {
   "name": "cosmosis",
-  "version": "0.0.1",
+  "version": "0.72.0",
   "main": "index.html",
   "window": {
     "title": "Cosmosis",
