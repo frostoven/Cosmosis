@@ -226,6 +226,6 @@ There are currently no automatic ways of doing this.
   developer console.
 * Still in the dev console, run: `powerOnSelfTest()`. This runs unit tests
   (i.e. looks for obvious bugs and problems). You should have no errors.
-* If all is good, zip it up, name the zip to `Cosmosis-win-x64.zip`.
+* If all is good, zip it up, rename the zip to `Cosmosis-win-x64.zip`.
 * Upload to the [releases](https://github.com/aggregate1166877/Cosmosis/releases)
   page.
