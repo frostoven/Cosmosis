@@ -1,7 +1,7 @@
 ---
 name: Copyright infringement notice
 about: Request an asset (or assets) be removed from the project
-title: ''
+title: Copyright infringement notice
 labels: copyright infringement
 assignees: aggregate1166877
 
