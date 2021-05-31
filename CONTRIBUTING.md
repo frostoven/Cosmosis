@@ -1,5 +1,5 @@
 ## Copyright infringement
-**If your work has been unlawfully used in this project, please [raise an issue](https://github.com/aggregate1166877/SpaceJunkie/issues)
+**If your work has been unlawfully used in this project, please [raise an issue](https://github.com/aggregate1166877/Cosmosis/issues/new/choose)
 and we'll remove it ASAP.** This project is maintained for free during
 contributors' spare time, so it may take us a few days to notice the complaint.
 However, rest assured copyright infringement is taken very seriously and your issue
@@ -142,6 +142,36 @@ currently uses).
 a strict requirement, but makes PRs to master easier for those who test the
 proposed changes because some small issues will already have been caught.
 
+#### Git branch workflow
+
+```
+yourBranch-dev  -\
+                   >  dev  ->  master  ->  stable
+someoneElse-dev -/
+```
+
+Whenever you do work, create yourself a branch. You may either name the
+branch after yourself, or after an issue you're working on. If naming it after
+yourself, call it`yourName-dev`. If naming it after an issue, name it `CSM-xx`
+where `xx` is the issue number. You'll want to pull from `master` often as it
+is where all code ends up before making its way to `stable`.
+
+Once you believe your work is stable and you're ready to release it, create a
+pull request from `yourName-dev` to `dev`. Please indicate if anything you've
+done introduces breaking changes (please avoid breaking changes if possible).
+If you do introduce breaking changes, please mention it in the PR. Having to
+change previously passing unit tests to make things work with your new code can
+be an indication of a breaking change.
+
+Every now and again, a pull request is created from `dev` to `master`. When
+this happens, the version number is incremented. How the number is incremented
+depends on whether or not breaking changes were introduced, if there were bug
+fixes, etc. The project owners then test if the `master` branch appears to be
+stable.
+
+If the current `master` branch is considered stable, it will be merged into
+`stable`, at which point your changes will make it into the latest release.
+
 #### Conventions
 When creating an object that [] please try to define it somewhere with null
 values. `core.js -> $game` and `[cam] -> ctrl` are examples of this.
@@ -226,6 +256,6 @@ There are currently no automatic ways of doing this.
   developer console.
 * Still in the dev console, run: `powerOnSelfTest()`. This runs unit tests
   (i.e. looks for obvious bugs and problems). You should have no errors.
-* If all is good, zip it up, name the zip to `Cosmosis-win-x64.zip`.
+* If all is good, zip it up, rename the zip to `Cosmosis-win-x64.zip`.
 * Upload to the [releases](https://github.com/aggregate1166877/Cosmosis/releases)
   page.

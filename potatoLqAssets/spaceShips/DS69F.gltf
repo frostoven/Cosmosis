@@ -323,8 +323,22 @@
     "materials" : [
         {
             "doubleSided" : true,
+            "emissiveFactor" : [
+                0,
+                0,
+                0
+            ],
             "name" : "ShipHull",
-            "pbrMetallicRoughness" : {}
+            "pbrMetallicRoughness" : {
+                "baseColorFactor" : [
+                    0.31828320026397705,
+                    0.31828320026397705,
+                    0.31828320026397705,
+                    1
+                ],
+                "metallicFactor" : 0,
+                "roughnessFactor" : 0.13538962602615356
+            }
         },
         {
             "doubleSided" : true,
@@ -369,6 +383,7 @@
     ],
     "meshes" : [
         {
+            "extras" : {},
             "name" : "Cylinder.003",
             "primitives" : [
                 {
@@ -410,6 +425,7 @@
             ]
         },
         {
+            "extras" : {},
             "name" : "Cylinder",
             "primitives" : [
                 {
@@ -433,6 +449,7 @@
             ]
         },
         {
+            "extras" : {},
             "name" : "Plane.002",
             "primitives" : [
                 {
@@ -456,6 +473,7 @@
             ]
         },
         {
+            "extras" : {},
             "name" : "Cube.014",
             "primitives" : [
                 {
@@ -479,6 +497,7 @@
             ]
         },
         {
+            "extras" : {},
             "name" : "Cube.012",
             "primitives" : [
                 {
@@ -502,6 +521,7 @@
             ]
         },
         {
+            "extras" : {},
             "name" : "Cube.011",
             "primitives" : [
                 {
@@ -525,6 +545,7 @@
             ]
         },
         {
+            "extras" : {},
             "name" : "Cube.008",
             "primitives" : [
                 {
@@ -548,6 +569,7 @@
             ]
         },
         {
+            "extras" : {},
             "name" : "Cube.007",
             "primitives" : [
                 {
@@ -571,6 +593,7 @@
             ]
         },
         {
+            "extras" : {},
             "name" : "Plane",
             "primitives" : [
                 {
@@ -593,6 +616,7 @@
             ]
         },
         {
+            "extras" : {},
             "name" : "Cylinder.002",
             "primitives" : [
                 {
@@ -616,6 +640,7 @@
             ]
         },
         {
+            "extras" : {},
             "name" : "Cylinder.001",
             "primitives" : [
                 {
@@ -639,6 +664,7 @@
             ]
         },
         {
+            "extras" : {},
             "name" : "Cube.001",
             "primitives" : [
                 {
@@ -662,6 +688,7 @@
             ]
         },
         {
+            "extras" : {},
             "name" : "Cube.016",
             "primitives" : [
                 {
@@ -685,6 +712,7 @@
             ]
         },
         {
+            "extras" : {},
             "name" : "Cube.015",
             "primitives" : [
                 {
@@ -708,6 +736,7 @@
             ]
         },
         {
+            "extras" : {},
             "name" : "Cube.006",
             "primitives" : [
                 {
@@ -785,6 +814,7 @@
             ]
         },
         {
+            "extras" : {},
             "name" : "Cube",
             "primitives" : [
                 {
