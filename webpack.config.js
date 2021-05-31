@@ -2,6 +2,7 @@ const webpack = require('webpack');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 module.exports = {
+    mode: "production",
     watch: false,
     target: 'node-webkit',
     entry: {

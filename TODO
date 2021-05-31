@@ -20,6 +20,8 @@ Make planets respect local star light.
 
 Create a linter setup to enforce project code consistency.
 
+Implement ultra low quality mode.
+
 shipPilot.onShipLoaded:
 Many changes have been made since this was implemented; check if the cam
 rotation code in that function even does anything. Remove if not.
