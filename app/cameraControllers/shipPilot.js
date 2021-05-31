@@ -5,6 +5,9 @@ import core from "../local/core";
 import speedTracker from './utils/speedTracker';
 import { lockModes } from '../local/PointerLockControls';
 import AssetLoader from '../local/AssetLoader';
+import { startupEvent, getStartupEmitter } from '../emitters';
+
+const startupEmitter = getStartupEmitter();
 
 const mode = core.modes.shipPilot;
 const camControls = controls.shipPilot;
@@ -113,10 +116,10 @@ function register() {
     modeActive = change.mode === mode;
     if (modeActive) {
       // Set game lock only when the game is ready.
-      core.startupEmitter.on(core.startupEvent.gameViewReady, () => {
+      startupEmitter.on(startupEvent.gameViewReady, () => {
         $game.ptrLockControls.setLockMode(lockModes.headLook);
       });
-      core.startupEmitter.on(core.startupEvent.playerShipLoaded, () => {
+      startupEmitter.on(startupEvent.playerShipLoaded, () => {
         // TODO: move this into the level loader. It needs to be dynamic based on
         //  the level itself (in this case we attach the player to the main cam).
         $game.playerShip.cameras[0].attach($game.camera);
@@ -134,7 +137,7 @@ function register() {
     }
   });
 
-  core.startupEmitter.on(core.startupEvent.playerShipLoaded, () => {
+  startupEmitter.on(startupEvent.playerShipLoaded, () => {
     onShipLoaded($game.playerShip);
   });
 }

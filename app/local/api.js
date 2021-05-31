@@ -4,7 +4,8 @@
  */
 
 import core from './core';
-const { startupEmitter, startupEvent } = core;
+import { startupEvent, getStartupEmitter } from '../emitters';
+const startupEmitter = getStartupEmitter();
 
 const {
   ready, playerShipLoaded, firstFrameRendered, gameViewReady, skyBoxLoaded,

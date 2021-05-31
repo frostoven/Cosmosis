@@ -18,7 +18,7 @@ import res from './AssetFinder';
 import { controls } from './controls';
 import { createSpaceShip } from '../levelLogic/spaceShipLoader';
 import { PointerLockControls } from './PointerLockControls';
-import CachedEmitter from './CachedEmitter';
+import { startupEvent, getStartupEmitter } from '../emitters';
 
 const gameFont = 'node_modules/three/examples/fonts/helvetiker_regular.typeface.json';
 
@@ -152,33 +152,7 @@ const mouseFriendly = [
   'Left', 'Middle', 'Right',
 ];
 
-/**
- * Used to keep track of core application loading. Startup events are
- * remembered, so you may use this completely asynchronously at any time as
- * though your code runs early in the boot process (even after the event has
- * already transpired).
- * @type {CachedEmitter}
- */
-const startupEmitter = new CachedEmitter({ rememberPastEvents: true });
-
-// Used to keep track of core load progress. Note that progress is
-// asynchronous, and actions are not guaranteed to happen in any specific
-// order. The exception to this is startupEvent.ready, which will always
-// trigger last.
-// TODO: add on camControllerReady.
-const startupEvent = {
-  /** Includes things like the camera and scene. */
-  gameViewReady: startupEmitter.nextEnum(),
-  /** The first animation() frame has been rendered. */
-  firstFrameRendered: startupEmitter.nextEnum(),
-  /** The cosmos awakens.*/
-  skyBoxLoaded: startupEmitter.nextEnum(),
-  /* This includes all GLTF preprocessing. */
-  playerShipLoaded: startupEmitter.nextEnum(),
-  /** Game is fully loaded, core functions (like rendering) is already
-   * happening. */
-  ready: startupEmitter.nextEnum(),
-};
+const startupEmitter = getStartupEmitter();
 
 // Used to differentiate between key presses and holding keys down.
 const pressedButtons = new Array(4000).fill(false);
@@ -852,7 +826,7 @@ startupEmitter.on(startupEvent.ready, () => {
 
 // Waits for the game to load so that it can trigger startupEvent.ready.
 function waitForAllLoaded() {
-  let time = 2000;
+  let time = 2500;
   let count = 0;
   forEachFn([
     (cb) => startupEmitter.on(startupEvent.skyBoxLoaded, cb),
@@ -863,6 +837,7 @@ function waitForAllLoaded() {
     count++;
   }, () => {
     // Everything else has loaded.
+    count++;
     startupEmitter.emit(startupEvent.ready);
   });
 
@@ -872,7 +847,7 @@ function waitForAllLoaded() {
         `Game hasn't finished loading after ${time/1000} seconds. Please investigate.`
       );
     }
-    // else console.log('Game test: all fully loaded.');
+    // else console.log('waitForAllLoaded debug message: all fully loaded.');
   }, time);
 }
 waitForAllLoaded();
@@ -902,7 +877,5 @@ export default {
   simulateKeyUp,
   simulateAnalog,
   triggerAction,
-  startupEvent,
-  startupEmitter,
   coreKeyToggles,
 };
