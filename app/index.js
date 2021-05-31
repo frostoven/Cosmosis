@@ -48,7 +48,9 @@ if (process.env && process.env.NODE_ENV !== 'production') {
       setTimeout(() => {
         // Webpack sometimes modifies files multiple times in a short span,
         // causing a broken reload. Wait a bit for it to finish.
-        nw.Window.get().reload();
+        // Currently a bug in nw.js. TODO: remove once they fix it.
+        // nw.Window.get().reload();
+        chrome.tabs.reload()
       }, 250);
     }
   });
