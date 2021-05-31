@@ -1,6 +1,6 @@
 {
   "name": "cosmosis",
-  "version": "0.72.0",
+  "version": "0.73.0",
   "main": "index.html",
   "window": {
     "title": "Cosmosis",
@@ -15,7 +15,7 @@
     "//": "prepare-dev is actually redundant, but it saves telling new users to reload nw after bundle.js first build.",
     "prepare-dev": "webpack --mode development",
     "dev": "webpack --mode development --watch",
-    "serve": "nw",
+    "serve": "nw --enable-node-worker",
     "start": "npm-run-all --parallel dev serve"
   },
   "repository": {
@@ -28,7 +28,7 @@
   "author": "aggregate1166877",
   "license": "All rights reserved",
   "dependencies": {
-    "three": "0.120.1"
+    "three": "0.128.0"
   },
   "devDependencies": {
     "@babel/core": "7.2.2",
@@ -46,7 +46,7 @@
     "file-loader": "1.1.10",
     "lodash": "^4.17.21",
     "npm-run-all": "4.1.2",
-    "nw": "0.50.2-sdk",
+    "nw": "^0.53.0",
     "react": "16.13.1",
     "react-dom": "16.13.1",
     "webpack": "4.28.4",

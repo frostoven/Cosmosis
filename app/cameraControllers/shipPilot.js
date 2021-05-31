@@ -259,7 +259,7 @@ function dampenByFactor(delta, value, target) {
 }
 
 /**
- * Blows meters per second into ligh years per second for fun and profit.
+ * Blows meters per second into light years per second for fun and profit.
  * @param amount
  */
 function scaleHyperSpeed(amount) {
