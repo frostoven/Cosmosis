@@ -148,7 +148,7 @@ function init({ font }) {
 //  Or, add a compressed gltf scene from blender with 2 million verts - 60 fps constant. wut..?
 //  The real confusing part here is the actual resource usage - CPU 10%, GPU 20%, RAM 50%. I.e system
 //  not being utilised.
-// core.startupEmitter.on(core.startupEvent.ready, () => {
+// startupEmitter.on(startupEvent.ready, () => {
 //   const objects = generateCubeField({
 //     scene: $game.scene,
 //     position: $game.camera.position,
@@ -156,7 +156,7 @@ function init({ font }) {
 //   console.log('cube space:', objects);
 // });
 
-// core.startupEmitter.on(core.startupEvent.ready, () => {
+// startupEmitter.on(startupEvent.ready, () => {
 //   const objects = generateCubeField({
 //     scene: $game.scene,
 //     position: $game.camera.position,
@@ -165,7 +165,7 @@ function init({ font }) {
 //   });
 // });
 
-// core.startupEmitter.on(core.startupEvent.ready, () => {
+// startupEmitter.on(startupEvent.ready, () => {
   // const objects = generateCubeField({
   //   scene: $game.scene,
   //   position: $game.camera.position,

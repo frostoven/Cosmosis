@@ -7,6 +7,9 @@ import { makePhysical, shapeTemplates } from '../local/physics';
 import AssetFinder from '../local/AssetFinder';
 import { setup as meshCodeSetup } from './meshCodeProcessor';
 import Level from './level';
+import { startupEvent, getStartupEmitter } from '../emitters';
+
+const startupEmitter = getStartupEmitter();
 
 // Configure and create Draco decoder.
 // var dracoLoader = new DRACOLoader();
@@ -201,7 +204,7 @@ function processMeshCodes(name, gltf, isPlayer) {
  * @param {function} onReady
  */
 export function createSpaceShip({ modelName, pos, scene, world, isPlayer, onReady }) {
-  core.startupEmitter.on(core.startupEvent.gameViewReady, () => {
+  startupEmitter.on(startupEvent.gameViewReady, () => {
     if (!modelName) return console.error('createSpaceShip needs a model name.');
     if (!pos) pos = $game.camera.position;
     if (!scene) scene = $game.scene;

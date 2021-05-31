@@ -13,6 +13,9 @@ import './local/toast';
 import * as THREE from 'three';
 import * as CANNON from 'cannon';
 import { Vector3 } from 'three';
+import { startupEvent, getStartupEmitter } from './emitters';
+
+const startupEmitter = getStartupEmitter();
 
 // Debug reference to three.
 window.$THREE = THREE;
@@ -79,7 +82,7 @@ core.init({ sceneName: defaultScene });
 // Auto switch to hyperdrive for now because we do not yet have regular engines
 // going.
 // TODO: delete me.
-core.startupEmitter.on(core.startupEvent.ready, () => {
+startupEmitter.on(startupEvent.ready, () => {
   api.triggerAction('toggleMousePointer');
   api.triggerAction('toggleMouseControl');
   api.triggerAction('engageHyperdrive');

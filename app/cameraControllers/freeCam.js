@@ -5,6 +5,9 @@ import { controls } from '../local/controls';
 import core from '../local/core';
 import speedTracker from './utils/speedTracker';
 import { lockModes } from '../local/PointerLockControls';
+import { startupEvent, getStartupEmitter } from '../emitters';
+
+const startupEmitter = getStartupEmitter();
 
 const mode = core.modes.freeCam;
 const camControls = controls.freeCam;
@@ -52,7 +55,7 @@ function register() {
         doRender = change.mode === mode;
         if (doRender) {
             // Set game lock only when the game is ready.
-            core.startupEmitter.on(core.startupEvent.gameViewReady, () => {
+            startupEmitter.on(startupEvent.gameViewReady, () => {
                 $game.ptrLockControls.setLockMode(lockModes.freeLook);
                 AssetLoader.disableCrosshairs();
             });
