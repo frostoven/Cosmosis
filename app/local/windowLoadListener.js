@@ -7,7 +7,7 @@
 const fs = require('fs');
 const _ = require('lodash');
 
-import build from '../../build.json';
+import packageJson from '../../package.json';
 import { loadAllCrosshairImages } from './crosshairs';
 import { controls, keySchema, keymapFriendlyName } from './controls';
 
@@ -48,12 +48,13 @@ function getKeyBindings({ targetMode, targetAction, useFriendly }) {
 export default function windowLoadListener() {
   // Loading text
   const loadingTextDiv = document.getElementById('loading-text');
+  const build = packageJson.releaseNumber;
   if (loadingTextDiv) {
-    loadingTextDiv.innerHTML = `Cosmosis build ${build.buildNumber}<br>Loading...<br>`;
+    loadingTextDiv.innerHTML = `Cosmosis build ${build}<br>Loading...<br>`;
     fs.access('prodHqAssets', (error) => {
       if (error) {
         loadingTextDiv.innerHTML =
-          `Cosmosis build ${build.buildNumber}<br>` +
+          `Cosmosis build ${build}<br>` +
           'NOTE: high quality assets folder missing.<br>' +
           'Loading...<br>';
       }
