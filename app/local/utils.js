@@ -135,10 +135,20 @@ function toTitleCase(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
+/**
+ * Combines addSpacesBetweenWords and toTitleCase.
+ * @param {string} string
+ * @returns {string}
+ */
+function spacedTitled(string) {
+  return addSpacesBetweenWords(toTitleCase(string));
+}
+
 export {
   fuzzyFindFile,
   forEachFn,
   forEachFnLimit,
   addSpacesBetweenWords,
   toTitleCase,
+  spacedTitled,
 }
