@@ -38,11 +38,17 @@ export function getStartupEmitter() {
 }
 
 /**
- * Used to update React UI elements (please never call the emitter each frame).
+ * Used to update React UI elements (please never call this emitter each
+ * frame).
  */
 export function getUiEmitter() {
   return uiEmitter;
 }
+
+// Used for debugging - please do not use this in code.
+window.debug.uiEmitter = getUiEmitter();
+// Used for debugging - please do not use this in code.
+window.debug.startupEmitter = getStartupEmitter();
 
 export default {
   startupEvent,

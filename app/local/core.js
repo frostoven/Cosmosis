@@ -18,7 +18,7 @@ import res from './AssetFinder';
 import { controls } from './controls';
 import { createSpaceShip } from '../levelLogic/spaceShipLoader';
 import { PointerLockControls } from './PointerLockControls';
-import { startupEvent, getStartupEmitter } from '../emitters';
+import { startupEvent, getStartupEmitter, getUiEmitter } from '../emitters';
 
 const gameFont = 'node_modules/three/examples/fonts/helvetiker_regular.typeface.json';
 
@@ -153,6 +153,7 @@ const mouseFriendly = [
 ];
 
 const startupEmitter = getStartupEmitter();
+const uiEmitter = getUiEmitter();
 
 // Used to differentiate between key presses and holding keys down.
 const pressedButtons = new Array(4000).fill(false);
@@ -173,17 +174,9 @@ const coreKeyToggles = {
     updateHyperdriveDebugText();
     return $game.hyperMovement;
   },
-  showKeyBindings: () => {
+  showKeyBindings: () => { // F1
     $game.ptrLockControls.unlock();
-    const allControlsDiv = document.getElementById('all-controls-page');
-    if (allControlsDiv) {
-      if (allControlsDiv.style.display !== 'block') {
-        allControlsDiv.style.display = 'block';
-      }
-      else {
-        allControlsDiv.style.display = 'none';
-      }
-    }
+    uiEmitter.emit('toggleControlsMenuReadOnly');
   },
   _devChangeMode: () => {
     if (currmode === modes.freeCam) {
