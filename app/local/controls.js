@@ -10,15 +10,28 @@ const doublePresses = {
   ]
 }
 
+// Contains all possible in-game actions for each game mode.
+//
 // Allows client to know what the player can configure. This is not optional
 // and is validated during integration tests. Missing keys will be printed in
 // the console.
 const keySchema = {
   allModes: [
-    'toggleFullScreen',
+    // 'showKeyBindings',
+  ],
+  general: [
+    '_devChangeCamMode',
     'toggleMousePointer', // a.k.a. PointerLockControls.
-    '_devChangeMode',
-    'showKeyBindings',
+    'toggleFullScreen',
+  ],
+  gameMenu: [
+    'back',
+    'select',
+    'confirmChanges',
+    'up',
+    'down',
+    'left',
+    'right',
   ],
   shipPilot: [
     'thrustInc',
@@ -27,7 +40,6 @@ const keySchema = {
     'debugFullWarpSpeed',
     'thrustUp10',
     'toggleMouseSteering',
-    // 'toggleMousePointer', // a.k.a. PointerLockControls.
     'rollLeft',
     'rollRight',
     'engageHyperdrive',
@@ -71,12 +83,34 @@ const keySchema = {
 }
 
 // Use `event.code`. Easy reference: https://keycode.info/
+//
+// Technical terms inside this object:
+// const controls = {
+//   modeName: {
+//     buttonName: 'actionName',
+//   },
+// };
 const controls = {
   allModes: {
+    // F1: 'showKeyBindings',
+  },
+  general: {
+    F8: '_devChangeCamMode',
     ControlLeft: 'toggleMousePointer', // a.k.a. PointerLockControls.
-    F1: 'showKeyBindings',
-    F8: '_devChangeMode',
     F11: 'toggleFullScreen',
+  },
+  gameMenu: {
+    // Note: pressing Escape kills pointer lock. This is a browser security
+    // thing and (as far as I know) can't be overridden. May as well run with
+    // it and design the UI accordingly.
+    Escape: 'back',
+    Backspace: 'back',
+    Enter: 'select',
+    F10: 'confirmChanges',
+    ArrowUp: 'up',
+    ArrowDown: 'down',
+    ArrowLeft: 'left',
+    ArrowRight: 'right',
   },
   shipPilot: {
     _description: 'Mode used when user is locked to seat.',

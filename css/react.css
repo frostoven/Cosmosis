@@ -1,3 +1,20 @@
+/*html {*/
+/*    font-size: 14px;*/
+/*}*/
+
+/*body {*/
+/*    margin: 0;*/
+/*    padding: 0;*/
+/*    overflow-x: hidden;*/
+/*    min-width: 320px;*/
+/*    background: #fff;*/
+/*    font-family: Lato,'Helvetica Neue',Arial,Helvetica,sans-serif;*/
+/*    font-size: 14px;*/
+/*    line-height: 1.4285em;*/
+/*    color: rgba(0,0,0,.87);*/
+/*    font-smoothing: antialiased;*/
+/*}*/
+
 table {
     border: thin solid grey;
 }
@@ -41,4 +58,162 @@ tr:hover {
     overflow: auto;
     padding-inline: 6px;
     border: gray;
+}
+
+.primary-menu {
+    color: #fff;
+    background-color: rgba(0, 0, 0, 0.56);
+    position: fixed;
+    z-index: 90000;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    min-width: 791px;
+    text-align: center;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border: gray;
+}
+
+/*.ui.button {*/
+/*    !*margin: 16px;*!*/
+/*    !*padding: 24px;*!*/
+/*    !*width: 256px;*!*/
+/*    padding: .78571429em 1.5em .78571429em;*/
+/*    !*font-family: Lato, 'Helvetica Neue', Arial, Helvetica, sans-serif;*!*/
+/*    font-weight: 700;*/
+/*    font-size: 95%;*/
+/*}*/
+
+/*.ui.fluid.dropdown {*/
+/*    width: 100%;*/
+/*}*/
+
+/*.ui.dropdown {*/
+/*    position: relative;*/
+/*}*/
+
+/*.ui.selection.dropdown {*/
+/*    display: inline-block;*/
+/*    padding: .78571429em 2.1em .78571429em 1em;*/
+/*}*/
+
+.ui.dropdown .divider {
+    background-color: unset;
+}
+
+/*.ui.dropdown .menu {*/
+/*    cursor: auto;*/
+/*    position: absolute;*/
+/*    display: none;*/
+/*    outline: 0;*/
+/*    top: 100%;*/
+/*    min-width: -webkit-max-content;*/
+/*    min-width: -moz-max-content;*/
+/*    align: left;*/
+/*    -webkit-box-shadow: 0 2px 3px 0 rgb(34 36 38 / 15%);*/
+/*    box-shadow: 0 2px 3px 0 rgb(34 36 38 / 15%);*/
+/*    border: 1px solid rgba(34,36,38,.15);*/
+/*    border-radius: .28571429rem;*/
+/*    -webkit-transition: opacity .1s ease;*/
+/*    transition: opacity .1s ease;*/
+/*    z-index: 11;*/
+/*    will-change: transform,opacity;*/
+/*}*/
+
+/*.ui.selection.dropdown .menu {*/
+/*    margin: 0 -1px;*/
+/*}*/
+
+/*.ui.dropdown .menu {*/
+/*    left: 0;*/
+/*}*/
+
+/*.visible.transition {*/
+/*    display: block!important;*/
+/*    visibility: visible!important;*/
+/*}*/
+
+/*.ui.dropdown .menu>.item {*/
+/*    position: relative;*/
+/*    display: block;*/
+/*    height: auto;*/
+/*    padding: .78571429rem 1.14285714rem!important;*/
+/*    font-size: 1rem;*/
+/*    font-weight: 400;*/
+/*}*/
+
+/*.ui.selection.dropdown>.delete.icon, .ui.selection.dropdown>.dropdown.icon, .ui.selection.dropdown>.search.icon {*/
+/*    position: absolute;*/
+/*    width: auto;*/
+/*    height: auto;*/
+/*    top: .78571429em;*/
+/*    right: 1em;*/
+/*    margin: -.78571429em;*/
+/*    padding: .91666667em;*/
+/*}*/
+
+/*.ui.dropdown>.dropdown.icon {*/
+/*    font-family: Dropdown;*/
+/*    -webkit-backface-visibility: hidden;*/
+/*    font-weight: 400;*/
+/*    font-style: normal;*/
+/*    text-align: center;*/
+/*}*/
+
+/*.ui.dropdown>.dropdown.icon {*/
+/*    font-size: .85714286em;*/
+/*}*/
+
+/*.ui.dropdown {*/
+/*    position: relative;*/
+/*    display: inline-block;*/
+/*    outline: 0;*/
+/*    -webkit-transition: width .1s ease,-webkit-box-shadow .1s ease;*/
+/*    -webkit-tap-highlight-color: transparent;*/
+/*}*/
+
+/*.ui.dropdown .menu .active.item {*/
+/*    background: 0 0;*/
+/*    font-weight: 700;*/
+/*    -webkit-box-shadow: none;*/
+/*    box-shadow: none;*/
+/*    z-index: 12;*/
+/*}*/
+
+.ui.selection.visible.dropdown > .text:not(.default) {
+    color: #ffffff;
+}
+
+/*.ui.dropdown>.dropdown.icon:before {*/
+/*    content: '\f0d7';*/
+/*}*/
+
+/*i.icon.dropdown:before {*/
+/*    content: '\f0d7';*/
+/*}*/
+
+.visible.menu.transition > div {
+    border: none !important;
+}
+
+/* https://www.w3schools.com/howto/howto_css_center-vertical.asp */
+.vertical-center {
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    -ms-transform: translateY(-50%);
+    transform: translateY(-50%);
+    height: 100%;
+}
+
+.button-fill-parent {
+    min-width: 117px;
+    width: 100%;
+    height: 100%;
+}
+
+.game-menu {
+    padding: 24px;
 }

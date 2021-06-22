@@ -16,6 +16,7 @@ import * as THREE from 'three';
 import * as CANNON from 'cannon';
 import { Vector3 } from 'three';
 import { startupEvent, getStartupEmitter } from './emitters';
+import modeControl from './modeControl';
 
 const startupEmitter = getStartupEmitter();
 
@@ -24,7 +25,7 @@ window.debug.THREE = THREE;
 // Debug reference to cannon.
 window.debug.CANNON = CANNON;
 // Debug reference to API.
-window.debug.API = api;
+window.debug.api = api;
 
 // const defaultScene = 'logDepthDemo';
 const defaultScene = 'localCluster';
@@ -71,10 +72,12 @@ for (let scene of scenes) {
   scene.register();
 }
 // Register all camera controllers.
+// TODO: rename all of these to init, and init as part of modeControl.initAll().
 for (let ctrl of cameraControllers) {
   console.log('Registering cam controller', ctrl.name);
   ctrl.register();
 }
+modeControl.initAll();
 
 console.groupEnd();
 
@@ -82,12 +85,30 @@ onDocumentReady(() => {
   // Glue it together, and start the rendering process.
   core.init({ sceneName: defaultScene });
 
+  startupEmitter.on(startupEvent.gameViewReady, () => {
+    // For some god-awful reason or another the browser doesn't always detect
+    // invalid pointer locks. This is especially problematic during game boot.
+    // This *very frequently* results in the mouse getting stuck in an
+    // invisible box, even if the game isn't visible (behind other windows).
+    // This is a low overhead albeit dirty work-around.
+    // Steps to (unreliably) reproduce:
+    //  Ensure HMR is enabled. Switch to IDE, ensure it's maximized. Make a
+    //  code change, save. Application reboots in the background. Mouse will
+    //  sometimes get trapped in an invisible box.
+    const mouseLockBugTimer = setInterval(() => {
+      const ptr = $game.ptrLockControls;
+      if (ptr.isPointerLocked && !document.hasFocus()) {
+        console.warn('Releasing invalid mouse lock.');
+        ptr.unlock();
+      }
+    }, 100);
+  });
+
   // Auto switch to hyperdrive for now because we do not yet have regular engines
   // going.
   // TODO: delete me.
   startupEmitter.on(startupEvent.ready, () => {
     api.triggerAction('toggleMousePointer');
-    api.triggerAction('toggleMouseControl');
     api.triggerAction('engageHyperdrive');
 
     // Next to moon, good place to test lighting.

@@ -2,6 +2,7 @@ import React from 'react';
 import ControlsOverlay from './ControlsOverlay';
 import ControlsMenuReadOnly from './ControlsMenuReadOnly';
 import { getUiEmitter } from '../emitters';
+import GameMenu from './GameMenu';
 
 const uiEmitter = getUiEmitter();
 
@@ -10,9 +11,11 @@ export default class RootNode extends React.Component {
     super(props);
     // All the uiEmitter events this component will listen for.
     this.listensFor = [
+      'showMenu',
       'toggleControlsMenuReadOnly',
     ];
     this.state = {
+      currentMenu: null,
       showControlsMenuReadOnly: false,
     };
   }
@@ -62,6 +65,7 @@ export default class RootNode extends React.Component {
       <div>
         <ControlsOverlay />
         <ControlsMenuReadOnly visible={this.state.showControlsMenuReadOnly} />
+        <GameMenu />
       </div>
     );
   }
