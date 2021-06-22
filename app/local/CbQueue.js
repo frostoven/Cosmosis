@@ -32,19 +32,37 @@ CbQueue.prototype.deregister = function deregisterListener(cb) {
 }
 
 /**
- *
- * @param {any} eachCb - Called in a loop. Each loop passes a registered
+ * @param {any} extraData - Any additional data to pass to each call.
+ */
+CbQueue.prototype.notifyAll = function notifyAll(extraData=null) {
+    for (let i = 0, len = this.listeners.length; i < len; i++) {
+        const cb = this.listeners[i];
+        if (typeof cb === 'function') {
+            cb(extraData);
+        }
+        else {
+            console.error('CbQueue.notifyAll: not a valid function:', cb);
+        }
+    }
+}
+
+/**
+ * @param {any} extraData - Any additional data to pass to each call.
+ * @param {function} eachCb - Called in a loop. Each loop passes a registered
  *   callback or stored object. If this is undefined and the stored object is a
  *   function, then the stored function will be called instead.
  */
-CbQueue.prototype.notifyAll = function notifyAll(eachCb) {
+CbQueue.prototype.notifyInterceptAll = function notifyInterceptAll(extraData=null, eachCb) {
     for (let i = 0, len = this.listeners.length; i < len; i++) {
         const cb = this.listeners[i];
-        if (eachCb) {
-            eachCb(cb);
+        if (typeof eachCb === 'function') {
+            eachCb(cb, extraData);
         }
         else if (typeof cb === 'function') {
-            cb();
+            cb(extraData);
+        }
+        else {
+            console.error('CbQueue.notifyInterceptAll: not a valid function:', cb);
         }
     }
 }
