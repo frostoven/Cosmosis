@@ -74,27 +74,6 @@ function register() {
       speedTracker.clearSpeedTracker(speedTimer);
     }
   });
-  // TODO: replace with new way.
-  // core.registerRenderHook({
-  //   name: 'godCam', render,
-  // });
-  //
-  // inputUtils.registerKeyPress({
-  //   mode, cb: onMouseWheel,
-  // });
-  //
-  // // Only render if mode is godCam.
-  // core.modeListeners.register((change) => {
-  //   controllerActive = change.mode === mode;
-  //   if (controllerActive) {
-  //     speedTimer = speedTracker.trackCameraSpeed();
-  //   }
-  //   else if (speedTimer) {
-  //     speedTracker.clearSpeedTracker(speedTimer);
-  //   }
-  // });
-  //
-  // inputUtils.registerAnalogListener({ mode, cb: onMouseMove });
 }
 
 function render(delta) {
@@ -146,11 +125,6 @@ function onMouseWheel({ action, isDown }) {
   // more control.
   minZoomSpeed = 0.001;
 }
-
-// function onMouseMove(key, xAbs, yAbs) {
-//   mouse[0] = xAbs / window.innerWidth;
-//   mouse[1] = yAbs / window.innerHeight;
-// }
 
 function onKeyPress({ action }) {
   // Ex. 'toggleMouseSteering' or 'toggleMousePointer' etc.

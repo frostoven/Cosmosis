@@ -2,8 +2,6 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 
-import core from '../local/core';
-import { makePhysical, shapeTemplates } from '../local/physics';
 import AssetFinder from '../local/AssetFinder';
 import { setup as meshCodeSetup } from './meshCodeProcessor';
 import Level from './level';
