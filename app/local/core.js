@@ -11,14 +11,14 @@ import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass';
 import { RenderPass  } from 'three/examples/jsm/postprocessing/RenderPass';
 
 import Stats from '../../hackedlibs/stats/stats.module.js';
-import CbQueue from './CbQueue';
 import { forEachFn } from './utils';
 import physics from './physics';
 import res from './AssetFinder';
-import { controls } from './controls';
 import { createSpaceShip } from '../levelLogic/spaceShipLoader';
 import { PointerLockControls } from './PointerLockControls';
 import { startupEvent, getStartupEmitter, getUiEmitter } from '../emitters';
+
+import contextualInput from './contextualInput';
 
 const gameFont = 'node_modules/three/examples/fonts/helvetiker_regular.typeface.json';
 
@@ -27,9 +27,6 @@ const gameFont = 'node_modules/three/examples/fonts/helvetiker_regular.typeface.
 const NEAR = 1e-6, FAR = 1e27;
 let SCREEN_WIDTH = window.innerWidth;
 let SCREEN_HEIGHT = window.innerHeight;
-
-// Used be coreKeyPress.
-const coreControls = controls.allModes;
 
 // Used to generate delta.
 let deltaPrevTime = Date.now();
@@ -74,7 +71,8 @@ window.$game = {
 window.$options = {
   // 0=off, 1=basic, 2=full
   hudDetailLevel: 0,
-  mouseSpeed: [ 0.5, 0.5 ],
+  // 0=x, 1=y
+  mouseSpeed: [0.3 , 0.3],
 };
 window.$displayOptions = {
   // Rendering resolution scale. Great for developers and wood PCs alike.
@@ -98,256 +96,12 @@ window.$rendererParams = {
 const allScenes = {};
 let activeScene = '';
 
-const allCamControllers = {};
-let cachedCamList = [];
-let actionTriggers = [];
+const allActionControllers = {};
+let cachedRenderHooks = [];
 
 const actions = {};
 
-const modes = {
-  /** Used to indicate that the action is mode-independent. */
-  any: 0,
-  /** Refers do being locked in a seat. Used for bridge seats, usually. */
-  shipPilot: 1,
-  /** Free roam in space, with an intelligently pulsing weak magnetic field
-   * activating just enough to keep you from floating away.. until you get too
-   * far from it and float away. */
-  zeroGMagnetic: 2,
-  /** Free roam in space, and on non-rotating spacecraft. */
-  zeroGFreeRoam: 3,
-  /** Free roam in an environment where you're stuck to the floor. Can be magnetic shoes on a hull. */
-  gravityFreeRoam: 4,
-  /** Dev haxxx. */
-  freeCam: 9,
-  godCam: 10,
-};
-
-// TODO: This was a design mistake that needs to be addressed. Modes are not
-//  mutually exclusive. You can have more than one active at a time, with
-//  preference based on some predefined [hardcoded] priority. Dark Souls
-//  example: you can run around while in ANY menu, but they arrow and
-//  interaction keys stop working because they're now snatched by the menu;
-//  elite and others do something similar.
-//  #
-//  It comes down to this: for each active mode, send the key pressed. The loop
-//  order is determined by priority. If the key is intercepted, offer the
-//  option to preventDefault [sticking with js jargon]. The easiest solution is
-//  likely to make this var a bitmask.
-let currmode = modes.shipPilot;
-
-let prevMouseX = 0;
-let prevMouseY = 0;
-
-/** Triggers on mode change. */
-const modeListeners = new CbQueue();
-/** Anything with graph numbers, like mouse, analog stick, etc. */
-const analogListeners = [];
-/** Triggers when keys are pressed, and when they are released. */
-const keyUpDownListeners = [/* { mode, cb } */];
-/** Triggers when keys are pressed, but not when they are released. */
-const keyPressListeners = [/* { mode, cb } */];
-
-/** Give mouse 1-3 friendlier names. */
-const mouseFriendly = [
-  'Left', 'Middle', 'Right',
-];
-
 const startupEmitter = getStartupEmitter();
-const uiEmitter = getUiEmitter();
-
-// Used to differentiate between key presses and holding keys down.
-const pressedButtons = new Array(4000).fill(false);
-
-const coreKeyToggles = {
-  toggleFullScreen: () => {
-    const win = nw.Window.get();
-    win.toggleFullscreen();
-  },
-  // lockMouse now handled by toggleMousePointer in individual modes.
-  // lockMouse: () => {
-  //   console.log('reimplement pointer lock.');
-  // },
-  // toggleMouseControl: () => $game.ptrLockControls.toggleCamLock(),
-  toggleMousePointer: () => $game.ptrLockControls.toggle(),
-  toggleHyperMovement: () => {
-    $game.hyperMovement = !$game.hyperMovement;
-    updateHyperdriveDebugText();
-    return $game.hyperMovement;
-  },
-  showKeyBindings: () => { // F1
-    $game.ptrLockControls.unlock();
-    uiEmitter.emit('toggleControlsMenuReadOnly');
-  },
-  _devChangeMode: () => {
-    if (currmode === modes.freeCam) {
-      // setMode(modes.godCam);
-      setMode(modes.shipPilot);
-      toast('Mode set to pilot.');
-    }
-    // else if (currmode === modes.godCam) {
-    //   setMode(modes.shipPilot);
-    // }
-    else if (currmode === modes.shipPilot) {
-      toast('Mode set to free cam.');
-      setMode(modes.freeCam);
-    }
-  },
-};
-
-function onKeyUpDown(key, metadata, amount, isDown) {
-  for (let i = 0, len = keyUpDownListeners.length; i < len; i++) {
-    const { mode, cb } = keyUpDownListeners[i];
-    if (mode === modes.any || mode === currmode) {
-      cb({ key, isDown });
-    }
-  }
-}
-
-/**
- * Emits an event indicating a key has been pressed. Does not signal a release.
- * Used directly for scroll wheel, used indirectly for keyboard.
- * @param key
- * @param isDown
- */
-function onKeyPress(key, amount, isDown) {
-  coreKeyPress(key, amount, isDown);
-  for (let i = 0, len = keyPressListeners.length; i < len; i++) {
-    const { mode, cb } = keyPressListeners[i];
-    if (mode === modes.any || mode === currmode) {
-      cb({ key, amount, isDown });
-    }
-  }
-}
-
-/**
- *
- * @param key
- * @param {number} delta - Change in position.
- * @param {number} invDelta - Change in position of opposite axis.
- * @param {number} gravDelta - Change in position, snaps back.
- * @param {number} gravInvDelta - Change in position of opposite axis, snaps back.
- */
-function onAnalogInput(key, delta, invDelta, gravDelta, gravInvDelta) {
-  for (let i = 0, len = analogListeners.length; i < len; i++) {
-    const { mode, cb } = analogListeners[i];
-    if (mode === modes.any || mode === currmode) {
-      cb(key, delta, invDelta, gravDelta, gravInvDelta);
-    }
-  }
-}
-
-function onMouseMove(x, y) {
-  // const x = event.clientX;
-  // const y = event.clientY;
-
-  let deltaX = x - prevMouseX;
-  let deltaY = y - prevMouseY;
-
-  // Below: sp means 'special'. Or 'somewhat promiscuous'. Whatever. Used to
-  // indicate the 'key' is non-standard.
-  if (y > prevMouseY) {
-    // console.log('mouse downward');
-    onAnalogInput('spSouth', y, x, y - prevMouseY, x - prevMouseX);
-  }
-  else if (y < prevMouseY) {
-    // console.log('mouse upward');
-    onAnalogInput('spNorth', y, x, y - prevMouseY, x - prevMouseX);
-  }
-
-  if (x > prevMouseX) {
-    // console.log('mouse right');
-    onAnalogInput('spEast', x, y, x - prevMouseX, y - prevMouseY);
-  }
-  else if (x < prevMouseX) {
-    // console.log('mouse left');
-    onAnalogInput('spWest', x, y, x - prevMouseX, y - prevMouseY);
-  }
-
-  prevMouseX = x;
-  prevMouseY = y;
-}
-
-/**
- * Keeps track of key presses and releases. Signals presses, but not releases.
- * Does not handle mouse scroll wheel. Should support gamepads in future.
- * @param key
- * @param metadata
- * @param isDown
- */
-function onKeyPressTracker(key, metadata, isDown) {
-  if (!isDown) {
-    // console.log(`${key} has been released.`);
-    pressedButtons[key] = false;
-    return;
-  }
-
-  if (pressedButtons[key]) {
-    // console.log(`ignoring: ${key}.`);
-    return;
-  }
-
-  // Amount for a keypress tracking is *always* 1, even if it's a throttle.
-  onKeyPress(key, 1, isDown);
-  pressedButtons[key] = true;
-}
-
-function onGameKeyDown(event) {
-  onKeyUpDown(event.code, event.location, 1, true);
-  onKeyPressTracker(event.code, event.location, true);
-}
-
-function onGameKeyUp(event) {
-  onKeyUpDown(event.code, event.location, 1, false);
-  onKeyPressTracker(event.code, event.location, false);
-}
-
-function onMouseDown(event) {
-  let name = mouseFriendly[event.button];
-  if (!name) name = event.button;
-  onKeyUpDown(`spMouse${name}`, event, 1, true);
-  onKeyPressTracker(`spMouse${name}`, event, true);
-}
-
-function onMouseUp(event) {
-  let name = mouseFriendly[event.button];
-  if (!name) name = event.button;
-  onKeyUpDown(`spMouse${name}`, event, 1, false);
-  onKeyPressTracker(`spMouse${name}`, event, false);
-}
-
-/**
- * Note: core will always emit a keyDown but never a keyUp for scroll events.
- * @param event
- */
-function onMouseWheel(event) {
-  const amount = event.deltaY;
-  if ( amount === 0 ){
-    return;
-  }
-  else if (amount > 0) {
-    // Scrolling down.
-    onKeyPress('spScrollDown', amount, true);
-  }
-  else {
-    // Scrolling up.
-    onKeyPress('spScrollUp', amount, true);
-  }
-  // console.log('scroll:', amount);
-
-  // const dir = amount / Math.abs(amount);
-  // zoomSpeed = dir / 10;
-  //
-  // // Slow down default zoom speed after user starts zooming, to give them more control
-  // minZoomSpeed = 0.001;
-}
-
-function coreKeyPress(key) {
-  const control = coreControls[key];
-  const action = coreKeyToggles[control];
-  if (action) {
-    action();
-  }
-}
 
 /**
  * Registers a scene. Requires sceneInfo object.
@@ -376,19 +130,22 @@ function registerScene(sceneInfo={}) {
   allScenes[sceneInfo.name] = sceneInfo;
 }
 
-function registerCamControl(camInfo={}) {
+// TODO: this appears to be duplicate naming (action is currently used by modes
+//  to mean high-level input). Perhaps rename this project-wide to modeInfo
+//  instead.
+function registerRenderHook(actionInfo={}) {
   let errors = 0;
-  if (!camInfo.name) {
+  if (!actionInfo.name) {
     console.error('Error: registerScene requires a name.');
     errors++;
   }
-  if (!camInfo.render) {
+  if (!actionInfo.render) {
     console.error('Error: registerScene requires a render function.');
     errors++;
   }
-  if (allScenes[camInfo.name]) {
+  if (allScenes[actionInfo.name]) {
     console.error(
-      `Error: attempted to registering scene ${camInfo.name} twice. This ` +
+      `Error: attempted to registering scene ${actionInfo.name} twice. This ` +
       'is likely a bug.'
     );
     errors++;
@@ -397,11 +154,8 @@ function registerCamControl(camInfo={}) {
     return;
   }
 
-  allCamControllers[camInfo.name] = camInfo;
-  cachedCamList.push(camInfo);
-  if (camInfo.triggerAction) {
-    actionTriggers.push(camInfo.triggerAction);
-  }
+  allActionControllers[actionInfo.name] = actionInfo;
+  cachedRenderHooks.push(actionInfo);
 }
 
 function registerGlobalAction({ action, item }) {
@@ -412,92 +166,28 @@ function deregisterGlobalAction({ action }) {
   actions[action] = {};
 }
 
-function registerKeyUpDown({ mode, cb }) {
-  keyUpDownListeners.push({ mode, cb });
-}
-
-function deregisterKeyUpDown({ mode, cb }) {
-  for (let i = 0, len = keyUpDownListeners.length; i < len; i++) {
-    if (keyUpDownListeners[i].mode === mode && keyUpDownListeners[i].cb === cb) {
-      keyUpDownListeners.splice(index, 1);
-      return true;
-    }
-  }
-  return false;
-}
-
-function registerAnalogChange({ mode, cb }) {
-  analogListeners.push({ mode, cb });
-}
-
-function deregisterAnalogChange({ mode, cb }) {
-  for (let i = 0, len = analogListeners.length; i < len; i++) {
-    if (analogListeners[i].mode === mode && analogListeners[i].cb === cb) {
-      analogListeners.splice(index, 1);
-      return true;
-    }
-  }
-  return false;
-}
-
-function registerKeyPress({ mode, cb }) {
-  keyPressListeners.push({ mode, cb });
-}
-
-function deregisterKeyPress({ mode, cb }) {
-  for (let i = 0, len = keyPressListeners.length; i < len; i++) {
-    if (keyPressListeners[i].mode === mode && keyPressListeners[i].cb === cb) {
-      keyPressListeners.splice(index, 1);
-      return true;
-    }
-  }
-  return false;
-}
-
-// const registerModeListener = cb => modeListeners.registerListener(cb);
-// const deregisterModeListener = cb => modeListeners.deregisterModeListener(cb);
-
-function getMode() {
-  return currmode;
-}
-
-function setMode(mode) {
-
-  const prevMode = currmode;
-  currmode = mode;
-
-  // Inform all listeners of the change.
-  modeListeners.notifyAll((cb) =>
-      cb({ mode: currmode, prevMode })
-  );
-
-  // for (let i = 0, len = modeListeners.length; i < len; i++) {
-  //   const cb = modeListeners[i];
-  //   cb({ mode: currmode, prevMode });
-  // }
-
-  updateModeDebugText();
-}
-
 // TODO: remove me once the game is more stable.
 function updateModeDebugText() {
   const div = document.getElementById('player-mode');
   if (!div) return;
-  if (currmode === modes.shipPilot) div.innerText = 'Mode: Ship pilot';
-  else if (currmode === modes.zeroGMagnetic) div.innerText = 'Mode: Zero-G magnetic';
-  else if (currmode === modes.zeroGFreeRoam) div.innerText = 'Mode: No gravity';
-  else if (currmode === modes.gravityFreeRoam) div.innerText = 'Mode: Gravity';
-  else if (currmode === modes.freeCam) div.innerText = 'Mode: Free cam';
-  else if (currmode === modes.godCam) div.innerText = 'Mode: God cam';
-  else div.innerText = `INVALID MODE: ${currmode}`;
+
+  // if (currmode === modes.shipPilot) div.innerText = 'Mode: Ship pilot';
+  // else if (currmode === modes.zeroGMagnetic) div.innerText = 'Mode: Zero-G magnetic';
+  // else if (currmode === modes.zeroGFreeRoam) div.innerText = 'Mode: No gravity';
+  // else if (currmode === modes.gravityFreeRoam) div.innerText = 'Mode: Gravity';
+  // else if (currmode === modes.freeCam) div.innerText = 'Mode: Free cam';
+  // else if (currmode === modes.godCam) div.innerText = 'Mode: God cam';
+  // else div.innerText = `INVALID MODE: ${currmode}`;
+  div.innerText = `INVALID MODE`;
 }
 
 // TODO: remove me once the game is more stable.
 function updateHyperdriveDebugText() {
   const div = document.getElementById('hyperdrive');
   if (!div) return;
-  // if ($game.hyperMovement)
-  div.innerText = `Hyperdrive: ${$game.hyperMovement ? 'active' : 'standby'}`;
+  // TODO: update with new UI.
+  // div.innerText = `Hyperdrive: ${$game.hyperMovement ? 'active' : 'standby'}`;
+  div.innerText = `Hyperdrive: (unknown...)`;
 }
 
 // TODO: remove me once the game is more stable.
@@ -511,76 +201,15 @@ function closeLoadingScreen() {
   }
 }
 
-function registerAnalogListener({ mode, cb }) {
-  analogListeners.push({ mode, cb });
-}
-
-/**
- * @param {string} key - There are 2 variants; standard (i.e. KeyA or Digit1)
- *  and special (i.e. spMouseLeft or spScrollUp).
- */
-function simulateKeyPress(key) {
-  onKeyPress(key, 0, true);
-}
-
-/**
- * @param {string} key - There are 2 variants; standard (i.e. KeyA) and special
- *  (i.e. spMouseLeft).
- */
-function simulateKeyDown(key) {
-  onKeyUpDown(key, 0, 1, true);
-  onKeyPressTracker(key, 0, true);
-}
-
-/**
- * @param {string} key - There are 2 variants; standard (i.e. KeyA) and special
- *  (i.e. spMouseLeft).
- */
-function simulateKeyUp(key) {
-  onKeyUpDown(key, 0, 1, false);
-  onKeyPressTracker(key, 0, false);
-}
-
-function simulateAnalog() {
-  console.log('TBA - use onAnalogInput in the mean time.');
-}
-
-/**
- * Triggers an action in all action controllers currently active. Actions in
- * this context relate to the kind of functionality you bind to the keyboard or
- * mouse, i.e. controls.
- * @param {string} action - Examples: thrustReset, lookUp, toggleFullScreen.
- *  See controls/keySchema.*.{string} for examples.
- */
-function triggerAction(action) {
-  for (let i = 0, len = actionTriggers.length; i < len; i++) {
-    const trigger = actionTriggers[i];
-    trigger(action);
-  }
-}
-
-function deregisterAnalogListener({ mode, cb }) {
-  for (let i = 0, len = analogListeners.length; i < len; i++) {
-    if (analogListeners[i].mode === mode && analogListeners[i].cb === cb) {
-      analogListeners.splice(i, 1);
-      return true;
-    }
-  }
-  return false;
-}
-
-function runLoaders(loaders, onLoad) {
-  //
-}
-
-function init({ sceneName, pos, rot }) {
+function init({ sceneName }) {
   console.log('Initialising core.');
-  actionTriggers.push((action) => {
-    const fn = coreKeyToggles[action];
-    if (fn) {
-      fn();
-    }
-  });
+
+  // Controls.
+  contextualInput.init();
+
+  // Default active mode is shipPilot.
+  contextualInput.camController.giveControlTo('shipPilot');
+
   activeScene = sceneName;
 
   // Default graphics font.
@@ -593,22 +222,8 @@ function init({ sceneName, pos, rot }) {
     // const scene = initScene({ font });
     const scene = startupScene.init({ font });
 
-    if (!pos) {
-      // TODO: implement scene default pos/rot, 0,0,0 in case of legDepthDemo.
-      //  For localCluster: x:392813413, y:15716456, z:-2821306
-      //               rot: x:-1.8765, y:1.1128, z:0.2457
-      // console.log('Setting cam position to scene default: 0,0,0');
-      // pos = new THREE.Vector3(0, 0, 0);
-      pos = new THREE.Vector3(392813413, 15716456, -2821306);
-    }
-    if (!rot) {
-      // console.log('Setting cam position to scene default: 0,0,0');
-      // rot = new THREE.Vector3(-1.8160, 0.9793, 0.1847);
-      rot = new THREE.Vector3(0, 0, 0);
-    }
-
     // Contains all the essential game variables.
-    window.$game = initView({ scene, pos, rot });
+    window.$game = initView({ scene });
     startupEmitter.emit(startupEvent.gameViewReady);
 
     initPlayer();
@@ -621,33 +236,16 @@ function init({ sceneName, pos, rot }) {
   $stats = new Stats();
   document.body.appendChild($stats.dom);
 
-  // TODO: turn these into a godcam modeswitch.
+  // TODO: move to top of document?
   window.addEventListener('resize', onWindowResize, false);
-
-  // Controls.
-  document.removeEventListener('keydown', onGameKeyDown);
-  document.removeEventListener('keyup', onGameKeyUp);
-  // document.removeEventListener('keypress', onKeyPress);
-  document.addEventListener('keydown', onGameKeyDown);
-  document.addEventListener('keyup', onGameKeyUp);
-  // document.addEventListener('keypress', onKeyPress);
-  window.addEventListener('mousedown', onMouseDown, false);
-  window.addEventListener('mouseup', onMouseUp, false);
-  window.addEventListener('wheel', onMouseWheel, false);
-
-  // Now handled by ptrLockControls instead.
-  // window.addEventListener('mousemove', onMouseMove, false);
-
-  // Send out mode trigger.
-  setMode(currmode);
 }
 
-function initView({ scene, pos, rot }) {
+function initView({ scene }) {
   const camera = new THREE.PerspectiveCamera(56.25, SCREEN_WIDTH / SCREEN_HEIGHT, NEAR, FAR);
-  camera.position.copy(pos);
-  camera.rotation.setFromVector3(rot);
+  // camera.position.copy(new THREE.Vector3(0, 0, 0));
+  // camera.rotation.setFromVector3(new THREE.Vector3(0, 0, 0));
   scene.add(camera);
-  const ptrLockControls = new PointerLockControls(camera, document.body, onMouseMove);
+  const ptrLockControls = new PointerLockControls(camera, document.body);
 
   const renderer = new THREE.WebGLRenderer({...$rendererParams, logarithmicDepthBuffer: true});
   renderer.setPixelRatio(window.devicePixelRatio);
@@ -705,7 +303,7 @@ function initView({ scene, pos, rot }) {
   const group = new THREE.Group();
   group.add(scene);
 
-  return { renderer, scene, camera, ptrLockControls, spaceWorld, outlinePass, group };
+  return { renderer, scene, camera, ptrLockControls, spaceWorld, outlinePass, group, ready: true };
 }
 
 function initPlayer() {
@@ -773,9 +371,9 @@ function animate() {
   // Run external renderers. We place this after the scene render to prevent
   // the camera from jumping around.
   // TODO: move world, not ship.
-  for (let i = 0, len = cachedCamList.length; i < len; i++) {
-    const cam = cachedCamList[i];
-    cam.render(delta);
+  for (let i = 0, len = cachedRenderHooks.length; i < len; i++) {
+    const controller = cachedRenderHooks[i];
+    controller.render(delta);
   }
 
   // If the camera is currently anchored to something, update position. Note:
@@ -783,6 +381,8 @@ function animate() {
   // with glitchy movement.
   // Use this if you want to update without parenting the camera:
   // $game.ptrLockControls.updateAnchor(); // <- note that this requires setting an anchor first.
+
+  // TODO: move this to shipPilot?
   $game.ptrLockControls.updateOrientation();
 
   // renderer.render(scene, camera);
@@ -790,17 +390,6 @@ function animate() {
 
   $stats.update();
   composer.render();
-}
-
-function moveShip_DELETEME(delta, playerShip) {
-  console.log('[moveShip_DELETEME] delta:', delta);
-  if (playerShip) {
-    const pos = playerShip.scene.position;
-    // let {x, y, z} = $game.playerShip.scene.position;
-    // z += 100;
-    // $game.playerShip.scene.position.set(x, y, z);
-    playerShip.scene.translateZ(delta*-10);
-  }
 }
 
 function onWindowResize() {
@@ -845,30 +434,25 @@ function waitForAllLoaded() {
 }
 waitForAllLoaded();
 
+/**
+ * Adjusts x and y according to user-chosen mouse sensitivity.
+ * @param {number} x
+ * @param {number} y
+ * @returns {{x: number, y: number}}
+ */
+function userMouseSpeed(x, y) {
+  return {
+    x: $options.mouseSpeed[0] * x,
+    y: $options.mouseSpeed[1] * y,
+  }
+}
+
 export default {
   actions,
   registerGlobalAction,
   deregisterGlobalAction,
-  // lockMousePointer,
-  // unlockMousePointer,
-  // getPhysicsInst,
-  modes,
-  getMode,
-  setMode,
-  modeListeners,
-  registerKeyUpDown,
-  deregisterKeyUpDown,
-  registerKeyPress,
-  deregisterKeyPress,
   init,
   registerScene,
-  registerCamControl,
-  registerAnalogListener,
-  deregisterAnalogListener,
-  simulateKeyPress,
-  simulateKeyDown,
-  simulateKeyUp,
-  simulateAnalog,
-  triggerAction,
-  coreKeyToggles,
+  registerRenderHook,
+  userMouseSpeed,
 };
