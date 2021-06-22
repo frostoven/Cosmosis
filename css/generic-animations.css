@@ -1,0 +1,359 @@
+/*
+ * Keyframes.
+ */
+
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeInUp {
+    0% {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInDown {
+    0% {
+        opacity: 0;
+        transform: translateY(-15px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeOutDown {
+    0% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+}
+
+@keyframes fadeOutLeft {
+    0% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(-15px);
+    }
+}
+
+@keyframes fadeInLeft {
+    0% {
+        opacity: 0;
+        transform: translateX(15px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes fadeInRight {
+    0% {
+        opacity: 0;
+        transform: translateX(-15px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes fadeInLeftUp {
+    0% {
+        opacity: 0;
+        transform: translateX(15px) translateY(15px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0) translateY(0);
+    }
+}
+
+@keyframes fadeInRightUp {
+    0% {
+        opacity: 0;
+        transform: translateX(-15px) translateY(15px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0) translateY(0);
+    }
+}
+
+@keyframes fadeInRightDown {
+    0% {
+        opacity: 0;
+        transform: translateX(-15px) translateY(-15px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0) translateY(0);
+    }
+}
+
+@keyframes fadeInLeftDown {
+    0% {
+        opacity: 0;
+        transform: translateX(15px) translateY(-15px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0) translateY(0);
+    }
+}
+
+@keyframes fadeInUpBig {
+    0% {
+        opacity: 0;
+        transform: translateY(240px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInDownBig {
+    0% {
+        opacity: 0;
+        transform: translateY(-240px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInLeftBig {
+    0% {
+        opacity: 0;
+        transform: translateX(240px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes fadeOutLeftBig {
+    0% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(-240px);
+    }
+}
+
+@keyframes fadeInRightBig {
+    0% {
+        opacity: 0;
+        transform: translateX(-240px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes fadeInLeftUpBig {
+    0% {
+        opacity: 0;
+        transform: translateX(240px) translateY(240px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0) translateY(0);
+    }
+}
+
+@keyframes fadeInRightUpBig {
+    0% {
+        opacity: 0;
+        transform: translateX(-240px) translateY(240px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0) translateY(0);
+    }
+}
+
+@keyframes fadeInRightDownBig {
+    0% {
+        opacity: 0;
+        transform: translateX(-240px) translateY(-240px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0) translateY(0);
+    }
+}
+
+@keyframes fadeInLeftDownBig {
+    0% {
+        opacity: 0;
+        transform: translateX(240px) translateY(-240px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0) translateY(0);
+    }
+}
+
+/**
+
+ */
+
+/*.successfully-saved.hide-opacity{*/
+/*    opacity: 0;*/
+/*}*/
+
+/*.successfully-saved {*/
+/*    color: #FFFFFF;*/
+/*    text-align: center;*/
+
+/*    -webkit-transition: opacity 3s ease-in-out;*/
+/*    -moz-transition: opacity 3s ease-in-out;*/
+/*    -ms-transition: opacity 3s ease-in-out;*/
+/*    -o-transition: opacity 3s ease-in-out;*/
+/*    opacity: 1;*/
+/*}*/
+
+/*
+ * Fade animation classes.
+ */
+
+.fadeIn {
+    animation-name: fadeIn;
+    animation-duration: 0.12s;
+}
+
+.fadeOut {
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility 0s 0.12s, opacity 0.12s linear;
+}
+
+.fadeInUp {
+    animation-name: fadeInUp;
+    animation-duration: 0.12s;
+}
+
+.fadeInDown {
+    animation-name: fadeInDown;
+    animation-duration: 0.12s;
+}
+
+.fadeOutDown {
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility 0s 0.12s, opacity 0.12s linear;
+    animation-name: fadeOutDown;
+    animation-duration: 0.12s;
+}
+
+.fadeInLeft {
+    animation-name: fadeInLeft;
+    animation-duration: 0.12s;
+}
+
+.fadeOutLeft {
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility 0s 0.12s, opacity 0.12s linear;
+    animation-name: fadeOutLeft;
+    animation-duration: 0.12s;
+}
+
+.fadeInRight {
+    animation-name: fadeInRight;
+    animation-duration: 0.12s;
+}
+
+.fadeInLeftUp {
+    animation-name: fadeInLeftUp;
+    animation-duration: 0.12s;
+}
+
+.fadeInRightUp {
+    animation-name: fadeInRightUp;
+    animation-duration: 0.12s;
+}
+
+.fadeInRightDown {
+    animation-name: fadeInRightDown;
+    animation-duration: 0.12s;
+}
+
+.fadeInLeftDown {
+    animation-name: fadeInLeftDown;
+    animation-duration: 0.12s;
+}
+
+.fadeInUpBig {
+    animation-name: fadeInUpBig;
+    animation-duration: 0.12s;
+}
+
+.fadeInDownBig {
+    animation-name: fadeInDownBig;
+    animation-duration: 0.12s;
+}
+
+.fadeInLeftBig {
+    animation-name: fadeInLeftBig;
+    animation-duration: 0.12s;
+}
+
+.fadeOutLeftBig {
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility 0s 0.12s, opacity 0.12s linear;
+    animation-name: fadeOutLeftBig;
+    animation-duration: 0.12s;
+}
+
+.fadeInRightBig {
+    animation-name: fadeInRightBig;
+    animation-duration: 0.12s;
+}
+
+.fadeInLeftUpBig {
+    animation-name: fadeInLeftUpBig;
+    animation-duration: 0.12s;
+}
+
+.fadeInRightUpBig {
+    animation-name: fadeInRightUpBig;
+    animation-duration: 0.12s;
+}
+
+.fadeInRightDownBig {
+    animation-name: fadeInRightDownBig;
+    animation-duration: 0.12s;
+}
+
+.fadeInLeftDownBig {
+    animation-name: fadeInLeftDownBig;
+    animation-duration: 0.12s;
+}

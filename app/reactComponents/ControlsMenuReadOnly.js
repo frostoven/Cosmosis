@@ -2,7 +2,7 @@ const _ = require('lodash');
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import { controls, keySchema, keymapFriendlyName } from '../local/controls';
+import { controls, keymapFriendlyName } from '../local/controls';
 import { spacedTitled } from '../local/utils';
 
 export default class ControlsMenuReadOnly extends React.Component {

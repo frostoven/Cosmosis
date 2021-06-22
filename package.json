@@ -6,7 +6,7 @@
   "window": {
     "title": "Cosmosis",
     "toolbar": false,
-    "width": 816,
+    "width": 1109,
     "height": 624,
     "icon": "icon.png"
   },
@@ -50,6 +50,7 @@
     "nw": "^0.53.0",
     "react": "16.13.1",
     "react-dom": "16.13.1",
+    "semantic-ui-react": "^2.0.3",
     "webpack": "4.28.4",
     "webpack-cli": "3.2.1"
   }
