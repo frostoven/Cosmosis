@@ -10,7 +10,6 @@ import onDocumentReady from './local/windowLoadListener';
 
 // Game modules.
 import scenes from './scenes';
-import cameraControllers from './cameraControllers';
 import './local/toast';
 import * as THREE from 'three';
 import * as CANNON from 'cannon';
@@ -72,11 +71,6 @@ for (let scene of scenes) {
   scene.register();
 }
 // Register all camera controllers.
-// TODO: rename all of these to init, and init as part of modeControl.initAll().
-for (let ctrl of cameraControllers) {
-  console.log('Registering cam controller', ctrl.name);
-  ctrl.register();
-}
 modeControl.initAll();
 
 console.groupEnd();

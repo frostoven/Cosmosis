@@ -1,11 +1,11 @@
 import * as THREE from "three";
 
-import core from "../local/core";
-import speedTracker from './utils/speedTracker';
-import { lockModes } from '../local/PointerLockControls';
-import AssetLoader from '../local/AssetLoader';
-import { startupEvent, getStartupEmitter } from '../emitters';
-import contextualInput from '../local/contextualInput';
+import core from "../../local/core";
+import speedTracker from '../../local/speedTracker';
+import { lockModes } from '../../local/PointerLockControls';
+import AssetLoader from '../../local/AssetLoader';
+import { startupEvent, getStartupEmitter } from '../../emitters';
+import contextualInput from '../../local/contextualInput';
 
 const { camController, ActionType } = contextualInput;
 const shipPilotMode = camController.enroll('shipPilot');
@@ -112,7 +112,7 @@ const steer = {
   leftRight: 0,
 }
 
-function register() {
+function init() {
   core.registerRenderHook({
     name: 'shipPilot', render,
   });
@@ -143,7 +143,7 @@ function register() {
     callback: onAnalogInput,
   });
 
-  camController.onControlChange(({ next }) => {
+  camController.onControlChange(({ next, previous }) => {
     if (next === shipPilotMode) {
       console.log('-> mode changed to', shipPilotMode);
       // Set game lock only when the game is ready.
@@ -163,10 +163,8 @@ function register() {
 
       speedTimer = speedTracker.trackCameraSpeed();
     }
-    else {
-      if (speedTimer) {
-        speedTracker.clearSpeedTracker(speedTimer);
-      }
+    else if (previous === shipPilotMode && speedTimer) {
+      speedTracker.clearSpeedTracker(speedTimer);
     }
   });
 
@@ -465,6 +463,5 @@ function render(delta) {
 }
 
 export default {
-  name: 'shipPilot',
-  register,
+  init,
 }
