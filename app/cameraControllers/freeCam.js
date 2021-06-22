@@ -76,9 +76,6 @@ function register() {
     });
 
     camController.onControlChange(({ next }) => {
-        // inputUtils.registerKeyPress({ mode, cb: onKeyPress });
-        // inputUtils.registerKeyUpDown({ mode, cb: onKeyUpOrDown });
-
         // Only render if mode is freeCam.
         if (next === freeCamMode) {
             console.log('-> mode changed to', freeCamMode);

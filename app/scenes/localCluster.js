@@ -2,10 +2,8 @@
 // Try to use some descriptive real-world examples of objects at each scale
 
 import * as THREE from 'three';
-import * as CANNON from 'cannon';
 
 import core from '../local/core';
-import generateCubeField from './procedural/cubeField';
 
 // const demo = new CANNON.Demo();
 // console.log(demo)
