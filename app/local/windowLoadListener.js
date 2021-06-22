@@ -15,6 +15,21 @@ let windowHasLoaded = false;
 const callbacks = [];
 
 /**
+ * Polyfill for running nw.js code in the browser.
+ */
+if (!process) {
+  console.warn(
+    'Process object not available; polyfilling. Note that this is currently untested.'
+  );
+  process = {
+    nextTick: (cb) => setTimeout(cb, 0),
+    env: {
+      NODE_ENV: 'production',
+    },
+  };
+}
+
+/**
  * Queues callback to run after window.onload completes. If window.onload has
  * already completed, callback is called immediately.
  * @param callback

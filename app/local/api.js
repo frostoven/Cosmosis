@@ -3,8 +3,8 @@
  * frequently used functions should reside here.
  */
 
-import core from './core';
 import { startupEvent, getStartupEmitter } from '../emitters';
+import contextualInput from './contextualInput';
 const startupEmitter = getStartupEmitter();
 
 const {
@@ -90,10 +90,14 @@ export function getPlayerShipRotation(cb=()=>{}){
  *
  * Actions are what players assign key bindings to - example, engageHyperdrive,
  * toggleFullscreen, thrustReset, etc. See controls.js for a list of these.
+ * @param {string} action - name of the action as defined in controls.js.
+ * @param {object} analogData [analogData] - optional analog data, such as x,y coords.
  */
-export function triggerAction(action) {
+export function triggerAction(action, analogData=null) {
   startupEmitter.on(ready, () => {
-    core.triggerAction(action);
+    contextualInput.ContextualInput.triggerAction({
+      action, analogData,
+    });
   });
 }
 
