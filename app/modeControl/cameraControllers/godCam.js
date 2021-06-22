@@ -5,10 +5,10 @@
 
 import * as THREE from 'three';
 
-import core from '../local/core';
-import speedTracker from "./utils/speedTracker";
-import contextualInput from '../local/contextualInput';
-import { getStartupEmitter, startupEvent } from '../emitters';
+import core from '../../local/core';
+import speedTracker from '../../local/speedTracker';
+import contextualInput from '../../local/contextualInput';
+import { getStartupEmitter, startupEvent } from '../../emitters';
 
 const { camController, ActionType } = contextualInput;
 const godCamMode = camController.enroll('godCam');
@@ -27,7 +27,7 @@ const toggles = {
   //
 };
 
-function register() {
+function init() {
   core.registerRenderHook({
     name: 'godCam', render,
   });
@@ -56,7 +56,7 @@ function register() {
     callback: onAnalogInput,
   });
 
-  camController.onControlChange(({ next }) => {
+  camController.onControlChange(({ next, previous }) => {
     if (next === godCamMode) {
       console.log('-> mode changed to', godCamMode);
       controllerActive = true;
@@ -69,7 +69,7 @@ function register() {
         speedTimer = speedTracker.trackCameraSpeed();
       });
     }
-    else {
+    else if (previous === godCamMode && speedTimer) {
       controllerActive = false;
       speedTracker.clearSpeedTracker(speedTimer);
     }
@@ -144,6 +144,5 @@ function onAnalogInput({ analogData }) {
 }
 
 export default {
-  name: 'godCam',
-  register,
+  init,
 }

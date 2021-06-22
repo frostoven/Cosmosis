@@ -1,11 +1,11 @@
 import * as THREE from "three";
 
-import AssetLoader from '../local/AssetLoader';
-import core from '../local/core';
-import speedTracker from './utils/speedTracker';
-import { lockModes } from '../local/PointerLockControls';
-import { startupEvent, getStartupEmitter } from '../emitters';
-import contextualInput from '../local/contextualInput';
+import AssetLoader from '../../local/AssetLoader';
+import core from '../../local/core';
+import speedTracker from '../../local/speedTracker';
+import { lockModes } from '../../local/PointerLockControls';
+import { startupEvent, getStartupEmitter } from '../../emitters';
+import contextualInput from '../../local/contextualInput';
 
 const { camController, ActionType } = contextualInput;
 const freeCamMode = camController.enroll('freeCam');
@@ -48,7 +48,7 @@ const toggles = {
     interact: () => $game.level.useNext(),
 };
 
-function register() {
+function init() {
     core.registerRenderHook({ name: 'freeCam', render });
 
     // Key down actions.
@@ -75,7 +75,7 @@ function register() {
         callback: onAnalogInput,
     });
 
-    camController.onControlChange(({ next }) => {
+    camController.onControlChange(({ next, previous }) => {
         // Only render if mode is freeCam.
         if (next === freeCamMode) {
             console.log('-> mode changed to', freeCamMode);
@@ -87,7 +87,7 @@ function register() {
             });
             speedTimer = speedTracker.trackCameraSpeed();
         }
-        else if (speedTimer) {
+        else if (previous === freeCamMode && speedTimer) {
             controllerActive = false;
             speedTracker.clearSpeedTracker(speedTimer);
         }
@@ -105,7 +105,7 @@ function onKeyPress({ action }) {
 }
 
 function onKeyUpOrDown({ action, isDown }) {
-    console.log('[freeCam 2] key:', action, '->', isDown ? '(down)' : '(up)');
+    // console.log('[freeCam 2] key:', action, '->', isDown ? '(down)' : '(up)');
     ctrl[action] = isDown;
 }
 
@@ -162,7 +162,6 @@ function render(delta) {
 }
 
 export default {
-    name: 'freeCam',
-    register,
+    init,
 }
 

@@ -42,6 +42,7 @@ function trackCameraSpeed() {
     const statusDiv = document.getElementById('speed-tracker');
     if (!statusDiv || !$game.playerShip) {
       // This sometimes happens right after the game has loaded.
+      // TODO: hook this into the game loading process.
       console.log('Waiting for camera to become ready...');
       return;
     }
