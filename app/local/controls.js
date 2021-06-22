@@ -31,6 +31,11 @@ const keySchema = {
     'rollLeft',
     'rollRight',
     'engageHyperdrive',
+    'pitchUp',
+    'pitchDown',
+    'yawLeft',
+    'yawRight',
+    'toggleFlightAssist',
   ],
   freeCam: [
     'moveForward',
@@ -50,8 +55,19 @@ const keySchema = {
     'use',
     'doubleSpeed',
     'interact',
+    'pitchUp',
+    'pitchDown',
+    'yawLeft',
+    'yawRight',
   ],
-  godCam: [],
+  godCam: [
+    'pitchUp',
+    'pitchDown',
+    'yawLeft',
+    'yawRight',
+    'zoomIn',
+    'zoomOut',
+  ],
 }
 
 // Use `event.code`. Easy reference: https://keycode.info/
@@ -75,7 +91,11 @@ const controls = {
     KeyD: 'rollRight',
     KeyJ: 'engageHyperdrive',
     KeyG: '_debugGravity',
-    // ControlLeft: 'toggleMousePointer', // a.k.a. PointerLockControls.
+    spNorth: 'pitchUp',
+    spSouth: 'pitchDown',
+    spWest: 'yawLeft',
+    spEast: 'yawRight',
+    KeyZ: 'toggleFlightAssist',
   },
   freeCam: {
     _description: 'Free flying camera (press F8 to activate)',
@@ -97,16 +117,23 @@ const controls = {
     ShiftLeft: 'doubleSpeed',
     ShiftRight: 'doubleSpeed',
     KeyE: 'interact',
-    // TODO: These stopped working for some reason. Either investigate why that
-    //  is, or remove the functionality.
-    // Numpad4: 'turnLeft',
-    // Numpad6: 'turnRight',
-    // Numpad8: 'lookUp',
-    // Numpad2: 'lookDown',
+    Numpad4: 'turnLeft',
+    Numpad6: 'turnRight',
+    Numpad8: 'lookUp',
+    Numpad2: 'lookDown',
+    spNorth: 'pitchUp',
+    spSouth: 'pitchDown',
+    spWest: 'yawLeft',
+    spEast: 'yawRight',
   },
   godCam: {
     _description: 'Celestial god cam',
-    // noNeedForControlsWhenOmnipotent()
+    spNorth: 'pitchUp',
+    spSouth: 'pitchDown',
+    spWest: 'yawLeft',
+    spEast: 'yawRight',
+    spScrollUp : 'zoomIn',
+    spScrollDown: 'zoomOut',
   }
 };
 
@@ -240,6 +267,16 @@ const tests = {
     return errors === 0;
   },
 };
+
+// TODO: write tests that ensure actions in allModes are unique to all controls.
+//  Specifically, actions are not unique between other modes (ex. freeCam and
+//  godCam), but allModes actions get injected into all other modes, so has to be
+//  unique.
+
+// Used for console debugging.
+debug.controls = controls;
+// Used for console debugging.
+debug.keySchema = keySchema;
 
 export {
   tests,

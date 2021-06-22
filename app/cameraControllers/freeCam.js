@@ -1,16 +1,19 @@
 import * as THREE from "three";
 
 import AssetLoader from '../local/AssetLoader';
-import { controls } from '../local/controls';
 import core from '../local/core';
 import speedTracker from './utils/speedTracker';
 import { lockModes } from '../local/PointerLockControls';
 import { startupEvent, getStartupEmitter } from '../emitters';
+import contextualInput from '../local/contextualInput';
+
+const { camController, ActionType } = contextualInput;
+const freeCamMode = camController.enroll('freeCam');
 
 const startupEmitter = getStartupEmitter();
 
-const mode = core.modes.freeCam;
-const camControls = controls.freeCam;
+// const mode = core.modes.freeCam;
+// const camControls = controls.freeCam;
 let speedTimer = null;
 
 let velocity = new THREE.Vector3();
@@ -19,7 +22,7 @@ let speed = 10 / 14.388; // 10KM/h
 // let speed = 120 / 14.388; // 120KM/h
 // let speed = 25e6 / 14.388;
 
-let doRender = false;
+let controllerActive = false;
 
 const ctrl = {
     moveForward: false,
@@ -46,54 +49,76 @@ const toggles = {
 };
 
 function register() {
-    core.registerCamControl({ name: 'freeCam', render });
-    core.registerKeyPress({ mode, cb: onKeyPress });
-    core.registerKeyUpDown({ mode, cb: onKeyUpDown });
+    core.registerRenderHook({ name: 'freeCam', render });
 
-    // Only render if mode is freeCam.
-    core.modeListeners.register((change) => {
-        doRender = change.mode === mode;
-        if (doRender) {
+    // Key down actions.
+    camController.onActions({
+        actionType: ActionType.keyUp | ActionType.keyDown,
+        actionNames: Object.keys(ctrl), // all controls handled by freeCam
+        modeName: freeCamMode,
+        callback: onKeyUpOrDown,
+    });
+
+    // Key press actions.
+    camController.onActions({
+        actionType: ActionType.keyPress,
+        actionNames: Object.keys(toggles), // all presses handled by freeCam
+        modeName: freeCamMode,
+        callback: onKeyPress,
+    });
+
+    // Analog actions.
+    camController.onActions({
+        actionType: ActionType.analogMove,
+        actionNames: [ 'pitchUp', 'pitchDown', 'yawLeft', 'yawRight' ],
+        modeName: freeCamMode,
+        callback: onAnalogInput,
+    });
+
+    camController.onControlChange(({ next }) => {
+        // inputUtils.registerKeyPress({ mode, cb: onKeyPress });
+        // inputUtils.registerKeyUpDown({ mode, cb: onKeyUpOrDown });
+
+        // Only render if mode is freeCam.
+        if (next === freeCamMode) {
+            console.log('-> mode changed to', freeCamMode);
+            controllerActive = true;
             // Set game lock only when the game is ready.
             startupEmitter.on(startupEvent.gameViewReady, () => {
                 $game.ptrLockControls.setLockMode(lockModes.freeLook);
                 AssetLoader.disableCrosshairs();
             });
-
             speedTimer = speedTracker.trackCameraSpeed();
         }
         else if (speedTimer) {
+            controllerActive = false;
             speedTracker.clearSpeedTracker(speedTimer);
         }
     });
 }
 
 
-function onKeyPress({ key, amount }) {
-    const control = camControls[key];
-    if (!control) {
-        // No control mapped for pressed button.
-        return;
-    }
-    // Ex. 'interact'
-    const toggleFn = toggles[control];
+function onKeyPress({ action }) {
+    // console.log('[freeCam 1] key press:', action);
+    // Ex. 'toggleMouseSteering' or 'toggleMousePointer' etc.
+    const toggleFn = toggles[action];
     if (toggleFn) {
         toggleFn();
     }
 }
 
-function onKeyUpDown({ key, amount, isDown }) {
-    // console.log('[freeCam] key:', key, '->', camControls[key]);
-    const control = camControls[key];
-    if (!control) {
-        // No control mapped for pressed button.
-        return;
-    }
-    ctrl[control] = isDown;
+function onKeyUpOrDown({ action, isDown }) {
+    console.log('[freeCam 2] key:', action, '->', isDown ? '(down)' : '(up)');
+    ctrl[action] = isDown;
+}
+
+function onAnalogInput({ analogData }) {
+    const mouse = core.userMouseSpeed(analogData.x.delta, analogData.y.delta);
+    $game.ptrLockControls.onMouseMove(mouse.x, mouse.y);
 }
 
 function render(delta) {
-    if (!doRender) {
+    if (!controllerActive) {
         return;
     }
 
@@ -143,3 +168,4 @@ export default {
     name: 'freeCam',
     register,
 }
+

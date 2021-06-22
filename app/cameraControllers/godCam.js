@@ -6,12 +6,16 @@
 import * as THREE from 'three';
 
 import core from '../local/core';
-import { controls } from '../local/controls';
 import speedTracker from "./utils/speedTracker";
+import contextualInput from '../local/contextualInput';
+import { getStartupEmitter, startupEvent } from '../emitters';
 
-const mode = core.modes.godCam;
+const { camController, ActionType } = contextualInput;
+const godCamMode = camController.enroll('godCam');
 
-let doRender = false;
+const startupEmitter = getStartupEmitter();
+
+let controllerActive = false;
 let mouse = [ 0.5, 0.5 ];
 let zoomPos = 1; //-100;
 let minZoomSpeed = .015;
@@ -19,31 +23,82 @@ let zoomSpeed = minZoomSpeed;
 
 let speedTimer = null;
 
+const toggles = {
+  //
+};
+
 function register() {
-  core.registerCamControl({
+  core.registerRenderHook({
     name: 'godCam', render,
   });
 
-  core.registerKeyPress({
-    mode, cb: onMouseWheel,
+  // Key down actions.
+  camController.onActions({
+    actionType: ActionType.keyUp | ActionType.keyDown,
+    actionNames: [ 'zoomIn', 'zoomOut' ],
+    modeName: godCamMode,
+    callback: onMouseWheel,
   });
 
-  // Only render if mode is godCam.
-  core.modeListeners.register((change) => {
-    doRender = change.mode === mode;
-    if (doRender) {
-      speedTimer = speedTracker.trackCameraSpeed();
+  // Key press actions.
+  camController.onActions({
+    actionType: ActionType.keyPress,
+    actionNames: Object.keys(toggles), // all presses handled by godCam
+    modeName: godCamMode,
+    callback: onKeyPress,
+  });
+
+  // Analog actions.
+  camController.onActions({
+    actionType: ActionType.analogMove,
+    actionNames: [ 'pitchUp', 'pitchDown', 'yawLeft', 'yawRight' ],
+    modeName: godCamMode,
+    callback: onAnalogInput,
+  });
+
+  camController.onControlChange(({ next }) => {
+    if (next === godCamMode) {
+      console.log('-> mode changed to', godCamMode);
+      controllerActive = true;
+      zoomPos = 1;
+      zoomSpeed = minZoomSpeed;
+      startupEmitter.on(startupEvent.gameViewReady, () => {
+        $game.camera.position.x = 0;
+        $game.camera.position.y = 0;
+        $game.camera.position.z = 0;
+        speedTimer = speedTracker.trackCameraSpeed();
+      });
     }
-    else if (speedTimer) {
+    else {
+      controllerActive = false;
       speedTracker.clearSpeedTracker(speedTimer);
     }
   });
-
-  core.registerAnalogListener({ mode, cb: onMouseMove });
+  // TODO: replace with new way.
+  // core.registerRenderHook({
+  //   name: 'godCam', render,
+  // });
+  //
+  // inputUtils.registerKeyPress({
+  //   mode, cb: onMouseWheel,
+  // });
+  //
+  // // Only render if mode is godCam.
+  // core.modeListeners.register((change) => {
+  //   controllerActive = change.mode === mode;
+  //   if (controllerActive) {
+  //     speedTimer = speedTracker.trackCameraSpeed();
+  //   }
+  //   else if (speedTimer) {
+  //     speedTracker.clearSpeedTracker(speedTimer);
+  //   }
+  // });
+  //
+  // inputUtils.registerAnalogListener({ mode, cb: onMouseMove });
 }
 
 function render(delta) {
-  if (!doRender) {
+  if (!controllerActive) {
     return;
   }
 
@@ -80,23 +135,38 @@ function render(delta) {
   camera.lookAt(scene.position);
 }
 
-function onMouseWheel({ key, amount, isDown }) {
-  console.log(key)
-  if (key !== 'spScrollUp' && key !== 'spScrollDown') {
-    // Exclude keyboard events.
-    return;
+function onMouseWheel({ action, isDown }) {
+  // const dir = amount / Math.abs(amount);
+  let dir = 1;
+  if (action === 'zoomIn') {
+    dir = -1;
   }
-
-  const dir = amount / Math.abs(amount);
   zoomSpeed = dir / 10;
   // Slow down default zoom speed after user starts zooming, to give the user
   // more control.
   minZoomSpeed = 0.001;
 }
 
-function onMouseMove(key, xAbs, yAbs) {
-  mouse[0] = xAbs / window.innerWidth;
-  mouse[1] = yAbs / window.innerHeight;
+// function onMouseMove(key, xAbs, yAbs) {
+//   mouse[0] = xAbs / window.innerWidth;
+//   mouse[1] = yAbs / window.innerHeight;
+// }
+
+function onKeyPress({ action }) {
+  // Ex. 'toggleMouseSteering' or 'toggleMousePointer' etc.
+  const toggleFn = toggles[action];
+  if (toggleFn) {
+    toggleFn();
+  }
+}
+
+function onAnalogInput({ analogData }) {
+  // TODO: we have a bug here where camera does not move for some reason.
+  //  Guessing it's locked to something somewhere, but unsure. Leaving it for
+  //  now as it still achieves its primary function of zooming out very far.
+  const mouse = core.userMouseSpeed(analogData.x.delta, analogData.y.delta);
+  mouse[0] = mouse.x;
+  mouse[1] = mouse.y;
 }
 
 export default {
