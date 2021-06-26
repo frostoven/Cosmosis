@@ -1,5 +1,15 @@
 /* Core application CSS. */
 
+:root {
+    /* Overidden by doc ready boot process. */
+    /*--cursor: loading;*/
+
+    /*https://css-tricks.com/updating-a-css-variable-with-javascript/*/
+    /*let root = document.documentElement;*/
+    /*root.style.setProperty('--mouse-x', e.clientX + "px");*/
+    /*cursor: var() 3 3, auto !important;*/
+}
+
 html, body {
     height: 100%;
     margin: 0;
@@ -7,6 +17,7 @@ html, body {
 
 * {
     font-family: Helvetica, Arial, sans-serif;
+    cursor: url(/potatoLqAssets/icons/cursor1_sharp_32.png) 3 3, auto !important;
 }
 
 #canvas {
