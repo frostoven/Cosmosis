@@ -5,7 +5,7 @@
  */
 export default function CbQueue() {
     this.listeners = [];
-}
+};
 
 /**
  * Registers a listener that will be called if a change occurs.
@@ -13,7 +13,7 @@ export default function CbQueue() {
  */
 CbQueue.prototype.register = function registerListener(cb) {
     this.listeners.push(cb);
-}
+};
 
 /**
  * Removes a previously registered function. Requires a reference to the same
@@ -29,22 +29,28 @@ CbQueue.prototype.deregister = function deregisterListener(cb) {
         }
     }
     return false;
-}
+};
 
 /**
+ * Notify all registered listeners of some info.
  * @param {any} extraData - Any additional data to pass to each call.
+ * @returns {{pings: number}} - The amount of callbacks that returned a truthy value.
  */
 CbQueue.prototype.notifyAll = function notifyAll(extraData=null) {
+    let pings = 0;
     for (let i = 0, len = this.listeners.length; i < len; i++) {
         const cb = this.listeners[i];
         if (typeof cb === 'function') {
-            cb(extraData);
+            if (cb(extraData)) {
+                pings++;
+            }
         }
         else {
             console.error('CbQueue.notifyAll: not a valid function:', cb);
         }
     }
-}
+    return { pings };
+};
 
 /**
  * @param {any} extraData - Any additional data to pass to each call.
@@ -65,4 +71,4 @@ CbQueue.prototype.notifyInterceptAll = function notifyInterceptAll(extraData=nul
             console.error('CbQueue.notifyInterceptAll: not a valid function:', cb);
         }
     }
-}
+};
