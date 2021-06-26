@@ -1,6 +1,28 @@
 /*
- * Keyframes.
+ * Many, many fade animations.
  */
+
+/* Combinations */
+
+.fadeIn, .fadeInUp, .fadeInDown, .fadeInLeft, .fadeInRight, .fadeInLeftUp,
+.fadeInRightUp, .fadeInRightDown, .fadeInLeftDown, .fadeInUpBig,
+.fadeInDownBig, .fadeInLeftBig, .fadeInRightBig, .fadeInLeftUpBig,
+.fadeInRightUpBig, .fadeInRightDownBig, .fadeInLeftDownBig {
+    animation-duration: 0.12s;
+}
+
+.fadeOut, .fadeOutDown, .fadeOutLeft, .fadeOutLeftBig, .fadeOutUpBig,
+.fadeOutRightBig, .fadeOutDownBig {
+    visibility: hidden;
+    transition: visibility 0s 0.12s, opacity 0.12s linear;
+    animation-duration: 0.12s;
+}
+
+/* Singles */
+
+.fadeIn {
+    animation-name: fadeIn;
+}
 
 @keyframes fadeIn {
     0% {
@@ -9,6 +31,13 @@
     100% {
         opacity: 1;
     }
+}
+
+.fadeOut {
+}
+
+.fadeInUp {
+    animation-name: fadeInUp;
 }
 
 @keyframes fadeInUp {
@@ -22,6 +51,10 @@
     }
 }
 
+.fadeInDown {
+    animation-name: fadeInDown;
+}
+
 @keyframes fadeInDown {
     0% {
         opacity: 0;
@@ -31,6 +64,10 @@
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+.fadeOutDown {
+    animation-name: fadeOutDown;
 }
 
 @keyframes fadeOutDown {
@@ -44,6 +81,10 @@
     }
 }
 
+.fadeOutLeft {
+    animation-name: fadeOutLeft;
+}
+
 @keyframes fadeOutLeft {
     0% {
         opacity: 1;
@@ -53,6 +94,10 @@
         opacity: 0;
         transform: translateX(-15px);
     }
+}
+
+.fadeInLeft {
+    animation-name: fadeInLeft;
 }
 
 @keyframes fadeInLeft {
@@ -66,6 +111,10 @@
     }
 }
 
+.fadeInRight {
+    animation-name: fadeInRight;
+}
+
 @keyframes fadeInRight {
     0% {
         opacity: 0;
@@ -75,6 +124,10 @@
         opacity: 1;
         transform: translateX(0);
     }
+}
+
+.fadeInLeftUp {
+    animation-name: fadeInLeftUp;
 }
 
 @keyframes fadeInLeftUp {
@@ -88,6 +141,10 @@
     }
 }
 
+.fadeInRightUp {
+    animation-name: fadeInRightUp;
+}
+
 @keyframes fadeInRightUp {
     0% {
         opacity: 0;
@@ -97,6 +154,10 @@
         opacity: 1;
         transform: translateX(0) translateY(0);
     }
+}
+
+.fadeInRightDown {
+    animation-name: fadeInRightDown;
 }
 
 @keyframes fadeInRightDown {
@@ -110,6 +171,10 @@
     }
 }
 
+.fadeInLeftDown {
+    animation-name: fadeInLeftDown;
+}
+
 @keyframes fadeInLeftDown {
     0% {
         opacity: 0;
@@ -119,6 +184,10 @@
         opacity: 1;
         transform: translateX(0) translateY(0);
     }
+}
+
+.fadeInUpBig {
+    animation-name: fadeInUpBig;
 }
 
 @keyframes fadeInUpBig {
@@ -132,6 +201,40 @@
     }
 }
 
+.fadeOutDownBig {
+    animation-name: fadeOutDownBig;
+}
+
+@keyframes fadeOutDownBig {
+    0% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(240px);
+    }
+}
+
+.fadeOutUpBig {
+    animation-name: fadeOutUpBig;
+}
+
+@keyframes fadeOutUpBig {
+    0% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-240px);
+    }
+}
+
+.fadeInDownBig {
+    animation-name: fadeInDownBig;
+}
+
 @keyframes fadeInDownBig {
     0% {
         opacity: 0;
@@ -141,6 +244,10 @@
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+.fadeInLeftBig {
+    animation-name: fadeInLeftBig;
 }
 
 @keyframes fadeInLeftBig {
@@ -154,6 +261,10 @@
     }
 }
 
+.fadeOutLeftBig {
+    animation-name: fadeOutLeftBig;
+}
+
 @keyframes fadeOutLeftBig {
     0% {
         opacity: 1;
@@ -163,6 +274,10 @@
         opacity: 0;
         transform: translateX(-240px);
     }
+}
+
+.fadeInRightBig {
+    animation-name: fadeInRightBig;
 }
 
 @keyframes fadeInRightBig {
@@ -176,6 +291,25 @@
     }
 }
 
+.fadeOutRightBig {
+    animation-name: fadeOutRightBig;
+}
+
+@keyframes fadeOutRightBig {
+    0% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(240px);
+    }
+}
+
+.fadeInLeftUpBig {
+    animation-name: fadeInLeftUpBig;
+}
+
 @keyframes fadeInLeftUpBig {
     0% {
         opacity: 0;
@@ -185,6 +319,10 @@
         opacity: 1;
         transform: translateX(0) translateY(0);
     }
+}
+
+.fadeInRightUpBig {
+    animation-name: fadeInRightUpBig;
 }
 
 @keyframes fadeInRightUpBig {
@@ -198,6 +336,10 @@
     }
 }
 
+.fadeInRightDownBig {
+    animation-name: fadeInRightDownBig;
+}
+
 @keyframes fadeInRightDownBig {
     0% {
         opacity: 0;
@@ -209,6 +351,10 @@
     }
 }
 
+.fadeInLeftDownBig {
+    animation-name: fadeInLeftDownBig;
+}
+
 @keyframes fadeInLeftDownBig {
     0% {
         opacity: 0;
@@ -218,142 +364,4 @@
         opacity: 1;
         transform: translateX(0) translateY(0);
     }
-}
-
-/**
-
- */
-
-/*.successfully-saved.hide-opacity{*/
-/*    opacity: 0;*/
-/*}*/
-
-/*.successfully-saved {*/
-/*    color: #FFFFFF;*/
-/*    text-align: center;*/
-
-/*    -webkit-transition: opacity 3s ease-in-out;*/
-/*    -moz-transition: opacity 3s ease-in-out;*/
-/*    -ms-transition: opacity 3s ease-in-out;*/
-/*    -o-transition: opacity 3s ease-in-out;*/
-/*    opacity: 1;*/
-/*}*/
-
-/*
- * Fade animation classes.
- */
-
-.fadeIn {
-    animation-name: fadeIn;
-    animation-duration: 0.12s;
-}
-
-.fadeOut {
-    visibility: hidden;
-    opacity: 0;
-    transition: visibility 0s 0.12s, opacity 0.12s linear;
-}
-
-.fadeInUp {
-    animation-name: fadeInUp;
-    animation-duration: 0.12s;
-}
-
-.fadeInDown {
-    animation-name: fadeInDown;
-    animation-duration: 0.12s;
-}
-
-.fadeOutDown {
-    visibility: hidden;
-    opacity: 0;
-    transition: visibility 0s 0.12s, opacity 0.12s linear;
-    animation-name: fadeOutDown;
-    animation-duration: 0.12s;
-}
-
-.fadeInLeft {
-    animation-name: fadeInLeft;
-    animation-duration: 0.12s;
-}
-
-.fadeOutLeft {
-    visibility: hidden;
-    opacity: 0;
-    transition: visibility 0s 0.12s, opacity 0.12s linear;
-    animation-name: fadeOutLeft;
-    animation-duration: 0.12s;
-}
-
-.fadeInRight {
-    animation-name: fadeInRight;
-    animation-duration: 0.12s;
-}
-
-.fadeInLeftUp {
-    animation-name: fadeInLeftUp;
-    animation-duration: 0.12s;
-}
-
-.fadeInRightUp {
-    animation-name: fadeInRightUp;
-    animation-duration: 0.12s;
-}
-
-.fadeInRightDown {
-    animation-name: fadeInRightDown;
-    animation-duration: 0.12s;
-}
-
-.fadeInLeftDown {
-    animation-name: fadeInLeftDown;
-    animation-duration: 0.12s;
-}
-
-.fadeInUpBig {
-    animation-name: fadeInUpBig;
-    animation-duration: 0.12s;
-}
-
-.fadeInDownBig {
-    animation-name: fadeInDownBig;
-    animation-duration: 0.12s;
-}
-
-.fadeInLeftBig {
-    animation-name: fadeInLeftBig;
-    animation-duration: 0.12s;
-}
-
-.fadeOutLeftBig {
-    visibility: hidden;
-    opacity: 0;
-    transition: visibility 0s 0.12s, opacity 0.12s linear;
-    animation-name: fadeOutLeftBig;
-    animation-duration: 0.12s;
-}
-
-.fadeInRightBig {
-    animation-name: fadeInRightBig;
-    animation-duration: 0.12s;
-}
-
-.fadeInLeftUpBig {
-    animation-name: fadeInLeftUpBig;
-    animation-duration: 0.12s;
-}
-
-.fadeInRightUpBig {
-    animation-name: fadeInRightUpBig;
-    animation-duration: 0.12s;
-}
-
-.fadeInRightDownBig {
-    animation-name: fadeInRightDownBig;
-    animation-duration: 0.12s;
-}
-
-.fadeInLeftDownBig {
-    animation-name: fadeInLeftDownBig;
-    animation-duration: 0.12s;
 }

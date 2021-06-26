@@ -196,8 +196,7 @@ function closeLoadingScreen() {
   if (!divs) return;
 
   for(let i = 0, len = divs.length; i < len; i++){
-    // divs[i].style.display = 'none';
-    divs[i].classList.add('fadeout');
+    divs[i].classList.add('splash-fade-out');
   }
 }
 
