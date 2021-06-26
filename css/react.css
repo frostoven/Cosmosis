@@ -1,20 +1,3 @@
-/*html {*/
-/*    font-size: 14px;*/
-/*}*/
-
-/*body {*/
-/*    margin: 0;*/
-/*    padding: 0;*/
-/*    overflow-x: hidden;*/
-/*    min-width: 320px;*/
-/*    background: #fff;*/
-/*    font-family: Lato,'Helvetica Neue',Arial,Helvetica,sans-serif;*/
-/*    font-size: 14px;*/
-/*    line-height: 1.4285em;*/
-/*    color: rgba(0,0,0,.87);*/
-/*    font-smoothing: antialiased;*/
-/*}*/
-
 table {
     border: thin solid grey;
 }
@@ -76,123 +59,13 @@ tr:hover {
     border: gray;
 }
 
-/*.ui.button {*/
-/*    !*margin: 16px;*!*/
-/*    !*padding: 24px;*!*/
-/*    !*width: 256px;*!*/
-/*    padding: .78571429em 1.5em .78571429em;*/
-/*    !*font-family: Lato, 'Helvetica Neue', Arial, Helvetica, sans-serif;*!*/
-/*    font-weight: 700;*/
-/*    font-size: 95%;*/
-/*}*/
-
-/*.ui.fluid.dropdown {*/
-/*    width: 100%;*/
-/*}*/
-
-/*.ui.dropdown {*/
-/*    position: relative;*/
-/*}*/
-
-/*.ui.selection.dropdown {*/
-/*    display: inline-block;*/
-/*    padding: .78571429em 2.1em .78571429em 1em;*/
-/*}*/
-
 .ui.dropdown .divider {
     background-color: unset;
 }
 
-/*.ui.dropdown .menu {*/
-/*    cursor: auto;*/
-/*    position: absolute;*/
-/*    display: none;*/
-/*    outline: 0;*/
-/*    top: 100%;*/
-/*    min-width: -webkit-max-content;*/
-/*    min-width: -moz-max-content;*/
-/*    align: left;*/
-/*    -webkit-box-shadow: 0 2px 3px 0 rgb(34 36 38 / 15%);*/
-/*    box-shadow: 0 2px 3px 0 rgb(34 36 38 / 15%);*/
-/*    border: 1px solid rgba(34,36,38,.15);*/
-/*    border-radius: .28571429rem;*/
-/*    -webkit-transition: opacity .1s ease;*/
-/*    transition: opacity .1s ease;*/
-/*    z-index: 11;*/
-/*    will-change: transform,opacity;*/
-/*}*/
-
-/*.ui.selection.dropdown .menu {*/
-/*    margin: 0 -1px;*/
-/*}*/
-
-/*.ui.dropdown .menu {*/
-/*    left: 0;*/
-/*}*/
-
-/*.visible.transition {*/
-/*    display: block!important;*/
-/*    visibility: visible!important;*/
-/*}*/
-
-/*.ui.dropdown .menu>.item {*/
-/*    position: relative;*/
-/*    display: block;*/
-/*    height: auto;*/
-/*    padding: .78571429rem 1.14285714rem!important;*/
-/*    font-size: 1rem;*/
-/*    font-weight: 400;*/
-/*}*/
-
-/*.ui.selection.dropdown>.delete.icon, .ui.selection.dropdown>.dropdown.icon, .ui.selection.dropdown>.search.icon {*/
-/*    position: absolute;*/
-/*    width: auto;*/
-/*    height: auto;*/
-/*    top: .78571429em;*/
-/*    right: 1em;*/
-/*    margin: -.78571429em;*/
-/*    padding: .91666667em;*/
-/*}*/
-
-/*.ui.dropdown>.dropdown.icon {*/
-/*    font-family: Dropdown;*/
-/*    -webkit-backface-visibility: hidden;*/
-/*    font-weight: 400;*/
-/*    font-style: normal;*/
-/*    text-align: center;*/
-/*}*/
-
-/*.ui.dropdown>.dropdown.icon {*/
-/*    font-size: .85714286em;*/
-/*}*/
-
-/*.ui.dropdown {*/
-/*    position: relative;*/
-/*    display: inline-block;*/
-/*    outline: 0;*/
-/*    -webkit-transition: width .1s ease,-webkit-box-shadow .1s ease;*/
-/*    -webkit-tap-highlight-color: transparent;*/
-/*}*/
-
-/*.ui.dropdown .menu .active.item {*/
-/*    background: 0 0;*/
-/*    font-weight: 700;*/
-/*    -webkit-box-shadow: none;*/
-/*    box-shadow: none;*/
-/*    z-index: 12;*/
-/*}*/
-
 .ui.selection.visible.dropdown > .text:not(.default) {
     color: #ffffff;
 }
-
-/*.ui.dropdown>.dropdown.icon:before {*/
-/*    content: '\f0d7';*/
-/*}*/
-
-/*i.icon.dropdown:before {*/
-/*    content: '\f0d7';*/
-/*}*/
 
 .visible.menu.transition > div {
     border: none !important;
@@ -206,14 +79,43 @@ tr:hover {
     -ms-transform: translateY(-50%);
     transform: translateY(-50%);
     height: 100%;
+    width: 100%;
+}
+
+.horizontal-center {
+    text-align: center !important;
+}
+
+.game-menu-button {
+    font-family: 'IBM_VGA_8x16' !important;
+    font-size: 16pt !important;
+    font-weight: 100 !important;
 }
 
 .button-fill-parent {
     min-width: 117px;
     width: 100%;
-    height: 100%;
+    /*height: 100%;*/
 }
 
 .game-menu {
-    padding: 24px;
+    padding: 24px !important;
+}
+
+.game-menu-background {
+    position: fixed;
+    background-color: red;
+}
+
+.game-menu-back-animation {
+    /* https://www.gradient-animator.com/ */
+    background: linear-gradient(178deg, #246655, #662424);
+    background-size: 400% 400%;
+    animation: game-menu-back-animation 30s ease infinite;
+}
+
+@keyframes game-menu-back-animation {
+    0%{background-position:82% 0%}
+    50%{background-position:19% 100%}
+    100%{background-position:82% 0%}
 }

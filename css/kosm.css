@@ -1,0 +1,117 @@
+/*
+ * Excellent resources on custom borders:
+ * https://codepen.io/gc-nomade/pen/oxzKJp
+ * https://codepen.io/gc-nomade/pen/IGliC
+ * https://stackoverflow.com/questions/37575036/how-to-fill-only-half-of-border-bottom
+ * https://css-tricks.com/gradient-borders-in-css/
+ * https://stackoverflow.com/questions/4011113/can-you-add-noise-to-a-css3-gradient
+ */
+.kosm-gradient-box, .kosm-gradient-box-secondary {
+    display: flex;
+    align-items: center;
+    margin: auto;
+    max-width: 22em;
+    position: relative;
+    padding: 16px;
+    box-sizing: border-box;
+    color: #FFF;
+    background: #000;
+    background-clip: padding-box;
+    /* border: solid thin transparent; */
+    border: 2px solid transparent;
+    border-radius: 3pt;
+}
+
+.kosm-gradient-box:before, .kosm-gradient-box-secondary:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: -1;
+    margin: -3px;
+    border-radius: inherit;
+    background: linear-gradient(to right, #f8fccf, #6f706a, #f8fccf);
+
+    animation-name: kosm-oscillate-opacity;
+    animation-duration: 872ms; /* Japanese style. */
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+    animation-direction: alternate;
+}
+
+.kosm-gradient-box-secondary:before {
+    background: radial-gradient(circle farthest-side, #f8fccf, #daec7e, transparent);
+    margin: -2px;
+}
+
+@keyframes kosm-oscillate-opacity {
+    0%   { opacity: 1;      }
+    100% { opacity: 0.6524; }
+}
+
+.kosm-active-primary-button {
+    background-color: #000000bf !important;
+    /*border-top-width: 2px !important;*/
+    /*border-bottom-width: 2px !important;*/
+    /*padding: 12pt;*/
+}
+
+/* TODO: figure out why we need '!important' for everything; using it for now
+    because it's simply refusing to play along, but this is bad practice, and
+    should eventually be removed for many reasons.
+ */
+.kosm-inactive-primary-button {
+    background-color: #0000007f !important;
+    /*border-top-width: 2px !important;*/
+    /*border-bottom-width: 2px !important;*/
+    border-left: none !important;
+    border-right: none !important;
+
+    /* Simulate top and bottom border. We do this instead of using real */
+    /* borders because real border jump around when used with gradient */
+    /* borders. */
+    box-shadow: 0 0 0 1px black !important;
+    clip-path: inset(-5px 0px -5px 1px) !important;
+}
+
+.kosm-active-secondary-button {
+    border-radius: 2px !important;
+    /*background-color: #000000bf !important;*/
+    background-color: #000000bf !important;
+}
+
+/* TODO: figure out why we need '!important' for everything; using it for now
+    because it's simply refusing to play along, but this is bad practice, and
+    should eventually be removed for many reasons.
+ */
+.kosm-inactive-secondary-button {
+    background-color: #00000042 !important;
+    /*border-top-width: 2px !important;*/
+    /*border-bottom-width: 2px !important;*/
+    border-left: none !important;
+    border-right: none !important;
+
+    /* Simulate top and bottom border. We do this instead of using real */
+    /* borders because real border jump around when used with gradient */
+    /* borders. */
+    box-shadow: 0 0 0 1px black !important;
+    clip-path: inset(1px 1px -5px 1px) !important;
+}
+
+.kosm-wide {
+    width: 313px;
+}
+
+.kosm-block {
+    margin-left: auto !important;
+    margin-right: auto !important;
+    display: block !important;
+    margin-bottom: 9px !important;
+}
+
+.kosm-invalid {
+    color: grey;
+    background-color: #ff00001c !important;
+}

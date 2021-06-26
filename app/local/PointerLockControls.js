@@ -94,12 +94,6 @@ const PointerLockControls = function (camera, domElement) {
     scope.dispatchEvent(changeEvent);
   }
 
-  function mockEscapeEvent() {
-    return {
-      code: 'Escape',
-    };
-  }
-
   function onPointerlockChange() {
     if (scope.domElement.ownerDocument.pointerLockElement === scope.domElement) {
       scope.dispatchEvent(lockEvent);
@@ -120,8 +114,9 @@ const PointerLockControls = function (camera, domElement) {
       //  if that's the current expected state (i.e. a Ctrl press should abort
       //  that attempt).
       if (document.hasFocus() && scope.simulateNextEscape) {
-        // console.log('---> PRESS AND RELEASE ESCAPE.')
         contextualInput.ContextualInput.universalEventListener({
+          // TODO: we probably want to name this a difference action, like
+          //  spSystemEscape of whatever.
           code: 'Escape', type: 'keydown',
         });
         contextualInput.ContextualInput.universalEventListener({

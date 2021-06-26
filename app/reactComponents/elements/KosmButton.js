@@ -8,26 +8,45 @@ import PropTypes from 'prop-types';
 export default class KosmButton extends React.Component {
 
   static propTypes = {
-    example: PropTypes.string,
+    children: PropTypes.any,
+    className: PropTypes.any,
+    isActive: PropTypes.bool,
+    secondary: PropTypes.bool,
+    wide: PropTypes.bool,
+    block: PropTypes.bool,
+    onClick: PropTypes.func,
   };
 
   static defaultProps = {
-    example: 'Example string.',
+    children: null,
+    className: '',
+    isActive: false,
+    secondary: false,
+    wide: false,
+    block: false,
+    onClick: () => {},
   };
-
-  static defaultState = {
-    someVar: 'Some value.',
-  };
-
-  constructor(props) {
-    super(props);
-    this.state = KosmButton.defaultState;
-  }
 
   render() {
+    let buttonType = this.props.secondary ? 'secondary' : 'primary';
+    let gradientClass = this.props.secondary ? 'kosm-gradient-box-secondary' : 'kosm-gradient-box';
+    let wide = this.props.wide ? 'kosm-wide' : '';
+    let block = this.props.block ? 'kosm-block' : '';
+    let invalid = this.props.invalid ? 'kosm-invalid' : '';
+
+    let extraCss = `${wide} ${block} ${invalid}`;
+
+    let className;
+    if (this.props.isActive) {
+      className = `ui button ${gradientClass} kosm-active-${buttonType}-button ${this.props.className} ${extraCss}`;
+    }
+    else {
+      className = `ui button kosm-inactive-${buttonType}-button ${this.props.className} ${extraCss}`;
+    }
+
     return (
-      <div className='ui button'>
-        Test
+      <div className={className} onClick={this.props.onClick}>
+        {this.props.children}
       </div>
     );
   }

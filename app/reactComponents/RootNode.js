@@ -2,7 +2,7 @@ import React from 'react';
 import ControlsOverlay from './ControlsOverlay';
 import ControlsMenuReadOnly from './ControlsMenuReadOnly';
 import { getUiEmitter } from '../emitters';
-import GameMenu from './GameMenu';
+import Menu from './Menu';
 
 const uiEmitter = getUiEmitter();
 
@@ -65,7 +65,7 @@ export default class RootNode extends React.Component {
       <div>
         <ControlsOverlay />
         <ControlsMenuReadOnly visible={this.state.showControlsMenuReadOnly} />
-        <GameMenu />
+        <Menu />
       </div>
     );
   }
