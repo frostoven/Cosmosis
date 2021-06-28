@@ -13,6 +13,7 @@ export default class MenuNavigation extends React.Component {
     direction: PropTypes.number.isRequired,
     onUnhandledInput: PropTypes.func,
     activeClass: PropTypes.string,
+    recursive: PropTypes.bool,
     children: PropTypes.any,
   };
 
@@ -20,6 +21,7 @@ export default class MenuNavigation extends React.Component {
     direction: MenuNavigation.direction.UpDown,
     onUnhandledInput: ()=>{},
     activeClass: null,
+    recursive: true,
   };
 
   static defaultState = {
@@ -101,25 +103,48 @@ export default class MenuNavigation extends React.Component {
     }
   };
 
-  render() {
-    // Extract components from this.props.children so that we may add more
-    // props to them.
-    this.listLength = 0;
-    return React.Children.map(this.props.children, child => {
+  makeChildrenSelectable = ({ children }) => {
+    return React.Children.map(children, child => {
       const { activeItem } = this.state;
       if (React.isValidElement(child)) {
         const props = {};
         if (child.props.selectable) {
-          if (this.listLength++ === activeItem) {
+          if (this.listLength === activeItem) {
             this.addActiveItemFlag({ props, child });
             this.activeChildCallback = child.props.onClick;
           }
+          this.listLength++;
         }
+
+        // Recursively make children selectable.
+        if (this.props.recursive) {
+          // const subChildren = React.Children.toArray(child.props.children);
+          const subChildren = React.Children.toArray(child.props.children);
+          if (subChildren.length > 0) {
+            const nestedChildren = this.makeChildrenSelectable({
+              children: child.props.children,
+            });
+            return React.cloneElement(child, props, nestedChildren);
+          }
+        }
+
         return React.cloneElement(child, props);
       }
       // Things like strings are not considered 'valid'; we simply pass
       // those through.
       return child;
+    });
+  };
+
+  render() {
+    if (!this.props.children) {
+      return null;
+    }
+    // Extract components from this.props.children so that we may add more
+    // props to them.
+    this.listLength = 0;
+    return this.makeChildrenSelectable({
+      children: this.props.children,
     });
   }
 }
