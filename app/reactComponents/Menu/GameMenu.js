@@ -143,7 +143,6 @@ export default class GameMenu extends React.Component {
   };
 
   resume = () => {
-    console.log('GameMenu:', this.state)
     $game.ptrLockControls.lock();
     this.setState({ isVisible: false, previousMenu: thisMenu });
   };

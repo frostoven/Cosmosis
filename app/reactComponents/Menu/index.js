@@ -19,9 +19,8 @@ export default class Menu extends React.Component {
       activeMenu: 'game menu',
     };
 
-    // We only call the active menu each time, so a simple key:value setup
-    // works fine.
-    this.inputListeners = {};
+    // All menus (and special components) that listen for input.
+    this.inputListeners = new CbQueue();
 
     // This calls listeners in a loop, so a queue makes things a little easier.
     this.menuChangeListeners = new CbQueue();
@@ -133,11 +132,11 @@ export default class Menu extends React.Component {
   };
 
   registerInputListener = ({ name, onAction }) => {
-    this.inputListeners[name] = onAction;
+    this.inputListeners.register(onAction, name);
   };
 
   deregisterInputListener = ({ name }) => {
-    delete this.inputListeners[name];
+    this.inputListeners.deregisterViaName(name);
   };
 
   registerMenuChangeListener = ({ onChange }) => {
