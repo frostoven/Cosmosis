@@ -6,6 +6,9 @@ import CbQueue from './CbQueue';
 // pressed.
 // const heldButtons = new Array(4000).fill(false);
 const heldButtons = {};
+// Used to keep track of ongoing actions (in other words button-to-action
+// conversions).
+const ongoingActions = {};
 
 // Used to prevent console spam.
 let nothingImplementsWarnings = {};
@@ -101,6 +104,8 @@ ContextualInput._activeInstances = {};
 ContextualInput._reservedChildIds = {};
 // Used internally to store action callbacks.
 ContextualInput._listeners = {};
+// Actions that currently cannot be performed.
+ContextualInput.blockedActions = {};
 
 ContextualInput.initListeners = function() {
   const listener = ContextualInput.universalEventListener;
@@ -113,6 +118,15 @@ ContextualInput.initListeners = function() {
   window.addEventListener('pointerlockchange', listener, false);
 };
 
+/**
+ * String containing a mode names. If it contains names, the mode matching the
+ * last element will receive key input. No other modes will receive input. If
+ * empty, all modes receive input unless there's an override elsewhere.
+ * @type {string[]}
+ * @private
+ */
+ContextualInput._exclusiveControl = [];
+
 ContextualInput.activateInstances = function(additions) {
   const instances = ContextualInput._activeInstances;
   for (let i = 0, len = additions.length; i < len; i++) {
@@ -121,6 +135,30 @@ ContextualInput.activateInstances = function(additions) {
       instances[inst._name] = inst;
     }
   }
+};
+
+/**
+ * Gets the mode that currently holds key exclusivity. Returns null if no modes
+ * currently have exclusivity.
+ * @returns {null|string}
+ */
+ContextualInput.getExclusiveControlMode = function getExclusiveControlMode() {
+  const exclusiveModes = ContextualInput._exclusiveControl;
+  if (exclusiveModes.length === 0) {
+    return null;
+  }
+  else {
+    return exclusiveModes[exclusiveModes.length - 1];
+  }
+};
+
+/**
+ * Gives a mode exclusive control. If more than one mode has exclusivity, only
+ * the latest added will receive control.
+ * @param modeName
+ */
+ContextualInput.setExclusiveControlMode = function setExclusiveControlMode(modeName) {
+  ContextualInput._exclusiveControl.push(modeName);
 };
 
 /**
@@ -237,7 +275,9 @@ ContextualInput.prototype.onActions = function onModeAction(
  * @param action
  * @param analogData
  */
-ContextualInput.triggerAction = function triggerAction({ action, analogData }) {
+ContextualInput.triggerAction = function triggerAction(
+  { action, analogData, isDown=true, forceNotify=false }
+) {
   const active = ContextualInput._activeInstances;
   const activeKeys = Object.keys(active);
   let foundListener = false;
@@ -245,7 +285,7 @@ ContextualInput.triggerAction = function triggerAction({ action, analogData }) {
     const modeInst = active[activeKeys[i]];
     if (modeInst._activeChild) {
       if (ContextualInput.notifyMode({
-        action, isDown: true, analogData, modeInst, noImplWarn: true
+        action, isDown, analogData, modeInst, noImplWarn: true, forceNotify,
       })) {
         // Note: we ignore false because something will almost always return
         // false. We're specifically looking for the absence 'true' being
@@ -262,9 +302,30 @@ ContextualInput.triggerAction = function triggerAction({ action, analogData }) {
 /**
  * @returns {boolean} True if a valid target was found, false oherwise.
  */
-ContextualInput.notifyMode = function notifyMode({ action, isDown, analogData, modeInst, noImplWarn }) {
+ContextualInput.notifyMode = function notifyMode({ action, isDown, analogData, modeInst, noImplWarn, forceNotify=false }) {
+  if (ContextualInput.blockedActions[action]) {
+    // Break out if action has been blocked.
+    return false;
+  }
+
+  const modeName = modeInst._name;
+  const modeActiveChild = modeInst._activeChild;
+  const exclusiveControl = ContextualInput.getExclusiveControlMode();
+
+  // This allows is to force isUp triggers when a mode receives exclusivity.
+  if (isDown) {
+    ongoingActions[action] = true;
+  } else {
+    delete ongoingActions[action];
+  }
+
+  // Check for exclusive control. Do not apply exclusivity to key up events.
+  if (!forceNotify && exclusiveControl && exclusiveControl !== modeActiveChild) {
+    return false;
+  }
+
   // Listener for controls.
-  const target = ContextualInput._listeners[`${modeInst._name}.${modeInst._activeChild}.${action}`];
+  const target = ContextualInput._listeners[`${modeName}.${modeActiveChild}.${action}`];
   if (target) {
     const { callback, actionType } = target;
 
@@ -289,8 +350,15 @@ ContextualInput.notifyMode = function notifyMode({ action, isDown, analogData, m
     return true;
   }
   else if (!noImplWarn) {
+    // DELETEME
+    // if (modeActiveChild === 'modal') {
+    //   // Hack employed to make modal piggyback of menuViewer while still being
+    //   // a separate mode. TODO: We should probably completely separate it.
+    //   return false;
+    // }
+
     // Listener for controls.
-    const message = `'${modeInst._name}.${modeInst._activeChild}.${action}'`;
+    const message = `'${modeName}.${modeActiveChild}.${action}'`;
     // This ensures we don't spam the console.
     if (!nothingImplementsWarnings[message]) {
       nothingImplementsWarnings[message] = true;
@@ -316,6 +384,9 @@ ContextualInput.notifyOfInput = function notifyOfInput({ key, isDown, analogData
     ContextualInput.notifyMode({ action, isDown, analogData, modeInst });
   }
 
+  if (!activeActions) {
+    return console.error(`controls[${modeInst._activeChild}] is undefined.`);
+  }
   action = activeActions[key];
   if (action) {
     ContextualInput.notifyMode({ action, isDown, analogData, modeInst });
@@ -408,6 +479,10 @@ ContextualInput.universalEventListener = function(event) {
       // Luckily, manually dealing with keypresses are easy anyway.
       return;
     case 'mousemove':
+      if (!$game.ptrLockControls || !$game.ptrLockControls.isPointerLocked) {
+        // Ignore mouse if pointer is being used by menu.
+        return;
+      }
       analogData = calculateAnalogData(
         event.movementX, event.movementY, AnalogSource.mouse
       );
@@ -446,6 +521,7 @@ ContextualInput.universalEventListener = function(event) {
       // down.
       if (!isDown) {
         heldButtons[key] = false;
+        // delete heldButtons[key];
       } else {
         if (heldButtons[key]) {
           return;
@@ -483,26 +559,74 @@ function keyFromWheelDelta(deltaY) {
 
 // ---- TODO: implement these 4 functions -----------------------------------
 
+// bookm
+
 /**
  * Specified action will be ignored entirely; no modes will receive them at
  * all.
  */
-ContextualInput.blockAction = function blockAction(action) {
-  //
-}
+ContextualInput.blockAction = function blockAction({ action }) {
+  ContextualInput.blockedActions[action] = true;
+};
 
 /**
- * Request exclusive access over a key.
+ * Unblocks a previously blocked action.
  */
-ContextualInput.takeKeyExclusivity = function takeKeyExclusivity(key) {
+ContextualInput.unblockAction = function blockAction({ action }) {
+  delete ContextualInput.blockedActions[action];
+};
+
+/**
+ * Request exclusive control over a keys that match the specified action.
+ */
+ContextualInput.takeActionExclusivity = function takeActionExclusivity({ mode, action }) {
   //
 };
 
 /**
  * Prevents all other modes from receiving input.
  */
-ContextualInput.takeFullExclusivity = function takeFullExclusivity() {
-  // then 'grantAccessTo' gets full control.
+ContextualInput.takeFullExclusivity = function takeFullExclusivity({ mode }) {
+  // const exclusiveMode = ContextualInput.getExclusiveControlMode();
+  // if (exclusiveMode) {
+  //   throw `ContextualInput.takeFullExclusivity: '${mode}' is tying to gain ` +
+  //     `exclusive control, but '${ContextualInput._exclusiveControl}' ` +
+  //     `already has control.`;
+  // }
+  console.log(`Granting exclusive key control to ${mode}.`);
+  ContextualInput.setExclusiveControlMode(mode);
+
+  // If holding a key while exclusivity is granted, keyUps won't be triggered
+  // because exclusivity blocks all key events to non-exclusive modes. This
+  // results in controls appearing buggy. We fix this by manually triggering
+  // all keyUp events for currently held buttons.
+  const keys = Object.keys(ongoingActions);
+  for (let i = 0, len = keys.length; i < len; i++) {
+    const action = keys[i];
+    // console.log(`=> triggering: action: ${action}, isDown: false, forceNotify: true`)
+    ContextualInput.triggerAction({
+      action, isDown: false, forceNotify: true,
+    });
+  }
+};
+
+/**
+ * Prevents all other modes from receiving input.
+ */
+ContextualInput.relinquishFullExclusivity = function relinquishFullExclusivity({ mode }) {
+  const exclusiveControl = ContextualInput._exclusiveControl;
+
+  const index = exclusiveControl.indexOf(mode);
+  if (index > -1) {
+    exclusiveControl.splice(index, 1);
+    console.log(`Relinquishing exclusive key control of ${mode}.`);
+  }
+  // else {
+  //     console.error(
+  //       `Error: cannot release control for '${mode}' because it doesn't ` +
+  //       `currently have control:`, exclusiveControl
+  //     );
+  // }
 };
 
 /**
@@ -522,7 +646,10 @@ const camController = new ContextualInput('camController');
 const misc = new ContextualInput('misc');
 
 // The main menu, the pause menu, and inventory screen are primary menus.
-const primaryMenu = new ContextualInput('primaryMenu');
+const menuController = new ContextualInput('menuController');
+
+//
+const modalController = new ContextualInput('modalController');
 
 // TODO: make primary and secondary mutually exclusive? (probably, yes.)
 // Any menu opened as a child of another menu is a submenu.
@@ -538,7 +665,8 @@ const virtualMenu = new ContextualInput('virtualMenu');
 ContextualInput.activateInstances([
   misc,
   camController,
-  primaryMenu,
+  menuController,
+  modalController,
   submenu,
   virtualMenu,
 ]);
@@ -548,16 +676,33 @@ window.debug.mode = {
   initListeners: ContextualInput.initListeners,
   misc,
   camController,
-  primaryMenu,
+  menuController,
+  modalController,
   submenu,
 };
 
+const init = ContextualInput.initListeners;
+
 export default {
   ContextualInput,
-  init: ContextualInput.initListeners,
+  init,
   ActionType,
   misc,
   camController,
-  primaryMenu,
+  menuController,
+  modalController,
+  submenu,
+}
+
+// Why must we live just to suffer.
+// This thing of having to export twice for import convenience is bullshit.
+export {
+  ContextualInput,
+  init,
+  ActionType,
+  misc,
+  camController,
+  menuController,
+  modalController,
   submenu,
 }

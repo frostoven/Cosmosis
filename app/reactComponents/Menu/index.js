@@ -5,6 +5,8 @@ import { keySchema } from '../../local/controls';
 import CbQueue from '../../local/CbQueue';
 import GameMenu from './GameMenu';
 import Options from './Options';
+import Controls from './Controls';
+import Modal from '../Modal';
 
 const uiEmitter = getUiEmitter();
 
@@ -33,15 +35,13 @@ export default class Menu extends React.Component {
       action: null,
       keyUpCount: 0,
     };
-
-    // Delay until arrow action repeats.
-    this.repeatDelay = 500;
-    // Rate at which arrow actions repeat once the delay is met.
-    this.repeatRate = 50;
   };
 
   componentDidMount() {
     this.registerListeners();
+    this.changeMenu({
+      next: this.state.activeMenu,
+    });
   }
 
   componentWillUnmount() {
@@ -54,14 +54,14 @@ export default class Menu extends React.Component {
   }
 
   registerListeners = () => {
-    const actions = keySchema.gameMenu;
+    const actions = keySchema.menuViewer;
     for (let i = 0, len = actions.length; i < len; i++) {
       uiEmitter.on(actions[i], this.handlePress);
     }
   };
 
   deregisterListeners = () => {
-    const actions = keySchema.gameMenu;
+    const actions = keySchema.menuViewer;
     for (let i = 0, len = actions.length; i < len; i++) {
       uiEmitter.removeListener(actions[i], this.handlePress);
     }
@@ -102,8 +102,8 @@ export default class Menu extends React.Component {
     this.setKeyDelayTimeout(
       action,
       () => this.handleArrow({ action, isDown }),
-      this.repeatDelay,
-      this.repeatRate,
+      $options.repeatDelay,
+      $options.repeatRate,
     );
   };
 
@@ -112,10 +112,7 @@ export default class Menu extends React.Component {
    * @param inputInfo
    */
   sendActionToActive = (inputInfo) => {
-    const sendAction = this.inputListeners[this.state.activeMenu];
-    if (sendAction) {
-      sendAction(inputInfo);
-    }
+    this.inputListeners.notifyAllViaName(this.state.activeMenu, inputInfo);
   };
 
   setKeyDelayTimeout = (action, callback, repeatDelay, repeatRate) => {
@@ -148,14 +145,20 @@ export default class Menu extends React.Component {
   };
 
   /**
-   * Changes the menu.
-   * @param next
+   * Changes to a different menu.
+   * @param {string} next - Menu to change to.
+   * @param {boolean} [suppressNotify] - If true, menus won't be notified of
+   *   menu changes. Default is false. This is useful for overlay menus such as
+   *   modals that do not require a screen for themselves.
    */
-  changeMenu = ({ next }) => {
+  changeMenu = ({ next, suppressNotify=false }) => {
     const previous = this.state.activeMenu;
     this.setState({
-      activeMenu: next
+      activeMenu: next,
     }, () => {
+      if (suppressNotify) {
+        return;
+      }
       const { pings } = this.menuChangeListeners.notifyAll({ next, previous });
       if (pings === 0) {
         alert(`No menus are willing to accept responsibility for "${next}".`);
@@ -173,8 +176,16 @@ export default class Menu extends React.Component {
     });
   };
 
-  changeMenuFn = (next) => {
-    return () => this.changeMenu({ next });
+  /**
+   * Returns a function that changes to a different menu.
+   * @param {string} next - Menu to change to.
+   * @param {boolean} [suppressNotify] - If true, menus won't be notified of
+   *   menu changes. Default is false. This is useful for overlay menus such as
+   *   modals that do not require a screen for themselves.
+   * @returns {function(): void}
+   */
+  changeMenuFn = (next, suppressNotify=false) => {
+    return () => this.changeMenu({ next, suppressNotify });
   }
 
   render() {
@@ -191,6 +202,8 @@ export default class Menu extends React.Component {
       <div>
         <GameMenu {...props} />
         <Options {...props} />
+        <Controls {...props} />
+        <Modal {...props} />
       </div>
     );
   }
