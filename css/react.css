@@ -43,11 +43,12 @@ tr:hover {
     border: gray;
 }
 
-.primary-menu {
+.primary-menu, .secondary-menu {
     color: #fff;
     background-color: rgba(0, 0, 0, 0.56);
+    /* background-color: #ffffff2b; */ /* <- alternative colour; maybe do as gradient? */
     position: fixed;
-    z-index: 90000;
+    z-index: 900;
     top: 0;
     bottom: 0;
     left: 0;
@@ -60,15 +61,15 @@ tr:hover {
 }
 
 .ui.dropdown .divider {
-    background-color: unset;
+background-color: unset;
 }
 
 .ui.selection.visible.dropdown > .text:not(.default) {
-    color: #ffffff;
+color: #ffffff;
 }
 
 .visible.menu.transition > div {
-    border: none !important;
+border: none !important;
 }
 
 /* https://www.w3schools.com/howto/howto_css_center-vertical.asp */
@@ -86,7 +87,7 @@ tr:hover {
     text-align: center !important;
 }
 
-.game-menu-button {
+.terminal-font {
     font-family: 'IBM_VGA_8x16' !important;
     font-size: 16pt !important;
     font-weight: 100 !important;
@@ -95,7 +96,6 @@ tr:hover {
 .button-fill-parent {
     min-width: 117px;
     width: 100%;
-    /*height: 100%;*/
 }
 
 .game-menu {
@@ -105,6 +105,10 @@ tr:hover {
 .game-menu-background {
     position: fixed;
     background-color: red;
+}
+
+.secondary-menu {
+    background-color: #797979b8 !important;
 }
 
 .game-menu-back-animation {
@@ -118,4 +122,23 @@ tr:hover {
     0%{background-position:82% 0%}
     50%{background-position:19% 100%}
     100%{background-position:82% 0%}
+}
+
+.hidden-menu {
+    opacity: 0;
+}
+
+.ui.modal > .content {
+    /* TODO: this background kinda kills the button gradients. Find a fix. */
+    background: #6c6c6cc9 !important;
+}
+
+.floating-footer {
+    position: fixed;
+    background-color: red;
+    bottom: 0;
+    left: 0;
+    right: 8px; /* this gives the scrollbar space */
+    padding: 5px;
+    height: 28px;
 }

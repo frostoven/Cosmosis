@@ -7,19 +7,9 @@
  * https://stackoverflow.com/questions/4011113/can-you-add-noise-to-a-css3-gradient
  */
 .kosm-gradient-box, .kosm-gradient-box-secondary {
-    display: flex;
     align-items: center;
-    margin: auto;
-    max-width: 22em;
     position: relative;
-    padding: 16px;
     box-sizing: border-box;
-    color: #FFF;
-    background: #000;
-    background-clip: padding-box;
-    /* border: solid thin transparent; */
-    border: 2px solid transparent;
-    border-radius: 3pt;
 }
 
 .kosm-gradient-box:before, .kosm-gradient-box-secondary:before {
@@ -53,9 +43,6 @@
 
 .kosm-active-primary-button {
     background-color: #000000bf !important;
-    /*border-top-width: 2px !important;*/
-    /*border-bottom-width: 2px !important;*/
-    /*padding: 12pt;*/
 }
 
 /* TODO: figure out why we need '!important' for everything; using it for now
@@ -64,8 +51,6 @@
  */
 .kosm-inactive-primary-button {
     background-color: #0000007f !important;
-    /*border-top-width: 2px !important;*/
-    /*border-bottom-width: 2px !important;*/
     border-left: none !important;
     border-right: none !important;
 
@@ -78,7 +63,6 @@
 
 .kosm-active-secondary-button {
     border-radius: 2px !important;
-    /*background-color: #000000bf !important;*/
     background-color: #000000bf !important;
 }
 
@@ -88,8 +72,6 @@
  */
 .kosm-inactive-secondary-button {
     background-color: #00000042 !important;
-    /*border-top-width: 2px !important;*/
-    /*border-bottom-width: 2px !important;*/
     border-left: none !important;
     border-right: none !important;
 
@@ -100,18 +82,105 @@
     clip-path: inset(1px 1px -5px 1px) !important;
 }
 
+.kosm-modal-actions {
+    /* Background kills gradient orders here, too :/ */
+    /*background-color: #333333;*/
+    padding: 8px;
+    text-align: right;
+}
+
+.kosm-modal-actions > * {
+    margin: 8px !important;
+}
+
+/* Modal background. */
+.ui.modal.transition.visible.active.kosm-modal {
+    background: #333333 !important;
+}
+
 .kosm-wide {
     width: 313px;
 }
 
-.kosm-block {
+.kosm-block, .kosm-inline-block {
     margin-left: auto !important;
     margin-right: auto !important;
-    display: block !important;
     margin-bottom: 9px !important;
+}
+
+.kosm-block {
+    display: block !important;
+}
+
+.kosm-inline-block {
+    display: inline-block !important;
 }
 
 .kosm-invalid {
     color: grey;
     background-color: #ff00001c !important;
 }
+
+.kosm-collapsed-grid {
+    /* Please do not apply colour here; it messes up the button gradients */
+    /* for some reason. */
+    /*background: #00000094 !important;*/
+     margin: 0 !important;
+    padding: 18px !important;
+}
+
+.kosm-collapsed-grid .column {
+    padding: 0 !important;
+    padding-right: 2px !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+}
+
+.kosm-collapsed-grid .kosm-active-primary-button, .kosm-collapsed-grid .kosm-inactive-primary-button {
+    margin: 2px !important;
+    flex-grow: 1 !important;
+}
+
+.kosm-collapsed-grid .kosm-active-primary-button, .kosm-collapsed-grid .kosm-inactive-primary-button {
+    margin: 4px !important;
+    margin-right: 2px !important;
+}
+
+.kosm-collapsed-grid br {
+    /*clear: both !important;*/
+    content: '\A' !important;
+    display: contents !important;
+    white-space: pre !important;
+}
+
+.kosm-collapsed-grid .kosm-break {
+    /* https://tobiasahlin.com/blog/flexbox-break-to-new-row/ */
+    /* https://stackoverflow.com/questions/45087054/br-is-not-friendly-with-the-flexbox */
+    flex-basis: 100% !important;
+    height: 0 !important;
+}
+
+.kosm-btn-plus {
+    background-color: #43563a4d !important;
+}
+
+.kosm-modal {
+    z-index: 9999;
+}
+
+.kosm-statusbar, .kosm-statusbar-sub {
+    text-align: left;
+    font-weight: bold;
+}
+
+.kosm-statusbar-sub {
+    float: left;
+}
+
+.ui.page.modals.dimmer.transition.visible.active {
+    background-color: #0000002b;
+}
+ .kosm-modal input, .kosm-modal .icon.input {
+     color: white !important;
+     background-color: #333333 !important;
+ }
