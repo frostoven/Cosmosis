@@ -56,6 +56,14 @@ CbQueue.prototype.notifyAll = function notifyAll(extraData=null) {
   let pings = 0;
   for (let i = 0, len = this.listeners.length; i < len; i++) {
     const cb = this.listeners[i].cb;
+
+    // TODO: this has not actually happened, but something similar did happen
+    //  in notifyAllViaName and needs to be investigated.
+    if (!cb) {
+      console.warn('CbQueue.notifyAll: tried to notify a non-existing item.');
+      continue;
+    }
+
     if (typeof cb === 'function') {
       if (cb(extraData)) {
         pings++;
@@ -78,6 +86,14 @@ CbQueue.prototype.notifyAllViaName = function notifyAllViaName(name, extraData=n
   let pings = 0;
   for (let i = 0, len = this.listeners.length; i < len; i++) {
     const item = this.listeners[i];
+
+    // TODO: investigate why this happens. Likely because we're popping from
+    //  the queue while things are being read.
+    if (!item) {
+      console.warn('CbQueue.notifyAllViaName: tried to notify a non-existing item.');
+      continue;
+    }
+
     if (name === item.name) {
       const cb = item.cb;
       if (typeof cb === 'function') {
