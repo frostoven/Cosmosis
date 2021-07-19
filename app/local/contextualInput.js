@@ -137,6 +137,26 @@ ContextualInput.activateInstances = function(additions) {
   }
 };
 
+// Redirects all input to this listener.
+ContextualInput.rawInputListener = null;
+
+/**
+ * Sets a raw input listener. Only one raw input listener can be active at a
+ * time. This used should be used for most things; it's currently used
+ * exclusively by the controls menu to change control bindings.
+ * @param callback
+ */
+ContextualInput.setRawInputListener = function(callback) {
+  ContextualInput.rawInputListener = callback;
+};
+
+/**
+ * Remove the current rawInputListener and restored normal key functionality.
+ */
+ContextualInput.clearRawInputListener = function() {
+  ContextualInput.rawInputListener = null;
+};
+
 /**
  * Gets the mode that currently holds key exclusivity. Returns null if no modes
  * currently have exclusivity.
