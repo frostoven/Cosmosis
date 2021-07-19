@@ -587,12 +587,6 @@ ContextualInput.takeActionExclusivity = function takeActionExclusivity({ mode, a
  * Prevents all other modes from receiving input.
  */
 ContextualInput.takeFullExclusivity = function takeFullExclusivity({ mode }) {
-  // const exclusiveMode = ContextualInput.getExclusiveControlMode();
-  // if (exclusiveMode) {
-  //   throw `ContextualInput.takeFullExclusivity: '${mode}' is tying to gain ` +
-  //     `exclusive control, but '${ContextualInput._exclusiveControl}' ` +
-  //     `already has control.`;
-  // }
   console.log(`Granting exclusive key control to ${mode}.`);
   ContextualInput.setExclusiveControlMode(mode);
 
@@ -615,18 +609,13 @@ ContextualInput.takeFullExclusivity = function takeFullExclusivity({ mode }) {
  */
 ContextualInput.relinquishFullExclusivity = function relinquishFullExclusivity({ mode }) {
   const exclusiveControl = ContextualInput._exclusiveControl;
-
-  const index = exclusiveControl.indexOf(mode);
-  if (index > -1) {
-    exclusiveControl.splice(index, 1);
-    console.log(`Relinquishing exclusive key control of ${mode}.`);
+  // Loop backwards and remove the most recent mode to request exclusivity.
+  for (let i = exclusiveControl.length - 1; i > -1; i--) {
+    const entry = exclusiveControl[i];
+    if (entry === mode) {
+      return exclusiveControl.splice(i, 1);
+    }
   }
-  // else {
-  //     console.error(
-  //       `Error: cannot release control for '${mode}' because it doesn't ` +
-  //       `currently have control:`, exclusiveControl
-  //     );
-  // }
 };
 
 /**
@@ -634,7 +623,16 @@ ContextualInput.relinquishFullExclusivity = function relinquishFullExclusivity({
  * @param target
  */
 ContextualInput.disableTargetInstance = function disableTargetInstance(target) {
-  //
+  // TODO: implement me (or remove it if not needed by the time core menus are
+  //  done).
+};
+
+/**
+ * Request exclusive control over a keys that match the specified action.
+ */
+ContextualInput.takeActionExclusivity = function takeActionExclusivity({ mode, action }) {
+  // TODO: implement me (or remove it if not needed by the time core menus are
+  //  done).
 };
 
 // --------------------------------------------------------------------------
