@@ -37,6 +37,9 @@ const keySchema = {
     'down',
     'left',
     'right',
+    'delete',
+    'manageMacros',
+    'advanced',
   ],
   shipPilot: [
     'thrustInc',
