@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { getUiEmitter } from '../../emitters';
+import { getStartupEmitter, getUiEmitter, startupEvent } from '../../emitters';
 import { keySchema } from '../../local/controls';
 import CbQueue from '../../local/CbQueue';
 import GameMenu from './GameMenu';
@@ -8,6 +8,7 @@ import Options from './Options';
 import Controls from './Controls';
 import Modal from '../Modal';
 
+const startupEmitter = getStartupEmitter();
 const uiEmitter = getUiEmitter();
 
 export default class Menu extends React.Component {
@@ -38,6 +39,7 @@ export default class Menu extends React.Component {
   };
 
   componentDidMount() {
+    startupEmitter.emit(startupEvent.menuLoaded);
     this.registerListeners();
     this.changeMenu({
       next: this.state.activeMenu,

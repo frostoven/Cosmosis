@@ -36,6 +36,7 @@ export default class ControlsOverlay extends React.Component {
   }
 
   render() {
+    // return null;
     return (
       <div className='quick-controls-overlay'>
         - {getKeyBindings({ targetMode: 'allModes', targetAction: 'showKeyBindings', useFriendly: true})}: show all controls.<br/>{/* F1 */}

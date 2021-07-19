@@ -1,20 +1,24 @@
 import { addSpacesBetweenWords, toTitleCase } from './utils';
+import _ from 'lodash';
+
+// Stores the inverse of the control mapping relationships.
+let cachedInverseSchema = null;
 
 // Setting that allows the user to force assigning the same key to multiple
 // actions within the same mode.
 // It's niche, but I aim to please, baby.
-// TODO: implement me.
+// TODO: implement me. #47
 const doublePresses = {
   freeCam: [
     'tba', 'tba',
   ]
-}
+};
 
-// Contains all possible in-game actions for each game mode.
-//
-// Allows client to know what the player can configure. This is not optional
-// and is validated during integration tests. Missing keys will be printed in
-// the console.
+// Contains all possible in-game actions for each game mode. Note that the
+// keySchema is very important because it easily allows the controls menu to
+// figure it if a key is unbound, among other uses. The keySchema is validated
+// during integration tests and should always be updated prior to committing
+// new control code.
 const keySchema = {
   allModes: [
     // 'showKeyBindings',
@@ -23,11 +27,12 @@ const keySchema = {
     '_devChangeCamMode',
     'toggleMousePointer', // a.k.a. PointerLockControls.
     'toggleFullScreen',
+    'showDevConsole',
   ],
-  gameMenu: [
+  menuViewer: [
     'back',
     'select',
-    'confirmChanges',
+    'saveChanges',
     'up',
     'down',
     'left',
@@ -48,6 +53,8 @@ const keySchema = {
     'yawLeft',
     'yawRight',
     'toggleFlightAssist',
+    'cycleExternalLights',
+    'cycleInternalLights',
   ],
   freeCam: [
     'moveForward',
@@ -80,7 +87,7 @@ const keySchema = {
     'zoomIn',
     'zoomOut',
   ],
-}
+};
 
 // Use `event.code`. Easy reference: https://keycode.info/
 //
@@ -95,22 +102,30 @@ const controls = {
     // F1: 'showKeyBindings',
   },
   general: {
+    _description: 'Controls that may be activated from almost everywhere.',
     F8: '_devChangeCamMode',
+    F7: '_devChangeCamMode',
     ControlLeft: 'toggleMousePointer', // a.k.a. PointerLockControls.
     F11: 'toggleFullScreen',
+    F12: 'showDevConsole',
   },
-  gameMenu: {
+  menuViewer: {
+    _description: 'The in-game menu.',
     // Note: pressing Escape kills pointer lock. This is a browser security
     // thing and (as far as I know) can't be overridden. May as well run with
     // it and design the UI accordingly.
     Escape: 'back',
     Backspace: 'back',
     Enter: 'select',
-    F10: 'confirmChanges',
     ArrowUp: 'up',
     ArrowDown: 'down',
     ArrowLeft: 'left',
     ArrowRight: 'right',
+    /* Controls menu */
+    Delete: 'delete',
+    F2: 'manageMacros',
+    F3: 'advanced',
+    F10: 'saveChanges',
   },
   shipPilot: {
     _description: 'Mode used when user is locked to seat.',
@@ -130,9 +145,11 @@ const controls = {
     spWest: 'yawLeft',
     spEast: 'yawRight',
     KeyZ: 'toggleFlightAssist',
+    KeyL: 'cycleInternalLights',
+    Numpad0: 'cycleExternalLights',
   },
   freeCam: {
-    _description: 'Free flying camera (press F8 to activate)',
+    _description: 'Free flying camera (press F8 to activate).',
     KeyW: 'moveForward',
     ArrowUp: 'moveForward',
     KeyS: 'moveBackward',
@@ -161,7 +178,7 @@ const controls = {
     spEast: 'yawRight',
   },
   godCam: {
-    _description: 'Celestial god cam',
+    _description: 'Celestial god cam.',
     spNorth: 'pitchUp',
     spSouth: 'pitchDown',
     spWest: 'yawLeft',
@@ -169,6 +186,39 @@ const controls = {
     spScrollUp : 'zoomIn',
     spScrollDown: 'zoomOut',
   }
+};
+
+const metadata = {
+  allModes: {
+    // This became almost entirely redundant after general was added.
+    // TODO: consider removing allModes. Note that it's the only way to share
+    //  unique action names between modes, so we might still find a use for it.
+    description: 'Keys inherited by multiple modes.',
+  },
+  general: {
+    description: 'Controls that may be activated from almost everywhere.',
+  },
+  menuViewer: {
+    description: 'The in-game menu.',
+    displayName: 'menu',
+    // TODO: implement this. If binding a control would leave a required
+    //  control with zero bindings, refuse to continue with this message:
+    //  Error
+    //  Setting this would leave [action] with no bindings. Doing that will
+    //   render the game unusable. Please add additional bindings to [action]
+    //   to set this binding to [key].
+    requiredControls: [ 'select' ],
+  },
+  shipPilot: {
+    description: 'Mode used when user is locked to seat.',
+  },
+  freeCam: {
+    // TODO: remove the F8 text once it becomes an independent feature.
+    description: 'Free flying camera (press F8 to activate).',
+  },
+  godCam: {
+    description: 'Celestial god cam',
+  },
 };
 
 /**
@@ -205,6 +255,55 @@ const friendlierKeyName = {
   'spScrollUp': 'Mouse scroll up',
   'spScrollDown': 'Mouse scroll down',
 };
+
+/**
+ * Produces an object that returns controls as an 'action=["Key1", "Key2"]'
+ * structure. Returns metadata as a separate object.
+ * @param {boolean} [invalidateCache] - If true, rebuilds the inverse schema.
+ * @returns {{metaData: {}, inverseActionSchema: {}}}
+ */
+function getInverseSchema(invalidateCache=false) {
+  if (invalidateCache) {
+    cachedInverseSchema = null;
+  }
+  if (cachedInverseSchema) {
+    return cachedInverseSchema;
+  }
+  const metaData = {};
+  const inverseActionSchema = {};
+  _.each(controls, (section, sectionName) => {
+    _.each(section, (action, control) => {
+      // Controls starting with underscores are not controls, but rather
+      // metadata. Save, and then skip.
+      if (control.charAt(0) === '_') {
+        if (!metaData[sectionName]) {
+          metaData[sectionName] = {};
+        }
+        metaData[sectionName][control] = action;
+        return;
+      }
+
+      // Ensure we can nest our controls by creating the appropriate
+      // structures.
+      if (!inverseActionSchema[sectionName]) {
+        inverseActionSchema[sectionName] = {};
+      }
+      if (!inverseActionSchema[sectionName][action]) {
+        inverseActionSchema[sectionName][action] = [];
+      }
+
+      // Save the control.
+      inverseActionSchema[sectionName][action].push(control);
+    });
+  });
+
+  cachedInverseSchema = { metaData, inverseActionSchema };
+  return cachedInverseSchema;
+}
+
+function invalidateInverseSchemaCache() {
+  cachedInverseSchema = null;
+}
 
 /**
  * Converts a keymap name to a friendlier name that can be displayed to the
@@ -317,4 +416,6 @@ export {
   controls,
   keySchema,
   keymapFriendlyName,
+  getInverseSchema,
+  invalidateInverseSchemaCache,
 };

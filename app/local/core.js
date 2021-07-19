@@ -16,9 +16,10 @@ import physics from './physics';
 import res from './AssetFinder';
 import { createSpaceShip } from '../levelLogic/spaceShipLoader';
 import { PointerLockControls } from './PointerLockControls';
-import { startupEvent, getStartupEmitter, getUiEmitter } from '../emitters';
+import { startupEvent, getStartupEmitter } from '../emitters';
 
 import contextualInput from './contextualInput';
+import { preBootPlaceholder } from '../reactComponents/Modal';
 
 const gameFont = 'node_modules/three/examples/fonts/helvetiker_regular.typeface.json';
 
@@ -73,6 +74,10 @@ window.$options = {
   hudDetailLevel: 0,
   // 0=x, 1=y
   mouseSpeed: [0.3 , 0.3],
+  // Delay until arrow action repeats.
+  repeatDelay: 500,
+  // Rate at which arrow actions repeat once repeatDelay is met.
+  repeatRate: 50,
 };
 window.$displayOptions = {
   // Rendering resolution scale. Great for developers and wood PCs alike.
@@ -84,10 +89,14 @@ window.$displayOptions = {
   // dynamically if different per machine. Warn player the frame limiting causes
   // a known ~9% drop.
   fpsLimit: 30 * 1.09,
-}
+};
 window.$rendererParams = {
   antialias: true,
-}
+};
+// The preBootPlaceholder stores functions that match the actual model object.
+// Calling those functions queue them as requests. Once the menu system has
+// booted, all requests are then honored as the actual modal functions.
+window.$modal = preBootPlaceholder;
 
 /* =================================
  * End global vars
@@ -158,6 +167,7 @@ function registerRenderHook(actionInfo={}) {
   cachedRenderHooks.push(actionInfo);
 }
 
+// TODO: check if this is still needed.
 function registerGlobalAction({ action, item }) {
   actions[action] = item;
 }
@@ -296,7 +306,7 @@ function initView({ scene }) {
         scene.background = renderTarget;
         startupEmitter.emit(startupEvent.skyBoxLoaded);
       });
-  })
+  });
 
   const spaceWorld = physics.initSpacePhysics({ scene, debug: true });
   const group = new THREE.Group();

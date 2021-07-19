@@ -14,6 +14,16 @@ export default class MenuNavigation extends React.Component {
     onUnhandledInput: PropTypes.func,
     activeClass: PropTypes.string,
     recursive: PropTypes.bool,
+    // Render prop. Used in multi-nav setups.
+    setActiveGroup: PropTypes.func,
+    // Used by render props in multi-nav setups.
+    restrictToGroup: PropTypes.oneOfType([ PropTypes.number, PropTypes.string ]),
+    // Completely disabled input.
+    disable: PropTypes.bool,
+    // Completely stops all input, including that passed back to the parent.
+    // Still sends escape.
+    // TODO: probably delete this
+    suspendAllInput: PropTypes.bool,
     children: PropTypes.any,
   };
 
@@ -22,6 +32,12 @@ export default class MenuNavigation extends React.Component {
     onUnhandledInput: ()=>{},
     activeClass: null,
     recursive: true,
+    // Render prop. Used in multi-nav setups.
+    setActiveGroup: null,
+    // Render prop. Used in multi-nav setups.
+    restrictToGroup: null,
+    disable: false,
+    suspendAllInput: false,
   };
 
   static defaultState = {
@@ -52,12 +68,31 @@ export default class MenuNavigation extends React.Component {
 
   // Note: the up/down mode and left/right mode are mutually exclusive.
   handleAction = (inputInfo) => {
+    if (this.props.suspendAllInput) {
+      // Completely cock block everything except exiting out.
+      if (inputInfo.action === 'back') {
+        this.props.onUnhandledInput(inputInfo);
+      }
+      return;
+    }
+
+    if (this.props.disable) {
+      // Send all input to parent.
+      this.props.onUnhandledInput(inputInfo);
+    }
+
     const { action } = inputInfo;
     const { activeItem } = this.state;
     const { UpDown, LeftRight } = MenuNavigation.direction;
 
     const isUpDown = this.props.direction === UpDown;
     const isLeftRight = this.props.direction === LeftRight;
+
+    if (activeItem >= this.listLength) {
+      // This can happen if the component inherits old state from a previous
+      // render.
+      return this.setState({ activeItem: this.listLength - 1 });
+    }
 
     if ((isUpDown && action === 'up') || (isLeftRight && action === 'left')) {
       if (activeItem > 0) {
@@ -77,10 +112,6 @@ export default class MenuNavigation extends React.Component {
     }
   };
 
-  handleBack = () => {
-    this.props.changeMenu({ next: 'game menu' });
-  };
-
   handleSelect = ({ action }) => {
     if (this.activeChildCallback) {
       this.activeChildCallback({ action });
@@ -94,6 +125,7 @@ export default class MenuNavigation extends React.Component {
    * @param child
    */
   addActiveItemFlag = ({ props, child }) => {
+    // console.log('[MenuNavigation] Marking [', child.props.children, '] active.');
     if (this.props.activeClass) {
       props.className = child.props.className || '';
       props.className = `${props.className} ${this.props.activeClass}`;
@@ -105,13 +137,28 @@ export default class MenuNavigation extends React.Component {
 
   makeChildrenSelectable = ({ children }) => {
     return React.Children.map(children, child => {
-      const { activeItem } = this.state;
+      let { activeItem } = this.state;
+
+      if (child.type === MenuNavigation) {
+        // Leave child MenuNavigation components to do their own thing.
+        return child;
+      }
+
       if (React.isValidElement(child)) {
+        const restrictToGroup = this.props.restrictToGroup;
+        let childSelectable = child.props.selectable;
+        if (restrictToGroup && child.props.group !== restrictToGroup) {
+          childSelectable = false;
+        }
+
         const props = {};
-        if (child.props.selectable) {
+        if (childSelectable) {
           if (this.listLength === activeItem) {
             this.addActiveItemFlag({ props, child });
             this.activeChildCallback = child.props.onClick;
+            if (this.props.setActiveGroup) {
+              this.props.setActiveGroup(child.props.group);
+            }
           }
           this.listLength++;
         }
@@ -138,8 +185,10 @@ export default class MenuNavigation extends React.Component {
 
   render() {
     if (!this.props.children) {
+      console.warn('MenuNavigation received no children.');
       return null;
     }
+
     // Extract components from this.props.children so that we may add more
     // props to them.
     this.listLength = 0;

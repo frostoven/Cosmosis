@@ -11,8 +11,6 @@ export default class Options extends React.Component {
   static propTypes = defaultMenuPropTypes;
   static defaultProps = defaultMenuProps;
   static defaultState = {
-    activeItem: 0,
-    select: false,
     isVisible: false,
   };
 
@@ -31,6 +29,13 @@ export default class Options extends React.Component {
     this.props.deregisterMenuChangeListener({
       onChange: this.handleMenuChange,
     });
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    if (!this.state.isVisible && !nextState.isVisible) {
+      return false;
+    }
+    return true;
   }
 
   handleMenuChange = ({ next, previous }) => {
@@ -59,8 +64,6 @@ export default class Options extends React.Component {
     }
   };
 
-  underConstruction = () => () => { console.log('under construction.') };
-
   render() {
     const changeMenuFn = this.props.changeMenuFn;
     const animation = this.getAnimation();
@@ -85,7 +88,7 @@ export default class Options extends React.Component {
         <div className='game-menu vertical-center horizontal-center'>
           <MenuNavigation {...inputProps}>
             <h1>{capitaliseEachWord(thisMenu)}</h1>
-            <Button {...btnProps} invalid onClick={changeMenuFn('controls')}>Controls</Button>
+            <Button {...btnProps} onClick={changeMenuFn('controls')}>Controls</Button>
             <Button {...btnProps} invalid onClick={changeMenuFn('graphics')}>Graphics</Button>
             <Button {...btnProps} invalid onClick={changeMenuFn('audio')}>Audio</Button>
             <Button {...btnProps} invalid onClick={changeMenuFn('customisation')}>Customisation</Button>
