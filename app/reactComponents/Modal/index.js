@@ -27,6 +27,7 @@ function queueMessage({ type, args }) {
 
 // Store modal requests until Modal has mounted.
 export const preBootPlaceholder = {
+  show: function() { queueMessage({ type: 'show', args: arguments }) },
   alert: function() { queueMessage({ type: 'alert', args: arguments }) },
   confirm: function() { queueMessage({ type: 'confirm', args: arguments }) },
   prompt:  function() { queueMessage({ type: 'prompt', args: arguments }) },
@@ -62,15 +63,16 @@ export default class Modal extends React.Component {
 
   static defaultState = {
     isVisible: false,
-    header: '',
-    content: '',
-    action: '',
+    modalCount: 0,
+    currentClosedCount: 0,
+    highestRecentCount: 0,
   };
 
   constructor(props) {
     super(props);
     this.state = Modal.defaultState;
     this.currentMenu = null;
+    this.modalQueue = [];
   }
 
   componentDidMount() {
@@ -79,6 +81,7 @@ export default class Modal extends React.Component {
     });
 
     window.$modal = {
+      show: this.show,
       alert: this.alert,
       confirm: this.confirm,
       prompt: this.prompt,
@@ -104,28 +107,49 @@ export default class Modal extends React.Component {
     });
     // This allows us to receive input without closing existing menus.
     this.props.changeMenu({ next: thisMenu, suppressNotify: true });
-  }
+  };
 
   deactivateModal = () => {
-    // Reset modal to initial state.
-    this.setState(Modal.defaultState);
-    // Give input control back to open menu.
-    this.props.changeMenu({
-      next: this.currentMenu,
-      suppressNotify: true,
-    });
-  }
+    this.modalQueue.shift();
+    if (!this.modalQueue.length) {
+      // Reset modal to initial state.
+      this.setState({
+        isVisible: false,
+        currentClosedCount: 0,
+        highestRecentCount: 0,
+      });
+      // Give input control back to open menu.
+      this.props.changeMenu({
+        next: this.currentMenu,
+        suppressNotify: true,
+      });
+    }
+    else {
+      this.setState({
+        modalCount: this.modalQueue.length,
+        currentClosedCount: this.state.currentClosedCount + 1,
+      });
+    }
+  };
 
   /**
    * Creates a modal based on the specified options.
    * @param {string|object} options
-   * @param {string|JSX.Element} options.header
-   * @param {string|JSX.Element} options.body
-   * @param {undefined|JSX.Element} options.actions
+   * @param {string|JSX.Element} options.header - Title at top of dialog.
+   * @param {string|JSX.Element} options.body - The core content.
+   * @param {undefined|JSX.Element} options.actions - Div containing buttons or status info.
+   * @param {boolean} [options.unskippable] - If true, dialog cannot be skipped. Avoid where possible.
+   * @param {boolean} [options.prioritise] - If true, pushes the dialog to the front. Avoid where possible.
    * @param {undefined|function} options.callback
    * @returns {Modal}
    */
-  show = ({ header='Message', body='', actions, callback=()=>{} }) => {
+  show = (
+    {
+      header='Message', body='', actions,
+      unskippable=false, prioritise=false,
+      callback=()=>{}
+    }
+  ) => {
     if (!actions) {
       actions = (
         <Button selectable onClick={() => this.deactivateModal()}>
@@ -135,10 +159,21 @@ export default class Modal extends React.Component {
     }
 
     this.activateModal();
+
+    const options = {
+      header, body, actions, unskippable, prioritise,
+    };
+
+    if (prioritise) {
+      this.modalQueue.unshift(options);
+    }
+    else {
+      this.modalQueue.push(options);
+    }
+
     this.setState({
-      header: <SemanticModal.Header>{header}</SemanticModal.Header>,
-      content: <SemanticModal.Content>{body}</SemanticModal.Content>,
-      actions: <div className='kosm-modal-actions'>{actions}</div>,
+      modalCount: this.modalQueue.length - 1,
+      highestRecentCount: this.state.highestRecentCount + 1,
     });
 
     return this;
@@ -237,15 +272,21 @@ export default class Modal extends React.Component {
       options.callback = () => console.warn('No callbacks passed to confirm.');
     }
 
+    // Block input for everything else.
     contextualInput.ContextualInput.takeFullExclusivity({ mode: 'menuViewer' });
+    // Allow browser to respond to events - means we don't have to worry about
+    // how text gets into the input.
+    contextualInput.ContextualInput.enableBubbling();
+    // Prevent backspace from exiting our dialog.
     contextualInput.ContextualInput.blockAction({ action: 'back' });
     if (!options.actions) {
       const onClick = (text) => {
         this.deactivateModal();
         contextualInput.ContextualInput.relinquishFullExclusivity({ mode: 'menuViewer' });
         contextualInput.ContextualInput.unblockAction({ action: 'back' });
+        contextualInput.ContextualInput.disableBubbling();
         options.callback(text);
-      }
+      };
       options.actions = (
         <>
           <Button selectable onClick={() => onClick(recordedText)}>
@@ -276,19 +317,52 @@ export default class Modal extends React.Component {
     }
   };
 
+  /**
+   * Changes the contents of the modal currently visible.
+   * @param modalOptions
+   */
+  modifyModal = (modalOptions) => {
+    if (!this.modalQueue.length) {
+      return;
+    }
+    this.modalQueue[0] = modalOptions;
+    this.forceUpdate();
+  };
+
   render() {
+    const activeModal = this.modalQueue[0] || {};
+
+    const modalCount = this.modalQueue.length;
+    let modalCountText = '';
+    const { currentClosedCount, highestRecentCount } = this.state;
+    if (modalCount > 1 || currentClosedCount > 0) {
+      modalCountText = `(${currentClosedCount + 1}/${highestRecentCount}) `;
+    }
+
     const animation = this.getAnimation();
     return (
       <SemanticModal
         className={`kosm-modal ${animation}`}
-        open={!!this.state.content}
+        open={!!this.modalQueue.length}
       >
-        {this.state.header}
-        {/*<MenuNavigation {...this.props}>*/}
-          {this.state.content}
-        {/*</MenuNavigation>*/}
-        <MenuNavigation {...this.props} identifier={thisMenu} onUnhandledInput={this.handleInput} direction={MenuNavigation.direction.LeftRight}>
-          {this.state.actions}
+        <SemanticModal.Header>
+          {modalCountText}
+          {activeModal.header}
+        </SemanticModal.Header>
+        <SemanticModal.Content>
+          {/*<MenuNavigation {...this.props}>*/}
+            {activeModal.body}
+          {/*</MenuNavigation>*/}
+        </SemanticModal.Content>
+        <MenuNavigation
+          {...this.props}
+          identifier={thisMenu}
+          onUnhandledInput={this.handleInput}
+          direction={MenuNavigation.direction.LeftRight}
+        >
+          <div className='kosm-modal-actions'>
+            {activeModal.actions}
+          </div>
         </MenuNavigation>
       </SemanticModal>
     );
