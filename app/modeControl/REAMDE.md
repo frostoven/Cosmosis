@@ -33,7 +33,7 @@ There are several pre-prepared mode instances in contextualInput. When we
 define, say, freeCam and shipPilot in modeControl, we enrol them in the same
 mode instance (contextualInput.camController). Doing so guarantees they are
 mutually exclusive. We then create gameMenu in a different mode instance
-(contextualInput.primaryMenu). Because primaryMenu and camController are
+(contextualInput.menuController). Because menuController and camController are
 separate contextualInput mode instances, they are independent of one another
 and can receive input simultaneously, allowing the player to multitask them.
 

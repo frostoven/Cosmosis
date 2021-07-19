@@ -10,6 +10,8 @@ const startupEmitter = new CachedEmitter({ rememberPastEvents: true });
 // trigger last.
 // TODO: add on camControllerReady.
 export const startupEvent = {
+  /* Game menu component has mounted. */
+  menuLoaded: startupEmitter.nextEnum(),
   /** Includes things like the camera and scene (basically $game itself). */
   gameViewReady: startupEmitter.nextEnum(),
   /** The first animation() frame has been rendered. */
@@ -34,6 +36,7 @@ const uiEmitter = new EventEmitter();
  * TODO: rename startupEmitter. Unlike uiEmitter, startupEmitter results are
  *  cached. uiEmitter on the other hand is not. The naming needs to clearly
  *  reflect this somehow.
+ *  Candidate name: startupChecklist
  * @type {CachedEmitter}
  */
 export function getStartupEmitter() {

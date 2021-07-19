@@ -2,7 +2,7 @@
 import general from './misc/general';
 
 // UI controllers.
-import gameMenu from './uiControllers/gameMenu';
+import menuViewer from './reactControllers/menuViewer';
 
 // Player camera controllers.
 import shipPilot from './cameraControllers/shipPilot';
@@ -11,7 +11,7 @@ import godCam from './cameraControllers/godCam';
 
 function initAll() {
   general.init();
-  gameMenu.init();
+  menuViewer.init();
   shipPilot.init();
   freeCam.init();
   godCam.init();

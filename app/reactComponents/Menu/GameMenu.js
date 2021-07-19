@@ -29,7 +29,6 @@ const menuButtons = [
 ];
 
 // TODO: check if there's an easy algorithmic way of doing this.
-//  [SAME ISSUE AS MENU BUTTONS TASK]
 /**
  * Used to indicate which button should be selected if the user presses an
  * arrow key.
@@ -78,7 +77,7 @@ export default class GameMenu extends React.Component {
   handleAction = ({ action }) => {
     switch (action) {
       case 'back':
-        return this.handleBack()
+        return this.handleBack();
       case 'up':
       case 'down':
       case 'left':
@@ -96,7 +95,7 @@ export default class GameMenu extends React.Component {
     else {
       this.showMenu();
     }
-  }
+  };
 
   handleSelect = () => {
     this.changeMenuFn(this.state.activeButton)();
@@ -163,7 +162,7 @@ export default class GameMenu extends React.Component {
       buttonMap[name] = this.genButton(name, this.changeMenuFn(name))
     });
     return buttonMap;
-  }
+  };
 
   /**
    * @param {string} key
@@ -214,23 +213,30 @@ export default class GameMenu extends React.Component {
       allRows.push(this.genRow(`row${row++}`, compiledRow));
     });
     return allRows;
-  }
+  };
 
-  getAnimation = (reverse=false) => {
+  getAnimation = () => {
     const { isVisible, currentMenu, previousMenu } = this.state;
+    // console.log(`=> GameMenu isVisible=${isVisible}, currentMenu=${currentMenu}, previousMenu=${previousMenu}`)
+    let transitioningFromFirstLevelChild = !!directionConfig[previousMenu];
+    let reverse = false;
+    if (currentMenu === thisMenu && transitioningFromFirstLevelChild) {
+      reverse = true;
+    }
 
     if (currentMenu === thisMenu && previousMenu === thisMenu) {
       if (isVisible) {
-        // User likely opened menu from gameplay.
+        // User opened menu from gameplay.
         return 'fadeInDown'
       }
       else {
-        // User is likely exiting back to gameplay.
+        // User is either exiting back to gameplay, or game has just loaded.
         return 'fadeOutDown';
       }
     }
-    else {
-      // User is moving from one menu to another.
+    else if (previousMenu === thisMenu || reverse) {
+      // User is moving from this menu to another menu.
+      // Or, if 'reverse' is true, use is moving here from a child menu.
       switch (currentMenu) {
         // TODO: if we can manage to algorithmically generate directionConfig
         //  in future, then we can likely remove block and generate this too.
@@ -256,6 +262,10 @@ export default class GameMenu extends React.Component {
           if (reverse) return 'fadeOutDownBig';
           else return 'fadeOutUpBig';
       }
+    }
+    else {
+      // User is transitioning from one child menu to another child menu.
+      return 'hidden-menu';
     }
   };
 

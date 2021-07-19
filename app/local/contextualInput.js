@@ -66,6 +66,68 @@ const ActionType = {
 // readability and organisational purposes more than anything else.
 ActionType.keyPress = ActionType.keyDown;
 
+/**
+ * @param {number} x
+ * @param {number} y
+ * @param {AnalogSource} source
+ */
+function calculateAnalogData(x, y, source) {
+  let prevX = source === AnalogSource.mouse ? prevMouseX : prevControllerX;
+  let prevY = source === AnalogSource.mouse ? prevMouseY : prevControllerY;
+
+  let deltaX = x - prevX;
+  let deltaY = y - prevY;
+
+  let results = {
+    x: {
+      // key: set below.
+      delta: x, invDelta: y,
+      gravDelta: deltaX, gravInvDelta: deltaY,
+    },
+    y: {
+      // key: set below.
+      delta: y, invDelta: x,
+      gravDelta: deltaY, gravInvDelta: deltaX,
+    },
+  };
+
+  // Below: sp means 'special'. Or 'somewhat promiscuous'. Whatever. Used to
+  // indicate the 'key' is non-standard.
+  if (x > prevX) { results.x.key = 'spEast'; }
+  else if (x < prevX) { results.x.key = 'spWest'; }
+
+  if (y > prevY) { results.y.key = 'spSouth'; }
+  else if (y < prevY) { results.y.key = 'spNorth'; }
+
+  if (source === AnalogSource.mouse) {
+    prevMouseX = x;
+    prevMouseY = y;
+  }
+  else {
+    prevControllerX = x;
+    prevControllerY = y;
+  }
+
+  return results;
+}
+
+/**
+ * Returns spScrollDown or spScrollUp. Returns null if delta is 0.
+ * @param {number} deltaY
+ * @returns {string|null}
+ */
+function keyFromWheelDelta(deltaY) {
+  if (deltaY === 0){
+    return null;
+  } else if (deltaY > 0) {
+    // Scrolling down.
+    return 'spScrollDown';
+  } else {
+    // Scrolling up.
+    return 'spScrollUp';
+  }
+}
+
 // --------------------------------------------------------------------------
 
 /**
@@ -105,19 +167,10 @@ ContextualInput._reservedChildIds = {};
 // Used internally to store action callbacks.
 ContextualInput._listeners = {};
 // Actions that currently cannot be performed.
-ContextualInput.blockedActions = {};
-
-ContextualInput.initListeners = function() {
-  const listener = ContextualInput.universalEventListener;
-  window.addEventListener('keydown', listener);
-  window.addEventListener('keyup', listener);
-  window.addEventListener('mousedown', listener, false);
-  window.addEventListener('mouseup', listener, false);
-  window.addEventListener('wheel', listener, false);
-  window.addEventListener('mousemove', listener, false);
-  window.addEventListener('pointerlockchange', listener, false);
-};
-
+ContextualInput._blockedActions = {};
+// Allow browser to react to browser events. These normally mess with the game,
+// but is useful for things like text inputs.
+ContextualInput._allowBubbling = false;
 /**
  * String containing a mode names. If it contains names, the mode matching the
  * last element will receive key input. No other modes will receive input. If
@@ -126,6 +179,19 @@ ContextualInput.initListeners = function() {
  * @private
  */
 ContextualInput._exclusiveControl = [];
+
+ContextualInput.initListeners = function() {
+  const listener = ContextualInput.universalEventListener;
+  window.addEventListener('keydown', listener);
+  window.addEventListener('keyup', listener);
+  window.addEventListener('mousedown', listener, false);
+  window.addEventListener('mouseup', listener, false);
+  // Note: we can add { passive: false } in future if we want to preventDefault
+  // in scrolling.
+  window.addEventListener('wheel', listener, false);
+  window.addEventListener('mousemove', listener, false);
+  window.addEventListener('pointerlockchange', listener, false);
+};
 
 ContextualInput.activateInstances = function(additions) {
   const instances = ContextualInput._activeInstances;
@@ -201,10 +267,10 @@ ContextualInput.prototype.takeControl = ContextualInput.prototype.giveControlTo;
 
 ContextualInput.prototype.getActiveMode = function getActiveMode() {
   return this._activeChild;
-}
+};
 
 /**
- * Signalled when a mode is changed to a different reality controller.
+ * Signalled when a mode is changed to a different mode controller.
  * @param callback
  */
 ContextualInput.prototype.onControlChange = function onControlChange(callback) {
@@ -216,10 +282,11 @@ ContextualInput.prototype.removeControlListener = function removeControlListener
 };
 
 /**
- * Signalled when a mode is changed to a different reality controller.
+ * Signalled when a mode is changed to a different mode controller.
+ * TODO: check if this is still needed. Might need to remove.
  * @param callback
  */
-ContextualInput.prototype.onGloablControlChange = function onGloablControlChange(callback) {
+ContextualInput.prototype.onGlobalControlChange = function onGlobalControlChange(callback) {
   this._globalControlListeners.register(callback);
 };
 
@@ -294,6 +361,8 @@ ContextualInput.prototype.onActions = function onModeAction(
  * Intended to be used by external function for convenience, ex. from the API.
  * @param action
  * @param analogData
+ * @param isDown
+ * @param forceNotify
  */
 ContextualInput.triggerAction = function triggerAction(
   { action, analogData, isDown=true, forceNotify=false }
@@ -320,10 +389,10 @@ ContextualInput.triggerAction = function triggerAction(
 };
 
 /**
- * @returns {boolean} True if a valid target was found, false oherwise.
+ * @returns {boolean} True if a valid target was found, false otherwise.
  */
 ContextualInput.notifyMode = function notifyMode({ action, isDown, analogData, modeInst, noImplWarn, forceNotify=false }) {
-  if (ContextualInput.blockedActions[action]) {
+  if (ContextualInput._blockedActions[action]) {
     // Break out if action has been blocked.
     return false;
   }
@@ -370,13 +439,6 @@ ContextualInput.notifyMode = function notifyMode({ action, isDown, analogData, m
     return true;
   }
   else if (!noImplWarn) {
-    // DELETEME
-    // if (modeActiveChild === 'modal') {
-    //   // Hack employed to make modal piggyback of menuViewer while still being
-    //   // a separate mode. TODO: We should probably completely separate it.
-    //   return false;
-    // }
-
     // Listener for controls.
     const message = `'${modeName}.${modeActiveChild}.${action}'`;
     // This ensures we don't spam the console.
@@ -414,6 +476,11 @@ ContextualInput.notifyOfInput = function notifyOfInput({ key, isDown, analogData
 };
 
 ContextualInput.propagateInput = function propagateInput({ key, isDown, analogData }) {
+  if (ContextualInput.rawInputListener) {
+    // If a rawInputListener is set, send all input there instead.
+    return ContextualInput.rawInputListener({ key, isDown, analogData });
+  }
+
   const activeInstances = ContextualInput._activeInstances;
   const activeInstKeys = Object.keys(ContextualInput._activeInstances);
 
@@ -429,49 +496,19 @@ ContextualInput.propagateInput = function propagateInput({ key, isDown, analogDa
 };
 
 /**
- * @param {number} x
- * @param {number} y
- * @param {AnalogSource} source
+ * Allow browser to react to browser events. These normally mess with the game,
+ * but is useful for things like text inputs.
  */
-function calculateAnalogData(x, y, source) {
-  let prevX = source === AnalogSource.mouse ? prevMouseX : prevControllerX;
-  let prevY = source === AnalogSource.mouse ? prevMouseY : prevControllerY;
+ContextualInput.enableBubbling = function enableBubbling() {
+  ContextualInput._allowBubbling = true;
+};
 
-  let deltaX = x - prevX;
-  let deltaY = y - prevY;
-
-  let results = {
-    x: {
-      // key: set below.
-      delta: x, invDelta: y,
-      gravDelta: deltaX, gravInvDelta: deltaY,
-    },
-    y: {
-      // key: set below.
-      delta: y, invDelta: x,
-      gravDelta: deltaY, gravInvDelta: deltaX,
-    },
-  };
-
-  // Below: sp means 'special'. Or 'somewhat promiscuous'. Whatever. Used to
-  // indicate the 'key' is non-standard.
-  if (x > prevX) { results.x.key = 'spEast'; }
-  else if (x < prevX) { results.x.key = 'spWest'; }
-
-  if (y > prevY) { results.y.key = 'spSouth'; }
-  else if (y < prevY) { results.y.key = 'spNorth'; }
-
-  if (source === AnalogSource.mouse) {
-    prevMouseX = x;
-    prevMouseY = y;
-  }
-  else {
-    prevControllerX = x;
-    prevControllerY = y;
-  }
-
-  return results;
-}
+/**
+ * Disables event bubbling. Off by default.
+ */
+ContextualInput.disableBubbling = function disableBubbling() {
+  ContextualInput._allowBubbling = false;
+};
 
 /**
  * Receives any/all browser input and translates those into simple 'action x
@@ -484,6 +521,21 @@ ContextualInput.universalEventListener = function(event) {
   // (sp is short for 'special').
   let key = event.code;
 
+  const type = event.type;
+
+  // Stop the browser messing with anything game related. This prevent bugs
+  // like arrows unintentionally scrolling the page. Bubbling is generally only
+  // enabled when a dialog with an input field takes priority. Wheel throws
+  // error unless passive is set (which currently is unhelpful) so we skip
+  // wheel.
+  if (!ContextualInput._allowBubbling && type !== 'wheel') {
+    // We need to check if truthy because pointerLock doesn't implement
+    // preventDefault.
+    if (event.preventDefault) {
+      event.preventDefault();
+    }
+  }
+
   let isDown = true;
   // If true, a button will never signal a key up. This is a requirement for
   // mouse wheel scrolls.
@@ -491,13 +543,12 @@ ContextualInput.universalEventListener = function(event) {
   // This never trigger key up signals and are handled separately.
   let analogData = null;
 
-  switch (event.type) {
+  switch (type) {
     case 'keypress':
     case 'click':
       // Don't use built-in presses as they don't fire for all possible keys.
       // https://developer.mozilla.org/en-US/docs/Web/API/Document/keydown_event
       // Luckily, manually dealing with keypresses are easy anyway.
-      return;
     case 'mousemove':
       if (!$game.ptrLockControls || !$game.ptrLockControls.isPointerLocked) {
         // Ignore mouse if pointer is being used by menu.
@@ -519,7 +570,7 @@ ContextualInput.universalEventListener = function(event) {
     case 'wheel':
       // Note: a wheel scroll is always classed as a press.
       isNeverHeld = true;
-      key = keyFromWheelDelta(event.deltaY)
+      key = keyFromWheelDelta(event.deltaY);
       if (!key) {
         // TODO: check if returning out after zero is bad thing. Maybe we need it for resets.
         return;
@@ -558,49 +609,21 @@ ContextualInput.universalEventListener = function(event) {
       ContextualInput.propagateInput({ key: key, isDown: false });
     }
   }
-}
-
-/**
- * Returns spScrollDown or spScrollUp. Returns null if delta is 0.
- * @param {number} deltaY
- * @returns {string|null}
- */
-function keyFromWheelDelta(deltaY) {
-  if (deltaY === 0){
-    return null;
-  } else if (deltaY > 0) {
-    // Scrolling down.
-    return 'spScrollDown';
-  } else {
-    // Scrolling up.
-    return 'spScrollUp';
-  }
-}
-
-// ---- TODO: implement these 4 functions -----------------------------------
-
-// bookm
+};
 
 /**
  * Specified action will be ignored entirely; no modes will receive them at
  * all.
  */
 ContextualInput.blockAction = function blockAction({ action }) {
-  ContextualInput.blockedActions[action] = true;
+  ContextualInput._blockedActions[action] = true;
 };
 
 /**
  * Unblocks a previously blocked action.
  */
 ContextualInput.unblockAction = function blockAction({ action }) {
-  delete ContextualInput.blockedActions[action];
-};
-
-/**
- * Request exclusive control over a keys that match the specified action.
- */
-ContextualInput.takeActionExclusivity = function takeActionExclusivity({ mode, action }) {
-  //
+  delete ContextualInput._blockedActions[action];
 };
 
 /**
@@ -666,13 +689,6 @@ const misc = new ContextualInput('misc');
 // The main menu, the pause menu, and inventory screen are primary menus.
 const menuController = new ContextualInput('menuController');
 
-//
-const modalController = new ContextualInput('modalController');
-
-// TODO: make primary and secondary mutually exclusive? (probably, yes.)
-// Any menu opened as a child of another menu is a submenu.
-const submenu = new ContextualInput('submenu');
-
 // Interactive in-game menu (such as menus of space ships and computers).
 const virtualMenu = new ContextualInput('virtualMenu');
 
@@ -684,8 +700,6 @@ ContextualInput.activateInstances([
   misc,
   camController,
   menuController,
-  modalController,
-  submenu,
   virtualMenu,
 ]);
 
@@ -695,8 +709,6 @@ window.debug.mode = {
   misc,
   camController,
   menuController,
-  modalController,
-  submenu,
 };
 
 const init = ContextualInput.initListeners;
@@ -708,12 +720,12 @@ export default {
   misc,
   camController,
   menuController,
-  modalController,
-  submenu,
 }
 
 // Why must we live just to suffer.
 // This thing of having to export twice for import convenience is bullshit.
+// TODO: do research on possible ways around the copy-paste. Then apply
+//  project-wide.
 export {
   ContextualInput,
   init,
@@ -721,6 +733,4 @@ export {
   misc,
   camController,
   menuController,
-  modalController,
-  submenu,
 }

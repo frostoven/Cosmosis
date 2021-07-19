@@ -18,11 +18,13 @@ const actions = {
     }
   },
   toggleFullScreen: () => {
-    const win = nw.Window.get();
-    win.toggleFullscreen();
+    nw.Window.get().toggleFullscreen();
   },
   toggleMousePointer: () => {
     $game.ptrLockControls.toggle();
+  },
+  showDevConsole: () => {
+    nw.Window.get().showDevTools();
   },
 };
 

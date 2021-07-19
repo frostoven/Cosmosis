@@ -13,3 +13,10 @@ export const defaultMenuPropTypes = {
 // Standard menu props.
 export const defaultMenuProps = {
 };
+
+export const preventInvisibleRender = function shouldComponentUpdate(nextProps, nextState) {
+  if (!this.state.isVisible && !nextState.isVisible) {
+    return false;
+  }
+  return true;
+};

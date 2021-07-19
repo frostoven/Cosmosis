@@ -1,3 +1,5 @@
+* Create issue for controller support.
+
 Make ship movable with physics using keyboard controls.
 Implement physics in a universally easy to use way.
 

@@ -105,7 +105,7 @@ const PointerLockControls = function (camera, domElement) {
       // If the mouse is locked and the user presses Escape, pointerlock is
       // automatically released and, annoying, no Escape key is triggered despite
       // the user having pressed Escape. So instead we'll simulate it. It is the
-      // responsibility of reality controllers to temporarily disable
+      // responsibility of mode controllers to temporarily disable
       // 'simulateNextEscape' when pressing a key other than escape to exit
       // pointerlock. We also have to check if the document has focus, because
       // alt-tabbing will also trigger pointerlock releases.
