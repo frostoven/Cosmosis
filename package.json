@@ -6,7 +6,7 @@
   "window": {
     "title": "Cosmosis",
     "toolbar": false,
-    "width": 816,
+    "width": 1109,
     "height": 624,
     "icon": "icon.png"
   },
@@ -29,7 +29,7 @@
   "author": "aggregate1166877",
   "license": "All rights reserved",
   "dependencies": {
-    "three": "0.128.0"
+    "three": "0.120.0"
   },
   "devDependencies": {
     "@babel/core": "7.2.2",
@@ -50,6 +50,7 @@
     "nw": "^0.53.0",
     "react": "16.13.1",
     "react-dom": "16.13.1",
+    "semantic-ui-react": "^2.0.3",
     "webpack": "4.28.4",
     "webpack-cli": "3.2.1"
   }

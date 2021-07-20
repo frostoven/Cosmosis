@@ -1,0 +1,144 @@
+table {
+    border: thin solid grey;
+}
+
+td {
+    padding: 4px;
+}
+
+tr:hover {
+    background-color: gray;
+}
+
+.all-controls-page > table {
+    padding: 10px;
+}
+
+.quick-controls-overlay {
+    font-family: monospace;
+    font-size: 7pt;
+    color: #fff;
+    background-color: #000000b0;
+    pointer-events: none;
+    position: fixed;
+    z-index: 1000;
+    top: 50px;
+    left: 0;
+    margin: auto;
+    text-align: left;
+}
+
+.controls-menu-read-only {
+    color: #fff;
+    background-color: #000000d4;
+    position: fixed;
+    z-index: 90000;
+    top: 6px;
+    bottom: 6px;
+    left: 6px;
+    right: 6px;
+    text-align: left;
+    overflow: auto;
+    padding-inline: 6px;
+    border: gray;
+}
+
+.primary-menu, .secondary-menu {
+    color: #fff;
+    background-color: rgba(0, 0, 0, 0.56);
+    /* background-color: #ffffff2b; */ /* <- alternative colour; maybe do as gradient? */
+    position: fixed;
+    z-index: 900;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    min-width: 791px;
+    text-align: center;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border: gray;
+}
+
+.ui.dropdown .divider {
+background-color: unset;
+}
+
+.ui.selection.visible.dropdown > .text:not(.default) {
+color: #ffffff;
+}
+
+.visible.menu.transition > div {
+border: none !important;
+}
+
+/* https://www.w3schools.com/howto/howto_css_center-vertical.asp */
+.vertical-center {
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    -ms-transform: translateY(-50%);
+    transform: translateY(-50%);
+    height: 100%;
+    width: 100%;
+}
+
+.horizontal-center {
+    text-align: center !important;
+}
+
+.terminal-font {
+    font-family: 'IBM_VGA_8x16' !important;
+    font-size: 16pt !important;
+    font-weight: 100 !important;
+}
+
+.button-fill-parent {
+    min-width: 117px;
+    width: 100%;
+}
+
+.game-menu {
+    padding: 24px !important;
+}
+
+.game-menu-background {
+    position: fixed;
+    background-color: red;
+}
+
+.secondary-menu {
+    background-color: #797979b8 !important;
+}
+
+.game-menu-back-animation {
+    /* https://www.gradient-animator.com/ */
+    background: linear-gradient(178deg, #246655, #662424);
+    background-size: 400% 400%;
+    animation: game-menu-back-animation 30s ease infinite;
+}
+
+@keyframes game-menu-back-animation {
+    0%{background-position:82% 0%}
+    50%{background-position:19% 100%}
+    100%{background-position:82% 0%}
+}
+
+.hidden-menu {
+    opacity: 0;
+}
+
+.ui.modal > .content {
+    /* TODO: this background kinda kills the button gradients. Find a fix. */
+    background: #6c6c6cc9 !important;
+}
+
+.floating-footer {
+    position: fixed;
+    background-color: red;
+    bottom: 0;
+    left: 0;
+    right: 8px; /* this gives the scrollbar space */
+    padding: 5px;
+    height: 28px;
+}

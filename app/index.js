@@ -1,25 +1,30 @@
-import './local/windowLoadListener';
 import React from 'react';
+import * as ReactDOM from 'react-dom';
+import RootNode from './reactComponents/RootNode';
 
 import core from './local/core';
 import powerOnSelfTest from './test';
 import api from './local/api';
 import packageJson from '../package.json';
+import onDocumentReady from './local/windowLoadListener';
 
 // Game modules.
 import scenes from './scenes';
-import cameraControllers from './cameraControllers';
 import './local/toast';
 import * as THREE from 'three';
 import * as CANNON from 'cannon';
 import { Vector3 } from 'three';
+import { startupEvent, getStartupEmitter } from './emitters';
+import modeControl from './modeControl';
+
+const startupEmitter = getStartupEmitter();
 
 // Debug reference to three.
-window.$THREE = THREE;
+window.debug.THREE = THREE;
 // Debug reference to cannon.
-window.$CANNON = CANNON;
+window.debug.CANNON = CANNON;
 // Debug reference to API.
-window.$API = api;
+window.debug.api = api;
 
 // const defaultScene = 'logDepthDemo';
 const defaultScene = 'localCluster';
@@ -66,92 +71,76 @@ for (let scene of scenes) {
   scene.register();
 }
 // Register all camera controllers.
-for (let ctrl of cameraControllers) {
-  console.log('Registering cam controller', ctrl.name);
-  ctrl.register();
-}
+modeControl.initAll();
 
 console.groupEnd();
 
-// Glue it together, and start the rendering process.
-core.init({ sceneName: defaultScene });
+onDocumentReady(() => {
+  // Glue it together, and start the rendering process.
+  core.init({ sceneName: defaultScene });
 
-// Auto switch to hyperdrive for now because we do not yet have regular engines
-// going.
-// TODO: delete me.
-core.startupEmitter.on(core.startupEvent.ready, () => {
-  api.triggerAction('toggleMousePointer');
-  api.triggerAction('toggleMouseControl');
-  api.triggerAction('engageHyperdrive');
+  startupEmitter.on(startupEvent.gameViewReady, () => {
+    // For some god-awful reason or another the browser doesn't always detect
+    // invalid pointer locks. This is especially problematic during game boot.
+    // This *very frequently* results in the mouse getting stuck in an
+    // invisible box, even if the game isn't visible (behind other windows).
+    // This is a low overhead albeit dirty work-around.
+    // Steps to (unreliably) reproduce:
+    //  Ensure HMR is enabled. Switch to IDE, ensure it's maximized. Make a
+    //  code change, save. Application reboots in the background. Mouse will
+    //  sometimes get trapped in an invisible box.
+    const mouseLockBugTimer = setInterval(() => {
+      const ptr = $game.ptrLockControls;
+      if (ptr.isPointerLocked && !document.hasFocus()) {
+        console.warn('Releasing invalid mouse lock.');
+        ptr.unlock();
+      }
+    }, 100);
+  });
 
-  // Next to moon, good place to test lighting.
-  // api.setPlayerShipLocation(new Vector3(390249080, 2468483, 5996841));
-  // api.setPlayerShipRotation(new Vector3(2.5626, -1.2120, 2.6454));
+  // Auto switch to hyperdrive for now because we do not yet have regular engines
+  // going.
+  // TODO: delete me.
+  startupEmitter.on(startupEvent.ready, () => {
+    api.triggerAction('toggleMousePointer');
+    api.triggerAction('engageHyperdrive');
 
-  // Directly facing the moon, another good place to test lighting.
-  api.setPlayerShipLocation(new Vector3(381752594, 691327, 1417254));
-  api.setPlayerShipRotation(new Vector3(-2.5974, 1.3167, 2.1961));
+    // Next to moon, good place to test lighting.
+    // api.setPlayerShipLocation(new Vector3(390249080, 2468483, 5996841));
+    // api.setPlayerShipRotation(new Vector3(2.5626, -1.2120, 2.6454));
 
-  // Facing Earth with moon in view, back to sun.
-  // api.setPlayerShipLocation(new Vector3(-26914792, 5727037, 5578466));
-  // api.setPlayerShipRotation(new Vector3(0.8734, 1.5370, 1.6702));
+    // Directly facing the moon, another good place to test lighting.
+    api.setPlayerShipLocation(new Vector3(381752594, 691327, 1417254));
+    api.setPlayerShipRotation(new Vector3(-2.5974, 1.3167, 2.1961));
 
-  // Behind the Earth, shrouded in night. Used to make sure we're getting
-  // shadows.
-  // api.setPlayerShipLocation(new Vector3(12715908, 3376086, 3944229));
-  // api.setPlayerShipRotation(new Vector3(2.3031, -1.1355, 0.7181));
+    // Facing Earth with moon in view, back to sun.
+    // api.setPlayerShipLocation(new Vector3(-26914792, 5727037, 5578466));
+    // api.setPlayerShipRotation(new Vector3(0.8734, 1.5370, 1.6702));
 
-  // Close to moon, good place to test overexposure.
-  // api.setPlayerShipLocation(new Vector3(384046753, -938728, -2120968));
-  // api.setPlayerShipRotation(new Vector3(0.2875, -0.0703, 0.0226));
+    // Behind the Earth, shrouded in night. Used to make sure we're getting
+    // shadows.
+    // api.setPlayerShipLocation(new Vector3(12715908, 3376086, 3944229));
+    // api.setPlayerShipRotation(new Vector3(2.3031, -1.1355, 0.7181));
 
-  // On Earth's surface at night, facing moon.
-  // api.setPlayerShipLocation(new Vector3(-26914792, 5727037, 5578466));
-  // api.setPlayerShipRotation(new Vector3(0.8734, 1.5370, 1.6702));
+    // Close to moon, good place to test overexposure.
+    // api.setPlayerShipLocation(new Vector3(384046753, -938728, -2120968));
+    // api.setPlayerShipRotation(new Vector3(0.2875, -0.0703, 0.0226));
 
-  // Behind Earth. Useful for testing shadow casting, atmospheric lensing, etc.
-  // api.setPlayerShipLocation(new Vector3(27656524, -835865, -766508));
-  // api.setPlayerShipRotation(new Vector3(-0.1851, -1.5549, -0.0682));
+    // On Earth's surface at night, facing moon.
+    // api.setPlayerShipLocation(new Vector3(-26914792, 5727037, 5578466));
+    // api.setPlayerShipRotation(new Vector3(0.8734, 1.5370, 1.6702));
 
-  // Next to that crazy fucking huge fireball.
-  // api.setPlayerShipLocation(new Vector3(-150064242871, -485401441, -392001660));
-  // api.setPlayerShipRotation(new Vector3(-0.8526, -0.3184, -1.4681));
+    // Behind Earth. Useful for testing shadow casting, atmospheric lensing, etc.
+    // api.setPlayerShipLocation(new Vector3(27656524, -835865, -766508));
+    // api.setPlayerShipRotation(new Vector3(-0.1851, -1.5549, -0.0682));
+
+    // Next to that crazy fucking huge fireball.
+    // api.setPlayerShipLocation(new Vector3(-150064242871, -485401441, -392001660));
+    // api.setPlayerShipRotation(new Vector3(-0.8526, -0.3184, -1.4681));
+  });
+
+  window.rootNode = ReactDOM.render(
+    <RootNode />,
+    document.getElementById('reactRoot'),
+  );
 });
-
-class Hud extends React.Component {
-  // static propTypes = {};
-  // static defaultProps = {};
-
-  constructor(props) {
-    super(props);
-    this.state = {};
-  }
-
-  componentDidMount() {
-    // core.registerGlobalAction({
-    // 	action: 'changeSceneTo',
-    // 	item: {
-    // 		boxScene: () => { this.setState({ activeScene: BoxScene }) },
-    // 		spaceScene: () => { this.setState({ activeScene: SpaceScene }) },
-    // 	}
-    // });
-  }
-
-  componentWillUnmount() {
-    // core.deregisterGlobalAction({ action: 'changeSceneTo' });
-  }
-
-  render() {
-    // const ActiveScene = this.state.activeScene;
-    return (
-      <div>
-        root div
-      </div>
-    );
-  }
-}
-
-// window.rootNode = ReactDOM.render(
-// 	<Hud />,
-// 	document.getElementById('reactRoot')
-// );

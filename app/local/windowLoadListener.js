@@ -2,50 +2,63 @@
  * ---------------------------------
  * Most (if not all) of these may need to be replaced with better solutions in
  * future.
+ *
+ * Probably the only feature that should remain here is the splash screen.
  */
 
 const fs = require('fs');
-const _ = require('lodash');
 
 import packageJson from '../../package.json';
 import { loadAllCrosshairImages } from './crosshairs';
-import { controls, keySchema, keymapFriendlyName } from './controls';
 
-import { addSpacesBetweenWords, toTitleCase } from './utils';
+let windowHasLoaded = false;
+const callbacks = [];
 
-function spacedTitled(string) {
-  return addSpacesBetweenWords(toTitleCase(string));
+/**
+ * Polyfill for running nw.js code in the browser.
+ */
+if (!process) {
+  console.warn(
+    'Process object not available; polyfilling. Note that this is currently untested.'
+  );
+  process = {
+    nextTick: (cb) => setTimeout(cb, 0),
+    env: {
+      NODE_ENV: 'production',
+    },
+  };
 }
 
-function getKeyBindings({ targetMode, targetAction, useFriendly }) {
-  let resultFound = [];
-
-  const mode = controls[targetMode];
-  _.each(mode, (action, key) => {
-    if (action === targetAction) {
-      // We can have multiple keys per action, which is why we use an array.
-      if (useFriendly) {
-        resultFound.push(keymapFriendlyName(key));
-      }
-      else {
-        resultFound.push(key);
-      }
-    }
-  });
-
-  if (useFriendly) {
-    if (resultFound.length === 0) {
-      resultFound = '???';
-    }
-    else {
-      // Looks like: 'Middle click or Num5: to lock mouse'.
-      return resultFound.join(' or ');
-    }
+/**
+ * Queues callback to run after window.onload completes. If window.onload has
+ * already completed, callback is called immediately.
+ * @param callback
+ * @returns {*}
+ */
+export default function onDocumentReady(callback) {
+  if (windowHasLoaded) {
+    return callback();
   }
-  return resultFound;
+  callbacks.push(callback);
 }
 
-export default function windowLoadListener() {
+/**
+ * Notifies all queued onDocumentReady listeners, then sets a flag indicating this is done.
+ */
+function notifyListenersAndStop() {
+  if (windowHasLoaded) {
+    return console.error(
+      'notifyListenersAndStop called after window load process has completed.',
+    );
+  }
+  windowHasLoaded = true;
+  for (let i = 0, len = callbacks.length; i < len; i++) {
+    const cb = callbacks[i];
+    cb();
+  }
+}
+
+function windowLoadListener(readyCb=()=>{}) {
   // Loading text
   const loadingTextDiv = document.getElementById('loading-text');
   const build = packageJson.releaseNumber;
@@ -65,6 +78,7 @@ export default function windowLoadListener() {
   }
 
   // Crosshairs
+  // TODO: these should be moved to a better place.
   const crosshairsDiv = document.getElementById('crosshairs');
   if (crosshairsDiv) {
     loadAllCrosshairImages(crosshairsDiv);
@@ -73,42 +87,7 @@ export default function windowLoadListener() {
     console.error('Could not find #crosshairs div.');
   }
 
-  // Quick controls list
-  const controlsDiv = document.getElementById('quick-controls');
-  if (controlsDiv) {
-    controlsDiv.innerText =
-      `- ${getKeyBindings({ targetMode: 'allModes', targetAction: 'showKeyBindings', useFriendly: true})}: show all controls.\n` + // F1
-      `- ${getKeyBindings({ targetMode: 'allModes', targetAction: 'toggleMousePointer', useFriendly: true})}: show / hide mouse pointer.\n` + // F1
-      `- ${getKeyBindings({ targetMode: 'shipPilot', targetAction: 'engageHyperdrive', useFriendly: true})}: engage hyperdrive.\n` + // J
-      `- ${getKeyBindings({ targetMode: 'shipPilot', targetAction: 'toggleMouseSteering', useFriendly: true})}: lock mouse steering.\n` + // Middle click or Num5
-      `- WASD / mouse: move ship.\n` + // We'll leave this one hardcoded for brevity.
-      `- Right click in-ship menu for quick assign.`
-  }
-  else {
-    console.warning('Could not find #quick-controls div.');
-  }
-
-  // All controls page
-  let controlsHtml = '';
-  let allControlsDiv = document.getElementById('all-controls-page');
-  if (allControlsDiv) {
-    _.each(controls, (modeKeys, modeName) => {
-      controlsHtml += `<h3>${spacedTitled(modeName)}</h3>`;
-      controlsHtml += `<table>`;
-      _.each(modeKeys, (key, action) => {
-        controlsHtml += `<tr>`;
-        if (action === '_description') {
-          controlsHtml += `<td><b>Description</b></td><td><b>${key}</b></td>`;
-        }
-        else {
-          controlsHtml += `<td>${keymapFriendlyName(action)}</td><td>${spacedTitled(key)}</td>`;
-        }
-        controlsHtml += `</tr>`;
-      });
-      controlsHtml += `</table>`;
-    });
-  }
-  allControlsDiv.innerHTML = controlsHtml;
+  notifyListenersAndStop();
 }
 
 window.onload = windowLoadListener;
