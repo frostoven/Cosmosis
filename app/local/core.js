@@ -417,29 +417,58 @@ startupEmitter.on(startupEvent.ready, () => {
 
 // Waits for the game to load so that it can trigger startupEvent.ready.
 function waitForAllLoaded() {
-  let time = 2500;
+  // If the game hasn't booted after this amount of time, complain. Note that
+  // it's timed with a low priority timer, so the game may exceed load times by
+  // over 500ms before a complaint is triggered. Out target is approximate.
+  let warnTime = 3000;
+
+  // Used to measure boot time. The start time is intentionally only after core
+  // has loaded because we don't care about the boot time of external factors
+  // (such as how long it takes nw.js to get ready).
+  const startTime = Date.now();
+
+  // Contains callback functions used to keep track of game load progress.
+  const startupEmitters = [];
+
+  // Create all callback functions that will be stored in startupEmitters.
+  const allStartupEvents = Object.keys(startupEvent);
+  for (let i = 0, len = allStartupEvents.length; i < len; i++) {
+    const key = allStartupEvents[i];
+    if (key === 'ready') {
+      // Skip 'ready' - it's manually triggered in the end.
+      continue;
+    }
+    startupEmitters.push(
+      (cb) => startupEmitter.on(startupEvent[key], cb),
+    );
+  }
+
   let count = 0;
-  forEachFn([
-    (cb) => startupEmitter.on(startupEvent.skyBoxLoaded, cb),
-    (cb) => startupEmitter.on(startupEvent.gameViewReady, cb),
-    (cb) => startupEmitter.on(startupEvent.playerShipLoaded, cb),
-    (cb) => startupEmitter.on(startupEvent.firstFrameRendered, cb),
-  ], () => {
-    count++;
-  }, () => {
-    // Everything else has loaded.
-    count++;
-    startupEmitter.emit(startupEvent.ready);
-  });
+  forEachFn(
+    // Wait for everything but 'ready' to trigger.
+    startupEmitters,
+    () => count++,
+    () => {
+      // Everything has loaded.
+      count++;
+      startupEmitter.emit(startupEvent.ready);
+
+      // Log boot time.
+      const bootTime = ((Date.now() - startTime) / 1000).toFixed(2);
+      console.log(
+        `Game finished booting after ${bootTime}s. ` +
+        `Total startup events: ${count}`
+      );
+    });
 
   setTimeout(() => {
-    if (count !== Object.keys(startupEvent).length) {
+    if (count !== allStartupEvents.length) {
       console.warn(
-        `Game hasn't finished loading after ${time/1000} seconds. Please investigate.`
+        `Game hasn't finished booting after ${warnTime / 1000}s (currently ` +
+        `at ${count}/${allStartupEvents.length}). Please investigate.`
       );
     }
-    // else console.log('waitForAllLoaded debug message: all fully loaded.');
-  }, time);
+  }, warnTime);
 }
 waitForAllLoaded();
 
