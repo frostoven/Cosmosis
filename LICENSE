@@ -18,3 +18,17 @@ information about each license.
 
 See:
 * [MIT License](MIT.md)
+
+
+---
+
+On a related note: this project is currently licensed MIT because it will one
+day be stripped of game logic and be transformed into a game engine. The
+Cosmosis engine itself will then be a dependency of the Cosmosis game. The
+engine itself will be a core part of any game using it, meaning that anyone who
+wants to protect their source would need a low restriction license such as MIT.
+Once the engine code is separated and is a dependency of the game, the engine
+will have an MIT license while the game will likely be licensed GPL. This is
+not set in stone and you're free to voice opinions any part of this change. All
+comment will be highly appreciated will directly influence all decisions going
+forward. Note that this decision will not be made for some years.

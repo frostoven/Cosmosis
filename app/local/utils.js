@@ -135,10 +135,39 @@ function toTitleCase(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
+/**
+ * Combines addSpacesBetweenWords and toTitleCase.
+ * @param {string} string
+ * @returns {string}
+ */
+function spacedTitled(string) {
+  return addSpacesBetweenWords(toTitleCase(string));
+}
+
+function capitaliseFirst(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+function capitaliseEachWord(string) {
+  // https://stackoverflow.com/questions/32589197/how-can-i-capitalize-the-first-letter-of-each-word-in-a-string-using-javascript
+  const splitStr = string.split(' ');
+  for (let i = 0; i < splitStr.length; i++) {
+    // You do not need to check if i is larger than splitStr length, as your
+    // for does that for you.
+    // Assign it back to the array.
+    splitStr[i] = splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1);
+  }
+  // Directly return the joined string
+  return splitStr.join(' ');
+}
+
 export {
   fuzzyFindFile,
   forEachFn,
   forEachFnLimit,
   addSpacesBetweenWords,
   toTitleCase,
+  spacedTitled,
+  capitaliseFirst,
+  capitaliseEachWord,
 }

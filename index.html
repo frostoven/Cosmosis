@@ -5,12 +5,7 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Space Junkie</title>
-<!--    <link rel="stylesheet" href="node_modules/semantic-ui-css/semantic.min.css" />-->
-
-    <link rel="stylesheet" href="/css/app.css">
-    <link rel="stylesheet" href="/css/animations.css">
-    <link rel="stylesheet" href="/css/uiPlaceholders.css">
+    <title>Cosmosis</title>
 
     <script type="application/javascript">
       // Disable annoying messages about downloading react dev tools.
@@ -22,13 +17,33 @@
       };
     </script>
     <!-- <script src="node_modules/three/examples/js/libs/ammo.wasm.js"></script> -->
-    <script src="hackedlibs/ammo/ammo.wasm.js"></script>
+<!--    <script src="hackedlibs/ammo/ammo.wasm.js"></script>-->
+
+    <script type="text/javascript">
+      window.debug = {
+        _info: 'Variables and functions may be stored inside the debug ' +
+          'object from anywhere in the project. This is to make debugging ' +
+          'easier from the developer console.'
+      };
+    </script>
+    <script type="text/javascript" src="build/bundle.js"></script>
+
+    <!--    <link rel="stylesheet" href="node_modules/semantic-ui-css/semantic.min.css" />-->
+
+    <link rel="stylesheet" href="/css/fonts.css">
+    <link rel="stylesheet" href="/css/app.css">
+    <link rel="stylesheet" href="/css/uiPlaceholders.css">
+    <link rel="stylesheet" href="/css/splash-animations.css">
+    <link rel="stylesheet" href="/css/semantic.min.css">
+    <link rel="stylesheet" href="/css/semantic.supervillain.css">
+    <link rel="stylesheet" href="/css/checkboxes.css">
+    <link rel="stylesheet" href="/css/react.css">
+    <link rel="stylesheet" href="/css/kosm.css">
+    <link rel="stylesheet" href="/css/fade-animations.css">
 
 </head>
 <body style="background-color:#111111;">
-<!--    <div id="reactRoot"></div>-->
-
-    <script type="text/javascript" src="build/bundle.js"></script>
+    <div id="reactRoot"></div>
 
     <div>
         <div class="loading-indicator">
@@ -38,13 +53,11 @@
             </div>
         </div>
         <div class="loading-indicator">
-            <img class="spinning" src="/potatoLqAssets/icons/loader.png">
+            <img class="splash-spinning" src="/potatoLqAssets/icons/loader.png">
         </div>
     </div>
 
     <div id="player-mode">--</div>
-    <div id="quick-controls"></div>
-    <div id="all-controls-page"></div>
     <div id="hyperdrive">Hyperdrive: initialising</div>
     <div id="hyperdrive-stats">---</div>
     <div id="snackbar">toast area</div>

@@ -1,0 +1,11 @@
+@font-face {
+    /*
+    In physical pixels, optimal sizes are multiples of:
+     - bitmap/webfonts - 16 px
+     - ttf (at 96 DPI) - 16 px/12 pt
+    */
+    font-family: 'IBM_VGA_8x16';
+    src: url(/fonts/IBM_VGA_8x16.woff) format('woff');
+    font-weight: normal;
+    font-style: normal;
+}

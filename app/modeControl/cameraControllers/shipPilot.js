@@ -1,16 +1,18 @@
 import * as THREE from "three";
 
-import { controls } from '../local/controls';
-import core from "../local/core";
-import speedTracker from './utils/speedTracker';
-import { lockModes } from '../local/PointerLockControls';
-import AssetLoader from '../local/AssetLoader';
+import core from "../../local/core";
+import speedTracker from '../../local/speedTracker';
+import { lockModes } from '../../local/PointerLockControls';
+import AssetLoader from '../../local/AssetLoader';
+import { startupEvent, getStartupEmitter } from '../../emitters';
+import contextualInput from '../../local/contextualInput';
 
-const mode = core.modes.shipPilot;
-const camControls = controls.shipPilot;
+const { camController, ActionType } = contextualInput;
+const shipPilotMode = camController.enroll('shipPilot');
+
+const startupEmitter = getStartupEmitter();
+
 let speedTimer = null;
-
-let modeActive = false;
 
 // 195=1c, 199=1.5c, 202=2c, 206=3c, 209=4c.
 // The idea is that the player can push this number up infinitely, but with
@@ -27,12 +29,19 @@ let actualThrottle = 0;
 // Instantly pushes warp speed to max, bypassing acceleration and gravitational
 // drag.
 let debugFullWarpSpeed = false;
-// Hyperdrive rotation speed. TODO: rename to correct technical terms.
-const rotationSpeed = 0.00005;
-// When pressing A and D. TODO: rename to correct technical terms.
-const spinSpeed = 0.01;
+// Hyperdrive rotation speed.
+const pitchAndYawSpeed = 0.00005;
+// When pressing A and D.
+const rollSpeed = 0.01;
 // Used to ease in/out of spinning.
-let spinBuildup = 0;
+let rollBuildup = 0;
+// Used to ease in/out of spinning.
+let yawBuildup = 0;
+// Used to ease in/out of spinning.
+let pitchBuildup = 0;
+// If true, ship will automatically try to stop rotation when the thrusters
+// aren't active.
+let flightAssist = true;
 
 // Same top speed as WARP_EXPONENTIAL, but acceleration is constant.
 // Reaches 0.1c at 2% power with strongest engine (4c max).
@@ -63,8 +72,8 @@ const ctrl = {
   turnRight: false,
   lookUp: false,
   lookDown: false,
-  spinLeft: false,
-  spinRight: false,
+  rollLeft: false,
+  rollRight: false,
 }
 
 const toggles = {
@@ -72,7 +81,6 @@ const toggles = {
   // toggleMouseSteering: () => $game.ptrLockControls.toggleCamLock(),
   toggleMouseSteering: () => {
     const ptr = $game.ptrLockControls;
-    // core.coreKeyToggles.toggleMouseSteering();
     const curLock = ptr.getLockMode();
     if (curLock === lockModes.headLook) {
       ptr.setLockMode(lockModes.frozen);
@@ -86,10 +94,16 @@ const toggles = {
     steer.upDown = 0;
     steer.leftRight = 0;
   },
-  engageHyperdrive: core.coreKeyToggles.toggleHyperMovement,
+  // engageHyperdrive: core.coreKeyToggles.toggleHyperMovement,
+  engageHyperdrive: () => {
+    $game.hyperMovement = !$game.hyperMovement;
+    // updateHyperdriveDebugText(); // TODO: pass to uiEmitter.
+    return $game.hyperMovement;
+  },
   // TODO: remove me
   _debugGravity: () => { if (ambientGravity === 10) { ambientGravity = 1; }  else { ambientGravity = 10; } },
-  debugFullWarpSpeed: () => { debugFullWarpSpeed = !debugFullWarpSpeed; }
+  debugFullWarpSpeed: () => { debugFullWarpSpeed = !debugFullWarpSpeed; },
+  toggleFlightAssist: () => flightAssist = !flightAssist,
 };
 
 const steer = {
@@ -98,25 +112,46 @@ const steer = {
   leftRight: 0,
 }
 
-function register() {
-  core.registerCamControl({
-    name: 'shipPilot', render, triggerAction,
+function init() {
+  core.registerRenderHook({
+    name: 'shipPilot', render,
   });
 
-  core.registerKeyPress({ mode, cb: onKeyPress });
-  core.registerKeyUpDown({ mode, cb: onKeyUpDown });
-  core.registerAnalogListener({ mode, cb: onAnalogInput });
+  // Key down actions.
+  camController.onActions({
+    actionType: ActionType.keyUp | ActionType.keyDown,
+    actionNames: Object.keys(ctrl), // all controls handled by shipPilot
+    modeName: shipPilotMode,
+    callback: onKeyUpOrDown,
+  });
 
-  // Only render if mode is shipPilot.
-  core.modeListeners.register((change) => {
+  // TODO: reimplement numpad.
 
-    modeActive = change.mode === mode;
-    if (modeActive) {
+  // Key press actions.
+  camController.onActions({
+    actionType: ActionType.keyPress,
+    actionNames: Object.keys(toggles), // all presses handled by shipPilot
+    modeName: shipPilotMode,
+    callback: onKeyPress,
+  });
+
+  // Analog actions.
+  camController.onActions({
+    actionType: ActionType.analogMove,
+    actionNames: [ 'pitchUp', 'pitchDown', 'yawLeft', 'yawRight' ],
+    modeName: shipPilotMode,
+    callback: onAnalogInput,
+  });
+
+  camController.onControlChange(({ next, previous }) => {
+    if (next === shipPilotMode) {
+      console.log('-> mode changed to', shipPilotMode);
       // Set game lock only when the game is ready.
-      core.startupEmitter.on(core.startupEvent.gameViewReady, () => {
+      startupEmitter.on(startupEvent.gameViewReady, () => {
         $game.ptrLockControls.setLockMode(lockModes.headLook);
       });
-      core.startupEmitter.on(core.startupEvent.playerShipLoaded, () => {
+
+      startupEmitter.on(startupEvent.playerShipLoaded, () => {
         // TODO: move this into the level loader. It needs to be dynamic based on
         //  the level itself (in this case we attach the player to the main cam).
         $game.playerShip.cameras[0].attach($game.camera);
@@ -125,16 +160,15 @@ function register() {
         $game.camera.position.y = 0;
         $game.camera.position.z = 0;
       });
+
       speedTimer = speedTracker.trackCameraSpeed();
     }
-    else {
-      if (speedTimer) {
-        speedTracker.clearSpeedTracker(speedTimer);
-      }
+    else if (previous === shipPilotMode && speedTimer) {
+      speedTracker.clearSpeedTracker(speedTimer);
     }
   });
 
-  core.startupEmitter.on(core.startupEvent.playerShipLoaded, () => {
+  startupEmitter.on(startupEvent.playerShipLoaded, () => {
     onShipLoaded($game.playerShip);
   });
 }
@@ -162,52 +196,44 @@ function snapCamToLocal() {
   // snap your cam to a position relative to the difference of local and tmp.
 }
 
-function onKeyPress({ key, amount }) {
-  console.log('[shipPilot 1] key press:', key, '->', camControls[key]);
-
-  const control = camControls[key];
-  if (!control) {
-    // No control mapped for pressed button.
-    return;
-  }
-  // This below should possibly be checked inside the render function, but it
-  // feels complicated and wasteful doing so..
-
+function onKeyPress({ action }) {
+  // console.log('[shipPilot 1] key press:', action);
   // Ex. 'toggleMouseSteering' or 'toggleMousePointer' etc.
-  const toggleFn = toggles[control];
+  const toggleFn = toggles[action];
   if (toggleFn) {
     toggleFn();
   }
 }
 
-function onKeyUpDown({ key, amount, isDown }) {
-  console.log('[shipPilot 2] key:', key, '->', camControls[key], isDown ? '(down)' : '(up)');
+function onKeyUpOrDown({ action, isDown }) {
+  // console.log('[shipPilot 2] key:', action, '->', isDown ? '(down)' : '(up)');
+  ctrl[action] = isDown;
+}
 
-  const control = camControls[key];
-  if (!control) {
-    // No control mapped for pressed button.
+function onAnalogInput({ action, analogData }) {
+  const ptr = $game.ptrLockControls;
+  if (!ptr || !ptr.isPointerLocked) {
+    // Ptr can be null while game is still loading.
     return;
   }
-  ctrl[control] = isDown;
-}
+  const deltaX = analogData.x.delta;
+  const deltaY = analogData.y.delta;
 
-function onAnalogInput(key, delta, invDelta, gravDelta, gravInvDelta) {
-  if (key === 'spNorth' || key === 'spSouth') {
-    // console.log(`[shipPilot] analog:, ${key}, d=${delta}, ~d=${invDelta}, gd=${gravDelta}, ~gd${gravInvDelta}`);
-    steer.upDown = maxN(steer.upDown + gravDelta, 200);
-  }
-  if (key === 'spEast' || key === 'spWest') {
-    steer.leftRight = maxN(steer.leftRight + (gravDelta * -1), 200);
-  }
-  console.log('xxx:', key, steer.upDown, steer.leftRight);
-}
-
-function triggerAction(action) {
-  if (modeActive) {
-    const fn = toggles[action];
-    if (fn) {
-      fn();
+  const currLock = ptr.getLockMode();
+  if (currLock === lockModes.frozen) {
+    // Note: frozen means the player's head is frozen, as in, use steering
+    // stick instead of looking around.
+    if (action === 'pitchUp' || action === 'pitchDown') {
+      // console.log(`[shipPilot] analog:, ${action}, d=${delta}, ~d=${invDelta}, gd=${gravDelta}, ~gd${gravInvDelta}`);
+      steer.upDown = maxN(steer.upDown + deltaY, 200);
     }
+    if (action === 'yawLeft' || action === 'yawRight') {
+      steer.leftRight = maxN(steer.leftRight + (deltaX * -1), 200);
+    }
+  }
+  else {
+    const mouse = core.userMouseSpeed(deltaX, deltaY);
+    $game.ptrLockControls.onMouseMove(mouse.x, mouse.y);
   }
 }
 
@@ -240,7 +266,7 @@ function dampenTorque(delta, value, target, growthSpeed) {
  * Similar to dampenTorque, but here the growth speed is dynamic.
  */
 function dampenByFactor(delta, value, target) {
-  let result = 0;
+  let result;
   // Do not use delta here - it's applied in dampenTorque.
   const warpFactor = 4; // equivalent to delta [at 0.016] * 250 growth.
   if (target > value) {
@@ -266,35 +292,58 @@ function scaleHyperSpeed(amount) {
   return Math.exp(amount / 10);
 }
 
-function handleHyper(delta, scene, playerShip, warpBubble) {
-  if (steer.leftRight) {
-    const lr = (steer.leftRight * delta) * 65.2;
-    warpBubble.rotateY(lr * rotationSpeed);
-  }
-  if (steer.upDown) {
-    const ud = (steer.upDown * delta) * 65.2;
-    warpBubble.rotateX(ud * rotationSpeed);
+/**
+ * Function that eases into targets.
+ */
+function easeIntoBuildup(delta, buildup, rollSpeed, factor, direction) {
+  buildup = Math.abs(buildup);
+
+  const effectiveSpin = (rollSpeed * delta) * factor;
+  buildup += effectiveSpin;
+  if (buildup > effectiveSpin) {
+    buildup = effectiveSpin;
   }
 
-  const effectiveSpin = (spinSpeed * delta) * 65.2;
-  if (ctrl.rollLeft) {
-    spinBuildup -= effectiveSpin;
-    if (spinBuildup < -effectiveSpin) {
-      spinBuildup = -effectiveSpin;
-    }
-  }
-  if (ctrl.rollRight) {
-    spinBuildup += effectiveSpin;
-    if (spinBuildup > effectiveSpin) {
-      spinBuildup = effectiveSpin;
-    }
-  }
-  warpBubble.rotateZ(spinBuildup);
-  if (Math.abs(spinBuildup) < 0.0001) {
-    spinBuildup = 0;
+  return buildup * direction;
+}
+
+function easeOutOfBuildup(delta, rollBuildup, easeFactor) {
+  if (Math.abs(rollBuildup) < 0.0001) {
+    rollBuildup = 0;
   }
   else {
-    spinBuildup /= 1 + (10 * delta);
+    rollBuildup /= 1 + (easeFactor * delta);
+  }
+
+  return rollBuildup;
+}
+
+function handleHyper(delta, scene, playerShip, warpBubble) {
+  if (steer.leftRight) {
+    // TODO: movement is changes sharply with sudden mouse changes. Investigate
+    //  if this is what we really want (note we're in a warp bubble). Perhaps
+    //  add momentum for a more natural feel.
+    yawBuildup = easeIntoBuildup(delta, yawBuildup, steer.leftRight, 38, 1);
+  }
+  if (steer.upDown) {
+    pitchBuildup = easeIntoBuildup(delta, pitchBuildup, steer.upDown, 38, 1);
+  }
+
+  if (ctrl.rollLeft && !ctrl.rollRight) {
+    rollBuildup = easeIntoBuildup(delta, rollBuildup, rollSpeed, 65.2, -1);
+  }
+  if (ctrl.rollRight && !ctrl.rollLeft) {
+    rollBuildup = easeIntoBuildup(delta, rollBuildup, rollSpeed, 65.2, 1);
+  }
+
+  warpBubble.rotateY(yawBuildup * pitchAndYawSpeed);
+  warpBubble.rotateX(pitchBuildup * pitchAndYawSpeed);
+  warpBubble.rotateZ(rollBuildup);
+
+  if (flightAssist) {
+    yawBuildup = easeOutOfBuildup(delta, yawBuildup, 10);
+    pitchBuildup = easeOutOfBuildup(delta, pitchBuildup, 10);
+    rollBuildup = easeOutOfBuildup(delta, rollBuildup, 10);
   }
 
   if (ctrl.thrustInc) {
@@ -414,6 +463,5 @@ function render(delta) {
 }
 
 export default {
-  name: 'shipPilot',
-  register,
+  init,
 }

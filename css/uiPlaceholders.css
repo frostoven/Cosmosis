@@ -15,7 +15,7 @@
     position: fixed;
     top: 0;
     right: 0;
-    z-index: 1000;
+    z-index: 800;
     text-align: right;
     pointer-events: none;
     padding: 5px;
@@ -27,7 +27,7 @@
     position: fixed;
     bottom: 0;
     right: 0;
-    z-index: 10000;
+    z-index: 800;
     padding: 4px;
     font-size: 10pt;
     font-weight: bold;
@@ -40,7 +40,7 @@
 #crosshairs {
     pointer-events: none;
     position: fixed;
-    z-index: 1000;
+    z-index: 800;
     right: 0;
     left: 0;
     top: 0;
@@ -71,7 +71,7 @@
     top: 0;
     right: 0;
     left: 0;
-    z-index: 1000;
+    z-index: 800;
     text-align: left;
     pointer-events: none;
     padding: 5px;
@@ -80,50 +80,4 @@
 
 #hyperdrive-stats {
     top: 28px;
-}
-
-#quick-controls {
-    font-family: monospace;
-    font-size: 7pt;
-    color: #fff;
-    background-color: #000000b0;
-    pointer-events: none;
-    position: fixed;
-    z-index: 1000;
-    top: 50px;
-    left: 0;
-    margin: auto;
-    text-align: left;
-}
-
-#all-controls-page {
-    display: none;
-    color: #fff;
-    background-color: #000000d4;
-    position: fixed;
-    z-index: 90000;
-    top: 6px;
-    bottom: 6px;
-    left: 6px;
-    right: 6px;
-    text-align: left;
-    overflow: auto;
-    padding-inline: 6px;
-    border: gray;
-}
-
-#all-controls-page > table {
-    padding: 10px;
-}
-
-table {
-    border: thin solid grey;
-}
-
-td {
-    padding: 4px;
-}
-
-tr:hover {
-    background-color: gray;
 }
