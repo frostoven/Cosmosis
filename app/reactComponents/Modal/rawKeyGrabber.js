@@ -2,7 +2,7 @@ import React from 'react';
 import MenuNavigation from '../elements/MenuNavigation';
 import Button from '../elements/KosmButton';
 import { controls, getInverseSchema, invalidateInverseSchemaCache } from '../../local/controls';
-import contextualInput from '../../local/contextualInput';
+import { ContextualInput } from '../../local/contextualInput';
 
 // How the grabber is identified.
 const thisMenu = 'modal';
@@ -12,6 +12,9 @@ const thisMenu = 'modal';
  * @type {null|Modal}
  */
 let modalInstance = null;
+
+// Triggered when the grabber is closed.
+let onGrabberClose = null;
 
 // Default MenuNavigation props.
 const navProps = {
@@ -26,11 +29,15 @@ function notYetSupported() {
 
 function disclaimInput(inputInfo) {
   modalInstance.handleInput(inputInfo);
+  if (inputInfo.action === 'back' && onGrabberClose) {
+    onGrabberClose();
+    onGrabberClose = null;
+  }
 }
 
 // Close the grabber modal.
 function closeRawKeyGrabber() {
-  contextualInput.ContextualInput.clearRawInputListener();
+  ContextualInput.clearRawInputListener();
   disclaimInput({ action: 'back', isDown: true });
 }
 
@@ -59,7 +66,7 @@ function setBindingAndClose({ newKey, action, sectionName }) {
 // Show modal that grabs keyboard input.
 // TODO: consider renaming this as it's become a bit of a misnomer (grabs mouse, too).
 function showKbModal({ control: existingControl, action, sectionName, isExisting }) {
-  contextualInput.ContextualInput.setRawInputListener(({ key: newKey, isDown, analogData }) => {
+  ContextualInput.setRawInputListener(({ key: newKey, isDown, analogData }) => {
     if (!isDown) {
       return;
     }
@@ -71,7 +78,7 @@ function showKbModal({ control: existingControl, action, sectionName, isExisting
     }
 
     // Return control back to normal menu flow.
-    contextualInput.ContextualInput.clearRawInputListener();
+    ContextualInput.clearRawInputListener();
 
     const conflict = getBindConflict({ newKey, action, sectionName });
     if (conflict) {
@@ -146,7 +153,8 @@ function showKbGrabberModal({ action, isExisting, existingControl }) {
 
 // Shows all available input grabbing mechanisms.
 export function showRawKeyGrabber(props) {
-  const { control, action, sectionName, isExisting } = props;
+  const { control, action, sectionName, isExisting, onClose } = props;
+  onGrabberClose = onClose;
 
   // noinspection JSVoidFunctionReturnValueUsed
   modalInstance = $modal.show({
