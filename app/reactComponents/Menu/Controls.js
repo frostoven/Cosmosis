@@ -56,13 +56,12 @@ export default class Controls extends React.Component {
     });
 
     if (isVisible) {
-      // TODO: remove this and test. The controls menu itself should not have
-      //  exclusivity, only the grabber should.
-      ContextualInput.takeFullExclusivity({ mode: modeName });
+      // TODO: add this to customisation menu.
       $game.ptrLockControls.unlock();
     }
     else {
-      ContextualInput.relinquishFullExclusivity({ mode: modeName });
+      // TODO: add this to customisation menu.
+      // $game.ptrLockControls.lock();
     }
 
     return isVisible;
@@ -110,20 +109,17 @@ export default class Controls extends React.Component {
       return console.error('Cannot reassign control that is', sectionName);
     }
 
+    ContextualInput.takeFullExclusivity({ mode: modeName });
+
     const grabberOptions = {
       ...this.props,
       identifier: thisMenu,
       control, action, sectionName, isExisting,
+      onClose: () =>
+        ContextualInput.relinquishFullExclusivity({ mode: modeName }),
     };
 
-    if (isExisting) {
-      // console.log(`reassigning control '${control}' for action '${action}'; target:\n`, controls[sectionName])
-      showRawKeyGrabber(grabberOptions);
-    }
-    else {
-      // console.log(`add new binding for action '${action}'; target:\n`, controls[sectionName])
-      showRawKeyGrabber(grabberOptions);
-    }
+    showRawKeyGrabber(grabberOptions);
   };
 
   prepareLine = ({ actions, inverseSectionSchema, sectionName, key }) => {
