@@ -1,4 +1,8 @@
-* Create issue for controller support.
+Consider renaming startupEmitter to startupChecklist.
+
+Create issue for controller support.
+
+Create issue for API structure that has everything nicely separated into namespaced.
 
 Make ship movable with physics using keyboard controls.
 Implement physics in a universally easy to use way.
@@ -41,7 +45,7 @@ Test switching between hyperdrive and regular.
 
 Implement world position reset when switching to/form hyperdrive.
 
-Implement a ramp based spedometer and make sure distances measured with m/s check out.
+Implement a ramp based speedometer and make sure distances measured with m/s check out.
 
 Fix bug where the game can sometimes grab the mouse pointer while the game is
 inactive.
@@ -189,32 +193,3 @@ ammo.js was copied from node_modules to hackedlibs to fix a crash. See its
 readme for more details.
 
 --------------------------------------------------------------------
-
-Misc
-==============
-
-Find a good way to limit frame rate
------------------------------------
-
-The application's frame rate is currently controlled by
-`node_modules/react-three-fiber/web.js` -> renderLoop()
-
-To limit the frame rate, this line:
-`if (repeat !== 0) return requestAnimationFrame(renderLoop);else {`
-
-can be replaced with this this block:
-```js
-if (repeat !== 0) {
-    // return requestAnimationFrame(renderLoop);
-    return setTimeout( function() {
-      requestAnimationFrame(renderLoop);
-    }, 1000 / 30 );
-  }
-  else {
-```
-
-which limits the frame rate to 30fps in this case. The game HAS TO BE frame
-rate independent. This is not optional. The problem is that, testing on lower
-frame rates, is really difficult when the functionality is hidden away in a
-module. Find a way to make this as simple as changing a parameter. Submit a PR
-on the issue maybe?

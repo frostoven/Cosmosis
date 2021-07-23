@@ -166,6 +166,7 @@
 
 .kosm-modal {
     z-index: 9999;
+    white-space: pre-line;
 }
 
 .kosm-statusbar, .kosm-statusbar-sub {
