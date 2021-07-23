@@ -56,16 +56,19 @@ function fuzzyFindFile(
 
 /**
  * Runs callback functions in sequence, only calling the next function once the
- * previous completes. If cb returns false, the loop terminates.
+ * previous completes. If cb returns false, the loop terminates. Note that
+ * you're passed a 'next' function after each iteration, which you need to
+ * call for the loop to continue.
  * @param {Array.<function>} functions - List of functions to execute.
  * @param {function} cb - Run after every function completes. If cb returns
- *  false, the loop immediately terminates.
+ *  false, the loop immediately terminates. Else, the value is passed to the
+ *  next function.
  * @param {function} onReachEnd - Called if the loop runs all the way to the
  * end, of if a fatal error occurs.
  * @param {number} limit - Maximum number of iterations. Make this the size of
  *  the function array to execute all functions.
  * @param {number} index - Index to start iterating from.
- * @param {boolean} defer - If true, each reiteration will be done as a
+ * @param {boolean} [defer] - If true, each reiteration will be done as a
  *  setImmediate. Please note that doing so is incredibly slow at large scales.
  */
 function forEachFnLimit(functions=[], cb=()=>{}, onReachEnd=()=>{}, limit, index, defer=false) {
@@ -81,14 +84,14 @@ function forEachFnLimit(functions=[], cb=()=>{}, onReachEnd=()=>{}, limit, index
 
   const fn = functions[index];
 
-  fn(function() {
+  function next() {
     const signal = cb.apply(null, arguments);
     if (signal === false) {
       return;
     }
 
     if (defer) {
-      // TODO: make this setTimeout if in browser instead.
+      // TODO: make this setTimeout instead if in browser (polyfill maybe?).
       setImmediate(() => {
         forEachFnLimit(functions, cb, onReachEnd, limit, index + 1, defer);
       });
@@ -96,18 +99,22 @@ function forEachFnLimit(functions=[], cb=()=>{}, onReachEnd=()=>{}, limit, index
     else {
       forEachFnLimit(functions, cb, onReachEnd, limit, index + 1, defer);
     }
-  });
+  }
+
+  fn(next);
 }
 
 /**
  * Runs callback functions in sequence, only calling the next function once the
- * previous completes. If cb returns false, the loop terminates.
+ * previous completes. If cb returns false, the loop terminates. Note that
+ * you're passed a 'next' function after each iteration, which you need to
+ * call for the loop to continue.
  * @param {Array.<function>} functions - List of functions to execute.
- * @param {function} cb - Run after every function completes. If cb returns
+ * @param {function} [cb] - Run after every function completes. If cb returns
  *  false, the loop immediately terminates.
- * @param {function} onReachEnd - Called if the loop runs all the way to the
+ * @param {function} [onReachEnd] - Called if the loop runs all the way to the
  * end, of if a fatal error occurs.
- * @param {boolean} defer - If true, each reiteration will be done as a
+ * @param {boolean} [defer] - If true, each reiteration will be done as a
  *  setImmediate. Please note that doing so is incredibly slow at large scales.
  */
 function forEachFn(functions=[], cb=()=>{}, onReachEnd=()=>{}, defer=false) {
@@ -161,6 +168,16 @@ function capitaliseEachWord(string) {
   return splitStr.join(' ');
 }
 
+/**
+ * Removes all special characters from a string, excluding dashes and
+ * underscores.
+ * @param string
+ * @returns {string}
+ */
+function safeString(string) {
+  return string.replace(/[^a-zA-Z0-9 \-_]/g, '').trim();
+}
+
 export {
   fuzzyFindFile,
   forEachFn,
@@ -170,4 +187,5 @@ export {
   spacedTitled,
   capitaliseFirst,
   capitaliseEachWord,
+  safeString,
 }

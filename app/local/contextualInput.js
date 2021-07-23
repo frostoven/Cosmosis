@@ -531,6 +531,10 @@ ContextualInput.universalEventListener = function(event) {
   if (!ContextualInput._allowBubbling && type !== 'wheel') {
     // We need to check if truthy because pointerLock doesn't implement
     // preventDefault.
+    // TODO: this has the shitty side-effect of disabling text selection.
+    //  We *do* need code though because it prevents default behaviour that
+    //  causes many other bugs. Maybe see if you can detect if the target is
+    //  modal etc, and don't prevent in this cases. REPORT AS BUG.
     if (event.preventDefault) {
       event.preventDefault();
     }

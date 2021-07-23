@@ -95,10 +95,12 @@ export function getPlayerShipRotation(cb=()=>{}){
  */
 export function triggerAction(action, analogData=null) {
   startupEmitter.on(ready, () => {
+    // TODO: make this trigger a keyDown too.
     contextualInput.ContextualInput.triggerAction({
       action, analogData,
     });
   });
+  // TODO: add holdAction and releaseAction functions.
 }
 
 export default {
