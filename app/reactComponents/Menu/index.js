@@ -2,7 +2,7 @@ import React from 'react';
 
 import { getStartupEmitter, getUiEmitter, startupEvent } from '../../emitters';
 import { keySchema } from '../../local/controls';
-import CbQueue from '../../local/CbQueue';
+import CbQueueExtra from '../../local/CbQueueExtra';
 import GameMenu from './GameMenu';
 import Options from './Options';
 import Controls from './Controls';
@@ -23,10 +23,10 @@ export default class Menu extends React.Component {
     };
 
     // All menus (and special components) that listen for input.
-    this.inputListeners = new CbQueue();
+    this.inputListeners = new CbQueueExtra();
 
     // This calls listeners in a loop, so a queue makes things a little easier.
-    this.menuChangeListeners = new CbQueue();
+    this.menuChangeListeners = new CbQueueExtra();
 
     // We allow arrows to repeat (i.e. holding down an arrow will cause it to
     // keep going until the button is released). We however only do this for
@@ -188,7 +188,7 @@ export default class Menu extends React.Component {
    */
   changeMenuFn = (next, suppressNotify=false) => {
     return () => this.changeMenu({ next, suppressNotify });
-  }
+  };
 
   render() {
     const props = {
