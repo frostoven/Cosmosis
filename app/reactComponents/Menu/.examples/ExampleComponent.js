@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-export default class Template extends React.Component {
+export default class ExampleComponent extends React.Component {
 
   static propTypes = {
     example: PropTypes.string,
@@ -17,17 +17,17 @@ export default class Template extends React.Component {
 
   constructor(props) {
     super(props);
-    this.state = Template.defaultState;
+    this.state = ExampleComponent.defaultState;
   }
 
   render() {
     return (
       <div>
-        Template component.
+        ExampleComponent.
         <br/>
-        Example prop: {this.props.example}
+        ExampleComponent prop: {this.props.example}
         <br/>
-        Example state value: {this.state.someVar}
+        ExampleComponent state value: {this.state.someVar}
       </div>
     );
   }

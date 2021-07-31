@@ -8,11 +8,18 @@
 
 const fs = require('fs');
 
+import userProfile from '../userProfile'
 import packageJson from '../../package.json';
 import { loadAllCrosshairImages } from './crosshairs';
 
 let windowHasLoaded = false;
+// Document ready callbacks.
 const callbacks = [];
+// The amount of times notifyListenersAndStop needs to be called for document
+// ready can be triggered.
+const eventsNeededToContinue = 2;
+// The amount of times notifyListenersAndStop has been called.
+let eventCount = 0;
 
 /**
  * Polyfill for running nw.js code in the browser.
@@ -30,8 +37,8 @@ if (!process) {
 }
 
 /**
- * Queues callback to run after window.onload completes. If window.onload has
- * already completed, callback is called immediately.
+ * Queues callback to run after both window.onload completes and pre-boot has
+ * completed. If those has already fired, callback is called immediately.
  * @param callback
  * @returns {*}
  */
@@ -43,9 +50,15 @@ export default function onDocumentReady(callback) {
 }
 
 /**
- * Notifies all queued onDocumentReady listeners, then sets a flag indicating this is done.
+ * If eventCount is >= eventsNeededToContinue, then this function notifies all
+ * queued onDocumentReady listeners, then sets a flag indicating this is done.
+ * Otherwise it does nothing.
  */
 function notifyListenersAndStop() {
+  if (++eventCount < eventsNeededToContinue) {
+    return;
+  }
+
   if (windowHasLoaded) {
     return console.error(
       'notifyListenersAndStop called after window load process has completed.',
@@ -59,6 +72,11 @@ function notifyListenersAndStop() {
 }
 
 function windowLoadListener(readyCb=()=>{}) {
+  // Start profile init.
+  userProfile.init(() => {
+    notifyListenersAndStop();
+  });
+
   // Loading text
   const loadingTextDiv = document.getElementById('loading-text');
   const build = packageJson.releaseNumber;

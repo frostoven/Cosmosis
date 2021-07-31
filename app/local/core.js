@@ -19,7 +19,6 @@ import { PointerLockControls } from './PointerLockControls';
 import { startupEvent, getStartupEmitter } from '../emitters';
 import contextualInput from './contextualInput';
 import { preBootPlaceholder } from '../reactComponents/Modal';
-import userProfile from './userProfile';
 
 const gameFont = 'node_modules/three/examples/fonts/helvetiker_regular.typeface.json';
 
@@ -212,9 +211,6 @@ function closeLoadingScreen() {
 
 function init({ sceneName }) {
   console.log('Initialising core.');
-
-  // Creates profile directory etc.
-  userProfile.init();
 
   // Controls.
   contextualInput.init();
