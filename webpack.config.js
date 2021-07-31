@@ -6,7 +6,7 @@ module.exports = {
     watch: false,
     target: 'node-webkit',
     entry: {
-        bundle: './app/index.js',
+        game: './app/index.js',
         // worker: './app/physicsWorker.js',
     },
     output: {
@@ -42,14 +42,6 @@ module.exports = {
             }
         ]
     },
-
-    plugins: [
-        new ExtractTextPlugin({
-            filename: 'bundle.css',
-            disable: false,
-            allChunks: true
-        })
-    ],
 
     resolve: {
       extensions: ['.js', '.json', '.jsx']
