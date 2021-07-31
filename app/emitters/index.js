@@ -20,8 +20,6 @@ export const startupEvent = {
   firstFrameRendered: startupEmitter.nextEnum(),
   /** The cosmos awakens.*/
   skyBoxLoaded: startupEmitter.nextEnum(),
-  /** User profile dir has been loaded (or created for the first time). */
-  userProfileReady: startupEmitter.nextEnum(),
   /* This includes all GLTF preprocessing. */
   playerShipLoaded: startupEmitter.nextEnum(),
   /** Game is fully loaded, core functions (like rendering) is already
