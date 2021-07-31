@@ -14,7 +14,7 @@
   "chromium-args": "--enable-logging=stderr",
   "description": "Drugs. Control. Concubines.",
   "scripts": {
-    "//": "prepare-dev is actually redundant, but it saves telling new users to reload nw after bundle.js first build.",
+    "//": "prepare-dev is actually redundant, but it saves telling new users to reload nw after game.js first build.",
     "prepare-dev": "webpack --mode development",
     "dev": "webpack --mode development --watch",
     "serve": "nw --enable-node-worker",
