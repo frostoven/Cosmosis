@@ -1,4 +1,5 @@
-const path = require("path");
+const path = require('path');
+import { access, constants, writeFile } from 'fs';
 
 // Example:
 // 'Could not create user profile at location:\n' +
@@ -34,7 +35,36 @@ function convertToOsPath(str) {
   }
 }
 
+/**
+ * Check if specified JSON file exists. If not, creates it with the specified data.
+ * @param {string} fileName
+ * @param {any} content - Any content that can survive JSON.stringify.
+ * @param {function} callback(error, creationPerformed)
+ */
+function createJsonIfNotExists({ fileName, content={}, callback=()=>{} }) {
+  // Check if the file exists in the current directory, and if it is writable.
+  // https://nodejs.org/api/fs.html#fs_fs_access_path_mode_callback
+  access(fileName, constants.F_OK, (error) => {
+    if (error) {
+      // File does not exist; create it.
+      writeFile(fileName, JSON.stringify(content, null, 4), 'utf-8', (error) => {
+        if (error) {
+          // Error; indicate that no creation was done.
+          return callback(error, false);
+        }
+        // Success; indicate that a new file was created.
+        callback(null, true);
+      });
+    }
+    else {
+      // File exists; indicate that no creation was done.
+      callback(null, false);
+    }
+  });
+}
+
 export {
   getFriendlyFsError,
   convertToOsPath,
+  createJsonIfNotExists,
 }
