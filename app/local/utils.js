@@ -6,6 +6,8 @@
 //  assets are HUGE. In fact, we might want the application to have 2 different
 //  modes - local asset mode, and streamed asset mode.
 const fs = require('fs');
+// Used for fast object cloning.
+const v8 = require('v8');
 
 /**
  * Looks for a file non-recursively that matches the name and has one
@@ -169,13 +171,27 @@ function capitaliseEachWord(string) {
 }
 
 /**
- * Removes all special characters from a string, excluding dashes and
- * underscores.
+ * Removes all special characters that could cause filename or cmd/terminal
+ * command issues with knows operating systems.
  * @param string
  * @returns {string}
  */
 function safeString(string) {
-  return string.replace(/[^a-zA-Z0-9 \-_]/g, '').trim();
+  return string.replace(/[^a-zA-Z0-9 \-_@^()',;+={}\[\]]/g, '').trim();
+}
+
+/**
+ * Creates a deep clone of object using the serialization API directly exposed
+ * by Node. Used specifically because it's meant to be very fast.
+ * TODO: for interest sake, performance test this vs
+ *  JSON.parse(JSON.stringify(o)) to ensure this isn't bad premature
+ *  optimisation.
+ * https://stackoverflow.com/questions/122102/what-is-the-most-efficient-way-to-deep-clone-an-object-in-javascript/10916838#10916838
+ * @param obj
+ * @returns {any}
+ */
+function structuredClone(obj) {
+  return v8.deserialize(v8.serialize(obj));
 }
 
 export {
@@ -188,4 +204,5 @@ export {
   capitaliseFirst,
   capitaliseEachWord,
   safeString,
+  structuredClone,
 }
