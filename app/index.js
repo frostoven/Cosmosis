@@ -6,7 +6,7 @@ import core from './local/core';
 import powerOnSelfTest from './test';
 import api from './local/api';
 import packageJson from '../package.json';
-import onDocumentReady from './local/windowLoadListener';
+import { onReadyToBoot } from './local/windowLoadListener';
 
 // Game modules.
 import scenes from './scenes';
@@ -75,7 +75,7 @@ modeControl.initAll();
 
 console.groupEnd();
 
-onDocumentReady(() => {
+onReadyToBoot(() => {
   // Glue it together, and start the rendering process.
   core.init({ sceneName: defaultScene });
 
