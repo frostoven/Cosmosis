@@ -7,6 +7,8 @@ import GameMenu from './GameMenu';
 import Options from './Options';
 import Controls from './Controls';
 import Modal from '../Modal';
+import ControlsOverlay from '../ControlsOverlay';
+import { onReadyToBoot } from '../../local/windowLoadListener';
 
 const startupEmitter = getStartupEmitter();
 const uiEmitter = getUiEmitter();
@@ -20,6 +22,10 @@ export default class Menu extends React.Component {
       // receiving input at once, we should probably change this into an array
       // and implement multiple actives.
       activeMenu: 'game menu',
+      // We need to check for this because some functions (such as controls)
+      // aren't loaded until the user profile is ready, and menus have a
+      // dependency on controls.
+      profileWasLoaded: false,
     };
 
     // All menus (and special components) that listen for input.
@@ -39,10 +45,14 @@ export default class Menu extends React.Component {
   };
 
   componentDidMount() {
-    startupEmitter.emit(startupEvent.menuLoaded);
-    this.registerListeners();
-    this.changeMenu({
-      next: this.state.activeMenu,
+    onReadyToBoot(() => {
+      this.setState({ profileWasLoaded: true }, () => {
+        startupEmitter.emit(startupEvent.menuLoaded);
+        this.registerListeners();
+        this.changeMenu({
+          next: this.state.activeMenu,
+        });
+      });
     });
   }
 
@@ -53,7 +63,7 @@ export default class Menu extends React.Component {
 
   stopRepeatArrowTimer = () => {
     this.repeatArrow.action = null;
-  }
+  };
 
   registerListeners = () => {
     const actions = keySchema.menuViewer;
@@ -200,13 +210,23 @@ export default class Menu extends React.Component {
       changeMenu: this.changeMenu,
     };
 
-    return (
-      <div>
-        <GameMenu {...props} />
-        <Options {...props} />
-        <Controls {...props} />
-        <Modal {...props} />
-      </div>
-    );
+    if (!this.state.profileWasLoaded) {
+      return (
+        <div>
+          <Modal key='modal' {...props} />
+        </div>
+      );
+    }
+    else {
+      return (
+        <div>
+          <ControlsOverlay />
+          <GameMenu {...props} />
+          <Options {...props} />
+          <Controls {...props} />
+          <Modal key='modal' {...props} />
+        </div>
+      );
+    }
   }
 }

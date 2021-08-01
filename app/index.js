@@ -76,7 +76,10 @@ modeControl.initAll();
 console.groupEnd();
 
 onDocumentReady(() => {
-  console.log('doc ready'); // TODO: make react system load here.
+  window.rootNode = ReactDOM.render(
+    <RootNode />,
+    document.getElementById('reactRoot'),
+  );
 });
 
 onReadyToBoot(() => {
@@ -142,9 +145,4 @@ onReadyToBoot(() => {
     // api.setPlayerShipLocation(new Vector3(150064242871, 485401441, -392001660));
     // api.setPlayerShipRotation(new Vector3(-0.8526, -0.3184, -1.4681));
   });
-
-  window.rootNode = ReactDOM.render(
-    <RootNode />,
-    document.getElementById('reactRoot'),
-  );
 });
