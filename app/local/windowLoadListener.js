@@ -3,9 +3,11 @@
  * Most (if not all) of these may need to be replaced with better solutions in
  * future.
  *
- * Probably the only feature that should remain here is the splash screen.
+ * Probably the only features that should remain here are the splash screen and
+ * doc-ready functions.
  */
 
+import CbQueue from './CbQueue';
 const fs = require('fs');
 
 import userProfile from '../userProfile'
@@ -13,8 +15,9 @@ import packageJson from '../../package.json';
 import { loadAllCrosshairImages } from './crosshairs';
 
 let windowHasLoaded = false;
-// Document ready callbacks.
-const callbacks = [];
+let bootReadySignalled = false;
+const onDocReadyCallbacks = new CbQueue();
+const onBootReadyCallbacks = new CbQueue();
 // The amount of times notifyListenersAndStop needs to be called for document
 // ready can be triggered.
 const eventsNeededToContinue = 2;
@@ -43,10 +46,18 @@ if (!process) {
  * @returns {*}
  */
 export function onReadyToBoot(callback) {
+  if (bootReadySignalled) {
+    return callback();
+  }
+  onBootReadyCallbacks.register(callback);
+}
+
+// Called during window.onload.
+export function onDocumentReady(callback) {
   if (windowHasLoaded) {
     return callback();
   }
-  callbacks.push(callback);
+  onDocReadyCallbacks.register(callback);
 }
 
 /**
@@ -59,19 +70,19 @@ function notifyListenersAndStop() {
     return;
   }
 
-  if (windowHasLoaded) {
+  if (bootReadySignalled) {
     return console.error(
-      'notifyListenersAndStop called after window load process has completed.',
+      'notifyListenersAndStop called after boot process has started.',
     );
   }
-  windowHasLoaded = true;
-  for (let i = 0, len = callbacks.length; i < len; i++) {
-    const cb = callbacks[i];
-    cb();
-  }
+  bootReadySignalled = true;
+  onBootReadyCallbacks.notifyAll();
 }
 
 function windowLoadListener(readyCb=()=>{}) {
+  windowHasLoaded = true;
+  onDocReadyCallbacks.notifyAll();
+
   // Start profile init.
   userProfile.init(() => {
     notifyListenersAndStop();
@@ -112,4 +123,5 @@ window.onload = windowLoadListener;
 
 export default {
   onReadyToBoot,
+  onDocumentReady,
 }
