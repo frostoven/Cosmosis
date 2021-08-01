@@ -42,7 +42,7 @@ if (!process) {
  * @param callback
  * @returns {*}
  */
-export default function onDocumentReady(callback) {
+export function onReadyToBoot(callback) {
   if (windowHasLoaded) {
     return callback();
   }
@@ -51,7 +51,7 @@ export default function onDocumentReady(callback) {
 
 /**
  * If eventCount is >= eventsNeededToContinue, then this function notifies all
- * queued onDocumentReady listeners, then sets a flag indicating this is done.
+ * queued onReadyToBoot listeners, then sets a flag indicating this is done.
  * Otherwise it does nothing.
  */
 function notifyListenersAndStop() {
@@ -109,3 +109,7 @@ function windowLoadListener(readyCb=()=>{}) {
 }
 
 window.onload = windowLoadListener;
+
+export default {
+  onReadyToBoot,
+}
