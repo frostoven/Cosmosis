@@ -6,7 +6,7 @@ import core from './local/core';
 import powerOnSelfTest from './test';
 import api from './local/api';
 import packageJson from '../package.json';
-import { onReadyToBoot } from './local/windowLoadListener';
+import { onDocumentReady, onReadyToBoot } from './local/windowLoadListener';
 
 // Game modules.
 import scenes from './scenes';
@@ -29,7 +29,7 @@ window.debug.api = api;
 // const defaultScene = 'logDepthDemo';
 const defaultScene = 'localCluster';
 
-// Integration tests. Note that these won't actually by itself. The user
+// Integration tests. Note that these will no longer run by itself. The user
 // manually runs these by opening the dev console and entering
 // 'powerOnSelfTest()'.
 window.powerOnSelfTest = powerOnSelfTest;
@@ -74,6 +74,10 @@ for (let scene of scenes) {
 modeControl.initAll();
 
 console.groupEnd();
+
+onDocumentReady(() => {
+  console.log('doc ready'); // TODO: make react system load here.
+});
 
 onReadyToBoot(() => {
   // Glue it together, and start the rendering process.
