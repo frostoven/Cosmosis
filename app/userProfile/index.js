@@ -32,6 +32,8 @@ load rest of game. add little note on how long profile init took.
    broken and they cannot save.
 */
 
+// --- Vars ---------------------------------------------------------------- //
+
 const startupEmitter = getStartupEmitter();
 
 // Used to measure how long profile load takes.
@@ -48,9 +50,11 @@ const defaultProfileName = 'default';
 //  TODO: retrieve this info from CosmosisGame/profile.json instead (or create if not exists, etc).
 const activeProfile = defaultProfileName;
 // Used to prevent unnecessary disk reads.
-const configCache = {};
+let configCache = {};
 // Used for invalidation callbacks.
 const cacheListeners = new CbQueue();
+
+// --- Profile functions --------------------------------------------------- //
 
 function getUserDataDir() {
   // Dev note: please always follow paths with a slash, and don't proceed dirs
@@ -87,8 +91,9 @@ function setProfileBroken({ message }) {
 }
 
 /**
- * Attempts to create a new user profile. Profiles contain everything from
- * control bindings to graphics options.
+ * Attempts to create a new user profile. Note that a profile is simply an
+ * empty directory by default. The config loader will create new files as
+ * needed.
  * @param name
  * @param showAlertOnFail
  * @param callback - passes null,true on success and null,false on failure.
@@ -138,26 +143,105 @@ function navigateToDataDir() {
 
 // Get profile that's currently active (ex. 'default').
 function getActiveProfile() {
-  console.log('getActiveProfile: TBA');
+  return activeProfile;
 }
 
 // Changes the active profile, which will trigger a read from disk. Fails with
 // a message if profile does not exist.
-function setActiveProfile() {
-  console.log('setActiveProfile: TBA');
+function setActiveProfile({ profileName, preventFallback=false, callback }) {
+  if (!profileName) {
+    const message = 'setActiveProfile needs a profile name.';
+    console.error(message);
+    return callback({ message });
+  }
+  const cacheBackup = configCache;
+
+  // Create all needed configs.
+  createAllProfileConfigs({
+    profileName,
+    onComplete: (error) => {
+      if (!error) {
+        // Load all profile configs.
+        loadAllConfigs({
+          profileName,
+          onComplete: (error) => {
+            if (error) {
+              configCache = cacheBackup;
+              cacheListeners.notifyAll(configCache);
+
+              if (!preventFallback) {
+                $modal.alert({
+                  header: 'Error loading profile',
+                  body: 'Could not fully load profile; some parts may be. ' +
+                    'corrupted. Falling back to default.'
+                });
+                setActiveProfile({
+                  profileName: defaultProfileName,
+                  preventFallback: true,
+                  callback
+                });
+              }
+              else {
+                configCache = cacheBackup;
+                cacheListeners.notifyAll(configCache);
+
+                // TODO: concoct some catastrophic situation to test this (such
+                //  as corrupting the default profile templates or whatever).
+                $modal.alert({
+                  header: 'Game state very corrupt',
+                  body: 'Could not load fallback settings. Game profile may ' +
+                    'be irreparable. Back up your saves just in case you ' +
+                    'need them later, then delete them.\n\nSave files may be ' +
+                    'found here:\n' +
+                    convertToOsPath(dataDir),
+                });
+                return callback({ message: 'Profile irrecoverable.' });
+              }
+            }
+            else {
+              callback(null);
+              cacheListeners.notifyAll(configCache);
+            }
+          }
+        });
+      }
+      else {
+        configCache = cacheBackup;
+        cacheListeners.notifyAll(configCache);
+      }
+    }
+  });
 }
 
 // Lists all profiles that can be loaded (i.e. exist).
 function getAvailableProfiles() {
+  // Read all dirs in data dir. Exclude '^\.' files.
+  // Return list.
   console.log('getAvailableProfiles: TBA');
+}
+
+// Creates a backup of the specified profile. Backup is a copy of the profile
+// dir and all its files. The backup is suffixed with the current date/time.
+// Name / date is delimited with '.'.
+// Example: CosmosisGame/.backups/default.2020-08-01-2104-59
+// where the date format is profile.YYYY-MM-DD-HHmm-ss
+function createProfileBackup(profile) {
+  console.log('createProfileBackup: TBA');
+}
+
+// Deletes all but the last four backups.
+// TODO: make backup count configurable from the customisation menu.
+function deleteOldBackups() {
+  //
 }
 
 // Get list of profile backups.
 function getBackupList() {
+  // Decide on a backup scheme before planning this out.
   console.log('getBackupList: TBA');
 }
 
-// This will be implemented if profile migrations become necessary.
+// TODO: This will be implemented if profile migrations become necessary.
 // Gives the user the option fill blank controls in their profile with new
 // controls released in more recent versions. This aims to provide a fix for
 // some other asshole games that just leave you with blank bindings after an
@@ -178,8 +262,11 @@ function getDefaultConfig(identifier, alternativeContent=null) {
 // Get latest cached copy of specified config. Note: there are zero disk reads
 // in this function; it *always* returns cache. Disk reads are done in other
 // functions pertaining to boot and invalidation.
-function getCurrentConfig(identifier) {
-  console.log('Not yet implemented: getCurrentConfig.');
+function getCurrentConfig({ identifier }) {
+  if (!identifier) {
+    return null;
+  }
+  return configCache[identifier];
 }
 
 // Adds a listener that is called when user configs are changed or loaded from
@@ -195,13 +282,85 @@ function removeCacheListener(listener) {
 // Creates all profile configs needed for the game to function normally. Does
 // not do anything for files that already exist.
 function createAllProfileConfigs({ profileName, showAlertOnFail=true, onComplete }) {
+  const profileDir = `${dataDir}/${profileName}`;
+  // Check if requested profile exists:
+  fs.lstat(profileDir, (error, stats) => {
+    if (error) {
+      const message = `Cannot read profile '${profileName}' because its ` +
+        'directory does not exist:\n' +
+        convertToOsPath(profileDir);
+      showAlertOnFail && $modal.alert(message);
+      onComplete({ message });
+    }
+    else {
+      // Proceed with creating configs.
+      const allConfigs = [];
+      const templates = getAllDefaults({ asArray: true });
+      for (let i = 0, len = templates.length; i < len; i++) {
+        const { info, fileContent } = templates[i];
+        if (!info.fileName || !info.name) {
+          console.error(
+            'Cannot create a profile config because either info.name or ' +
+            'info.fileName is missing in the template config.\n' +
+            'Offending config:', templates[i],
+          );
+        }
+        else {
+          let fileName = `${profileDir}/${info.fileName}`;
+          if (info.profileAgnostic) {
+            fileName = `${dataDir}/${info.fileName}`;
+          }
+
+          allConfigs.push((cb) => {
+            createJsonIfNotExists({
+              fileName,
+              content: fileContent,
+              callback: (error, fileWasCreated) => {
+                if (fileWasCreated) {
+                  console.log(`* Created profile config '${info.fileName}'.`);
+                }
+                cb(error);
+              },
+            });
+          });
+        }
+      }
+
+      let fileErrors = 0;
+      forEachFn(
+        // All functions being processed:
+        allConfigs,
+        // On each step completed:
+        (error) => {
+          if (error) {
+            fileErrors++;
+          }
+        },
+        // On reach end:
+        () => {
+          if (fileErrors && showAlertOnFail) {
+            $modal.alert(
+              `${fileErrors} config file${fileErrors === 1 ? '' : 's'} could ` +
+              'not be written. Some functions may not work correctly.',
+            );
+          }
+          onComplete(fileErrors ? { fileErrors } : null);
+        },
+      );
+    }
+  });
+}
+
+// Loads all configs for the specified profile. If a config cannot be loaded,
+// uses internal default.
+function loadAllConfigs({ profileName, onComplete }) {
   const allConfigs = [];
   const templates = getAllDefaults({ asArray: true });
   for (let i = 0, len = templates.length; i < len; i++) {
     const { info, fileContent } = templates[i];
     if (!info.fileName || !info.name) {
       console.error(
-        'Cannot create a profile config because either info.name or ' +
+        'Cannot read a profile config because either info.name or ' +
         'info.fileName is missing in the template config.\n' +
         'Offending config:', templates[i],
       );
@@ -213,36 +372,63 @@ function createAllProfileConfigs({ profileName, showAlertOnFail=true, onComplete
       }
 
       allConfigs.push((cb) => {
-        createJsonIfNotExists({
-          fileName,
-          content: fileContent,
-          callback: cb,
+        fs.readFile(fileName, 'utf-8', (error, data) => {
+          if (error) {
+            // TODO: mark profile as broken here?
+            // TODO: induce an error to ensure this works.
+            console.error(
+              `[userProfile] Could not open ${fileName}; falling back to template.`
+            );
+            // console.log(`** method 1: from template (configCache[${info.name}])`);
+            configCache[info.name] = structuredClone(fileContent);
+          }
+          else {
+            try {
+              configCache[info.name] = JSON.parse(data);
+              // console.log(`** method 2: from file (configCache[${info.name}])`);
+            }
+            catch (error) {
+              console.error('[userProfile]', error);
+              // console.log(`** method 1b (configCache[${info.name}])`);
+              // TODO: change this to a modal that gives the user the
+              //  option to delete the file and replace with a template.
+              //  ## good first task?
+              $modal.alert(
+                `The config '${convertToOsPath(fileName)}' appears to be ` +
+                'corrupt. Falling back to built-in template config.',
+              );
+              configCache[info.name] = structuredClone(fileContent);
+            }
+            cb();
+          }
         });
       });
     }
   }
 
-  let fileErrors = 0;
   forEachFn(
     // All functions being processed:
     allConfigs,
     // On each step completed:
-    (error) => {
-      if (error) {
-        fileErrors++;
-      }
-    },
+    () => {},
     // On reach end:
     () => {
-      if (fileErrors && showAlertOnFail) {
-        $modal.alert(
-          `${fileErrors} config files could not be written. Some functions` +
-          `may not work correctly.`,
-        );
+      let errorInfo = null;
+      try {
+        cacheListeners.notifyAll(configCache);
       }
-      onComplete(fileErrors ? { fileErrors } : null);
+      catch (notifyError) {
+        console.error('[loadAllConfigs -> notifyAll]', notifyError);
+        console.dir(notifyError);
+        errorInfo = {
+          error: notifyError.message,
+        };
+      }
+      onComplete(errorInfo);
     });
 }
+
+// --- Boot functions ------------------------------------------------------ //
 
 // Used to measure how long profile load takes
 function startTimer(next) {
@@ -323,84 +509,18 @@ function createDefaultProfileFiles(next) {
   });
 }
 
-// Loads all configs for the activeProfile. If a config cannot be loaded, uses
-// internal default.
-function loadAllConfigs(next) {
-  const allConfigs = [];
-  const templates = getAllDefaults({ asArray: true });
-  for (let i = 0, len = templates.length; i < len; i++) {
-    const { info, fileContent } = templates[i];
-    if (!info.fileName || !info.name) {
-      console.error(
-        'Cannot read a profile config because either info.name or ' +
-        'info.fileName is missing in the template config.\n' +
-        'Offending config:', templates[i],
-      );
+// Loads all configs for the default profile. If a config cannot be loaded,
+// uses internal default.
+function loadDefaultConfigs(next) {
+  loadAllConfigs({
+    profileName: defaultProfileName,
+    onComplete: (error) => {
+      next({ error, completed: 'loadAllConfigs' });
     }
-    else {
-      let fileName = `${dataDir}/${activeProfile}/${info.fileName}`;
-      if (info.profileAgnostic) {
-        fileName = `${dataDir}/${info.fileName}`;
-      }
-
-      allConfigs.push((cb) => {
-        fs.readFile(fileName, 'utf-8', (error, data) => {
-          if (error) {
-            // TODO: mark profile as broken here?
-            // TODO: induce an error to ensure this works.
-            console.error(
-              `[userProfile] Could not open ${fileName}; falling back to template.`
-            );
-            // console.log(`** method 1: from template (configCache[${info.name}])`);
-            configCache[info.name] = structuredClone(fileContent);
-          }
-          else {
-            // console.log('---> file opened');
-            try {
-              configCache[info.name] = JSON.parse(data);
-              // console.log(`** method 2: from file (configCache[${info.name}])`);
-            }
-            catch (error) {
-              console.error('[userProfile]', error);
-              // console.log(`** method 1b (configCache[${info.name}])`);
-              // TODO: change this to a modal that gives the user the
-              //  option to delete the file and replace with a template.
-              //  ## good first task?
-              $modal.alert(
-                `The config '${convertToOsPath(fileName)}' appears to be ` +
-                'corrupt. Falling back to built-in template config.',
-              );
-              configCache[info.name] = structuredClone(fileContent);
-            }
-            cb();
-          }
-        });
-      });
-    }
-  }
-
-  forEachFn(
-    // All functions being processed:
-    allConfigs,
-    // On each step completed:
-    () => {},
-    // On reach end:
-    () => {
-      let errorInfo = null;
-      try {
-        cacheListeners.notifyAll(configCache);
-      }
-      catch (notifyError) {
-        console.error('[loadAllConfigs -> notifyAll]', notifyError);
-        console.dir(notifyError);
-        errorInfo = {
-          error: notifyError.message,
-        };
-      }
-
-      next({ error: errorInfo, completed: 'loadAllConfigs' });
-    });
+  });
 }
+
+// --- Init ---------------------------------------------------------------- //
 
 function init(onComplete=()=>{}) {
   let lastCheckedTime = Date.now();
@@ -436,7 +556,7 @@ function init(onComplete=()=>{}) {
       setDataDirPath,
       createDefaultProfileDir,
       createDefaultProfileFiles,
-      loadAllConfigs,
+      loadDefaultConfigs,
       stopTimerAndLogResult,
     ],
     // On each step completed:
@@ -462,6 +582,7 @@ function init(onComplete=()=>{}) {
 debug.userProfile = {
   init,
   createProfile,
+  setActiveProfile,
   getDataDir,
   navigateToDataDir,
   getDefaultConfig,
