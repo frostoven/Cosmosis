@@ -44,11 +44,11 @@ let disableSaving = false;
 const { gameDataDirName } = packageJson;
 // The directory game saves are stored. Determined during init.
 let dataDir = null;
-// Also used the fallback profile.
+// Also used as the fallback profile.
 const defaultProfileName = 'default';
 // Profile that is currently in use.
 //  TODO: retrieve this info from CosmosisGame/profile.json instead (or create if not exists, etc).
-const activeProfile = defaultProfileName;
+let activeProfile = defaultProfileName;
 // Used to prevent unnecessary disk reads.
 let configCache = {};
 // Used for invalidation callbacks.
@@ -98,11 +98,11 @@ function setProfileBroken({ message }) {
  * @param showAlertOnFail
  * @param callback - passes null,true on success and null,false on failure.
  */
-function createProfile({ name, showAlertOnFail=true, callback=e=>{} }) {
-  const safeName = safeString(name);
-  if (safeName !== name) {
+function createProfile({ profileName, showAlertOnFail=true, callback=e=>{} }) {
+  const safeName = safeString(profileName);
+  if (safeName !== profileName) {
     console.warn(
-      `Changing requested profile name from '${name}' to '${safeName}'.`
+      `Changing requested profile name from '${profileName}' to '${safeName}'.`
     );
   }
   const target = `${dataDir}/${safeName}`;
@@ -146,8 +146,13 @@ function getActiveProfile() {
   return activeProfile;
 }
 
-// Changes the active profile, which will trigger a read from disk. Fails with
-// a message if profile does not exist.
+/**
+ * Changes the active profile, which will trigger a read from disk. Fails with
+ * a message if profile does not exist.
+ * @param {string} profileName
+ * @param [preventFallback] - Used internally to be prevent recursion on bad profile errors.
+ * @param {function} callback
+ */
 function setActiveProfile({ profileName, preventFallback=false, callback }) {
   if (!profileName) {
     const message = 'setActiveProfile needs a profile name.';
@@ -199,6 +204,7 @@ function setActiveProfile({ profileName, preventFallback=false, callback }) {
               }
             }
             else {
+              activeProfile = profileName;
               callback(null);
               cacheListeners.notifyAll(configCache);
             }
@@ -214,10 +220,31 @@ function setActiveProfile({ profileName, preventFallback=false, callback }) {
 }
 
 // Lists all profiles that can be loaded (i.e. exist).
-function getAvailableProfiles() {
-  // Read all dirs in data dir. Exclude '^\.' files.
-  // Return list.
-  console.log('getAvailableProfiles: TBA');
+function getAvailableProfiles({ callback }) {
+  // Find all dirs in data dir and return them. Exclude files starting with a
+  // full stop.
+  fs.readdir(dataDir, { withFileTypes: true }, (error, dirents) => {
+    if (error) {
+      callback(error);
+    }
+    else {
+      const dirNames = dirents
+        .filter((dirent) => {
+          if (!dirent.isDirectory()) {
+            // Only directories can be profiles.
+            return false;
+          }
+          // If converting to safe string changes the name, then it means the
+          // dir has forbidden characters. The .backups dir is an example of
+          // this (safe strings cannot contain fullstops). This returns true if
+          // this directory has no invalid characters.
+          return dirent.name === safeString(dirent.name);
+
+        })
+        .map(dirent => dirent.name);
+      callback(null, { profileNames: dirNames });
+    }
+  });
 }
 
 // Creates a backup of the specified profile. Backup is a copy of the profile
@@ -583,10 +610,12 @@ debug.userProfile = {
   init,
   createProfile,
   setActiveProfile,
+  getActiveProfile,
   getDataDir,
   navigateToDataDir,
   getDefaultConfig,
   getCurrentConfig,
+  getAvailableProfiles,
 };
 
 export default {
@@ -601,4 +630,5 @@ export default {
   getCurrentConfig,
   addCacheListener,
   removeCacheListener,
+  getAvailableProfiles,
 }
