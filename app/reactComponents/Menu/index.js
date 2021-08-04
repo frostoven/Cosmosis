@@ -6,6 +6,7 @@ import CbQueueExtra from '../../local/CbQueueExtra';
 import GameMenu from './GameMenu';
 import Options from './Options';
 import Controls from './Controls';
+import Profile from './Profile';
 import Modal from '../Modal';
 import ControlsOverlay from '../ControlsOverlay';
 import { onReadyToBoot } from '../../local/windowLoadListener';
@@ -224,6 +225,7 @@ export default class Menu extends React.Component {
           <GameMenu {...props} />
           <Options {...props} />
           <Controls {...props} />
+          <Profile {...props} />
           <Modal key='modal' {...props} />
         </div>
       );

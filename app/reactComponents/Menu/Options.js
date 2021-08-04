@@ -75,7 +75,7 @@ export default class Options extends React.Component {
       identifier: thisMenu,
       // This is called if MenuNavigation has no use for some action.
       onUnhandledInput: this.handleInput,
-    }
+    };
 
     const btnProps = {
       selectable: true,
@@ -93,6 +93,7 @@ export default class Options extends React.Component {
             <Button {...btnProps} invalid onClick={changeMenuFn('audio')}>Audio</Button>
             <Button {...btnProps} invalid onClick={changeMenuFn('customisation')}>Customisation</Button>
             <Button {...btnProps} invalid onClick={changeMenuFn('credits')}>Credits</Button>
+            <Button {...btnProps} onClick={changeMenuFn('profile')}>Profile</Button>
             <Button {...btnProps} onClick={this.handleBack}>Back</Button>
           </MenuNavigation>
         </div>
