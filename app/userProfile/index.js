@@ -164,8 +164,34 @@ function deleteProfile({ profileName, callback }) {
               fs.rmdir(convertToOsPath(target), { recursive: true }, (error) => {
                 if (error) {
                   $modal.alert(error.toString());
+                  return callback(error);
                 }
-                callback(error);
+                if (activeProfile === profileName) {
+                  // We've deleted the active profile. Switch to literally any
+                  // other profile.
+                  getAvailableProfiles({
+                    callback: (error, { profileNames }) => {
+                      if (!profileNames || profileNames.length === 0) {
+                        $modal.alert({
+                            header: 'Critical profile error',
+                            message: 'Warning: could not obtain profile list ' +
+                              'result! Game might fall into a broken state; ' +
+                              'please restart the game.'
+                          }
+                        );
+                        return callback(error);
+                      }
+                      else {
+                        setActiveProfile({
+                          profileName: profileNames[0],
+                          callback: (error) =>{
+                            return callback(error);
+                          }
+                        });
+                      }
+                    }
+                  });
+                }
               });
             }
             else {
@@ -180,8 +206,6 @@ function deleteProfile({ profileName, callback }) {
           return callback(message);
         }
       });
-
-      // TODO: If default is active and the only available profile, refuse deletion (maybe?).
     }
   });
 }
@@ -215,7 +239,7 @@ function getActiveProfile() {
  * a message if profile does not exist.
  * @param {string} profileName
  * @param [preventFallback] - Used internally to be prevent recursion on bad profile errors.
- * @param {function} callback
+ * @param {function} [callback]
  */
 function setActiveProfile({ profileName, preventFallback=false, callback }) {
   if (!profileName) {
