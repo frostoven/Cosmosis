@@ -136,14 +136,17 @@ function deleteProfile({ profileName, callback }) {
   const target = `${dataDir}/${safeName}`;
 
   getAvailableProfiles({
-    callback: (error, dirList) => {
+    callback: (error, { profileNames }) => {
       if (error) {
         return callback(error);
       }
-      if (dirList.length < 2) {
+      if (profileNames.length < 2) {
         const error = 'You need at least one profile defined. Create ' +
           'another profile to delete this one.';
-        $modal.alert(error);
+        $modal.alert({
+          header: 'Cannot delete single remaining profile',
+          body: error,
+        });
         return callback(error);
       }
 
@@ -174,7 +177,7 @@ function deleteProfile({ profileName, callback }) {
                       if (!profileNames || profileNames.length === 0) {
                         $modal.alert({
                             header: 'Critical profile error',
-                            message: 'Warning: could not obtain profile list ' +
+                            body: 'Warning: could not obtain profile list ' +
                               'result! Game might fall into a broken state; ' +
                               'please restart the game.'
                           }
