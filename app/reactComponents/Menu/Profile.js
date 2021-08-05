@@ -2,7 +2,7 @@ import React from 'react';
 import { capitaliseEachWord } from '../../local/utils';
 import Button from '../elements/KosmButton';
 import MenuNavigation from '../elements/MenuNavigation';
-import { Segment } from 'semantic-ui-react';
+import { Divider, Segment } from 'semantic-ui-react';
 import { defaultMenuProps, defaultMenuPropTypes } from './defaults';
 import userProfile from '../../userProfile'
 import { showRawKeyGrabber } from '../Modal/rawKeyGrabber';
@@ -15,6 +15,7 @@ const defaultBtnProps = {
   selectable: true,
   block: true,
   wide: true,
+  autoScroll: true,
 };
 
 export default class Profile extends React.Component {
@@ -27,6 +28,7 @@ export default class Profile extends React.Component {
   constructor(props) {
     super(props);
     this.state = Profile.defaultState;
+    this.dialogTag = 'profileDialog';
   }
 
   componentDidMount() {
@@ -102,7 +104,24 @@ export default class Profile extends React.Component {
     });
   };
 
-  showLoadProfileModal = () => {
+  deleteProfile = ({ profileName }) => {
+    // TODO: add toast: default profile activated if active profile is deleted.
+    userProfile.deleteProfile({
+      profileName,
+      // The update causes a re-read of the active profile, which is not stored
+      // in state.
+      callback: () => this.forceUpdate(),
+    });
+  };
+
+  /**
+   * Generates a navigable profile list. Note that, whatever dialog you build,
+   * you'll need to specify a valid tag to dispose the dialog once done.
+   * @param {function} onListBuilt
+   * @param {function} onButtonClick
+   * @param {string} tag
+   */
+  genNavProfileList = ({ onListBuilt=()=>{}, onButtonClick=()=>{} }) => {
     userProfile.getAvailableProfiles({
       callback: (error, { profileNames }) => {
         if (error) {
@@ -117,8 +136,8 @@ export default class Profile extends React.Component {
                 {...defaultBtnProps}
                 key={`profile-button-${profileName}`}
                 onClick={() => {
-                  $modal.deactivateByTag({ tag: 'showLoadProfileModal' });
-                  this.loadProfile({ profileName });
+                  this.deactivateModal();
+                  onButtonClick({ profileName });
                 }}
               >
                 {profileName}
@@ -126,21 +145,68 @@ export default class Profile extends React.Component {
             );
           }
 
-          $modal.show({
-            header: 'Load profile',
-            tag: 'showLoadProfileModal',
-            body: (
-              <ModalNavigation {...this.props}>
-                {buttons}
-              </ModalNavigation>
-            ),
-            actions: (
-              <div>&nbsp;</div>
-            ),
-          });
+          onListBuilt(buttons);
         }
       }
     });
+  };
+
+  showLoadProfileModal = () => {
+    this.genNavProfileList({
+      onButtonClick: this.loadProfile,
+      onListBuilt: (buttons) => {
+        $modal.show({
+          tag: this.dialogTag,
+          header: 'Load profile',
+          body: (
+            <ModalNavigation {...this.props} onUnhandledInput={this.onUnhandledModalInput}>
+              {buttons}
+            </ModalNavigation>
+          ),
+          actions: (
+            <div>&nbsp;</div>
+          ),
+        });
+      }
+    });
+  };
+
+  showDeletionModal = () => {
+    this.genNavProfileList({
+      onButtonClick: this.deleteProfile,
+      onListBuilt: (buttons) => {
+        $modal.show({
+          tag: this.dialogTag,
+          header: 'Choose a profile to delete',
+          body: (
+            <ModalNavigation {...this.props} onUnhandledInput={this.onUnhandledModalInput}>
+              {buttons}
+            </ModalNavigation>
+          ),
+          actions: (
+            <div>&nbsp;</div>
+          ),
+        });
+      }
+    });
+  };
+
+  deactivateModal = () => {
+    $modal.deactivateByTag({ tag: this.dialogTag });
+  };
+
+  onUnhandledModalInput = ({ action }) => {
+    if (action === 'back') {
+      this.deactivateModal();
+    }
+  };
+
+  openProfilesDir = () => {
+    userProfile.navigateToDataDir();
+  };
+
+  notYetImplemented = () => {
+    $modal.alert('Auto-backup feature has not yet been implemented.');
   };
 
   render() {
@@ -165,10 +231,15 @@ export default class Profile extends React.Component {
               Profiles contain all your control bindings, customisations, save game files, etc.<br/>
             </Segment>
             <h3>Active profile: {userProfile.getActiveProfile()}</h3>
+            <Divider section />
             <Button {...defaultBtnProps} onClick={this.showLoadProfileModal}>Load profile</Button>
             <Button {...defaultBtnProps} onClick={this.showCreateNewProfileModal}>Create new profile</Button>
-            <Button {...defaultBtnProps} onClick={()=>{}}>Open backup dir</Button>
-            <Button {...defaultBtnProps} onClick={()=>{}}>Backups to keep: [n]</Button>
+            <Button {...defaultBtnProps} onClick={this.showDeletionModal}>Delete profile</Button>
+            <Divider hidden />
+            <Button {...defaultBtnProps} onClick={this.openProfilesDir}>Open profiles directory</Button>
+            <Button {...defaultBtnProps} invalid onClick={this.notYetImplemented}>Open backup dir</Button>
+            <Button {...defaultBtnProps} invalid onClick={this.notYetImplemented}>Backups to keep: 0</Button>
+            <Divider hidden />
             <Button {...defaultBtnProps} onClick={this.handleBack}>Back</Button>
           </MenuNavigation>
         </div>
