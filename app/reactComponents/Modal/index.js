@@ -131,7 +131,7 @@ export default class Modal extends React.Component {
       if (modalQueue[modalQueue.length - 1].deactivated) {
         // This happens if the user requested deactivation by name. Close that
         // modal and move on.
-        return setTimeout(this.deactivateModal);
+        return this.deactivateModal();
       }
 
       this.setState({
@@ -154,11 +154,15 @@ export default class Modal extends React.Component {
     this.reprocessQueue();
   };
 
-  deactivateByTag = ({ customId }) => {
+  deactivateByTag = ({ tag }) => {
+    if (!tag) {
+      return console.error('deactivateByTag requires a tag.');
+    }
+
     const queue = this.modalQueue;
     for (let i = 0, len = queue.length; i < len; i++) {
       const modal = queue[i];
-      if (queue.customId === customId) {
+      if (modal.tag === tag) {
         modal.deactivated = true;
         break;
       }
@@ -181,7 +185,7 @@ export default class Modal extends React.Component {
     {
       header='Message', body='', actions,
       unskippable=false, prioritise=false,
-      customId, callback=()=>{}
+      tag, callback=()=>{}
     }
   ) => {
     if (!actions) {
@@ -195,7 +199,7 @@ export default class Modal extends React.Component {
     this.activateModal();
 
     const options = {
-      header, body, actions, unskippable, prioritise, customId,
+      header, body, actions, unskippable, prioritise, tag,
       deactivated: false,
     };
 
@@ -237,6 +241,8 @@ export default class Modal extends React.Component {
    * @param {string|JSX.Element} options.header
    * @param {string|JSX.Element} options.body
    * @param {undefined|JSX.Element} options.actions
+   * @param {undefined|string} options.yesText - Text to use for positive button.
+   * @param {undefined|string} options.noText - Text to use for negative button.
    * @param {undefined|function} options.callback
    */
   confirm = (options, callback) => {
@@ -260,13 +266,13 @@ export default class Modal extends React.Component {
           this.deactivateModal();
           options.callback(true);
         }}>
-          Yes
+          {options.yesText ? options.yesText : 'Yes'}
         </Button>
         <Button selectable onClick={() => {
           this.deactivateModal();
           options.callback(false);
         }}>
-          No
+          {options.noText ? options.noText : 'No'}
         </Button>
       </>
     );
