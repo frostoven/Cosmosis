@@ -4,7 +4,7 @@ const fs = require('fs');
 const { spawn } = require('child_process');
 
 import packageJson from '../../package.json';
-import { startupEvent, getStartupEmitter } from '../emitters';
+import { getStartupEmitter } from '../emitters';
 import { forEachFn, safeString, structuredClone } from '../local/utils';
 import { getAllDefaults } from './defaultsConfigs';
 import {
@@ -164,6 +164,13 @@ function deleteProfile({ profileName, callback }) {
             noText: 'Cancel',
           }, (deleteProfile) => {
             if (deleteProfile) {
+              // TODO: convert to safe function. Basically, only delete files
+              //  known to exist from templates. If dir is then empty, delete.
+              //  If dir is not empty, refuse to delete and [modal] list the unknown
+              //  files not tracked by the game. If we ever need to remove
+              //  configs in future, we can simply mark them as obsolete in
+              //  templates. Switch out of profile regardless of whether or not
+              //  deletion was a success.
               fs.rmdir(convertToOsPath(target), { recursive: true }, (error) => {
                 if (error) {
                   $modal.alert(error.toString());
@@ -213,6 +220,44 @@ function deleteProfile({ profileName, callback }) {
   });
 }
 
+// Saves active profile's configs.
+function saveActiveConfig({ identifier, dump, callback }) {
+  saveConfig({ profileName: activeProfile, identifier, dump, callback });
+}
+
+// Saves active configs to specified profile.
+function saveConfig({ profileName, identifier, dump, callback }) {
+  if (profileName !== safeString(profileName)) {
+    const error = 'Invalid profile name given to save.';
+    $modal.alert(error);
+    return callback(error);
+  }
+
+  const config = getAllDefaults()[identifier];
+  if (!config || !config.info || !config.info.fileName) {
+    const error = `Bad identifier '${identifier}', or missing file info.`;
+    $modal.alert({ header: 'Error', body: error });
+    return callback(error);
+  }
+
+  const target = `${dataDir}/${profileName}/${config.info.fileName}`;
+  fs.writeFile(target, JSON.stringify(dump, null, 4), 'utf-8', (error) => {
+    if (error) {
+      $modal.alert({
+        header: 'Save error',
+        body: 'Could not save the following profile config:\n' +
+          convertToOsPath(target) + '\n\n' +
+          'Reason: ' + getFriendlyFsError(error),
+      });
+      return callback(error);
+    }
+    else {
+      // TODO: toast save success.
+      callback(null);
+    }
+  });
+}
+
 function getDataDir() {
   return convertToOsPath(dataDir);
 }
@@ -247,7 +292,7 @@ function getActiveProfile() {
 function setActiveProfile({ profileName, preventFallback=false, callback }) {
   if (!profileName) {
     const message = 'setActiveProfile needs a profile name.';
-    console.error(message);
+    console.error('[userProfile]', message);
     return callback({ message });
   }
   const cacheBackup = configCache;
@@ -418,6 +463,7 @@ function createAllProfileConfigs({ profileName, showAlertOnFail=true, onComplete
         const { info, fileContent } = templates[i];
         if (!info.fileName || !info.name) {
           console.error(
+            '[userProfile]',
             'Cannot create a profile config because either info.name or ' +
             'info.fileName is missing in the template config.\n' +
             'Offending config:', templates[i],
@@ -471,6 +517,9 @@ function createAllProfileConfigs({ profileName, showAlertOnFail=true, onComplete
 
 // Loads all configs for the specified profile. If a config cannot be loaded,
 // uses internal default.
+// Does *not* notify cache listeners of changes because this function is
+// usually called by other functions that do precise cache control themselves.
+// TODO: polyfill all configs on load, and test to ensure it works.
 function loadAllConfigs({ profileName, onComplete }) {
   const allConfigs = [];
   const templates = getAllDefaults({ asArray: true });
@@ -478,6 +527,7 @@ function loadAllConfigs({ profileName, onComplete }) {
     const { info, fileContent } = templates[i];
     if (!info.fileName || !info.name) {
       console.error(
+        '[userProfile]',
         'Cannot read a profile config because either info.name or ' +
         'info.fileName is missing in the template config.\n' +
         'Offending config:', templates[i],
@@ -495,7 +545,7 @@ function loadAllConfigs({ profileName, onComplete }) {
             // TODO: mark profile as broken here?
             // TODO: induce an error to ensure this works.
             console.error(
-              `[userProfile] Could not open ${fileName}; falling back to template.`
+              `[userProfile] Could not open ${fileName}; falling back to template.`,
             );
             // console.log(`** method 1: from template (configCache[${info.name}])`);
             configCache[info.name] = structuredClone(fileContent);
@@ -536,8 +586,7 @@ function loadAllConfigs({ profileName, onComplete }) {
         cacheListeners.notifyAll(configCache);
       }
       catch (notifyError) {
-        console.error('[loadAllConfigs -> notifyAll]', notifyError);
-        console.dir(notifyError);
+        console.error('[userProfile/loadAllConfigs/notifyAll]', notifyError);
         errorInfo = {
           error: notifyError.message,
         };
@@ -653,7 +702,7 @@ function init(onComplete=()=>{}) {
         'complete. This is most likely a bug that needs to be reported. ' +
         'Last completed function: ' +
         lastCompletedFunction;
-      console.error(message);
+      console.error('[userProfile]', message);
       // We have to use regular 'alert' here because failing at this point
       // means the modal framework never gets loaded.
       // TODO: move React stuff not related to profile things to
@@ -701,6 +750,7 @@ debug.userProfile = {
   init,
   createProfile,
   deleteProfile,
+  saveActiveConfig,
   setActiveProfile,
   getActiveProfile,
   getDataDir,
@@ -714,6 +764,7 @@ export default {
   init,
   createProfile,
   deleteProfile,
+  saveActiveConfig,
   getDataDir,
   navigateToDataDir,
   getActiveProfile,
