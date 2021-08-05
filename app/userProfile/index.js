@@ -11,6 +11,9 @@ import {
   getFriendlyFsError, convertToOsPath, createJsonIfNotExists
 } from '../local/fsUtils';
 
+// TODO: create readme in CosmosisGame on boot that tells users not to create dirs as dirs are treated as profiles.
+//  Mention that they may create customs dirs with {dot}whatever, and that these will be ignored by the engines.
+
 /*
 Process brain dump
 ==================
@@ -118,6 +121,67 @@ function createProfile({ profileName, showAlertOnFail=true, callback=e=>{} }) {
           `Reason: ${getFriendlyFsError(error.code)}.`,
       });
       callback(error, false);
+    }
+  });
+}
+
+function deleteProfile({ profileName, callback }) {
+  const safeName = safeString(profileName);
+  if (profileName !== safeName) {
+    const error = 'Invalid profile name given for deletion.';
+    $modal.alert(error);
+    return callback(error);
+  }
+
+  const target = `${dataDir}/${safeName}`;
+
+  getAvailableProfiles({
+    callback: (error, dirList) => {
+      if (error) {
+        return callback(error);
+      }
+      if (dirList.length < 2) {
+        const error = 'You need at least one profile defined. Create ' +
+          'another profile to delete this one.';
+        $modal.alert(error);
+        return callback(error);
+      }
+
+      fs.lstat(target, (error, stats) => {
+        if (error) {
+          $modal.alert(error.toString());
+          return callback(error);
+        }
+        else if (stats.isDirectory()) {
+          $modal.confirm({
+            header: 'Confirm deletion',
+            body: 'The below directory and all its contents will be deleted:\n' +
+              `${convertToOsPath(target)}\n\nProceed?`,
+            yesText: 'Delete',
+            noText: 'Cancel',
+          }, (deleteProfile) => {
+            if (deleteProfile) {
+              fs.rmdir(convertToOsPath(target), { recursive: true }, (error) => {
+                if (error) {
+                  $modal.alert(error.toString());
+                }
+                callback(error);
+              });
+            }
+            else {
+              // TODO: toast: delete cancelled.
+            }
+          });
+        }
+        else {
+          const message = 'Target profile is not a directory... this is ' +
+            'likely a bug.';
+          $modal.alert(message);
+          return callback(message);
+        }
+      });
+
+      // TODO: If default is active and the only available profile, refuse deletion (maybe?).
     }
   });
 }
@@ -609,6 +673,7 @@ function init(onComplete=()=>{}) {
 debug.userProfile = {
   init,
   createProfile,
+  deleteProfile,
   setActiveProfile,
   getActiveProfile,
   getDataDir,
@@ -621,6 +686,7 @@ debug.userProfile = {
 export default {
   init,
   createProfile,
+  deleteProfile,
   getDataDir,
   navigateToDataDir,
   getActiveProfile,
