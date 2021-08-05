@@ -2,8 +2,21 @@ import React from 'react';
 import { Grid } from 'semantic-ui-react';
 import KosmButton from '../elements/KosmButton';
 import { defaultMenuProps, defaultMenuPropTypes } from './defaults';
+import { randomArrayItem } from '../../local/utils';
+import { getInverseSchema } from '../../local/controls';
 
 const thisMenu = 'game menu';
+
+// Suicide quit confirmations. More games should do this.
+const deaths = [
+  'space all crew.', 'overdose on mushrooms.', 'jump off the cliff.',
+  'activate electric chair.', 'slide your hand into the warp reactor.',
+  'drink the anti-matter syrup.', 'bathe in radioactive sludge.',
+  'hatch the alien egg.',
+  // TODO: produce chocking and coughing noises when this is selected:
+  'increase life support efficiency by 19%!!',
+  'quickly reply before closing reactor door.', 'lick the alien toad.',
+];
 
 /**
  * Used to generate the menu layout.
@@ -124,12 +137,20 @@ export default class GameMenu extends React.Component {
       return () => this.resume();
     }
     else if (target === 'quit') {
-      return () => {
-        if (confirm('Are you sure you want to exit?')) {
-          // TODO: move to central place, and use Semantic UI.
-          process.exit();
+      // We are guaranteed that we'll have a [0] index set because the game
+      // should prevent the user from completely unbinding essential controls.
+      const key = getInverseSchema().inverseActionSchema.menuViewer.select[0];
+      return () => $modal.confirm({
+        header: `Press [${key}] to ${randomArrayItem(deaths)}`,
+        body: 'Are you sure you want to exit?',
+        callback: (jumpOffACliffAndDie) => {
+          if (jumpOffACliffAndDie) {
+            // Exit full screen if open, because it can sometimes hang exiting.
+            nw.Window.get().leaveFullscreen();
+            process.exit();
+          }
         }
-      }
+      });
     }
     else {
       return this.props.changeMenuFn(target);
