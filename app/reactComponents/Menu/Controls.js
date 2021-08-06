@@ -5,10 +5,11 @@ import Button from '../elements/KosmButton';
 import MenuNavigation from '../elements/MenuNavigation';
 import { defaultMenuProps, defaultMenuPropTypes } from './defaults';
 import { capitaliseEachWord } from '../../local/utils';
-import { controls, getInverseSchema, keySchema } from '../../local/controls';
+import { controls, doublePresses, getInverseSchema, keySchema } from '../../local/controls';
 import { ContextualInput } from '../../local/contextualInput';
 import { modeName } from '../../modeControl/reactControllers/menuViewer'
 import { showRawKeyGrabber } from '../Modal/rawKeyGrabber';
+import userProfile from '../../userProfile'
 
 // Menu's unique name.
 const thisMenu = 'controls';
@@ -28,6 +29,10 @@ export default class Controls extends React.Component {
     // Debounced by this.setActiveGroup. Used to prevent excessive rerenders
     // when rapidly scrolling through elements.
     this.debouncedRestrictToGroup = null;
+    // Used to keep track of how many controls were rebound.
+    this.reboundActions = {};
+    // Currently used as work-around for a bug. TODO: fix me.
+    this.promptingUser = false;
   }
 
   componentDidMount() {
@@ -69,13 +74,87 @@ export default class Controls extends React.Component {
 
   handleInput = ({ action }) => {
     switch (action) {
+      case 'advanced':
+        break;
       case 'back':
         return this.handleBack();
+      case 'delete':
+        break;
+      case 'manageMacros':
+        break;
+      case 'saveChanges':
+        this.saveAndClose();
+        break;
     }
   };
 
   handleBack = () => {
-    this.props.changeMenu({ next: 'options' });
+    const amount = Object.keys(this.reboundActions).length;
+    if (amount > 0) {
+      // FIXME: investigate this. For some reason handleBack is hit twice.
+      if (this.promptingUser) {
+        return;
+      }
+      this.promptingUser = true;
+
+      const changes = `change${amount === 1 ? '' : 's'}`;
+      $modal.buttonPrompt({
+        header: '',
+        body: `You have ${amount} unsaved ${changes}.\n\n` +
+          'Save before closing?',
+        buttons: [ 'Yes', 'No', 'Cancel' ],
+        callback: (chosenItem) => {
+          if (chosenItem === 'Yes') {
+            this.saveAndClose();
+          }
+          else if (chosenItem === 'No') {
+            // Exit out to options.
+            this.props.changeMenu({ next: 'options' });
+            this.reloadAndClose();
+          }
+          // Else: cancel and do nothing.
+        },
+      });
+    }
+    else {
+      // Exit out to options.
+      this.props.changeMenu({ next: 'options' });
+    }
+  };
+
+  // Saves configs to disk and closes the controls menu.
+  saveAndClose = () => {
+    userProfile.saveActiveConfig({
+      identifier: 'controls',
+      dump: { controls, doublePresses },
+      callback: (error) => {
+        if (error) {
+          $modal.alert({
+            header: 'Profile not saved',
+            body: 'Your controls have been retained in memory, ' +
+              'but could not be written to disk. Your changes ' +
+              'will be lost if you exit without saving.'
+          });
+        }
+        // Exit out to options.
+        this.props.changeMenu({ next: 'options' });
+      }
+    });
+  };
+
+  // Loads configs from disk and closes the controls menu.
+  reloadAndClose = () => {
+    userProfile.reloadConfigs({
+      onComplete: (error) => {
+        if (error) {
+          $modal.alert({
+            header: 'Error',
+            body: 'An error occurred while processing your profile. ' +
+              'Please restart the game.',
+          });
+        }
+      }
+    });
   };
 
   getAnimation = () => {
@@ -115,8 +194,11 @@ export default class Controls extends React.Component {
       ...this.props,
       identifier: thisMenu,
       control, action, sectionName, isExisting,
-      onClose: () =>
-        ContextualInput.relinquishFullExclusivity({ mode: modeName }),
+      onClose: ({ reboundAction }) => {
+        this.reboundActions[reboundAction] = true;
+        console.log('reboundAction:', reboundAction);
+        ContextualInput.relinquishFullExclusivity({ mode: modeName })
+      },
     };
 
     showRawKeyGrabber(grabberOptions);

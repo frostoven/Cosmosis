@@ -247,7 +247,7 @@ function saveConfig({ profileName, identifier, dump, callback }) {
         header: 'Save error',
         body: 'Could not save the following profile config:\n' +
           convertToOsPath(target) + '\n\n' +
-          'Reason: ' + getFriendlyFsError(error),
+          `Reason: ${getFriendlyFsError(error.code)}.`,
       });
       return callback(error);
     }
@@ -515,6 +515,11 @@ function createAllProfileConfigs({ profileName, showAlertOnFail=true, onComplete
   });
 }
 
+// Reloads configs for current profile from disk and reapplies them.
+function reloadConfigs({ onComplete }) {
+  loadAllConfigs({ profileName: activeProfile, onComplete });
+}
+
 // Loads all configs for the specified profile. If a config cannot be loaded,
 // uses internal default.
 // Does *not* notify cache listeners of changes because this function is
@@ -658,7 +663,7 @@ function createDefaultProfileDir(next) {
       default:
         next({
           error: 'An error has occurred. No save-game files will be ' +
-            'created.\n\nDetails:\n' + getFriendlyFsError(error.code),
+            `created.\n\nDetails:\n${getFriendlyFsError(error.code)}.`,
           completed: 'createDefaultProfileDir',
         });
     }
@@ -749,6 +754,7 @@ function init(onComplete=()=>{}) {
 debug.userProfile = {
   init,
   createProfile,
+  saveConfig,
   deleteProfile,
   saveActiveConfig,
   setActiveProfile,
@@ -758,12 +764,14 @@ debug.userProfile = {
   getDefaultConfig,
   getCurrentConfig,
   getAvailableProfiles,
+  reloadConfigs,
 };
 
 export default {
   init,
   createProfile,
   deleteProfile,
+  saveConfig,
   saveActiveConfig,
   getDataDir,
   navigateToDataDir,
@@ -775,4 +783,5 @@ export default {
   addCacheListener,
   removeCacheListener,
   getAvailableProfiles,
+  reloadConfigs,
 }

@@ -335,6 +335,7 @@ debug.keySchema = keySchema;
 export {
   tests,
   controls,
+  doublePresses,
   keySchema,
   keymapFriendlyName,
   getInverseSchema,
