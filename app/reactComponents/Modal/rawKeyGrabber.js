@@ -13,6 +13,10 @@ const thisMenu = 'modal';
  */
 let modalInstance = null;
 
+// Used to inform the caller that something changed. Useful for warning the
+// user about exiting with unsaved changes.
+let reboundAction = null;
+
 // Triggered when the grabber is closed.
 let onGrabberClose = null;
 
@@ -30,7 +34,7 @@ function notYetSupported() {
 function disclaimInput(inputInfo) {
   modalInstance.handleInput(inputInfo);
   if (inputInfo.action === 'back' && onGrabberClose) {
-    onGrabberClose();
+    onGrabberClose({ reboundAction });
     onGrabberClose = null;
   }
 }
@@ -55,8 +59,8 @@ function getBindConflict({ newKey, action, sectionName }) {
 // controls defined in shipPilot mode do not effect controls set in freeCam
 // mode.
 function setBindingAndClose({ newKey, action, sectionName }) {
-  // TODO: replace with profile->file saving mechanism.
   controls[sectionName][newKey] = action;
+  reboundAction = action;
   // console.log('==> no conflict. save tba. dump:', controls);
   console.log('[setBindingAndClose] saving:', { newKey, action, sectionName });
   invalidateInverseSchemaCache();

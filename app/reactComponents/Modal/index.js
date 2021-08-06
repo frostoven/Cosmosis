@@ -31,6 +31,7 @@ export const preBootPlaceholder = {
   alert: function() { queueMessage({ type: 'alert', args: arguments }) },
   confirm: function() { queueMessage({ type: 'confirm', args: arguments }) },
   prompt:  function() { queueMessage({ type: 'prompt', args: arguments }) },
+  buttonPrompt:  function() { queueMessage({ type: 'buttonPrompt', args: arguments }) },
   deactivateByTag:  function() { queueMessage({ type: 'deactivateByTag', args: arguments }) },
 };
 
@@ -85,16 +86,18 @@ export default class Modal extends React.Component {
         'cause bugs. Please investigate.'
       );
     }
+
     this.props.registerMenuChangeListener({
       onChange: this.handleMenuChange,
     });
 
-    window.$modal = {
-      show: this.show,
-      alert: this.alert,
-      confirm: this.confirm,
-      prompt: this.prompt,
-      deactivateByTag: this.deactivateByTag,
+    // Replace all window.$modal placeholder boot functions with the real, now
+    // loaded ones.
+    window.$modal = {};
+    const modalFnNames = Object.keys(preBootPlaceholder);
+    for (let i = 0, len = modalFnNames.length; i < len; i++) {
+      const fnName = modalFnNames[i];
+      window.$modal[fnName] = this[fnName];
     }
   }
 
@@ -280,6 +283,60 @@ export default class Modal extends React.Component {
     this.show(options);
   };
 
+  // TODO: create listPrompt
+  /**
+   * Asks a question and offers the user with a list of options to select from.
+   */
+  listPrompt = () => {
+    //
+  };
+
+  /**
+   * Asks a question and offers the user a bunch of buttons to click at the
+   * bottom of the modal.
+   * @param {string|object} options
+   * @param {undefined|function} [callback] - Optional. Omit if using options.
+   * @param {string|JSX.Element} options.header
+   * @param {string|JSX.Element} options.body
+   * @param {undefined|JSX.Element} options.actions
+   * @param {undefined|Array} options.buttons - Additional buttons. Simply pass a string array.
+   * @param {undefined|function} options.callback
+   */
+  buttonPrompt = (options, callback) => {
+    if (typeof options === 'string') {
+      options = {
+        body: options,
+      }
+    }
+
+    if (callback) {
+      options.callback = callback;
+    }
+
+    if (!options.callback) {
+      options.callback = () => console.warn('No callbacks passed to confirm.');
+    }
+
+    if (!options.actions) options.actions = (
+      <>
+        {
+          options.buttons ? (
+            options.buttons.map(text =>
+              <Button key={`buttonPrompt-${text}`} selectable onClick={() => {
+                this.deactivateModal();
+                options.callback(text);
+              }}
+              >
+                {text}
+              </Button>
+            )
+          ) : null
+        }
+      </>
+    );
+
+    this.show(options);
+  };
 
   /**
    * @param {string|object} options

@@ -158,7 +158,6 @@ function capitaliseFirst(string) {
 }
 
 function capitaliseEachWord(string) {
-  // https://stackoverflow.com/questions/32589197/how-can-i-capitalize-the-first-letter-of-each-word-in-a-string-using-javascript
   const splitStr = string.split(' ');
   for (let i = 0; i < splitStr.length; i++) {
     // You do not need to check if i is larger than splitStr length, as your
@@ -186,12 +185,19 @@ function safeString(string) {
  * TODO: for interest sake, performance test this vs
  *  JSON.parse(JSON.stringify(o)) to ensure this isn't bad premature
  *  optimisation.
- * https://stackoverflow.com/questions/122102/what-is-the-most-efficient-way-to-deep-clone-an-object-in-javascript/10916838#10916838
  * @param obj
  * @returns {any}
  */
 function structuredClone(obj) {
   return v8.deserialize(v8.serialize(obj));
+}
+
+/**
+ * Returns a random item from specified array.
+ * @param {Array} underpantsGnomes
+ */
+function randomArrayItem(underpantsGnomes=[]) {
+  return underpantsGnomes[Math.floor(Math.random() * underpantsGnomes.length)];
 }
 
 export {
@@ -205,4 +211,5 @@ export {
   capitaliseEachWord,
   safeString,
   structuredClone,
+  randomArrayItem,
 }

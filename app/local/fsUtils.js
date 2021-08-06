@@ -11,7 +11,8 @@ const friendlyFsError = {
   ENOENT: 'no such file or directory',
   ENOTDIR: 'target location is not a directory',
   ENOTEMPTY: 'the target directory is not empty',
-  EPERM: 'operation not permitted - you likely have insufficient permissions',
+  EPERM: 'operation not permitted - you might have insufficient ' +
+    'permissions, or the file has a read-only flag set',
 };
 
 function getFriendlyFsError(error) {
