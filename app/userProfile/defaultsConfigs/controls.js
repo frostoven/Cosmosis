@@ -41,6 +41,7 @@ const config = {
         F2: 'manageMacros',
         F3: 'advanced',
         F10: 'saveChanges',
+        Slash: 'search',
       },
       shipPilot: {
         _description: 'Mode used when user is locked to seat.',

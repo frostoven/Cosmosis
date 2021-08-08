@@ -9,6 +9,8 @@ const thisMenu = 'game menu';
 
 // Suicide quit confirmations. More games should do this.
 const deaths = [
+  // TODO: don't display 'space all crew' if in multiplayer session as it's a
+  //  tad too immersion breaking.
   'space all crew.', 'overdose on mushrooms.', 'jump off the cliff.',
   'activate electric chair.', 'slide your hand into the warp reactor.',
   'drink the anti-matter syrup.', 'bathe in radioactive sludge.',
@@ -16,6 +18,7 @@ const deaths = [
   // TODO: produce chocking and coughing noises when this is selected:
   'increase life support efficiency by 19%!!',
   'quickly reply before closing reactor door.', 'lick the alien toad.',
+  'chew on the loose wire.',
 ];
 
 /**

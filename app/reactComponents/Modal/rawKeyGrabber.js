@@ -75,8 +75,8 @@ function showKbModal({ control: existingControl, action, sectionName, isExisting
       return;
     }
 
-    // TODO: cache reverse map and use that to figure out what the 'Escape' button is.
-    if (newKey === 'Escape') {
+    const backButton = getInverseSchema().inverseActionSchema.menuViewer.back[0];
+    if (newKey === backButton) {
       closeRawKeyGrabber();
       return;
     }
@@ -134,6 +134,7 @@ function showKbConflictModal({ newKey, action, conflict, sectionName }) {
 
 // Show modal that says "Press key to bind."
 function showKbGrabberModal({ action, isExisting, existingControl }) {
+  const backButton = getInverseSchema().inverseActionSchema.menuViewer.back[0];
   modalInstance.modifyModal({
     header: <div className='terminal-font'>Grabbing keyboard / mouse input...</div>,
     body: (
@@ -146,7 +147,7 @@ function showKbGrabberModal({ action, isExisting, existingControl }) {
     ),
     actions: (
       <div className='kosm-statusbar terminal-font'>
-        Press [Escape] to cancel
+        Press [{backButton}] to cancel
       </div>
     ),
     callback: () => {
@@ -171,6 +172,7 @@ export function showRawKeyGrabber(props) {
         >Keyboard or mouse button</Button>
         <Button invalid selectable wide block onClick={notYetSupported}>Mouse movement</Button>
         <Button invalid selectable wide block onClick={notYetSupported}>Controller</Button>
+        <Button invalid selectable wide block onClick={notYetSupported}>[Delete control]</Button>
       </MenuNavigation>
     ),
     actions: (
