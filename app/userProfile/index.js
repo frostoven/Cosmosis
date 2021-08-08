@@ -6,7 +6,7 @@ const { spawn } = require('child_process');
 import packageJson from '../../package.json';
 import { getStartupEmitter } from '../emitters';
 import { forEachFn, safeString, structuredClone } from '../local/utils';
-import { getAllDefaults } from './defaultsConfigs';
+import { getAllDefaults, getConfigInfo } from './defaultsConfigs';
 import {
   getFriendlyFsError, convertToOsPath, createJsonIfNotExists
 } from '../local/fsUtils';
@@ -413,15 +413,6 @@ function polyfillStoredConfigs() {
   console.log('Not yet implemented.');
 }
 
-// Useful for looking at the configs as they were before the user modified
-// them.
-function getDefaultConfig(identifier, alternativeContent=null) {
-  if (alternativeContent) {
-    return getAllDefaults()[identifier].alternativeContent[alternativeContent];
-  }
-  return getAllDefaults()[identifier].fileContent;
-}
-
 // Get latest cached copy of specified config. Note: there are zero disk reads
 // in this function; it *always* returns cache. Disk reads are done in other
 // functions pertaining to boot and invalidation.
@@ -681,11 +672,45 @@ function createDefaultProfileFiles(next) {
   });
 }
 
-// Loads all configs for the default profile. If a config cannot be loaded,
+// Checks which profile was last known to be active, and activates that.
+function determineLastActiveProfile(next) {
+  const base = getConfigInfo({ identifier: 'allProfiles' });
+  if (!base || !base.fileName) {
+    const error = '[userProfile] Could not determine last active profile ' +
+      'because file info is missing in the built-ins. Reverting to "default".';
+    console.error(error);
+    return next({ error, completed: 'determineLastActiveProfile' });
+  }
+
+  const target = `${dataDir}/${base.fileName}`;
+  fs.readFile(target, (error, data) => {
+    if (error) {
+      return next({ error, completed: 'determineLastActiveProfile' });
+    }
+
+    let json;
+    try {
+      json = JSON.parse(data);
+    }
+    catch (e) {
+      return next({
+        error: 'A config file is corrupted. Falling back to built-in ' +
+          `defaults. Culprit:\n${convertToOsPath(target)}`,
+        completed: 'determineLastActiveProfile',
+      });
+    }
+
+    activeProfile = json.activeProfile || defaultProfileName;
+    console.log('* Profile:', activeProfile);
+    next({ error: null, completed: 'determineLastActiveProfile' });
+  });
+}
+
+// Loads all configs for the active profile. If a config cannot be loaded,
 // uses internal default.
-function loadDefaultConfigs(next) {
+function loadActiveConfigs(next) {
   loadAllConfigs({
-    profileName: defaultProfileName,
+    profileName: activeProfile,
     onComplete: (error) => {
       next({ error, completed: 'loadAllConfigs' });
     }
@@ -728,7 +753,8 @@ function init(onComplete=()=>{}) {
       setDataDirPath,
       createDefaultProfileDir,
       createDefaultProfileFiles,
-      loadDefaultConfigs,
+      determineLastActiveProfile,
+      loadActiveConfigs,
       stopTimerAndLogResult,
     ],
     // On each step completed:
@@ -738,6 +764,11 @@ function init(onComplete=()=>{}) {
       stallChecker = checkForStalling();
       lastCompletedFunction = info.completed;
 
+      // FIXME: errors and fallbacks are not functioning correctly. Introduce
+      //  an error randomly, say at determineLastActiveProfile, and insure that:
+      //  1) An error is shown,
+      //  2) Defaults are actually loaded,
+      //  3) Game is in read-only state.
       if (info && info.error) {
         setProfileBroken({ message: info.error });
         onComplete(info.error);
@@ -761,7 +792,6 @@ debug.userProfile = {
   getActiveProfile,
   getDataDir,
   navigateToDataDir,
-  getDefaultConfig,
   getCurrentConfig,
   getAvailableProfiles,
   reloadConfigs,
@@ -778,7 +808,6 @@ export default {
   getActiveProfile,
   setActiveProfile,
   getBackupList,
-  getDefaultConfig,
   getCurrentConfig,
   addCacheListener,
   removeCacheListener,
