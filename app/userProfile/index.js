@@ -593,20 +593,22 @@ function loadAllConfigs({ profileName, onComplete }) {
 
 // --- Boot functions ------------------------------------------------------ //
 
+const Boot = function(){};
+
 // Used to measure how long profile load takes
-function startTimer(next) {
+Boot.startTimer = function startTimer(next) {
   startTime = Date.now();
   next({ error: null, completed: 'startTime' });
-}
+};
 
 // Logs the amount of time since startTimer was run.
-function stopTimerAndLogResult(next) {
+Boot.stopTimerAndLogResult = function stopTimerAndLogResult(next) {
   const totalTime = ((Date.now() - startTime) / 1000).toFixed(2);
   console.log(`User profile took ${totalTime} seconds to load.`);
   next({ error: null, completed: 'stopTimerAndLogResult' });
-}
+};
 
-function setDataDirPath(next) {
+Boot.setDataDirPath = function setDataDirPath(next) {
   const dir = getUserDataDir();
   if (!dir) {
     next({
@@ -618,11 +620,11 @@ function setDataDirPath(next) {
     dataDir = `${dir}/${gameDataDirName}`;
     next({ error: null, completed: 'setDataDirPath' });
   }
-}
+};
 
 // This is technically a copy-paste of createProfile, but aims to be a bit more
 // descriptive because a broken default profile breaks the game.
-function createDefaultProfileDir(next) {
+Boot.createDefaultProfileDir = function createDefaultProfileDir(next) {
   const target = `${dataDir}/${defaultProfileName}`;
   fs.mkdir(target, { recursive: true }, (error) => {
     if (!error) {
@@ -659,21 +661,21 @@ function createDefaultProfileDir(next) {
         });
     }
   });
-}
+};
 
 // This creates all files that will be requires for a normally functioning
 // profile.
-function createDefaultProfileFiles(next) {
+Boot.createDefaultProfileFiles = function createDefaultProfileFiles(next) {
   createAllProfileConfigs({
     profileName: defaultProfileName,
     onComplete: (error) => {
       next({ error, completed: 'createDefaultProfileFiles' });
     }
   });
-}
+};
 
 // Checks which profile was last known to be active, and activates that.
-function determineLastActiveProfile(next) {
+Boot.determineLastActiveProfile = function determineLastActiveProfile(next) {
   const base = getConfigInfo({ identifier: 'allProfiles' });
   if (!base || !base.fileName) {
     const error = '[userProfile] Could not determine last active profile ' +
@@ -704,18 +706,18 @@ function determineLastActiveProfile(next) {
     console.log('* Profile:', activeProfile);
     next({ error: null, completed: 'determineLastActiveProfile' });
   });
-}
+};
 
 // Loads all configs for the active profile. If a config cannot be loaded,
 // uses internal default.
-function loadActiveConfigs(next) {
+Boot.loadActiveConfigs = function loadActiveConfigs(next) {
   loadAllConfigs({
     profileName: activeProfile,
     onComplete: (error) => {
-      next({ error, completed: 'loadAllConfigs' });
+      next({ error, completed: 'loadActiveConfigs' });
     }
   });
-}
+};
 
 // --- Init ---------------------------------------------------------------- //
 
@@ -749,13 +751,13 @@ function init(onComplete=()=>{}) {
   forEachFn(
     // Runs all our asynchronous startup tasks one-by-one, in order.
     [
-      startTimer,
-      setDataDirPath,
-      createDefaultProfileDir,
-      createDefaultProfileFiles,
-      determineLastActiveProfile,
-      loadActiveConfigs,
-      stopTimerAndLogResult,
+      Boot.startTimer,
+      Boot.setDataDirPath,
+      Boot.createDefaultProfileDir,
+      Boot.createDefaultProfileFiles,
+      Boot.determineLastActiveProfile,
+      Boot.loadActiveConfigs,
+      Boot.stopTimerAndLogResult,
     ],
     // On each step completed:
     (info) => {
