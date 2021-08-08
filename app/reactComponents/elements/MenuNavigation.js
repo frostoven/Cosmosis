@@ -50,7 +50,11 @@ export default class MenuNavigation extends React.Component {
     // Updated whenever the list is read. This is not stored in state because
     // input is managed outside of state.
     this.listLength = 0;
-    this.activeChildCallback = null;
+    this.activeClickCallback = null;
+    // TODO: think of a cleaner way of implementing this.
+    //  MenuNavigation probably shouldn't be aware of custom callbacks
+    //  like this, even if they're menu related.
+    this.activeDeleteCallback = null;
   }
 
   componentDidMount() {
@@ -69,7 +73,7 @@ export default class MenuNavigation extends React.Component {
   // Note: the up/down mode and left/right mode are mutually exclusive.
   handleAction = (inputInfo) => {
     if (this.props.suspendAllInput) {
-      // Completely cock block everything except exiting out.
+      // If suspendAllInput, completely cock block everything except exiting out.
       if (inputInfo.action === 'back') {
         this.props.onUnhandledInput(inputInfo);
       }
@@ -107,14 +111,23 @@ export default class MenuNavigation extends React.Component {
     else if (action === 'select') {
       return this.handleSelect(inputInfo);
     }
+    else if (action === 'delete') {
+      return this.handleDelete(inputInfo);
+    }
     else {
       this.props.onUnhandledInput(inputInfo)
     }
   };
 
   handleSelect = ({ action }) => {
-    if (this.activeChildCallback) {
-      this.activeChildCallback({ action });
+    if (this.activeClickCallback) {
+      this.activeClickCallback({ action });
+    }
+  };
+
+  handleDelete = ({ action }) => {
+    if (this.activeDeleteCallback) {
+      this.activeDeleteCallback({ action });
     }
   };
 
@@ -155,7 +168,8 @@ export default class MenuNavigation extends React.Component {
         if (childSelectable) {
           if (this.listLength === activeItem) {
             this.addActiveItemFlag({ props, child });
-            this.activeChildCallback = child.props.onClick;
+            this.activeClickCallback = child.props.onClick;
+            this.activeDeleteCallback = child.props.onDelete;
             if (this.props.setActiveGroup) {
               this.props.setActiveGroup(child.props.group);
             }

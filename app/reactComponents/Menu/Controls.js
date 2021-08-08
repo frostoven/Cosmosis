@@ -1,11 +1,17 @@
 import React from 'react';
 import _ from 'lodash';
-import { Grid, Icon } from 'semantic-ui-react';
+import { Grid, Icon, Segment } from 'semantic-ui-react';
 import Button from '../elements/KosmButton';
 import MenuNavigation from '../elements/MenuNavigation';
 import { defaultMenuProps, defaultMenuPropTypes } from './defaults';
 import { capitaliseEachWord } from '../../local/utils';
-import { controls, doublePresses, getInverseSchema, keySchema } from '../../local/controls';
+import {
+  controls,
+  doublePresses,
+  getInverseSchema,
+  invalidateInverseSchemaCache,
+  keySchema,
+} from '../../local/controls';
 import { ContextualInput } from '../../local/contextualInput';
 import { modeName } from '../../modeControl/reactControllers/menuViewer'
 import { showRawKeyGrabber } from '../Modal/rawKeyGrabber';
@@ -72,13 +78,14 @@ export default class Controls extends React.Component {
     return isVisible;
   };
 
-  handleInput = ({ action }) => {
+  handleInput = ({ action, metadata }) => {
     switch (action) {
       case 'advanced':
         break;
       case 'back':
         return this.handleBack();
       case 'delete':
+        console.log('handleInput delete:', metadata);
         break;
       case 'manageMacros':
         break;
@@ -104,6 +111,9 @@ export default class Controls extends React.Component {
           'Save before closing?',
         buttons: [ 'Yes', 'No', 'Cancel' ],
         callback: (chosenItem) => {
+          this.promptingUser = false;
+          this.reboundActions = {};
+
           if (chosenItem === 'Yes') {
             this.saveAndClose();
           }
@@ -128,6 +138,7 @@ export default class Controls extends React.Component {
       identifier: 'controls',
       dump: { controls, doublePresses },
       callback: (error) => {
+        invalidateInverseSchemaCache();
         if (error) {
           $modal.alert({
             header: 'Profile not saved',
@@ -146,6 +157,7 @@ export default class Controls extends React.Component {
   reloadAndClose = () => {
     userProfile.reloadConfigs({
       onComplete: (error) => {
+        invalidateInverseSchemaCache();
         if (error) {
           $modal.alert({
             header: 'Error',
@@ -155,6 +167,13 @@ export default class Controls extends React.Component {
         }
       }
     });
+  };
+
+  deleteBinding = ({ action, control, sectionName }) => {
+    this.reboundActions[`${action}-deleted`] = true;
+    delete controls[sectionName][control];
+    invalidateInverseSchemaCache();
+    this.forceUpdate();
   };
 
   getAnimation = () => {
@@ -219,6 +238,7 @@ export default class Controls extends React.Component {
             selectable
             group={action}
             onClick={() => this.assignControl({ action, control, sectionName })}
+            onDelete={() => this.deleteBinding({ action, control, sectionName })} //*bookm*/}
           >{control}</Button>,
         );
       });
@@ -335,10 +355,23 @@ export default class Controls extends React.Component {
       <div className={`secondary-menu ${animation}`}>
         <div className='game-menu vertical-center horizontal-center'>
           <h1>{capitaliseEachWord(thisMenu)}</h1>
+          <Segment>
+            <div className='twin-segment'>
+              <div>
+                Controls take immediate effect but are reverted if not saved.
+              </div>
+              <div>
+                <Button invalid selectable>[/] Search</Button>
+                &nbsp;|&nbsp;
+                <Button invalid selectable>[F4] Filter by type</Button>
+              </div>
+            </div>
+          </Segment>
           {this.genControls()}
         </div>
         <div className='floating-footer terminal-font'>
           {/* TODO: base these on actual controls */}
+          {/* TODO: if a particular hotkey has zero bindings, don't show it at all. */}
           [Delete] Remove binding | [F2] Manage macros | [F3] Advanced Options | [F10] Save and exit
         </div>
       </div>

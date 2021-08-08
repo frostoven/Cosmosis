@@ -328,7 +328,7 @@ const tests = {
 //  unique.
 
 // Used for console debugging.
-debug.controls = controls;
+debug.getControls = () => controls;
 // Used for console debugging.
 debug.keySchema = keySchema;
 
@@ -337,6 +337,7 @@ export {
   controls,
   doublePresses,
   keySchema,
+  metadata,
   keymapFriendlyName,
   getInverseSchema,
   invalidateInverseSchemaCache,
