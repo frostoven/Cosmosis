@@ -142,3 +142,30 @@ border: none !important;
     padding: 5px;
     height: 28px;
 }
+
+.ui.segment .twin-segment {
+    width: 100%;
+    padding: 12px;
+}
+
+.ui.segment .twin-segment > div {
+    width: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.ui.segment .twin-segment > div:first-child {
+    display: inline-block;
+    text-align: left;
+    /*color: red;*/
+    left: 16px;
+    position: absolute;
+}
+
+.ui.segment .twin-segment > div:last-child {
+    display: inline-block;
+    text-align: right;
+    /*color: blue;*/
+    right: 16px;
+    position: absolute;
+}
