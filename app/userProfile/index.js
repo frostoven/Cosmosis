@@ -341,8 +341,10 @@ function setActiveProfile({ profileName, preventFallback=false, callback }) {
             }
             else {
               activeProfile = profileName;
+              configCache.allProfiles.activeProfile = activeProfile;
               callback(null);
               cacheListeners.notifyAll(configCache);
+              saveActiveName();
             }
           }
         });
@@ -351,6 +353,35 @@ function setActiveProfile({ profileName, preventFallback=false, callback }) {
         configCache = cacheBackup;
         cacheListeners.notifyAll(configCache);
       }
+    }
+  });
+}
+
+// Saves the current profile name to allProfiles.json -> activeProfile.
+function saveActiveName({ callback }=()=>{}) {
+  if (!callback) callback = ()=>{};
+  const base = getConfigInfo({ identifier: 'allProfiles' });
+  if (!base || !base.fileName) {
+    const error = '[userProfile] Could not determine where to save active ' +
+      'profile info because file info is missing in the built-ins.';
+    console.error(error);
+    $modal.alert({ header: 'Profile save error', body: error });
+    return callback({ error });
+  }
+
+  const target = `${dataDir}/${base.fileName}`;
+  fs.writeFile(target, JSON.stringify(configCache[base.name], null, 4), 'utf-8', (error) => {
+    if (error) {
+      $modal.alert({
+        header: 'Save error',
+        body: 'Could not save the following profile config:\n' +
+          convertToOsPath(target) + '\n\n' +
+          `Reason: ${getFriendlyFsError(error.code)}.`,
+      });
+      return callback(error);
+    }
+    else {
+      callback(null);
     }
   });
 }
@@ -696,6 +727,9 @@ Boot.determineLastActiveProfile = function determineLastActiveProfile(next) {
     }
     catch (e) {
       return next({
+        // TODO: change this to a modal that gives the user the
+        //  option to delete the file and replace with a template.
+        //  ## good first task?
         error: 'A config file is corrupted. Falling back to built-in ' +
           `defaults. Culprit:\n${convertToOsPath(target)}`,
         completed: 'determineLastActiveProfile',
