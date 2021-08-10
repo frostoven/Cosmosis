@@ -146,6 +146,11 @@
     margin-right: 2px !important;
 }
 
+.kosm-active-primary-button:hover, .kosm-active-secondary-button:hover,
+.kosm-inactive-primary-button:hover, .kosm-inactive-secondary-button:hover {
+    color: yellow !important;
+}
+
 .kosm-collapsed-grid br {
     /*clear: both !important;*/
     content: '\A' !important;
