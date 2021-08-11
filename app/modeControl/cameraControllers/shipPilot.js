@@ -74,7 +74,7 @@ const ctrl = {
   lookDown: false,
   rollLeft: false,
   rollRight: false,
-}
+};
 
 const toggles = {
   // TODO: think about whether or not this belongs in core instead.
@@ -110,7 +110,7 @@ const steer = {
   // TODO: get the proper technical terms for this.
   upDown: 0,
   leftRight: 0,
-}
+};
 
 function init() {
   core.registerRenderHook({
