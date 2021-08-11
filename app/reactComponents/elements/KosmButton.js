@@ -35,7 +35,7 @@ export default class KosmButton extends React.Component {
 
   constructor(props) {
     super(props);
-    this.myRef = React.createRef()
+    this.myRef = React.createRef();
     this.previousAnimation = null;
   }
 
@@ -43,9 +43,8 @@ export default class KosmButton extends React.Component {
     if (!this.myRef.current) {
       return;
     }
-    console.log('scrolling.')
     this.myRef.current.scrollIntoView();
-  }
+  };
 
   shouldComponentUpdate(nextProps) {
     // return true;
@@ -81,7 +80,7 @@ export default class KosmButton extends React.Component {
 
     this.previousAnimation = className;
     return className;
-  }
+  };
 
   render() {
     const className = this.getAnimation(this.props);

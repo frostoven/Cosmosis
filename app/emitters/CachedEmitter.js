@@ -47,7 +47,7 @@ CachedEmitter.prototype = {
     'initialisation.\n' +
     `Example: "new CachedEmitter({rememberPastEvents: ${b}})"`;
   },
-}
+};
 
 /**
  * Returns next enum in powers of 2. Power of 2 are used for fast bitmask
@@ -78,7 +78,7 @@ CachedEmitter.prototype.nextEnum = function nextEnum() {
   else {
     return this._nextPlainEnum();
   }
-}
+};
 
 /**
  * Notify requesters when a part of the application has loaded.
@@ -103,7 +103,7 @@ CachedEmitter.prototype.on = function CachedEmitterOn(action, callback) {
     // Log request.
     this._listeners.push({ action, callback });
   }
-}
+};
 
 /**
  * Notifies all listener that part of the application has loaded.
@@ -126,7 +126,7 @@ CachedEmitter.prototype.emit = function CachedEmitterEmit(action) {
       len--;
     }
   }
-}
+};
 
 /**
  * Removes a past action from the remembered cache. If this object does not use
@@ -145,6 +145,6 @@ CachedEmitter.prototype.forgetCachedAction = function forgetCachedAction(action)
   }
   // Remove the specified action.
   this._pastEvents ^= action;
-}
+};
 
 export default CachedEmitter;
