@@ -6,7 +6,8 @@ import core from './local/core';
 import powerOnSelfTest from './test';
 import api from './local/api';
 import packageJson from '../package.json';
-import { onDocumentReady, onReadyToBoot } from './local/windowLoadListener';
+import { onDocumentReady, onReadyToBoot, logBootInfo }
+  from './local/windowLoadListener';
 
 // Game modules.
 import scenes from './scenes';
@@ -64,6 +65,7 @@ if (process.env && process.env.NODE_ENV !== 'production') {
 /* --------------------------------- */
 
 console.groupCollapsed(`Pre-init (build number: ${packageJson.releaseNumber}).`);
+logBootInfo(`System boot v${packageJson.releaseNumber}`); // ▓
 
 // Register all scenes.
 for (let scene of scenes) {
@@ -96,6 +98,7 @@ onReadyToBoot(() => {
     //  Ensure HMR is enabled. Switch to IDE, ensure it's maximized. Make a
     //  code change, save. Application reboots in the background. Mouse will
     //  sometimes get trapped in an invisible box.
+    // TODO: this fix works maybe 1% of the time. Consider deleting it.
     const mouseLockBugTimer = setInterval(() => {
       const ptr = $game.ptrLockControls;
       if (ptr.isPointerLocked && !document.hasFocus()) {
