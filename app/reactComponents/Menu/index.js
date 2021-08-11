@@ -9,7 +9,7 @@ import Controls from './Controls';
 import Profile from './Profile';
 import Modal from '../Modal';
 import ControlsOverlay from '../ControlsOverlay';
-import { onReadyToBoot } from '../../local/windowLoadListener';
+import { logBootInfo, onReadyToBoot } from '../../local/windowLoadListener';
 
 const startupEmitter = getStartupEmitter();
 const uiEmitter = getUiEmitter();
@@ -49,6 +49,7 @@ export default class Menu extends React.Component {
     onReadyToBoot(() => {
       this.setState({ profileWasLoaded: true }, () => {
         startupEmitter.emit(startupEvent.menuLoaded);
+        logBootInfo('Operator interface ready');
         this.registerListeners();
         this.changeMenu({
           next: this.state.activeMenu,

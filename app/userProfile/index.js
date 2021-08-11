@@ -10,6 +10,7 @@ import { getAllDefaults, getConfigInfo } from './defaultsConfigs';
 import {
   getFriendlyFsError, convertToOsPath, createJsonIfNotExists
 } from '../local/fsUtils';
+import { logBootInfo } from '../local/windowLoadListener';
 
 // TODO: create readme in CosmosisGame on boot that tells users not to create dirs as dirs are treated as profiles.
 //  Mention that they may create customs dirs with {dot}whatever, and that these will be ignored by the engines.
@@ -636,6 +637,7 @@ Boot.startTimer = function startTimer(next) {
 Boot.stopTimerAndLogResult = function stopTimerAndLogResult(next) {
   const totalTime = ((Date.now() - startTime) / 1000).toFixed(2);
   console.log(`User profile took ${totalTime} seconds to load.`);
+  logBootInfo(`Profile boot time: ${totalTime}s`);
   next({ error: null, completed: 'stopTimerAndLogResult' });
 };
 
@@ -737,7 +739,7 @@ Boot.determineLastActiveProfile = function determineLastActiveProfile(next) {
     }
 
     activeProfile = json.activeProfile || defaultProfileName;
-    console.log('* Profile:', activeProfile);
+    logBootInfo(`Loaded profile: ${activeProfile}`, true);
     next({ error: null, completed: 'determineLastActiveProfile' });
   });
 };

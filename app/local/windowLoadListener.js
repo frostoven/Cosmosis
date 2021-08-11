@@ -23,6 +23,8 @@ const onBootReadyCallbacks = new CbQueue();
 const eventsNeededToContinue = 2;
 // The amount of times notifyListenersAndStop has been called.
 let eventCount = 0;
+// Messages sent to #boot-logger before the DOM was ready.
+const bootMessageQueue = [];
 
 /**
  * Polyfill for running nw.js code in the browser.
@@ -82,6 +84,7 @@ function notifyListenersAndStop() {
 function windowLoadListener(readyCb=()=>{}) {
   windowHasLoaded = true;
   onDocReadyCallbacks.notifyAll();
+  renderBootMessages();
 
   // Start profile init.
   userProfile.init(() => {
@@ -119,9 +122,51 @@ function windowLoadListener(readyCb=()=>{}) {
   notifyListenersAndStop();
 }
 
+function renderBootMessages () {
+  const bootDiv = document.getElementById('boot-log');
+  if (bootDiv) {
+    bootDiv.innerHTML =
+      bootMessageQueue.slice(-7).join('<br/>') +
+      '<br/>' +
+      '<div class="blinky">_</div>';
+    bootDiv.scrollIntoView({ block: 'center', inline: 'center' });
+  }
+}
+
+function bootLogger({ text='', isError=false }) {
+  if (!text) {
+    return;
+  }
+
+  // TODO: make errors push as red instead.
+  if (isError) {
+    bootMessageQueue.push(`<i>${text}</i>`)
+  }
+  else {
+    bootMessageQueue.push(text);
+  }
+  renderBootMessages();
+}
+
+export function logBootInfo(text, includeConsoleLog=false) {
+  bootLogger({ text });
+  if (includeConsoleLog) {
+    console.log(text);
+  }
+}
+
+export function logBootError(text, includeConsoleError=false) {
+  bootLogger({ text, isError: true });
+  if (includeConsoleError) {
+    console.error(text);
+  }
+}
+
 window.onload = windowLoadListener;
 
 export default {
   onReadyToBoot,
   onDocumentReady,
+  logBootInfo,
+  logBootError,
 }
