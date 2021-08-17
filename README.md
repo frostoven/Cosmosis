@@ -7,10 +7,12 @@
         <img src="https://img.shields.io/static/v1?label=Latest%20stable&message=v0.72.0&color=blue&style=for-the-badge">
     </a>
     <a href="https://github.com/aggregate1166877/Cosmosis/releases">
-        <img src="https://img.shields.io/static/v1?label=Dev%20builds&message=v0.xx.0&color=red&style=for-the-badge">
+        <img src="https://img.shields.io/static/v1?label=Dev%20builds&message=all%20versions&color=red&style=for-the-badge">
     </a>
     <br><br>
     <b>Note: this game is still pre-alpha. Expect a terrible experience.</b>
+    <br>
+    [ Development progress may be tracked via the <a href="">project page</a> ]
     <br><br>
     Cosmosis is an early work in progress for an open world space game, potentially with  
 planetary combat and procedural environments. The current priority is to create  
