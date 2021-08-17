@@ -48,7 +48,7 @@
     "file-loader": "1.1.10",
     "lodash": "^4.17.21",
     "npm-run-all": "4.1.2",
-    "nw": "^0.53.0",
+    "nw": "0.53.0",
     "react": "16.13.1",
     "react-dom": "16.13.1",
     "semantic-ui-react": "^2.0.3",
