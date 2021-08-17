@@ -12,7 +12,7 @@
     <br><br>
     <b>Note: this game is still pre-alpha. Expect a terrible experience.</b>
     <br>
-    [ Development progress may be tracked via the <a href="">project page</a> ]
+    [ Development progress may be tracked via the <a href="https://github.com/aggregate1166877/Cosmosis/projects/1">project page</a> ]
     <br><br>
     Cosmosis is an early work in progress for an open world space game, potentially with  
 planetary combat and procedural environments. The current priority is to create  
