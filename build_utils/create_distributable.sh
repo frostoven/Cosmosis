@@ -10,22 +10,36 @@ echo "Cosmosis build script"
 echo "====================="
 echo
 
-# We need exactly one arg. Look for it.
-if test -z "$1"; then
+nw_arg="$1"
+platform_arg="$2"
+
+# Check if we received our nw.js dir.
+if test -z "$nw_arg"; then
   echo '================================================================================'
   echo 'Please specify the directory containing the NW.js folder. Example:'
-  echo "  $0 nw-extracted/nw-version/"
+  echo "  ./create_distributable.sh 'nw-extracted/nw-version/' 'linux'"
   echo '================================================================================'
   exit 1
 fi
 
-# Get absolute required paths. Error checking not done here, but further down.
-nw_path="$(readlink -f "$1")"
-cosmosis_path="$(readlink -f "./Cosmosis")"
-prod_assets="$(readlink -f "./Stand-Alone.Production.Assets")"
-dist_name='Cosmosis-win-x64'
-    # ^^  TODO: generate this instead of hardcoding.
-dist_path="$(readlink -f "./$dist_name")"
+# Check if we received platform arg.
+if test -z "$platform_arg"; then
+  echo '================================================================================'
+  echo 'The second argument should specify your target platform. Example:'
+  echo "  ./create_distributable.sh 'nw-extracted/nw-version/' 'win'"
+  echo '================================================================================'
+  exit 1
+fi
+
+# Validate received platform arg:
+case "$platform_arg" in
+  win);;
+  linux);;
+  auto);;
+  *)
+    echo "Error: unknown platform '$platform_arg'"
+    exit 1
+esac
 
 # === Set shell behaviour =================================================== #
 
@@ -35,6 +49,13 @@ set -e
 # Disable globbing. This means that things like `ls *` will treat "*' as a file
 # name instead of a wildcard.
 set -f
+
+# Get absolute required paths. Error checking not done here, but further down.
+nw_path="$(readlink -f "$nw_arg")"
+cosmosis_path="$(readlink -f "./Cosmosis")"
+prod_assets="$(readlink -f "./Stand-Alone.Production.Assets")"
+dist_name="Cosmosis-$platform_arg-x64"
+dist_path="$(readlink -f "./$dist_name")"
 
 # === Look for obvious problems ============================================= #
 
@@ -68,15 +89,47 @@ test -d "$dist_path" && (
   exit 1
 )
 
-# === Print pre-build report ================================================ #
-
-is_windows=false
+# === Set vars to target env ================================================ #
 
 platform="$(uname | tr '[:upper:]' '[:lower:]')"
 case "$platform" in
-msys*) is_windows=true ;;
-cygwin*) is_windows=true ;;
+msys*) this_host_is_windows=true ;;
+cygwin*) this_host_is_windows=true ;;
 esac
+
+case "$platform_arg" in
+  win)
+    # Build for Windows regardless of current environment.
+    nw_bin_name='nw.exe'
+    game_bin_name='Cosmosis.exe'
+    npm_arch='--target_arch=x64'
+    npm_platform='--target_platform=win32'
+    friendly_name='Windows x64'
+    ;;
+  linux)
+    # Build for Linux regardless of current environment.
+    nw_bin_name='nw'
+    game_bin_name='Cosmosis'
+    npm_arch='--target_arch=x64'
+    npm_platform='--target_platform=linux'
+    friendly_name='Linux x64'
+    ;;
+  *)
+    # Build for current environment.
+    if [ $this_host_is_windows = true ]; then
+      nw_bin_name='nw.exe'
+      game_bin_name='Cosmosis.exe'
+    else
+      nw_bin_name='nw'
+      game_bin_name='Cosmosis'
+    fi
+    npm_arch=''
+    npm_platform=''
+    friendly_name="generic (targets this host's OS)"
+    ;;
+esac
+
+# === Print pre-build report ================================================ #
 
 echo "Build script will use the following paths:"
 echo " * NW.js path: $nw_path"
@@ -84,11 +137,7 @@ echo " * Cloned Cosmosis path: $cosmosis_path"
 echo " * Prod assets path: $prod_assets"
 echo " * Build path: $$dist_path"
 echo
-
-[ $is_windows = true ] \
-  && echo "Environment is: Windows" \
-  || echo "Environment is a Unix variant"
-echo
+echo "Target environment: $friendly_name"
 
 # === Start ================================================================= #
 
@@ -140,8 +189,8 @@ echo "* Removing line 'nw' from package.json to speed up build."
 sed -i.bak '/"nw":/d' ./package.json >/dev/null
 
 echo "* Installing build tools with 'npm install'"
-npm install
-echo
+echo "  > Target: $friendly_name"
+npm install "$npm_arch" "$npm_platform"
 
 echo "* Build the game from source"
 npm run prepare-dev
@@ -152,17 +201,9 @@ echo "* Remove tools used to build game"
 npm prune --production
 echo
 
-# If Windows, rename exe.
-[ $is_windows = true ] && (
-  echo "* Rename nw.exe to Cosmosis.exe"
-  mv nw.exe Cosmosis.exe
-)
-
-# If Unix, rename bin.
-[ $is_windows = false ] && (
-  echo "* Rename nw to Cosmosis"
-  mv nw Cosmosis
-)
+echo "* Rename nw.exe to Cosmosis.exe"
+# Example: mv nw.exe Cosmosis.exe
+mv "$nw_bin_name" "$game_bin_name"
 
 # Most things are now bundled into build/game.js, so keeping them around
 # doesn't make much sense.
@@ -186,9 +227,6 @@ echo "1) Start the Cosmosis application."
 echo "2) Press F12 and make sure there are no errors in the developer console."
 echo "3) From the developer console, run: powerOnSelfTest(). This runs unit "
 echo "   tests. You should have no errors."
-[ $is_windows = true ] &&
-  echo "4) If all is good, zip it up, rename the zip to Cosmosis-win-x64.zip"
-[ $is_windows = false ] &&
-  echo "4) If all is good, zip it up, rename the zip to Cosmosis-$(platform)-x64.zip"
+echo "4) If all is good, zip it up, rename the zip to $(dist_name).zip"
 echo "5) Publish zip."
 echo
