@@ -1,11 +1,28 @@
-# Cosmosis
-**Note: this game is still pre-alpha. Expect a terrible experience.**
+<h1 align="center">Cosmosis</h1>
 
-See [BUILD_INSTRUCTIONS.md](BUILD_INSTRUCTIONS.md) for instructions on running
-this application.
-
-Demo:<br>
-![Demo](demo.gif)
+<div align="center">
+    <b>Downloads</b>
+    <br>
+    <a href="https://github.com/aggregate1166877/Cosmosis/releases/latest">
+        <img src="https://img.shields.io/static/v1?label=Latest%20stable&message=v0.72.0&color=blue&style=for-the-badge">
+    </a>
+    <a href="https://github.com/aggregate1166877/Cosmosis/releases">
+        <img src="https://img.shields.io/static/v1?label=Dev%20builds&message=all%20versions&color=red&style=for-the-badge">
+    </a>
+    <br><br>
+    <b>Note: this game is still pre-alpha. Expect a terrible experience.</b>
+    <br>
+    [ Development progress may be tracked via the <a href="">project page</a> ]
+    <br><br>
+    Cosmosis is an early work in progress for an open world space game, potentially with  
+planetary combat and procedural environments. The current priority is to create  
+a PvP space battle game with arenas next to beautifully rendered procedural  
+planets.
+<br><br>
+Demo:
+<br>
+<img src="demo.gif">
+</div>
 
 ## What is Cosmosis?
 Cosmosis plans to eventually be a high quality open world space exploration
@@ -77,7 +94,7 @@ has an FPS shooter class for those who do refuse to praise the sun
 -->
 Cosmosis is an early concept for an open world space game, potentially with
 planetary combat and procedural environments. The current priority is to create
-a pvp space battle game with arenas next to beautifully rendered procedural
+a PvP space battle game with arenas next to beautifully rendered procedural
 planets.
 
 It hopes to one day emulate the Milky Way with acceptable precision. The real

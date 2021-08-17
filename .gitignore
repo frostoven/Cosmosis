@@ -112,8 +112,7 @@ dist
 .idea
 
 # Specific to this project
-build/bundle.js
-build/bundle.css
+build/game.js
 build/worker.js
 
 # The final product is excluded to prevent this repo blowing up into

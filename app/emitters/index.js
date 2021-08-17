@@ -7,7 +7,9 @@ const startupEmitter = new CachedEmitter({ rememberPastEvents: true });
 // Used to keep track of core load progress. Note that progress is
 // asynchronous, and actions are not guaranteed to happen in any specific
 // order. The exception to this is startupEvent.ready, which will always
-// trigger last.
+// trigger last. Note that all these triggers must be called for the game to
+// recognise its state as 'loaded'. If one or more items are not triggered, the
+// loading screen will not end.
 // TODO: add on camControllerReady.
 export const startupEvent = {
   /* Game menu component has mounted. */
