@@ -1,5 +1,16 @@
 #!/bin/sh
 
+# Note: you'll probably never want to run this script directly. If the
+# community hasn't pre-built a downloadable copy for you, you might want to
+# manually run the 'create_generic.sh' script instead.
+#
+# This script requires a POSIX compliant SH. On Windows, it was specifically
+# written with Cygwin (mintty) in mind. Git for Windows is supported, too. WSL
+# is untested and might fail.
+#
+# Script usage:
+# ./create_distributable.sh nwjs_dir platform_string
+
 # === Preparation =========================================================== #
 
 # Enforces POSIX correctness (somewhat). Also known as POSIX_ME_HARDER.
