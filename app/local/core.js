@@ -17,9 +17,9 @@ import res from './AssetFinder';
 import { createSpaceShip } from '../levelLogic/spaceShipLoader';
 import { PointerLockControls } from './PointerLockControls';
 import { startupEvent, getStartupEmitter } from '../emitters';
-
 import contextualInput from './contextualInput';
 import { preBootPlaceholder } from '../reactComponents/Modal';
+import { logBootInfo } from './windowLoadListener';
 
 const gameFont = 'node_modules/three/examples/fonts/helvetiker_regular.typeface.json';
 
@@ -202,16 +202,22 @@ function updateHyperdriveDebugText() {
 
 // TODO: remove me once the game is more stable.
 function closeLoadingScreen() {
-  const divs = document.getElementsByClassName('loading-indicator');
-  if (!divs) return;
+  const loaders = document.getElementsByClassName('loading-indicator');
+  if (loaders) {
+    for(let i = 0, len = loaders.length; i < len; i++){
+      loaders[i].classList.add('splash-fade-out');
+    }
+  }
 
-  for(let i = 0, len = divs.length; i < len; i++){
-    divs[i].classList.add('splash-fade-out');
+  const bootLog = document.getElementById('boot-log');
+  if (bootLog) {
+    bootLog.classList.add('splash-fade-out');
   }
 }
 
 function init({ sceneName }) {
   console.log('Initialising core.');
+  logBootInfo('Core init start');
 
   // Controls.
   contextualInput.init();
@@ -234,12 +240,14 @@ function init({ sceneName }) {
     // Contains all the essential game variables.
     window.$game = initView({ scene });
     startupEmitter.emit(startupEvent.gameViewReady);
+    logBootInfo('Comms relay ready');
 
     initPlayer();
     updateModeDebugText();
 
     animate();
     startupEmitter.emit(startupEvent.firstFrameRendered);
+    logBootInfo('Self-test pass');
   });
 
   $stats = new Stats();
@@ -305,6 +313,7 @@ function initView({ scene }) {
         renderTarget.fromEquirectangularTexture(renderer, texture);
         scene.background = renderTarget;
         startupEmitter.emit(startupEvent.skyBoxLoaded);
+        logBootInfo('Astrometrics ready');
       });
   });
 
@@ -327,6 +336,7 @@ function initPlayer() {
       $game.playerShip = mesh;
       $game.playerShipBubble = bubble;
       startupEmitter.emit(startupEvent.playerShipLoaded);
+      logBootInfo('Ship ready');
     }
   });
 }
@@ -439,7 +449,7 @@ function waitForAllLoaded() {
       continue;
     }
     startupEmitters.push(
-      (cb) => startupEmitter.on(startupEvent[key], cb),
+      (next) => startupEmitter.on(startupEvent[key], next),
     );
   }
 
@@ -452,6 +462,7 @@ function waitForAllLoaded() {
       // Everything has loaded.
       count++;
       startupEmitter.emit(startupEvent.ready);
+      logBootInfo('Pilot access confirmed');
 
       // Log boot time.
       const bootTime = ((Date.now() - startTime) / 1000).toFixed(2);
@@ -459,6 +470,7 @@ function waitForAllLoaded() {
         `Game finished booting after ${bootTime}s. ` +
         `Total startup events: ${count}`
       );
+      logBootInfo('Finalising boot');
     });
 
   setTimeout(() => {

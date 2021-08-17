@@ -21,12 +21,12 @@ const labelData = [
   // {size: 10000, scale: 1.0, label: "city (10km)"},
   // https://www.scientificamerican.com/article/why-do-the-moon-and-the-s/#:~:text=Because%20the%20moon%20is%20changing,the%20moon%20appear%20very%20large.
   // TODO: make these use the res loader.
-  // {size: 3474000, scale: 1.0, label: "moon (3,474 Km)", grouped: false, nogroupOffset: 384400000, image: 'prodHqAssets/planetImg/Moon_lroc_color_poles_8k.jpg'},
-  // {size: 12742000, scale: 1.0, label: "earth (12,742 km)", grouped: false, nogroupOffset: 0, image: 'prodHqAssets/planetImg/Land_ocean_ice_cloud_hires.jpg'},
-  // {size: 1392700000, scale: 1.0, label: "sun (1,392,700 km)", brightness: 10, grouped: false, nogroupOffset: -149540000000, image: 'prodHqAssets/planetImg/sun_euvi_aia304_2012_carrington.jpg'},
-  {size: 3474000, scale: 1.0, label: "moon (3,474 Km)", grouped: false, nogroupOffset: 384400000, image: 'potatoLqAssets/planetImg/Moon_lroc_color_poles_8k.jpg'},
-  {size: 12742000, scale: 1.0, label: "earth (12,742 km)", grouped: false, nogroupOffset: 0, image: 'potatoLqAssets/planetImg/Land_ocean_ice_cloud_hires.jpg'},
-  {size: 1392700000, scale: 1.0, label: "sun (1,392,700 km)", brightness: 10, grouped: false, nogroupOffset: -149540000000, image: 'potatoLqAssets/planetImg/sun_euvi_aia304_2012_carrington.jpg'},
+  {size: 3474000, scale: 1.0, label: "moon (3,474 Km)", grouped: false, nogroupOffset: -384400000, image: 'prodHqAssets/planetImg/Moon_lroc_color_poles_8k.jpg'},
+  {size: 12742000, scale: 1.0, label: "earth (12,742 km)", grouped: false, nogroupOffset: 0, image: 'prodHqAssets/planetImg/Land_ocean_ice_cloud_hires.jpg'},
+  {size: 1392700000, scale: 1.0, label: "sun (1,392,700 km)", brightness: 10, grouped: false, nogroupOffset: 149540000000, image: 'prodHqAssets/planetImg/sun_euvi_aia304_2012_carrington.jpg'},
+  // {size: 3474000, scale: 1.0, label: "moon (3,474 Km)", grouped: false, nogroupOffset: 384400000, image: 'potatoLqAssets/planetImg/Moon_lroc_color_poles_8k.jpg'},
+  // {size: 12742000, scale: 1.0, label: "earth (12,742 km)", grouped: false, nogroupOffset: 0, image: 'potatoLqAssets/planetImg/Land_ocean_ice_cloud_hires.jpg'},
+  // {size: 1392700000, scale: 1.0, label: "sun (1,392,700 km)", brightness: 10, grouped: false, nogroupOffset: -149540000000, image: 'potatoLqAssets/planetImg/sun_euvi_aia304_2012_carrington.jpg'},
   {size: 7.47e12, scale: 1.0, label: "solar system (50Au)"},
   {size: 9.4605284e15, scale: 1.0, label: "gargantuan (1 light year)"},
   {size: 3.08567758e16, scale: 1.0, label: "ludicrous (1 parsec)"},

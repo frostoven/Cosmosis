@@ -6,6 +6,8 @@
 //  assets are HUGE. In fact, we might want the application to have 2 different
 //  modes - local asset mode, and streamed asset mode.
 const fs = require('fs');
+// Used for fast object cloning.
+const v8 = require('v8');
 
 /**
  * Looks for a file non-recursively that matches the name and has one
@@ -56,16 +58,19 @@ function fuzzyFindFile(
 
 /**
  * Runs callback functions in sequence, only calling the next function once the
- * previous completes. If cb returns false, the loop terminates.
+ * previous completes. If cb returns false, the loop terminates. Note that
+ * you're passed a 'next' function after each iteration, which you need to
+ * call for the loop to continue.
  * @param {Array.<function>} functions - List of functions to execute.
  * @param {function} cb - Run after every function completes. If cb returns
- *  false, the loop immediately terminates.
+ *  false, the loop immediately terminates. Else, the value is passed to the
+ *  next function.
  * @param {function} onReachEnd - Called if the loop runs all the way to the
  * end, of if a fatal error occurs.
  * @param {number} limit - Maximum number of iterations. Make this the size of
  *  the function array to execute all functions.
  * @param {number} index - Index to start iterating from.
- * @param {boolean} defer - If true, each reiteration will be done as a
+ * @param {boolean} [defer] - If true, each reiteration will be done as a
  *  setImmediate. Please note that doing so is incredibly slow at large scales.
  */
 function forEachFnLimit(functions=[], cb=()=>{}, onReachEnd=()=>{}, limit, index, defer=false) {
@@ -81,14 +86,14 @@ function forEachFnLimit(functions=[], cb=()=>{}, onReachEnd=()=>{}, limit, index
 
   const fn = functions[index];
 
-  fn(function() {
+  function next() {
     const signal = cb.apply(null, arguments);
     if (signal === false) {
       return;
     }
 
     if (defer) {
-      // TODO: make this setTimeout if in browser instead.
+      // TODO: make this setTimeout instead if in browser (polyfill maybe?).
       setImmediate(() => {
         forEachFnLimit(functions, cb, onReachEnd, limit, index + 1, defer);
       });
@@ -96,18 +101,22 @@ function forEachFnLimit(functions=[], cb=()=>{}, onReachEnd=()=>{}, limit, index
     else {
       forEachFnLimit(functions, cb, onReachEnd, limit, index + 1, defer);
     }
-  });
+  }
+
+  fn(next);
 }
 
 /**
  * Runs callback functions in sequence, only calling the next function once the
- * previous completes. If cb returns false, the loop terminates.
+ * previous completes. If cb returns false, the loop terminates. Note that
+ * you're passed a 'next' function after each iteration, which you need to
+ * call for the loop to continue.
  * @param {Array.<function>} functions - List of functions to execute.
- * @param {function} cb - Run after every function completes. If cb returns
+ * @param {function} [cb] - Run after every function completes. If cb returns
  *  false, the loop immediately terminates.
- * @param {function} onReachEnd - Called if the loop runs all the way to the
+ * @param {function} [onReachEnd] - Called if the loop runs all the way to the
  * end, of if a fatal error occurs.
- * @param {boolean} defer - If true, each reiteration will be done as a
+ * @param {boolean} [defer] - If true, each reiteration will be done as a
  *  setImmediate. Please note that doing so is incredibly slow at large scales.
  */
 function forEachFn(functions=[], cb=()=>{}, onReachEnd=()=>{}, defer=false) {
@@ -149,7 +158,6 @@ function capitaliseFirst(string) {
 }
 
 function capitaliseEachWord(string) {
-  // https://stackoverflow.com/questions/32589197/how-can-i-capitalize-the-first-letter-of-each-word-in-a-string-using-javascript
   const splitStr = string.split(' ');
   for (let i = 0; i < splitStr.length; i++) {
     // You do not need to check if i is larger than splitStr length, as your
@@ -161,6 +169,37 @@ function capitaliseEachWord(string) {
   return splitStr.join(' ');
 }
 
+/**
+ * Removes all special characters that could cause filename or cmd/terminal
+ * command issues with knows operating systems.
+ * @param string
+ * @returns {string}
+ */
+function safeString(string) {
+  return string.replace(/[^a-zA-Z0-9 \-_@^()',;+={}\[\]]/g, '').trim();
+}
+
+/**
+ * Creates a deep clone of object using the serialization API directly exposed
+ * by Node. Used specifically because it's meant to be very fast.
+ * TODO: for interest sake, performance test this vs
+ *  JSON.parse(JSON.stringify(o)) to ensure this isn't bad premature
+ *  optimisation.
+ * @param obj
+ * @returns {any}
+ */
+function structuredClone(obj) {
+  return v8.deserialize(v8.serialize(obj));
+}
+
+/**
+ * Returns a random item from specified array.
+ * @param {Array} underpantsGnomes
+ */
+function randomArrayItem(underpantsGnomes=[]) {
+  return underpantsGnomes[Math.floor(Math.random() * underpantsGnomes.length)];
+}
+
 export {
   fuzzyFindFile,
   forEachFn,
@@ -170,4 +209,7 @@ export {
   spacedTitled,
   capitaliseFirst,
   capitaliseEachWord,
+  safeString,
+  structuredClone,
+  randomArrayItem,
 }

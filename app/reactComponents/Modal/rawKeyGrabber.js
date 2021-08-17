@@ -2,7 +2,7 @@ import React from 'react';
 import MenuNavigation from '../elements/MenuNavigation';
 import Button from '../elements/KosmButton';
 import { controls, getInverseSchema, invalidateInverseSchemaCache } from '../../local/controls';
-import contextualInput from '../../local/contextualInput';
+import { ContextualInput } from '../../local/contextualInput';
 
 // How the grabber is identified.
 const thisMenu = 'modal';
@@ -12,6 +12,13 @@ const thisMenu = 'modal';
  * @type {null|Modal}
  */
 let modalInstance = null;
+
+// Used to inform the caller that something changed. Useful for warning the
+// user about exiting with unsaved changes.
+let reboundAction = null;
+
+// Triggered when the grabber is closed.
+let onGrabberClose = null;
 
 // Default MenuNavigation props.
 const navProps = {
@@ -26,11 +33,15 @@ function notYetSupported() {
 
 function disclaimInput(inputInfo) {
   modalInstance.handleInput(inputInfo);
+  if (inputInfo.action === 'back' && onGrabberClose) {
+    onGrabberClose({ reboundAction });
+    onGrabberClose = null;
+  }
 }
 
 // Close the grabber modal.
 function closeRawKeyGrabber() {
-  contextualInput.ContextualInput.clearRawInputListener();
+  ContextualInput.clearRawInputListener();
   disclaimInput({ action: 'back', isDown: true });
 }
 
@@ -48,8 +59,8 @@ function getBindConflict({ newKey, action, sectionName }) {
 // controls defined in shipPilot mode do not effect controls set in freeCam
 // mode.
 function setBindingAndClose({ newKey, action, sectionName }) {
-  // TODO: replace with profile->file saving mechanism.
   controls[sectionName][newKey] = action;
+  reboundAction = action;
   // console.log('==> no conflict. save tba. dump:', controls);
   console.log('[setBindingAndClose] saving:', { newKey, action, sectionName });
   invalidateInverseSchemaCache();
@@ -59,19 +70,19 @@ function setBindingAndClose({ newKey, action, sectionName }) {
 // Show modal that grabs keyboard input.
 // TODO: consider renaming this as it's become a bit of a misnomer (grabs mouse, too).
 function showKbModal({ control: existingControl, action, sectionName, isExisting }) {
-  contextualInput.ContextualInput.setRawInputListener(({ key: newKey, isDown, analogData }) => {
+  ContextualInput.setRawInputListener(({ key: newKey, isDown, analogData }) => {
     if (!isDown) {
       return;
     }
 
-    // TODO: cache reverse map and use that to figure out what the 'Escape' button is.
-    if (newKey === 'Escape') {
+    const backButton = getInverseSchema().inverseActionSchema.menuViewer.back[0];
+    if (newKey === backButton) {
       closeRawKeyGrabber();
       return;
     }
 
     // Return control back to normal menu flow.
-    contextualInput.ContextualInput.clearRawInputListener();
+    ContextualInput.clearRawInputListener();
 
     const conflict = getBindConflict({ newKey, action, sectionName });
     if (conflict) {
@@ -123,6 +134,7 @@ function showKbConflictModal({ newKey, action, conflict, sectionName }) {
 
 // Show modal that says "Press key to bind."
 function showKbGrabberModal({ action, isExisting, existingControl }) {
+  const backButton = getInverseSchema().inverseActionSchema.menuViewer.back[0];
   modalInstance.modifyModal({
     header: <div className='terminal-font'>Grabbing keyboard / mouse input...</div>,
     body: (
@@ -135,7 +147,7 @@ function showKbGrabberModal({ action, isExisting, existingControl }) {
     ),
     actions: (
       <div className='kosm-statusbar terminal-font'>
-        Press [Escape] to cancel
+        Press [{backButton}] to cancel
       </div>
     ),
     callback: () => {
@@ -146,7 +158,8 @@ function showKbGrabberModal({ action, isExisting, existingControl }) {
 
 // Shows all available input grabbing mechanisms.
 export function showRawKeyGrabber(props) {
-  const { control, action, sectionName, isExisting } = props;
+  const { control, action, sectionName, isExisting, onClose } = props;
+  onGrabberClose = onClose;
 
   // noinspection JSVoidFunctionReturnValueUsed
   modalInstance = $modal.show({
@@ -159,6 +172,7 @@ export function showRawKeyGrabber(props) {
         >Keyboard or mouse button</Button>
         <Button invalid selectable wide block onClick={notYetSupported}>Mouse movement</Button>
         <Button invalid selectable wide block onClick={notYetSupported}>Controller</Button>
+        <Button invalid selectable wide block onClick={notYetSupported}>[Delete control]</Button>
       </MenuNavigation>
     ),
     actions: (

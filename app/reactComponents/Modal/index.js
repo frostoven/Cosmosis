@@ -31,6 +31,8 @@ export const preBootPlaceholder = {
   alert: function() { queueMessage({ type: 'alert', args: arguments }) },
   confirm: function() { queueMessage({ type: 'confirm', args: arguments }) },
   prompt:  function() { queueMessage({ type: 'prompt', args: arguments }) },
+  buttonPrompt:  function() { queueMessage({ type: 'buttonPrompt', args: arguments }) },
+  deactivateByTag:  function() { queueMessage({ type: 'deactivateByTag', args: arguments }) },
 };
 
 /* == Duck punching =====  ====================== */
@@ -42,24 +44,26 @@ const windowPrompt = prompt;
 window.alert = function alert() {
   console.warn('** Please consider using $modal.alert() instead of alert() **');
   return windowAlert(...arguments);
-}
+};
 
 window.confirm = function confirm() {
   console.warn('** Please consider using $modal.confirm() instead of confirm() **');
   return windowConfirm(...arguments);
-}
+};
 
 window.prompt = function prompt() {
   console.warn('** Please consider using $modal.prompt() instead of prompt() **');
   return windowPrompt(...arguments);
-}
+};
 
 /* ======================  ====================== */
+
+let totalInstances = 0;
 
 export default class Modal extends React.Component {
 
   static propTypes = defaultMenuPropTypes;
-  static defaultProps = defaultMenuProps
+  static defaultProps = defaultMenuProps;
 
   static defaultState = {
     isVisible: false,
@@ -76,19 +80,29 @@ export default class Modal extends React.Component {
   }
 
   componentDidMount() {
+    if (++totalInstances > 1) {
+      console.warn(
+        'More than one modal component has been mounted. This will likely ' +
+        'cause bugs. Please investigate.'
+      );
+    }
+
     this.props.registerMenuChangeListener({
       onChange: this.handleMenuChange,
     });
 
-    window.$modal = {
-      show: this.show,
-      alert: this.alert,
-      confirm: this.confirm,
-      prompt: this.prompt,
+    // Replace all window.$modal placeholder boot functions with the real, now
+    // loaded ones.
+    window.$modal = {};
+    const modalFnNames = Object.keys(preBootPlaceholder);
+    for (let i = 0, len = modalFnNames.length; i < len; i++) {
+      const fnName = modalFnNames[i];
+      window.$modal[fnName] = this[fnName];
     }
   }
 
   componentWillUnmount() {
+    totalInstances--;
     console.warn('Modal component unmounted. This is probably a bug.');
     delete window.$modal;
 
@@ -99,19 +113,11 @@ export default class Modal extends React.Component {
 
   handleMenuChange = ({ next }) => {
     this.currentMenu = next;
-  }
-
-  activateModal = () => {
-    this.setState({
-      isVisible: true,
-    });
-    // This allows us to receive input without closing existing menus.
-    this.props.changeMenu({ next: thisMenu, suppressNotify: true });
   };
 
-  deactivateModal = () => {
-    this.modalQueue.shift();
-    if (!this.modalQueue.length) {
+  reprocessQueue = () => {
+    const modalQueue = this.modalQueue;
+    if (!modalQueue.length) {
       // Reset modal to initial state.
       this.setState({
         isVisible: false,
@@ -125,11 +131,46 @@ export default class Modal extends React.Component {
       });
     }
     else {
+      if (modalQueue[modalQueue.length - 1].deactivated) {
+        // This happens if the user requested deactivation by name. Close that
+        // modal and move on.
+        return this.deactivateModal();
+      }
+
       this.setState({
-        modalCount: this.modalQueue.length,
+        modalCount: modalQueue.length,
         currentClosedCount: this.state.currentClosedCount + 1,
       });
     }
+  };
+
+  activateModal = () => {
+    this.setState({
+      isVisible: true,
+    });
+    // This allows us to receive input without closing existing menus.
+    this.props.changeMenu({ next: thisMenu, suppressNotify: true });
+  };
+
+  deactivateModal = () => {
+    this.modalQueue.shift();
+    this.reprocessQueue();
+  };
+
+  deactivateByTag = ({ tag }) => {
+    if (!tag) {
+      return console.error('deactivateByTag requires a tag.');
+    }
+
+    const queue = this.modalQueue;
+    for (let i = 0, len = queue.length; i < len; i++) {
+      const modal = queue[i];
+      if (modal.tag === tag) {
+        modal.deactivated = true;
+        break;
+      }
+    }
+    this.reprocessQueue();
   };
 
   /**
@@ -147,7 +188,7 @@ export default class Modal extends React.Component {
     {
       header='Message', body='', actions,
       unskippable=false, prioritise=false,
-      callback=()=>{}
+      tag, callback=()=>{}
     }
   ) => {
     if (!actions) {
@@ -161,7 +202,8 @@ export default class Modal extends React.Component {
     this.activateModal();
 
     const options = {
-      header, body, actions, unskippable, prioritise,
+      header, body, actions, unskippable, prioritise, tag,
+      deactivated: false,
     };
 
     if (prioritise) {
@@ -202,6 +244,8 @@ export default class Modal extends React.Component {
    * @param {string|JSX.Element} options.header
    * @param {string|JSX.Element} options.body
    * @param {undefined|JSX.Element} options.actions
+   * @param {undefined|string} options.yesText - Text to use for positive button.
+   * @param {undefined|string} options.noText - Text to use for negative button.
    * @param {undefined|function} options.callback
    */
   confirm = (options, callback) => {
@@ -225,13 +269,13 @@ export default class Modal extends React.Component {
           this.deactivateModal();
           options.callback(true);
         }}>
-          Yes
+          {options.yesText ? options.yesText : 'Yes'}
         </Button>
         <Button selectable onClick={() => {
           this.deactivateModal();
           options.callback(false);
         }}>
-          No
+          {options.noText ? options.noText : 'No'}
         </Button>
       </>
     );
@@ -239,6 +283,60 @@ export default class Modal extends React.Component {
     this.show(options);
   };
 
+  // TODO: create listPrompt
+  /**
+   * Asks a question and offers the user with a list of options to select from.
+   */
+  listPrompt = () => {
+    //
+  };
+
+  /**
+   * Asks a question and offers the user a bunch of buttons to click at the
+   * bottom of the modal.
+   * @param {string|object} options
+   * @param {undefined|function} [callback] - Optional. Omit if using options.
+   * @param {string|JSX.Element} options.header
+   * @param {string|JSX.Element} options.body
+   * @param {undefined|JSX.Element} options.actions
+   * @param {undefined|Array} options.buttons - Additional buttons. Simply pass a string array.
+   * @param {undefined|function} options.callback
+   */
+  buttonPrompt = (options, callback) => {
+    if (typeof options === 'string') {
+      options = {
+        body: options,
+      }
+    }
+
+    if (callback) {
+      options.callback = callback;
+    }
+
+    if (!options.callback) {
+      options.callback = () => console.warn('No callbacks passed to confirm.');
+    }
+
+    if (!options.actions) options.actions = (
+      <>
+        {
+          options.buttons ? (
+            options.buttons.map(text =>
+              <Button key={`buttonPrompt-${text}`} selectable onClick={() => {
+                this.deactivateModal();
+                options.callback(text);
+              }}
+              >
+                {text}
+              </Button>
+            )
+          ) : null
+        }
+      </>
+    );
+
+    this.show(options);
+  };
 
   /**
    * @param {string|object} options

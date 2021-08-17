@@ -2,11 +2,14 @@ import React from 'react';
 
 import { getStartupEmitter, getUiEmitter, startupEvent } from '../../emitters';
 import { keySchema } from '../../local/controls';
-import CbQueue from '../../local/CbQueue';
+import CbQueueExtra from '../../local/CbQueueExtra';
 import GameMenu from './GameMenu';
 import Options from './Options';
 import Controls from './Controls';
+import Profile from './Profile';
 import Modal from '../Modal';
+import ControlsOverlay from '../ControlsOverlay';
+import { logBootInfo, onReadyToBoot } from '../../local/windowLoadListener';
 
 const startupEmitter = getStartupEmitter();
 const uiEmitter = getUiEmitter();
@@ -20,13 +23,17 @@ export default class Menu extends React.Component {
       // receiving input at once, we should probably change this into an array
       // and implement multiple actives.
       activeMenu: 'game menu',
+      // We need to check for this because some functions (such as controls)
+      // aren't loaded until the user profile is ready, and menus have a
+      // dependency on controls.
+      profileWasLoaded: false,
     };
 
     // All menus (and special components) that listen for input.
-    this.inputListeners = new CbQueue();
+    this.inputListeners = new CbQueueExtra();
 
     // This calls listeners in a loop, so a queue makes things a little easier.
-    this.menuChangeListeners = new CbQueue();
+    this.menuChangeListeners = new CbQueueExtra();
 
     // We allow arrows to repeat (i.e. holding down an arrow will cause it to
     // keep going until the button is released). We however only do this for
@@ -39,10 +46,15 @@ export default class Menu extends React.Component {
   };
 
   componentDidMount() {
-    startupEmitter.emit(startupEvent.menuLoaded);
-    this.registerListeners();
-    this.changeMenu({
-      next: this.state.activeMenu,
+    onReadyToBoot(() => {
+      this.setState({ profileWasLoaded: true }, () => {
+        startupEmitter.emit(startupEvent.menuLoaded);
+        logBootInfo('Operator interface ready');
+        this.registerListeners();
+        this.changeMenu({
+          next: this.state.activeMenu,
+        });
+      });
     });
   }
 
@@ -53,7 +65,7 @@ export default class Menu extends React.Component {
 
   stopRepeatArrowTimer = () => {
     this.repeatArrow.action = null;
-  }
+  };
 
   registerListeners = () => {
     const actions = keySchema.menuViewer;
@@ -188,7 +200,7 @@ export default class Menu extends React.Component {
    */
   changeMenuFn = (next, suppressNotify=false) => {
     return () => this.changeMenu({ next, suppressNotify });
-  }
+  };
 
   render() {
     const props = {
@@ -200,13 +212,24 @@ export default class Menu extends React.Component {
       changeMenu: this.changeMenu,
     };
 
-    return (
-      <div>
-        <GameMenu {...props} />
-        <Options {...props} />
-        <Controls {...props} />
-        <Modal {...props} />
-      </div>
-    );
+    if (!this.state.profileWasLoaded) {
+      return (
+        <div>
+          <Modal key='modal' {...props} />
+        </div>
+      );
+    }
+    else {
+      return (
+        <div>
+          <ControlsOverlay />
+          <GameMenu {...props} />
+          <Options {...props} />
+          <Controls {...props} />
+          <Profile {...props} />
+          <Modal key='modal' {...props} />
+        </div>
+      );
+    }
   }
 }
