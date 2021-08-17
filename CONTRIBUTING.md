@@ -16,7 +16,7 @@ faster.
 
 ## Assets
 
-#### Mesh file formats
+### Mesh file formats
 The rules on file formats are somewhat relaxed as some assets may be free
 resources obtained online,  and aren't always easily modifiable. However, if
 making assets yourself, the following structure is recommended and compatible
@@ -29,7 +29,7 @@ The above allows easy community modding with little required technical
 expertise. Having said that, any contributions are highly appreciated, so use
 whatever you're comfortable with.
 
-#### Common issues
+### Common issues
 ##### GLTF export crash
 * Blender can sometimes crash if you try to use GLTF compression with messed up
 geometry (such as orphaned vertices and lines). The solution here is to find
@@ -60,7 +60,7 @@ scene in all its glory can be loaded into the scene with, hopefully, less than
 a million verts. Note that slightly going over 1m isn't a problem in and of
 itself, but rather something we should work hard to avoid.
 
-#### Legal crap
+### Legal crap
 
 ##### Using assets with different licenses
 Please do not use anything that is incompatible with this project's license. BSD is an example of a
@@ -125,9 +125,9 @@ Anyone who can donate their voice probably should :). Submission details TBA.
 
 ## Programming
 
-#### Development
+### Development
 * Please use [official Node.js sources](https://nodejs.org/en/download/) to
-install Node 8 or higher, LTS. On Windows the installer should ask if you'd
+install Node 10 or higher, LTS. On Windows the installer should ask if you'd
 like to install Chocolatey and Python - say yes unless you have your own custom
 setup.
 * Install git. On Windows, it will ask you how you'd like to handle CR/LF. You
@@ -142,7 +142,7 @@ currently uses).
 a strict requirement, but makes PRs to master easier for those who test the
 proposed changes because some small issues will already have been caught.
 
-#### Git branch workflow
+### Git branch workflow
 
 ```
 yourBranch-dev  -\
@@ -172,14 +172,14 @@ stable.
 If the current `master` branch is considered stable, it will be merged into
 `stable`, at which point your changes will make it into the latest release.
 
-#### Conventions
+### Conventions
 When creating an object that [] please try to define it somewhere with null
 values. `core.js -> $game` and `[cam] -> ctrl` are examples of this.
 This has 2 advantages:
 * Any semi-decent IDE will produce full auto-completion and documentation.
 * Other coders know what kind of structure to expect.
 
-#### Gotchas and problems
+### Gotchas and problems
 
 ##### Three.js imports
 Be careful when using the drei library. It has the incredibly annoying habit
@@ -190,7 +190,7 @@ happen for things as fundamental as mesh loading. When making changes involving
 drei, please always test offline with cache disabled (Dev tools [Ctrl+Shift+I] -> Network -> Disable cache)
 to ensure your changes aren't online-only.
 
-#### Setting up three.js auto-completion
+### Setting up three.js auto-completion
 
 A tutorial for VSCode is available here:
 * http://shrekshao.github.io/2016/06/20/vscode-01/
