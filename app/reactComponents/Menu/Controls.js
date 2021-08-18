@@ -4,7 +4,7 @@ import { Grid, Icon, Segment } from 'semantic-ui-react';
 import Button from '../elements/KosmButton';
 import MenuNavigation from '../elements/MenuNavigation';
 import { defaultMenuProps, defaultMenuPropTypes } from './defaults';
-import { capitaliseEachWord } from '../../local/utils';
+import { capitaliseFirst } from '../../local/utils';
 import {
   controls,
   doublePresses,
@@ -354,7 +354,7 @@ export default class Controls extends React.Component {
     return (
       <div className={`secondary-menu ${animation}`}>
         <div className='game-menu vertical-center horizontal-center'>
-          <h1>{capitaliseEachWord(thisMenu)}</h1>
+          <h1>{capitaliseFirst(thisMenu)}</h1>
           <Segment>
             <div className='twin-segment'>
               <div>
