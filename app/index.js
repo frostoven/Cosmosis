@@ -115,37 +115,8 @@ onReadyToBoot(() => {
     api.triggerAction('toggleMousePointer');
     api.triggerAction('engageHyperdrive');
 
-    // Next to moon, good place to test lighting.
-    // api.setPlayerShipLocation(new Vector3(-390249080, -2468483, 5996841));
-    // api.setPlayerShipRotation(new Vector3(2.5626, -1.2120, 2.6454));
-
-    // Directly facing the moon, another good place to test lighting.
+    // Directly facing the moon.
     api.setPlayerShipLocation(new Vector3(-381752594, -691327, 1417254));
     api.setPlayerShipRotation(new Vector3(-2.5974, -0.9536, -2.5171));
-
-    // Facing Earth with moon in view, back to sun.
-    // api.setPlayerShipLocation(new Vector3(26914792, -5727037, 5578466));
-    // api.setPlayerShipRotation(new Vector3(0.8734, 1.5370, 1.6702));
-
-    // Behind the Earth, shrouded in night. Used to make sure we're getting
-    // shadows.
-    // api.setPlayerShipLocation(new Vector3(-12715908, -3376086, 3944229));
-    // api.setPlayerShipRotation(new Vector3(2.3031, -1.1355, 0.7181));
-
-    // Close to moon, good place to test overexposure.
-    // api.setPlayerShipLocation(new Vector3(-384046753, 938728, -2120968));
-    // api.setPlayerShipRotation(new Vector3(0.2875, -0.0703, 0.0226));
-
-    // On Earth's surface at night, facing moon.
-    // api.setPlayerShipLocation(new Vector3(26914792, -5727037, 5578466));
-    // api.setPlayerShipRotation(new Vector3(0.8734, 1.5370, 1.6702));
-
-    // Behind Earth. Useful for testing shadow casting, atmospheric lensing, etc.
-    // api.setPlayerShipLocation(new Vector3(-27656524, 835865, -766508));
-    // api.setPlayerShipRotation(new Vector3(-0.1851, -1.5549, -0.0682));
-
-    // Next to that crazy fucking huge fireball.
-    // api.setPlayerShipLocation(new Vector3(150064242871, 485401441, -392001660));
-    // api.setPlayerShipRotation(new Vector3(-0.8526, -0.3184, -1.4681));
   });
 });
