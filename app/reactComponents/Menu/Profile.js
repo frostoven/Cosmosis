@@ -151,6 +151,8 @@ export default class Profile extends React.Component {
     });
   };
 
+  // TODO: manually building lists are no longer needed - replace this
+  //  structure with $modal.listPrompt.
   showLoadProfileModal = () => {
     this.genNavProfileList({
       onButtonClick: this.loadProfile,
