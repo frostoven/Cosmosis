@@ -15,7 +15,7 @@ import {
 import { ContextualInput } from '../../local/contextualInput';
 import { modeName } from '../../modeControl/reactControllers/menuViewer'
 import { showRawKeyGrabber } from '../Modal/rawKeyGrabber';
-import userProfile from '../../userProfile'
+import userProfile from '../../userProfile';
 
 // Menu's unique name.
 const thisMenu = 'controls';

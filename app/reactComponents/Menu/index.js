@@ -10,6 +10,7 @@ import Profile from './Profile';
 import Modal from '../Modal';
 import ControlsOverlay from '../ControlsOverlay';
 import { logBootInfo, onReadyToBoot } from '../../local/windowLoadListener';
+import DebugTools from './DebugTools';
 
 const startupEmitter = getStartupEmitter();
 const uiEmitter = getUiEmitter();
@@ -224,6 +225,7 @@ export default class Menu extends React.Component {
         <div>
           <ControlsOverlay />
           <GameMenu {...props} />
+          <DebugTools {...props} />
           <Options {...props} />
           <Controls {...props} />
           <Profile {...props} />
