@@ -17,6 +17,7 @@ import * as CANNON from 'cannon';
 import { Vector3 } from 'three';
 import { startupEvent, getStartupEmitter } from './emitters';
 import modeControl from './modeControl';
+import userProfile from './userProfile';
 
 const startupEmitter = getStartupEmitter();
 
@@ -115,8 +116,11 @@ onReadyToBoot(() => {
     api.triggerAction('toggleMousePointer');
     api.triggerAction('engageHyperdrive');
 
-    // Directly facing the moon.
-    api.setPlayerShipLocation(new Vector3(-381752594, -691327, 1417254));
-    api.setPlayerShipRotation(new Vector3(-2.5974, -0.9536, -2.5171));
+    const { defaultShipPosition } = userProfile.getCurrentConfig({
+      identifier: 'debugTools'
+    });
+
+    api.setPlayerShipLocation(defaultShipPosition.location);
+    api.setPlayerShipRotation(defaultShipPosition.rotation);
   });
 });
