@@ -1,5 +1,5 @@
 import React from 'react';
-import { capitaliseEachWord } from '../../local/utils';
+import { capitaliseFirst } from '../../local/utils';
 import Button from '../elements/KosmButton';
 import MenuNavigation from '../elements/MenuNavigation';
 import { Divider, Segment } from 'semantic-ui-react';
@@ -226,7 +226,7 @@ export default class Profile extends React.Component {
       <div className={`primary-menu ${animation}`}>
         <div className='game-menu vertical-center horizontal-center'>
           <MenuNavigation {...inputProps}>
-            <h1>{capitaliseEachWord(thisMenu)}</h1>
+            <h1>{capitaliseFirst(thisMenu)}</h1>
             <Segment>
               Profiles contain all your control bindings, customisations, save game files, etc.<br/>
             </Segment>
