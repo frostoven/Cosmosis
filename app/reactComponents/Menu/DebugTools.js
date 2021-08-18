@@ -71,7 +71,23 @@ export default class DebugTools extends React.Component {
   };
 
   loadShipPos = () => {
-    //
+    const positions = userProfile.getCurrentConfig({
+      identifier: 'debugTools'
+    }).storedShipPositions;
+
+    $modal.listPrompt({
+      list: positions,
+      callback: (itemSelected) => {
+        positions.some(pos => {
+          if (pos.text === itemSelected.text) {
+            setPlayerShipLocation(pos.location);
+            setPlayerShipRotation(pos.rotation);
+            return true;
+          }
+          return false;
+        });
+      },
+    });
   };
 
   setShipPosDefault = () => {
