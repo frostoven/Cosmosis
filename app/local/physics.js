@@ -26,7 +26,7 @@ export function initSpacePhysics({ scene, debug=false }={}) {
   //  about how we're going to hack in ships orbiting around bodies.
 
   if (!scene) {
-    scene = $game.scene;
+    scene = $game.levelScene;
   }
 
   const physicsWorld = new CANNON.World();
@@ -136,8 +136,8 @@ export function renderPhysics(delta, world) {
 //  run without manually typing into the dev console.
 
 function requireScene() {
-  if (!$game || !$game.scene) {
-    throw 'This test requires a global scene stored in $game.scene.';
+  if (!$game || !$game.levelScene) {
+    throw 'This test requires a global scene stored in $game.levelScene.';
   }
 }
 
@@ -175,7 +175,7 @@ export const visualTests = {
     const material = new THREE.MeshBasicMaterial({ color: 0x7f7f7f });
     const cube = new THREE.Mesh(geometry, material);
     cube.position.copy(pos);
-    $game.scene.add(cube);
+    $game.levelScene.add(cube);
 
     console.log('Turn into a physics object.');
     // meshAsCube({
@@ -200,7 +200,7 @@ export const tests = {
     console.log('Ensure initSpacePhysics return truthy value.');
     return !!initSpacePhysics();
   }
-}
+};
 
 export default {
   tests,

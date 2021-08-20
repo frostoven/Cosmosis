@@ -138,16 +138,94 @@ function modelPostSetup(modelName, gltf, pos, scene, world, onReady) {
     // const warmWhite = 0xfff5b6;
     const warmWhite = 0xfff5b6;
     // const light = new THREE.PointLight( warmWhite, 1.5, 100 );
-    const light = new THREE.PointLight( warmWhite, 2, 100 );
+
+    // const light = new THREE.PointLight( warmWhite, 2, 100 );
+    // const light = new THREE.HemisphereLight( 0xffffbb, 0x080820, 1 );
+    // light.castShadow = true;
+
+    // Make the ship cast a shadow:
+    gltf.scene.traverse(function(node) {
+      if (node.isMesh) {
+        node.castShadow = true;
+        node.receiveShadow = true;
+        // console.log('got:', node, 'cast:', node.castShadow, 'recv:', node.receiveShadow);
+      }
+    });
+
+    // const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444);
+    // hemiLight.position.set( 0, 200, 0 );
+    // bubble.add(hemiLight);
+
+    // const light = new THREE.DirectionalLight(0xfff5b6, 2.5);
+    const light = new THREE.DirectionalLight(0xffffff, 2);
+    light.castShadow = true;
+    // light.shadow.bias = -0.0005;
+    // light.shadow.bias = -1;
+
+    // light.shadow.camera.top = 180;
+    // light.shadow.camera.bottom = -100;
+    // light.shadow.camera.left = -120;
+    // light.shadow.camera.right = 120;
+    // light.position.set(10, 10, 0);
+
+    const shadowCamWidth = 1;
+    const shadowCamHeight = 1;
+
+    light.shadow.camera.top = shadowCamHeight;
+    light.shadow.camera.bottom = -shadowCamHeight;
+    light.shadow.camera.left = -shadowCamWidth;
+    light.shadow.camera.right = shadowCamWidth;
+    light.shadow.camera.near = 0.5;
+    light.shadow.camera.far = 10;
+
+    light.position.set(0, 10, 0);
+    light.target.position.set(0, 0, -0.5);
+
+    // light.shadow.camera = new THREE.OrthographicCamera(left, right, top, bottom, near, far);
+
+    // light.shadow.mapSize.width = 512;
+    // light.shadow.mapSize.height= 512;
+
+    const lightHelper = new THREE.DirectionalLightHelper(light, 5);
+    bubble.add(lightHelper);
+
+    const shadowHelper = new THREE.CameraHelper(light.shadow.camera);
+    bubble.add(shadowHelper);
+
+    light.target.updateMatrixWorld();
+
+    bubble.add(light);
+    window.light = light;
+    // light.target.updateMatrixWorld();
+
+
+    // ground
+    const floor = new THREE.Mesh( new THREE.PlaneGeometry( 15, 15 ), new THREE.MeshPhongMaterial( { color: 0x999999 } ) );
+    floor.rotation.x = - Math.PI / 2;
+    floor.receiveShadow = true;
+    bubble.add( floor );
+
+    const grid = new THREE.GridHelper( 15, 20, 0x000000, 0x000000 );
+    grid.material.opacity = 0.2;
+    grid.material.transparent = true;
+    bubble.add( grid );
+
+
+
+
     // light.position.set(pos.x, pos.y + 2, pos.z);
     // light.position.set(0, 2, 0);
-    light.position.set(0, 2, -5);
-    mesh.scene.add(light);
+
+    // light.position.set(0, 2, -5);
+    // mesh.scene.add(light);
+
     //
     const light2 = new THREE.PointLight( warmWhite, 2, 100 );
+
+
     // light.position.set(pos.x, pos.y + 2, pos.z);
     light2.position.set(0, 2, 3);
-    mesh.scene.add(light2);
+    // mesh.scene.add(light2);
 
     // TODO: implement the physics things.
     // const body = makePhysical({
@@ -205,7 +283,7 @@ export function createSpaceShip({ modelName, pos, scene, world, isPlayer, onRead
   startupEmitter.on(startupEvent.gameViewReady, () => {
     if (!modelName) return console.error('createSpaceShip needs a model name.');
     if (!pos) pos = $game.camera.position;
-    if (!scene) scene = $game.scene;
+    if (!scene) scene = $game.levelScene;
     if (!world) world = $game.spaceWorld;
     if (!onReady) onReady = () => {};
 

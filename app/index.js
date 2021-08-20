@@ -116,6 +116,9 @@ onReadyToBoot(() => {
     api.triggerAction('toggleMousePointer');
     api.triggerAction('engageHyperdrive');
 
+    // TODO: implement mechanism to always keep track of player ship location
+    //  and auto-save on occasion. This is not however a current priority and
+    //  should only be done once the player actually has systems to explore.
     const { defaultShipPosition } = userProfile.getCurrentConfig({
       identifier: 'debugTools'
     });

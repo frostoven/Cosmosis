@@ -42,11 +42,19 @@ window.$stats = null;
 window.$game = {
   // Set to true once the world is fully initialised.
   ready: false,
-  // Contains the scene. Mainly used for movement optimisation.
+  // Contains the all scenes. Mainly used for movement optimisation. It's
+  // possible this has become redundant. TODO: investigate removal.
   group: null,
-  scene: null,
+  // Contains everything large, including stars / planets / moons. Does not
+  // contain space ships or planetary surfaces (those belong to the level
+  // scene).
+  spaceScene: null,
+  // Contains everything small.
+  levelScene: null,
   camera: null,
   renderer: null,
+  // TODO: remame me. Contains level physics (I think). Perhaps delete and
+  //  start from scratch canon-es when resuming the physics task.
   spaceWorld: null,
   gravityWorld: null,
   // The loaded file. The 'real' space ship is playerShip.scene.
@@ -235,11 +243,12 @@ function init({ sceneName }) {
       return console.error(`Error: default scene ${sceneName} hasn't been registered.`);
     }
     // const scene = initScene({ font });
-    const scene = startupScene.init({ font });
+    const spaceScene = startupScene.init({ font });
+    const levelScene = new THREE.Scene();
 
-    // Contains all the essential game variables.
-    window.$game = initView({ scene });
-    startupEmitter.emit(startupEvent.gameViewReady);
+    // $game contains all the essential game variables.
+    window.$game = initView({ spaceScene, levelScene });
+    startupEmitter.emit(startupEvent.gameViewReady);``
     logBootInfo('Comms relay ready');
 
     initPlayer();
@@ -257,24 +266,31 @@ function init({ sceneName }) {
   window.addEventListener('resize', onWindowResize, false);
 }
 
-function initView({ scene }) {
+function initView({ spaceScene, levelScene }) {
   const camera = new THREE.PerspectiveCamera(56.25, SCREEN_WIDTH / SCREEN_HEIGHT, NEAR, FAR);
   // camera.position.copy(new THREE.Vector3(0, 0, 0));
   // camera.rotation.setFromVector3(new THREE.Vector3(0, 0, 0));
-  scene.add(camera);
+  levelScene.add(camera);
   const ptrLockControls = new PointerLockControls(camera, document.body);
 
-  const renderer = new THREE.WebGLRenderer({...$rendererParams, logarithmicDepthBuffer: true});
+  const renderer = new THREE.WebGLRenderer({ ...$rendererParams, logarithmicDepthBuffer: true, alpha: true });
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(SCREEN_WIDTH * $displayOptions.resolutionScale, SCREEN_HEIGHT * $displayOptions.resolutionScale);
 
+  renderer.shadowMap.enabled = true;
+  // renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
   // TODO: give options for shaders 'colourful' vs 'filmic'.
   // renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMapping = THREE.NoToneMapping;
+  // renderer.toneMapping = THREE.NoToneMapping;
+
+  // renderer.gammaOutput = true;
+  // renderer.gammaFactor = 2.2;
 
   renderer.domElement.style.width = '100%';
   renderer.domElement.style.height = '100%';
   renderer.domElement.id = 'canvas';
+
   document.body.appendChild(renderer.domElement);
 
   // Postprocessing.
@@ -283,12 +299,12 @@ function initView({ scene }) {
   //  it's not healthy. This only happens when outlinePass.selectedObjects is
   //  set and starts rendering.
   composer = new EffectComposer( renderer );
-  const renderPass = new RenderPass(scene, camera);
+  const renderPass = new RenderPass(levelScene, camera);
   composer.addPass(renderPass);
 
   // TODO: check if this needs recreating when window resizes.
   // Outline pass. Used for highlighting interactable objects.
-  const outlinePass = new OutlinePass(new THREE.Vector2(SCREEN_WIDTH / SCREEN_HEIGHT), scene, camera);
+  const outlinePass = new OutlinePass(new THREE.Vector2(SCREEN_WIDTH / SCREEN_HEIGHT), levelScene, camera);
   outlinePass.edgeStrength = 10; //3;
   outlinePass.edgeGlow = 1; //0;
   outlinePass.edgeThickness = 4; //1;
@@ -311,17 +327,21 @@ function initView({ scene }) {
       () => {
         const renderTarget = new THREE.WebGLCubeRenderTarget(texture.image.height);
         renderTarget.fromEquirectangularTexture(renderer, texture);
-        scene.background = renderTarget;
+        spaceScene.background = renderTarget;
         startupEmitter.emit(startupEvent.skyBoxLoaded);
         logBootInfo('Astrometrics ready');
       });
   });
 
-  const spaceWorld = physics.initSpacePhysics({ scene, debug: true });
+  const spaceWorld = physics.initSpacePhysics({ levelScene, debug: true });
   const group = new THREE.Group();
-  group.add(scene);
+  group.add(spaceScene);
+  group.add(levelScene);
 
-  return { renderer, scene, camera, ptrLockControls, spaceWorld, outlinePass, group, ready: true };
+  return {
+    renderer, camera, group, spaceScene, levelScene,
+    ptrLockControls, spaceWorld, outlinePass, ready: true
+  };
 }
 
 function initPlayer() {
@@ -370,9 +390,14 @@ function animate() {
   });
   deltaPrevTime = time;
 
-  const { scene, camera, renderer, spaceWorld, group, gravityWorld, level, playerShip } = $game;
-  spaceWorld && physics.renderPhysics(delta, spaceWorld);
-  gravityWorld && physics.renderPhysics(delta, gravityWorld);
+  const {
+    renderer, camera, group, spaceScene, levelScene,
+    spaceWorld, gravityWorld, level, playerShip
+  } = $game;
+
+
+  // spaceWorld && physics.renderPhysics(delta, spaceWorld);
+  // gravityWorld && physics.renderPhysics(delta, gravityWorld);
 
   if (level) {
     level.process(delta);
@@ -385,7 +410,15 @@ function animate() {
   //   $game.playerShip.scene.rotateZ(0.001);
   // }
 
-  renderer.render(group, camera);
+  // === Render scenes ===============
+  renderer.autoClear = true;
+  // composer.render(); // TODO: check if this works here.
+  renderer.render(spaceScene, camera);
+  renderer.autoClear = false;
+  // clearDepth might be needed if we encounter weird clipping issues. Test me.
+  // renderer.clearDepth();
+  renderer.render(levelScene, camera);
+  // =================================
 
   // Run external renderers. We place this after the scene render to prevent
   // the camera from jumping around.
@@ -404,11 +437,10 @@ function animate() {
   // TODO: move this to shipPilot?
   $game.ptrLockControls.updateOrientation();
 
-  // renderer.render(scene, camera);
-  renderer.render(group, camera);
-
   $stats.update();
-  composer.render();
+
+  // TODO: This currently erases spaceScene. Find a way to prevent that.
+  // composer.render();
 }
 
 function onWindowResize() {
