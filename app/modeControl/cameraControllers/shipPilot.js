@@ -14,7 +14,7 @@ const startupEmitter = getStartupEmitter();
 
 let speedTimer = null;
 
-// 195=1c, 199=1.5c, 202=2c, 206=3c, 209=4c.
+// 195=1c, 199=1.5c, 202=2c, 206=3c, 209=4c, 300=35600c (avoid going over 209).
 // The idea is that the player can push this number up infinitely, but with
 // huge falloff past 206 because every extra 0.1 eventually scales to 1c
 // faster. 195 is junk, 199 is beginner. 206 is end-game. 209 is something
@@ -318,7 +318,7 @@ function easeOutOfBuildup(delta, rollBuildup, easeFactor) {
   return rollBuildup;
 }
 
-function handleHyper(delta, scene, playerShip, warpBubble) {
+function handleHyper(delta, spaceScene, levelScene, playerShip, warpBubble) {
   if (steer.leftRight) {
     // TODO: movement is changes sharply with sudden mouse changes. Investigate
     //  if this is what we really want (note we're in a warp bubble). Perhaps
@@ -396,7 +396,8 @@ function handleHyper(delta, scene, playerShip, warpBubble) {
   // Move the world around the ship.
   let direction = new THREE.Vector3();
   playerShip.cameras[0].getWorldDirection(direction);
-  scene.position.addScaledVector(direction, -hyperSpeed);
+  spaceScene.position.addScaledVector(direction, -hyperSpeed);
+  levelScene.position.addScaledVector(direction, -hyperSpeed);
   warpBubble.position.addScaledVector(direction, hyperSpeed);
 }
 
@@ -445,7 +446,7 @@ function render(delta) {
     `;
   }
 
-  const { scene, camera, renderer, hyperMovement } = $game;
+  const { spaceScene, levelScene, camera, renderer, hyperMovement } = $game;
 
   // TODO: make it so that you cannot hop into hyperdrive without first
   //  speeding up, but once you're in hyperdrive you can actually float with
@@ -454,10 +455,10 @@ function render(delta) {
     // Hyper-movement is similar to freecam, but has a concept of inertia. The
     // ship cannot strafe in this mode. The ship should have no physics in this
     // mode, and the universe moves instead of the ship.
-    handleHyper(delta, scene, playerShip, playerShipBubble);
+    handleHyper(delta, spaceScene, levelScene, playerShip, playerShipBubble);
   }
   else {
-    // PLEASE GIVE ME PHYSICS
+    // TODO: PLEASE GIVE ME PHYSICS
     handleLocal(delta);
   }
 }

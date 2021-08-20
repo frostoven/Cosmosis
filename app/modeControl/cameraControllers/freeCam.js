@@ -119,7 +119,7 @@ function render(delta) {
         return;
     }
 
-    const { scene, camera, renderer } = $game;
+    const { camera, renderer } = $game;
 
     if (ctrl.speedUp) {
         speed += (delta * 200) + (speed * 0.01);

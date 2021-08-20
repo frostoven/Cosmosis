@@ -1,6 +1,12 @@
 /*
  * Contains a set of functions for easy access. The idea is that all major and
  * frequently used functions should reside here.
+ *
+ * When writing code intended for native use (in other words, you're not
+ * writing a mod), please do not run API functions each frame! API functions
+ * have a ton of overhead to prevent mod crashes. As an example, it's
+ * appropriate to use API function calls inside menus, but it's not appropriate
+ * to put an API function call inside a render function.
  */
 
 import { startupEvent, getStartupEmitter } from '../emitters';
@@ -31,7 +37,10 @@ export function setPlayerShipLocation({ x, y, z }={}){
     if ($game.hyperMovement) {
       $game.playerShip.scene.position.set(0, 0, 0);
       $game.playerShipBubble.position.set(x, y, z);
-      $game.scene.position.set(-x, -y, -z);
+
+      // Keep the macro and micro scenes positions in sync.
+      $game.spaceScene.position.set(-x, -y, -z);
+      $game.levelScene.position.set(-x, -y, -z);
     }
     else {
       console.error(
