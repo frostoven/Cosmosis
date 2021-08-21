@@ -146,6 +146,9 @@ function modelPostSetup(modelName, gltf, pos, scene, world, onReady) {
     // Make the ship cast a shadow:
     gltf.scene.traverse(function(node) {
       if (node.isMesh) {
+        // Backface culling. Without this shadows get somewhat insane because
+        // *all* faces then emit shadows.
+        node.material.side = THREE.FrontSide;
         node.castShadow = true;
         node.receiveShadow = true;
         // console.log('got:', node, 'cast:', node.castShadow, 'recv:', node.receiveShadow);
@@ -159,32 +162,31 @@ function modelPostSetup(modelName, gltf, pos, scene, world, onReady) {
     // const light = new THREE.DirectionalLight(0xfff5b6, 2.5);
     const light = new THREE.DirectionalLight(0xffffff, 2);
     light.castShadow = true;
-    // light.shadow.bias = -0.0005;
-    // light.shadow.bias = -1;
 
-    // light.shadow.camera.top = 180;
-    // light.shadow.camera.bottom = -100;
-    // light.shadow.camera.left = -120;
-    // light.shadow.camera.right = 120;
-    // light.position.set(10, 10, 0);
-
-    const shadowCamWidth = 1;
-    const shadowCamHeight = 1;
+    // TODO: move into graphics menu as 'horizontal shadow distance (in meters)'.
+    const shadowCamWidth = 3;
+    const shadowCamHeight = 3;
 
     light.shadow.camera.top = shadowCamHeight;
     light.shadow.camera.bottom = -shadowCamHeight;
     light.shadow.camera.left = -shadowCamWidth;
     light.shadow.camera.right = shadowCamWidth;
     light.shadow.camera.near = 0.5;
-    light.shadow.camera.far = 10;
+    light.shadow.camera.far = 5;
+    // ^^ ?
+    // TODO: move to graphics as 'vertical shadow distance (meters)'
+    // const shadowDistanceVertically = 1.5;
 
-    light.position.set(0, 10, 0);
-    light.target.position.set(0, 0, -0.5);
+    light.position.set(0, 3.5, 0);
+    // Note: target should *not* be used to adjust distance. Use camera.far for
+    // that.
+    light.target.position.set(0, 1, 0);
 
     // light.shadow.camera = new THREE.OrthographicCamera(left, right, top, bottom, near, far);
 
-    // light.shadow.mapSize.width = 512;
-    // light.shadow.mapSize.height= 512;
+    // TODO: move into graphics are 'shadow resolution'.
+    light.shadow.mapSize.width = 1024 * 4;
+    light.shadow.mapSize.height= 1024 * 4;
 
     const lightHelper = new THREE.DirectionalLightHelper(light, 5);
     bubble.add(lightHelper);
@@ -199,16 +201,16 @@ function modelPostSetup(modelName, gltf, pos, scene, world, onReady) {
     // light.target.updateMatrixWorld();
 
 
-    // ground
-    const floor = new THREE.Mesh( new THREE.PlaneGeometry( 15, 15 ), new THREE.MeshPhongMaterial( { color: 0x999999 } ) );
-    floor.rotation.x = - Math.PI / 2;
-    floor.receiveShadow = true;
-    bubble.add( floor );
-
-    const grid = new THREE.GridHelper( 15, 20, 0x000000, 0x000000 );
-    grid.material.opacity = 0.2;
-    grid.material.transparent = true;
-    bubble.add( grid );
+    // // ground
+    // const floor = new THREE.Mesh(new THREE.PlaneGeometry(15, 15), new THREE.MeshPhongMaterial({ color: 0x999999 }));
+    // floor.rotation.x = - Math.PI / 2;
+    // floor.receiveShadow = true;
+    // bubble.add( floor );
+    //
+    // const grid = new THREE.GridHelper(15, 20, 0x000000, 0x000000);
+    // grid.material.opacity = 0.2;
+    // grid.material.transparent = true;
+    // bubble.add(grid);
 
 
 

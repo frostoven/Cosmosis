@@ -278,7 +278,8 @@ function initView({ spaceScene, levelScene }) {
   renderer.setSize(SCREEN_WIDTH * $displayOptions.resolutionScale, SCREEN_HEIGHT * $displayOptions.resolutionScale);
 
   renderer.shadowMap.enabled = true;
-  // renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  // TODO: move into graphics are 'soft shadows'.
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
   // TODO: give options for shaders 'colourful' vs 'filmic'.
   // renderer.toneMapping = THREE.ACESFilmicToneMapping;

@@ -123,7 +123,8 @@ onReadyToBoot(() => {
       identifier: 'debugTools'
     });
 
-    api.setPlayerShipLocation(defaultShipPosition.location);
-    api.setPlayerShipRotation(defaultShipPosition.rotation);
+    // TODO: make lighting correctly update after position / rotation has been set.
+    // api.setPlayerShipLocation(defaultShipPosition.location);
+    // api.setPlayerShipRotation(defaultShipPosition.rotation);
   });
 });

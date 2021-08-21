@@ -111,7 +111,11 @@ function init({ font }) {
         // plane.computeFaceNormals();
 
         const material = new THREE.MeshBasicMaterial({map: texture});
+        // const material = new THREE.MeshPhongMaterial({map: texture});
         const mesh = new THREE.Mesh(geometry, material);
+        // mesh.castShadow = true;
+        // mesh.receiveShadow = true;
+
         // const mesh = new THREE.Mesh(plane, material);
         // mesh.position.y = -body.size / 4 * scale;
 
