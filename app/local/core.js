@@ -20,6 +20,9 @@ import { startupEvent, getStartupEmitter } from '../emitters';
 import contextualInput from './contextualInput';
 import { preBootPlaceholder } from '../reactComponents/Modal';
 import { logBootInfo } from './windowLoadListener';
+import levelLighting from '../lighting/levelLighting';
+import spaceLighting from '../lighting/spaceLighting';
+
 
 const gameFont = 'node_modules/three/examples/fonts/helvetiker_regular.typeface.json';
 
@@ -246,9 +249,13 @@ function init({ sceneName }) {
     const spaceScene = startupScene.init({ font });
     const levelScene = new THREE.Scene();
 
+    // Load lighting (is automatically delayed until scenes are ready).
+    levelLighting.applyLighting();
+    spaceLighting.applyLighting();
+
     // $game contains all the essential game variables.
     window.$game = initView({ spaceScene, levelScene });
-    startupEmitter.emit(startupEvent.gameViewReady);``
+    startupEmitter.emit(startupEvent.gameViewReady);
     logBootInfo('Comms relay ready');
 
     initPlayer();
@@ -428,6 +435,9 @@ function animate() {
     const controller = cachedRenderHooks[i];
     controller.render(delta);
   }
+
+  levelLighting.updateLighting();
+  spaceLighting.updateLighting();
 
   // If the camera is currently anchored to something, update position. Note:
   // always put this after all physics have been calculated or we'll end up
