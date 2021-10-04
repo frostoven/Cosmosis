@@ -6,7 +6,7 @@ varying highp float pointSize;
 
 void main() {
     if (pointSize < MIN_SIZE) {
-      gl_FragColor = vec4(vGlow, pointSize * MIN_SIZE_FACTOR);
+      gl_FragColor = vec4(vGlow, max(pointSize * MIN_SIZE_FACTOR, 0.05));
       return;
     }
 
