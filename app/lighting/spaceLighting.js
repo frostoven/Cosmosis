@@ -6,7 +6,7 @@ const startupEmitter = getStartupEmitter();
 // Applies lighting for all celestial bodies.
 // TODO: apply shadows to moons from their host planets somehow.
 function applyLighting() {
-  startupEmitter.on(startupEvent.skyBoxLoaded, () => {
+  startupEmitter.on(startupEvent.playerShipLoaded, () => {
     // 1.5 is technically too high, but this should eventually be handled
     // mathematically by auto-exposure (and user overrides) so we can discard
     // realism for now in favour of prettiness and let the future dynamic

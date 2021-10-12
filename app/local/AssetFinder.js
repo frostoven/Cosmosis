@@ -38,10 +38,10 @@ const assetDefaults = {
     dir: 'sfx',
     extensions: [ 'mp3', 'ogg' ],
   },
-  skyboxes: {
-    dir: 'skyboxes',
-    extensions: [ 'jpg', 'png', 'gif' ],
-  },
+  // skyboxes: {
+  //   dir: 'skyboxes',
+  //   extensions: [ 'jpg', 'png', 'gif' ],
+  // },
   spaceShips: {
     dir: 'spaceShips',
     extensions: [ 'gltf', 'glb' ],
@@ -127,9 +127,9 @@ AssetFinder.prototype.getSfx = function getSfx(name, callback=()=>{}) {
   this.getRes(name, assetDefaults.sfx, callback);
 };
 
-AssetFinder.prototype.getSkybox = function getSkybox(name, callback=()=>{}) {
-  this.getRes(name, assetDefaults.skyboxes, callback);
-};
+// AssetFinder.prototype.getSkybox = function getSkybox(name, callback=()=>{}) {
+//   this.getRes(name, assetDefaults.skyboxes, callback);
+// };
 
 AssetFinder.prototype.getSpaceShip = function getSpaceShip(name, callback=()=>{}) {
   this.getRes(name, assetDefaults.spaceShips, callback);
