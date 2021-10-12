@@ -18,8 +18,6 @@ export const startupEvent = {
   gameViewReady: startupEmitter.nextEnum(),
   /** The first animation() frame has been rendered. */
   firstFrameRendered: startupEmitter.nextEnum(),
-  /** The cosmos awakens.*/
-  skyBoxLoaded: startupEmitter.nextEnum(),
   /* This includes all GLTF preprocessing. */
   playerShipLoaded: startupEmitter.nextEnum(),
   /** Game is fully loaded, core functions (like rendering) is already

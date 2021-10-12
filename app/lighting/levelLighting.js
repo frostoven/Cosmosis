@@ -37,10 +37,10 @@ function applyLighting() {
 
     const bubble = $game.playerShipBubble;
 
-    const lightHelper = new THREE.DirectionalLightHelper(light, 5);
-    bubble.add(lightHelper);
-    const shadowHelper = new THREE.CameraHelper(light.shadow.camera);
-    bubble.add(shadowHelper);
+    // const lightHelper = new THREE.DirectionalLightHelper(light, 5);
+    // bubble.add(lightHelper);
+    // const shadowHelper = new THREE.CameraHelper(light.shadow.camera);
+    // bubble.add(shadowHelper);
 
     light.target.updateMatrixWorld();
     bubble.add(light);

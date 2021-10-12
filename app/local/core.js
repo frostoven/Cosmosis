@@ -23,7 +23,6 @@ import { logBootInfo } from './windowLoadListener';
 import levelLighting from '../lighting/levelLighting';
 import spaceLighting from '../lighting/spaceLighting';
 
-
 const gameFont = 'node_modules/three/examples/fonts/helvetiker_regular.typeface.json';
 
 // 1 micrometer to 100 billion light years in one scene, with 1 unit = 1 meter?
@@ -92,6 +91,7 @@ window.$options = {
 };
 window.$displayOptions = {
   // Rendering resolution scale. Great for developers and wood PCs alike.
+  // TODO: Call this "Resolution quality (Supersampling)" in the graphics menu. // 20% 50% 75% 'match native' 150% 200% 400%
   resolutionScale: 1,
 
   limitFps: false,
@@ -114,7 +114,6 @@ window.$modal = preBootPlaceholder;
  */
 
 const allScenes = {};
-let activeScene = '';
 
 const allActionControllers = {};
 let cachedRenderHooks = [];
@@ -236,8 +235,6 @@ function init({ sceneName }) {
   // Default active mode is shipPilot.
   contextualInput.camController.giveControlTo('shipPilot');
 
-  activeScene = sceneName;
-
   // Default graphics font.
   const fontLoader = new THREE.FontLoader();
   fontLoader.load(gameFont, function (font) {
@@ -274,6 +271,8 @@ function init({ sceneName }) {
 }
 
 function initView({ spaceScene, levelScene }) {
+  // TODO: make FOV adjustable in graphics menu.
+  // TODO: all option to press Alt that temporarily zoom in by decreasing perspective.
   const camera = new THREE.PerspectiveCamera(56.25, SCREEN_WIDTH / SCREEN_HEIGHT, NEAR, FAR);
   // camera.position.copy(new THREE.Vector3(0, 0, 0));
   // camera.rotation.setFromVector3(new THREE.Vector3(0, 0, 0));
@@ -325,21 +324,21 @@ function initView({ spaceScene, levelScene }) {
   // Default skybox.
   // TODO: This thing really, REALLY hates being zoomed out beyond 1LY.
   //  Need to find some sort of fix.
-  const textureLoader = new THREE.TextureLoader();
-  res.getSkybox('panoramic_dark', (error, filename, dir) => {
-    if (error) {
-      return console.error(error);
-    }
-    const texture = textureLoader.load(
-      `${dir}/${filename}`,
-      () => {
-        const renderTarget = new THREE.WebGLCubeRenderTarget(texture.image.height);
-        renderTarget.fromEquirectangularTexture(renderer, texture);
-        spaceScene.background = renderTarget;
-        startupEmitter.emit(startupEvent.skyBoxLoaded);
-        logBootInfo('Astrometrics ready');
-      });
-  });
+  // const textureLoader = new THREE.TextureLoader();
+  // res.getSkybox('panoramic_dark', (error, filename, dir) => {
+  //   if (error) {
+  //     return console.error(error);
+  //   }
+  //   const texture = textureLoader.load(
+  //     `${dir}/${filename}`,
+  //     () => {
+  //       const renderTarget = new THREE.WebGLCubeRenderTarget(texture.image.height);
+  //       renderTarget.fromEquirectangularTexture(renderer, texture);
+  //       spaceScene.background = renderTarget;
+  //       startupEmitter.emit(startupEvent.skyBoxLoaded);
+  //       logBootInfo('Astrometrics ready');
+  //     });
+  // });
 
   const spaceWorld = physics.initSpacePhysics({ levelScene, debug: true });
   const group = new THREE.Group();
@@ -363,7 +362,15 @@ function initPlayer() {
       // modelName: 'test', onReady: (mesh, bubble) => {
       $game.playerShip = mesh;
       $game.playerShipBubble = bubble;
-      startupEmitter.emit(startupEvent.playerShipLoaded);
+      // TODO: Investigate why setTimeout is needed. Things break pretty hard
+      //  if we have a very tiny space ship (reproducible with an empty scene
+      //  containing only a camera). The exact symptom is it that
+      //  startupEvent.ready is triggered before we have a scene. This leads me
+      //  to believe larger space ships delay .ready long enough for the scene
+      //  to load fully.
+      setTimeout(() => {
+        startupEmitter.emit(startupEvent.playerShipLoaded);
+      });
       logBootInfo('Ship ready');
     }
   });
