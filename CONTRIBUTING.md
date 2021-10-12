@@ -107,7 +107,7 @@ art for this game falls under MIT (or compatible), which basically means it's
 public domain. You may still however request to be credited, and you're
 encouraged to do so.
 
-Please [raise an issue](https://github.com/aggregate1166877/SpaceJunkie/issues)
+Please [raise an issue](https://github.com/feynmansbongos/Cosmosis/issues/new/choose)
 before starting work. This game's art style has a very specific direction. Even
 if you create art much better than what's already in the project, it might
 simply be rejected on the basis that it does not match existing style. Once
