@@ -4,50 +4,14 @@
 import * as THREE from 'three';
 
 import core from '../local/core';
+import { logBootInfo } from '../local/windowLoadListener';
+import { getStartupEmitter, startupEvent } from '../emitters';
+import { getShader } from '../../shaders';
+const STARS_JSON = require('../../prodHqAssets/starCatalogs/bsc5p_radec_min.json');
 
-var quality = 16, step = 1024 / quality;
+const startupEmitter = getStartupEmitter();
 
-// Note on label data - if for whatever insane reason we'd ever want to go
-// below 1cm size, use scale instead.
-const labelData = [
-  // TODO: load via planetary system and use the res loader.
-  {
-    name: 'sun',
-    size: 1392700000, // 1,392,700 km
-    reflectivity: 0,
-    scale: 1.0,
-    brightness: 10,
-    grouped: false,
-    nogroupOffset: 149540000000,
-    image: 'prodHqAssets/planetImg/sun_euvi_aia304_2012_carrington.jpg',
-  },
-  {
-    name: 'moon',
-    // https://www.scientificamerican.com/article/why-do-the-moon-and-the-s/#:~:text=Because%20the%20moon%20is%20changing,the%20moon%20appear%20very%20large
-    size: 3474000, // 3,474 km
-    reflectivity: 0.12, // yes, it's actually that high.
-    scale: 1.0,
-    grouped: false,
-    nogroupOffset: -384400000,
-    image: 'prodHqAssets/planetImg/Moon_lroc_color_poles_8k.jpg',
-  },
-  {
-    name: 'earth',
-    size: 12742000, // 12,742 km
-    reflectivity: 0.3, // yes, it's actually that low.
-    scale: 1.0,
-    grouped: false,
-    nogroupOffset: 0,
-    image: 'prodHqAssets/planetImg/Land_ocean_ice_cloud_hires.jpg',
-  },
-
-  // Going to miss these. They really helped me prototype the initial system.
-  // Maybe one day I can offer the original authors my thanks.
-  // {size: 7.47e12, scale: 1.0, label: "solar system (50Au)"},
-  // {size: 9.4605284e15, scale: 1.0, label: "gargantuan (1 light year)"},
-  // {size: 3.08567758e16, scale: 1.0, label: "ludicrous (1 parsec)"},
-  // {size: 1e19, scale: 1.0, label: "mind boggling (1000 light years)"}
-];
+const spectralCombinations = {};
 
 function register() {
   core.registerScene({
@@ -56,207 +20,282 @@ function register() {
   });
 }
 
+const allStarMeshes = [];
+
+const validStars = [];
+
 function init({ font }) {
   const scene = new THREE.Scene();
 
-  // Massive space bodies part below.
-  const geometry = new THREE.SphereBufferGeometry(0.5, 24*10, 12*10);
-
-  for (let i = 0; i < labelData.length; i++) {
-    const body = labelData[i];
-    const scale = body.scale || 1;
-
-    const materialArgs = {
-      color: 0xffffff,
-      specular: 0x050505,
-      shininess: 50,
-      emissive: 0x000000,
-      emissiveIntensity: body.brightness ? body.brightness : 1,
-    };
-
-    const labelGeo = new THREE.TextBufferGeometry(body.name, {
-      font: font,
-      size: body.size,
-      height: body.size / 2
-    });
-
-    labelGeo.computeBoundingSphere();
-
-    // center text
-    labelGeo.translate(-labelGeo.boundingSphere.radius, 0, 0);
-
-    const group = new THREE.Group();
-    group.position.z = -body.size * scale;
-    scene.add(group);
-
-    materialArgs.color = new THREE.Color().setHSL(Math.random(), 0.5, 0.5);
-    const material = new THREE.MeshPhongMaterial(materialArgs);
-
-    const textMesh = new THREE.Mesh(labelGeo, material);
-    textMesh.scale.set(scale, scale, scale);
-    textMesh.position.z = -body.size * scale;
-    textMesh.position.y = body.size / 4 * scale;
-    if (body.grouped !== false) {
-      group.add(textMesh);
+  for (let i = 0; i < STARS_JSON.length; i++) {
+    if (i !== 0 && i % 50000 === 0 || i === STARS_JSON.length - 1) {
+      logBootInfo(`Loading star ${i}`, true);
     }
+    const star = STARS_JSON[i];
+    const diameter = 0.015;
+    const scale = 1;
+    let image = 'potatoLqAssets/planetImg/blank.png';
 
-    if (body.image) {
-      const loader = new THREE.TextureLoader();
-      loader.load( body.image, function ( texture ) {
+    const starIndex = star.i;
+    const name = star.n;
 
-        // var plane = new THREE.SphereGeometry(4096, 64, 64);
-        // for ( var i = 0, l = plane.vertices.length; i < l; i ++ ) {
-        //   var x = i % quality, y = ~~ ( i / quality );
-        //   //plane.vertices[ i ].y = data[ ( x * step ) + ( y * step ) * 1024 ] * 2 - 128;
-        //   // changing points randomly instead of reading off of a height map
-        //   plane.vertices[ i ].x += Math.floor((Math.random()*50)+1) - 25;
-        //   plane.vertices[ i ].y += Math.floor((Math.random()*100)+1) - 50;
-        //   plane.vertices[ i ].z += Math.floor((Math.random()*50)+1) - 25;
-        // }
-        // // plane.computeCentroids();
-        // plane.computeFaceNormals();
-
-        // const material = new THREE.MeshBasicMaterial({map: texture});
-
-        // We'll probably want to do most reflectivity with shaders (because
-        // reflections would be unevenly distributed, ex. ocean vs land).
-        let material;
-        let castShadow = false;
-        let receiveShadow = true;
-
-        if (!body.reflectivity) {
-          // If has no reflectivity, may as well go with something cheaper that
-          // doesn't support reflectivity at all (usually used for stars).
-          material = new THREE.MeshBasicMaterial({ map: texture });
-          receiveShadow = false;
-        }
-        else {
-          material = new THREE.MeshPhongMaterial({ map: texture });
-          material.reflectivity = body.reflectivity;
-        }
-
-        const mesh = new THREE.Mesh(geometry, material);
-        mesh.castShadow = castShadow;
-        mesh.receiveShadow = receiveShadow;
-
-        // const mesh = new THREE.Mesh(plane, material);
-        // mesh.position.y = -body.size / 4 * scale;
-
-        if (body.grouped === false) {
-          mesh.scale.multiplyScalar(body.size * scale);
-          // mesh.updateMatrix();
-          mesh.position.x = body.nogroupOffset;
-          scene.add(mesh);
-        }
-        else {
-          // mesh.scale.multiplyScalar(body.size * scale);
-          // group.add(mesh);
-        }
-      });
+    let parsecs = star.p;
+    const brightness = star.b;
+    const spectralType = star.s;
+    if (!spectralCombinations[spectralType]) {
+      spectralCombinations[spectralType] = 1;
     }
     else {
-      const dotMesh = new THREE.Mesh(geometry, material);
-      dotMesh.position.y = -body.size / 4 * scale;
-      dotMesh.scale.multiplyScalar(body.size * scale);
-
-      if (body.grouped !== false) {
-        group.add(dotMesh);
-      }
+      spectralCombinations[spectralType]++;
     }
+
+    if (!parsecs) {
+      console.error(`Skipping [${star.i}] ${name} because it has no distance (${parsecs}).`);
+      continue;
+    }
+
+    // TODO: look at HD33948 surrounding nebula.
+    // http://my.sky-map.org/?img_source=IMG_904259:all&ra=5.225917&de=-8.14778&zoom=6&show_box=1&box_ra=5.225917&box_de=-8.14778&box_width=50&box_height=50
+    // TODO: also have a look at CL Scorpii, a zombie type star.
+
+    // let skipLoop = true;
+    // We can use the below to generate constellation data.
+    switch (starIndex) {
+      // Orion
+      // -----------------------------------------------------------
+      case 1948: // Alnitak A  [belt]
+      case 1949: // Alnitak B  [belt]
+      case 1903: // Alnilam    [belt]
+      case 1852: // Mintaka    [belt]
+      case 2061: // Betelgeuse
+      case 1713: // Rigel
+      case 1790: // Bellatrix
+      case 2004: // Saiph
+      case 1879: // Meissa A
+      case 1880: // Meissa B
+      case 2124: // Mu Orionis
+      case 2199: // Xi Orionis
+      case 2130: // 64 Orionis
+      case 2159: // Nu Orionis
+      case 2047: // Chi1 Orionis
+      case 1543: // Pi3 Orionis
+      case 1544: // Pi2 Orionis
+      case 1570: // Pi1 Orionis
+      case 1552: // Pi4 Orionis
+      case 1562: // 5 Orionis
+      case 1567: // Pi5 Orionis
+      case 1601: // Pi6 Orionis
+      // The Great Dog
+      // -----------------------------------------------------------
+      case 2491: // Sirius (Dog's majestic chest)
+      case 2294: // Mirzam (front leg)
+      case 2429: // nu.02 CMa (chest)
+      case 2414: // ksi02 CMa (front leg)
+      case 2596: // iot CMa (upper neck)
+      case 2657: // Muliphein (ear)
+      case 2574: // Theta Canis Majoris (nose)
+      case 2580: // omi01 CMa (belly)
+      case 2653: // omi02 CMa (back)
+      case 2693: // Wezen (ass)
+      case 2749: // ome CMa (tail)
+      case 2827: // Aludra (tail end)
+      case 2618: // Adhara (upper leg)
+      case 2538: // (rear left foot)
+      case 2282: // Furud (rear rear foot)
+        break;
+      // // Gemini
+      // // -----------------------------------------------------------
+      // case 2990: // Pollux (right head)
+      // case 2905: // ups Gem (right neck)
+      // case 2891: // Castor A (left head)
+      // case 2890: // Castor B (also left head)
+      // case 2697: // tau Gem (left neck)
+      // case 2821: // (joined shoulder)
+      // case 2985: // (right shoulder)
+      // case 2540: // (left shoulder)
+      // case 2473: // Mebsuta (voluptuous left)
+      // case 2286: // (left side right leg)
+      // case 2343: // Tejat (left side left leg vert 1)
+      // case 2216: // Propus (left side left leg vert 2)
+      // case 2134: // (left side left leg vert 3)
+      // case 2777: // Wasat (voluptuous right)
+      // case 2650: // Mekbuda (right side left knee)
+      // case 2421: // Alhena (right side left foot)
+      // case 2763: // (right side right knee)
+      // case 2484: // (right side right foot)
+      //   break;
+      // // Libra
+      // // -----------------------------------------------------------
+      // case 5531: // Zubenelgenubi (base)
+      // case 5603: // Brachium (left)
+      // case 5685: // Zubeneschamali (right)
+      // case 5787: // Zubenelhakrabi (neck) | TODO: add NAME entry Zuben Elakrab to database.
+      // case 5908: // tet Lib
+      //   break;
+      // Scorpius
+      // -----------------------------------------------------------
+      case 6134: // Antares (head)
+      case 5984: // Acrab | bet01 Sco (left pincer) // TODO: add NAME entry Acrab to DB.
+      case 5953: // Dschubba (middle pincer)
+      case 5944: // V* pi. Sco (right pincer)
+      case 6241: // eps Sco (body)
+      case 6247: // mu.01 Sco (tail vert 1)
+      case 6271: // Grafias | zet02 Sco (tail vert 2) // TODO: add NAME entry Grafias to DB.
+      case 6380: // eta Sco (tail vert 3)
+      case 6553: // Sargas (tail vert 4)
+      case 6615: // iot01 Sco (tail vert 5)
+      case 6580: // kap Sco (tail vert 6)
+      case 6527: // Shaula (tail vert 7)
+      case 6508: // Final (tail vert 8)
+        break;
+      // Crux | Southern cross
+      // -----------------------------------------------------------
+      case 4656: // del Cru (left)
+      case 4853: // Mimosa (right)
+      case 4763: // Gacrux (top)
+      case 4730: // alf01 Cru (aka Acrux, bottom)
+      case 4731: // alf02 Cru (aka Acrux, bottom)
+        break;
+      // Alpha Centauri
+      // -----------------------------------------------------------
+      case 5459: // Rigel kent (not to be confused with Rigel). Including for test's sake.
+      case 5460: // Toliman.
+        break;
+      // Ursa minor | Northern indicator
+      // -----------------------------------------------------------
+      case 424: // Polaris (north star)
+      case 6789: // Yildun
+      case 6322: // eps UMi
+      case 5903: // zet UMi
+      case 5563: // Kochab
+      case 5735: // Pherkad
+      case 6116: // eta UMi
+        break;
+      // Lyra
+      // -----------------------------------------------------------
+      case 7001: // Vega
+      case 7056: // zet01 Lyr
+      case 7139: // del02 Lyr
+      case 7178: // Sulafat
+      case 7106: // Sheliak
+        break;
+      // Phoenix
+      // -----------------------------------------------------------
+      case 99: // Ankaa (eye)
+      case 25: // (beak)
+      case 100: // (neck)
+      case 429: // (wing)
+      case 338: // (other wing)
+      case 322: // (body)
+      case 440: // (tail)
+      case 555: // (other part of tail)
+        break;
+      // Corvus
+      // -----------------------------------------------------------
+      case 4623: // Alchiba (beak)
+      case 4630: // Minkar (eye)
+      case 4662: // Gienah (wing)
+      case 4757: // Algorab (rear)
+      case 4786: // Kraz (foot)
+        break;
+      // Leo
+      // -----------------------------------------------------------
+      case 3873: // Algenubi // TODO: add NAME entry to DB.
+      case 3905: // Rasalas
+      case 4031: // Adhafera
+      case 4057: // 41 Leo A | Algieba // TODO: add NAME entry to DB.
+      case 4058: // 41 Leo B | Algieba // TODO: add NAME entry to DB.
+      case 3975: // Al'dzhabkhakh // TODO: add NAME entry to DB.
+      case 3982: // Regulus
+      case 4359: // Chertan
+      case 4534: // Denebola
+      case 4357: // Zosma
+        break;
+      default: // bookm
+        continue;
+    }
+
+    validStars.push(star);
   }
 
   return scene;
 }
 
-// TODO: figure out wtf is going on here.
-//  So, very simply: 3000 cubes @ 4 verts each = 12,000 verts = 11fps on an RTX 2080TI.
-//  Or, add a compressed gltf scene from blender with 2 million verts - 60 fps constant. wut..?
-//  The real confusing part here is the actual resource usage - CPU 10%, GPU 20%, RAM 50%. I.e system
-//  not being utilised.
-// startupEmitter.on(startupEvent.ready, () => {
-//   const objects = generateCubeField({
-//     scene: $game.levelScene,
-//     position: $game.camera.position,
-//   });
-//   console.log('cube space:', objects);
-// });
+startupEmitter.on(startupEvent.ready, () => {
+  const scene = $game.spaceScene;
 
-// startupEmitter.on(startupEvent.ready, () => {
-//   const objects = generateCubeField({
-//     scene: $game.levelScene,
-//     position: $game.camera.position,
-//     cubeCount: 25,
-//     distanceMultiplier: 0.5
-//   });
-// });
+  // TODO: Add LMC, SMC, Andromeda.
 
-// startupEmitter.on(startupEvent.ready, () => {
-  // const objects = generateCubeField({
-  //   scene: $game.levelScene,
-  //   position: $game.camera.position,
-  //   cubeCount: 100,
-  // });
-  // console.log('cube space:', objects);
-// });
+  // const pointColor = new THREE.Color();
+  const glowColor = new THREE.Color();
+  const color = [];
+  const glow = [];
+  const luminosity = [];
+  const distance = [];
+  const vertices = [];
+  const parsec = 30856775814913673;
+  const sunSize = 1392700000;
 
-// https://stackoverflow.com/questions/18363357/apply-heightmap-to-spheregeometry-in-three-js
-function generateHeight( width, height ) {
-  var data = Float32Array ? new Float32Array(width * height) : [], perlin = new ImprovedNoise(),
-    size = width * height, quality = 2, z = Math.random() * 100;
+  let prevLoc = {};
+  for (let i = 0; i < validStars.length; i++) {
+    const star = validStars[i];
 
-  for (var i = 0; i < size; i++) {
-    data[i] = 0
-  }
+    // vertices.push(star.x * parsec, star.y * parsec, star.z * parsec);
+    vertices.push(star.x, star.y, star.z);
 
-  for (var j = 0; j < 4; j++) {
-    quality *= 4;
-    for (var i = 0; i < size; i++) {
-      var x = i % width, y = ~~(i / width);
-      data[i] += Math.floor(Math.abs(perlin.noise(x / quality, y / quality, z) * 0.5) * quality + 10);
+    // bookm
+    if (!star.K) {
+      // TODO: Remove if.
+      // if (!window.COLOUR_WARN && star.i > 590) {
+        window.COLOUR_WARN = 1;
+        console.warn(star.n, 'has invalid colour; setting generic placeholder. Dump:', star);
+      // }
+      // 6400 K colour, medium white.
+      star.K = { r: 1, g: 0.9357, b: 0.9396 };
     }
-  }
-  return data;
-}
+    // pointColor.setHex(star.c.replace('#', '0x'));
+    // pointColor.toArray(color, i * 3);
 
-// https://stackoverflow.com/questions/18363357/apply-heightmap-to-spheregeometry-in-three-js
-function generateTexture( data, width, height ) {
-  var canvas, context, image, imageData,
-    level, diff, vector3, sun, shade;
+    // TODO: uncomment me:
+    // glowColor.setHex(star.k.replace('#', '0x'));
+    // glowColor.toArray(glow, i * 3);
+    glow.push(star.K.r);
+    glow.push(star.K.g);
+    glow.push(star.K.b);
+    // console.log(`${star.K.r}${star.K.r}${star.K.r}`)
 
-  vector3 = new THREE.Vector3(0, 0, 0);
-
-  sun = new THREE.Vector3(1, 1, 1);
-  sun.normalize();
-
-  canvas = document.createElement('canvas');
-  canvas.width = width;
-  canvas.height = height;
-
-  context = canvas.getContext('2d');
-  context.fillStyle = '#000';
-  context.fillRect(0, 0, width, height);
-
-  image = context.getImageData(0, 0, width, height);
-  imageData = image.data;
-
-  for (var i = 0, j = 0, l = imageData.length; i < l; i += 4, j++) {
-
-    vector3.x = data[j - 1] - data[j + 1];
-    vector3.y = 2;
-    vector3.z = data[j - width] - data[j + width];
-    vector3.normalize();
-
-    shade = vector3.dot(sun);
-
-    imageData[i] = (96 + shade * 128) * (data[j] * 0.007);
-    imageData[i + 1] = (32 + shade * 96) * (data[j] * 0.007);
-    imageData[i + 2] = (shade * 96) * (data[j] * 0.007);
+    luminosity[i] = star.N;
+    distance[i] = star.p;
   }
 
-  context.putImageData(image, 0, 0);
-  return canvas;
-}
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+  // geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+  geometry.setAttribute('color', new THREE.Float32BufferAttribute(color, 3));
+  geometry.setAttribute('glow', new THREE.Float32BufferAttribute(glow, 3));
+  geometry.setAttribute('luminosity', new THREE.Float32BufferAttribute(luminosity, 1));
+  geometry.setAttribute('distance', new THREE.Float32BufferAttribute(distance, 1));
 
+  const { vertexShader, fragmentShader } = getShader('starfield-blackbody');
+  // const material = new THREE.RawShaderMaterial({
+  const material = new THREE.ShaderMaterial({
+    uniforms: {
+      color: { value: new THREE.Color(0xffffff) },
+      alphaTest: { value: 0.9 },
+    },
+    vertexShader,
+    fragmentShader,
+    transparent: true,
+    // depthTest: false,
+    extensions: {
+      drawBuffers: true,
+    },
+  });
+  window.material = material;
+
+  const particles = new THREE.Points(geometry, material);
+  scene.add(particles);
+});
 
 export default {
   name: 'localCluster',
