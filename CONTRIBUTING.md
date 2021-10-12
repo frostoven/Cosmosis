@@ -90,7 +90,7 @@ If you're making an asset specially for this project and don't want to worry
 about legalities, feel free to simply put something like this in the license
 file:
 ```text
-This model is original work made for the SpaceJunkie project, and follows the
+This model is original work made for the Cosmosis project, and follows the
 same license.
 
 @author Your Name
