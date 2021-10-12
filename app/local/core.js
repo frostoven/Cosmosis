@@ -27,7 +27,7 @@ const gameFont = 'node_modules/three/examples/fonts/helvetiker_regular.typeface.
 
 // 1 micrometer to 100 billion light years in one scene, with 1 unit = 1 meter?
 // preposterous!  and yet...
-const NEAR = 1e-6, FAR = 1e27;
+const NEAR = 0.001, FAR = 1e27;
 let SCREEN_WIDTH = window.innerWidth;
 let SCREEN_HEIGHT = window.innerHeight;
 
@@ -298,6 +298,13 @@ function initView({ spaceScene, levelScene }) {
   renderer.domElement.style.height = '100%';
   renderer.domElement.id = 'canvas';
 
+  // -------------
+  const gl = renderer.context;
+  gl.disable(gl.DEPTH_TEST);
+  gl.enable(gl.BLEND);
+  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_DST_COLOR);
+  // -------------
+
   document.body.appendChild(renderer.domElement);
 
   // Postprocessing.
@@ -353,8 +360,11 @@ function initView({ spaceScene, levelScene }) {
 
 function initPlayer() {
   createSpaceShip({
-    modelName: 'DS69F', onReady: (mesh, bubble) => {
-      // modelName: 'scorpion_d', onReady: (mesh, bubble) => {
+    modelName: 'minimal scene', onReady: (mesh, bubble) => {
+    // modelName: 'monkey', onReady: (mesh, bubble) => {
+    // modelName: 'prototype', onReady: (mesh, bubble) => {
+    // modelName: 'DS69F', onReady: (mesh, bubble) => {
+    //   modelName: 'scorpion_d', onReady: (mesh, bubble) => {
       // modelName: 'devFlyer', onReady: (mesh, bubble) => {
       // modelName: 'devFlyer2', onReady: (mesh, bubble) => {
       // modelName: 'devFlyer3', onReady: (mesh, bubble) => {
