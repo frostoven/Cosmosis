@@ -116,14 +116,13 @@ CachedEmitter.prototype.emit = function CachedEmitterEmit(action) {
   // A part of the application booted. Store the id, then notify all the
   // listeners.
   const listeners = this._listeners;
+  // Add action to past events.
   this._pastEvents |= action;
-  for (let i = 0, len = listeners.length; i < len; i++) {
+  for (let i = 0; i < listeners.length; i++) {
     const item = listeners[i];
     if (item.action === action) {
       item.callback();
-      listeners.splice(i, 1);
-      i--;
-      len--;
+      listeners.splice(i--, 1);
     }
   }
 };
