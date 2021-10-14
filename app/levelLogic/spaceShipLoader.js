@@ -83,22 +83,25 @@ export function getMesh(modelName, callback) {
 }
 
 function loadModel(name, callback) {
-  AssetFinder.getSpaceShip(name, (error, filename, dir) => {
-    loader.setPath(dir + '/');
-    loader.load(filename, function (gltf) {
+  AssetFinder.getSpaceShip({
+    name,
+    callback: (error, filename, dir) => {
+      loader.setPath(dir + '/');
+      loader.load(filename, function(gltf) {
 
-      // gltf.scene.traverse(function (child) {
-      //   if (child.isMesh) {
-      //     console.log(child);
-      //   }
-      // });
+        // gltf.scene.traverse(function (child) {
+        //   if (child.isMesh) {
+        //     console.log(child);
+        //   }
+        // });
 
-      storeMesh(name, gltf);
-      callback(gltf);
+        storeMesh(name, gltf);
+        callback(gltf);
 
-      // dracoLoader.dispose();
-    });
-    //
+        // dracoLoader.dispose();
+      });
+      //
+    }
   });
 }
 

@@ -107,36 +107,36 @@ AssetFinder.prototype.getRes = function getRes(name, options={}, callback) {
   });
 };
 
-AssetFinder.prototype.getIcon = function getIcon(name, callback=()=>{}) {
-  this.getRes(name, assetDefaults.icons, callback);
+AssetFinder.prototype.getIcon = function getIcon({ name, options={}, callback=()=>{} }) {
+  this.getRes(name, { ...assetDefaults.icons, ...options }, callback);
 };
 
-AssetFinder.prototype.getModel = function getModel(name, callback=()=>{}) {
-  this.getRes(name, assetDefaults.models, callback);
+AssetFinder.prototype.getModel = function getModel({ name, options={}, callback=()=>{} }) {
+  this.getRes(name, { ...assetDefaults.models, ...options }, callback);
 };
 
-AssetFinder.prototype.getMusic = function getMusic(name, callback=()=>{}) {
-  this.getRes(name, assetDefaults.music, callback);
+AssetFinder.prototype.getMusic = function getMusic({ name, options={}, callback=()=>{} }) {
+  this.getRes(name, { ...assetDefaults.music, ...options }, callback);
 };
 
-AssetFinder.prototype.getPlanetImg = function getPlanetImg(name, callback=()=>{}) {
-  this.getRes(name, assetDefaults.planetImg, callback);
+AssetFinder.prototype.getPlanetImg = function getPlanetImg({ name, options={}, callback=()=>{} }) {
+  this.getRes(name, { ...assetDefaults.planetImg, ...options }, callback);
 };
 
-AssetFinder.prototype.getSfx = function getSfx(name, callback=()=>{}) {
-  this.getRes(name, assetDefaults.sfx, callback);
+AssetFinder.prototype.getSfx = function getSfx({ name, options={}, callback=()=>{} }) {
+  this.getRes(name, { ...assetDefaults.sfx, ...options }, callback);
 };
 
-// AssetFinder.prototype.getSkybox = function getSkybox(name, callback=()=>{}) {
-//   this.getRes(name, assetDefaults.skyboxes, callback);
+// AssetFinder.prototype.getSkybox = function getSkybox({ name, options={}, callback=()=>{} }) {
+//   this.getRes(name, { ...assetDefaults.skyboxes, ...options }, callback);
 // };
 
-AssetFinder.prototype.getSpaceShip = function getSpaceShip(name, callback=()=>{}) {
-  this.getRes(name, assetDefaults.spaceShips, callback);
+AssetFinder.prototype.getSpaceShip = function getSpaceShip({ name, options={}, callback=()=>{} }) {
+  this.getRes(name, { ...assetDefaults.spaceShips, ...options }, callback);
 };
 
-AssetFinder.prototype.getVoiceFile = function getVoiceFile(name, callback=()=>{}) {
-  this.getRes(name, assetDefaults.voicePacks, callback);
+AssetFinder.prototype.getVoiceFile = function getVoiceFile({ name, options={}, callback=()=>{} }) {
+  this.getRes(name, { ...assetDefaults.voicePacks, ...options }, callback);
 };
 
 const finder = new AssetFinder();
