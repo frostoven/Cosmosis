@@ -18,12 +18,15 @@ function createImgTag(name, callback) {
   const img = document.createElement('img');
   img.id = name;
   // img.src = `potatoLqAssets/icons/${name}.png`;
-  AssetFinder.getIcon(name, (error, fileName, dir) => {
-    if (error) {
-      return console.error(error);
+  AssetFinder.getIcon({
+    name,
+    callback: (error, fileName, dir) => {
+      if (error) {
+        return console.error(error);
+      }
+      img.src = `${dir}/${fileName}`;
+      callback(null, img);
     }
-    img.src = `${dir}/${fileName}`;
-    callback(null, img);
   });
 }
 
