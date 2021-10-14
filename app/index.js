@@ -18,6 +18,7 @@ import { Vector3 } from 'three';
 import { startupEvent, getStartupEmitter } from './emitters';
 import modeControl from './modeControl';
 import userProfile from './userProfile';
+import { discoverShaders } from '../shaders';
 
 const startupEmitter = getStartupEmitter();
 
@@ -67,6 +68,7 @@ if (process.env && process.env.NODE_ENV !== 'production') {
 
 console.groupCollapsed(`Pre-init (build number: ${packageJson.releaseNumber}).`);
 logBootInfo(`System boot v${packageJson.releaseNumber}`); // ▓
+discoverShaders();
 
 // Register all scenes.
 for (let scene of scenes) {
@@ -85,7 +87,7 @@ onDocumentReady(() => {
   );
 });
 
-onReadyToBoot(() => {
+function initCore() {
   // Glue it together, and start the rendering process.
   core.init({ sceneName: defaultScene });
 
@@ -123,8 +125,14 @@ onReadyToBoot(() => {
       identifier: 'debugTools'
     });
 
-    // TODO: make lighting correctly update after position / rotation has been set.
-    // api.setPlayerShipLocation(defaultShipPosition.location);
-    // api.setPlayerShipRotation(defaultShipPosition.rotation);
+    api.setPlayerShipLocation(defaultShipPosition.location);
+    api.setPlayerShipRotation(defaultShipPosition.rotation);
+  });
+}
+
+onReadyToBoot(() => {
+  discoverShaders(() => {
+    logBootInfo('Process units ready');
+    initCore();
   });
 });
