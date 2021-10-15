@@ -148,9 +148,8 @@ export default class GameMenu extends React.Component {
         body: 'Are you sure you want to exit?',
         callback: (jumpOffACliffAndDie) => {
           if (jumpOffACliffAndDie) {
-            // Exit full screen if open, because it can sometimes hang exiting.
             nw.Window.get().leaveFullscreen();
-            process.exit();
+            require('nw.gui').App.closeAllWindows();
           }
         }
       });
