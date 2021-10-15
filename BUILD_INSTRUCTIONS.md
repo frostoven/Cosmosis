@@ -7,7 +7,7 @@ If you encounter problems with unofficial operating systems and would like to
 contribute a fix, feel free to raise a PR.
 
 ## The lazy way
-Head over to the [releases page](https://github.com/aggregate1166877/Cosmosis/releases)
+Head over to the [releases page](https://github.com/feynmansbongos/Cosmosis/releases)
 and download a pre-built copy. Done.
 
 ## By way of developer madness
@@ -21,7 +21,7 @@ _Note: this project currently only has a dev webpack config. Feel free to raise
 a PR with a prod webpack config._
 
 Once you've cloned the project
-(`git clone https://github.com/aggregate1166877/Cosmosis.git`)
+(`git clone https://github.com/feynmansbongos/Cosmosis.git`)
 you'll want to make sure all dependencies are installed:
 ```bash
 npm install
@@ -67,7 +67,7 @@ as small as possible (git gets slow with large binary files, and GitHub has
 horribly low file size limits).
 
 To get the production assets, head over to the
-[releases section](https://github.com/aggregate1166877/Cosmosis/releases) and
+[releases section](https://github.com/feynmansbongos/Cosmosis/releases) and
 download the 'Stand-Alone Production Assets.zip' package. You will see a folder
 named 'prodHqAssets'. Copy that into the same directory as this build document
 and restart the game. The game will automatically load the better assets.
@@ -92,12 +92,12 @@ npm installed. See 'Development' above for more details.
 ##### Building the application
 * Create a directory to work in, for example `C:\COSMOSIS_BUILDS` and open it.
 * Open a bash terminal, and navigate to the builds directory you created above.
-* Do a git clone of the repo, example `git clone https://github.com/aggregate1166877/Cosmosis.git`
+* Do a git clone of the repo, example `git clone https://github.com/feynmansbongos/Cosmosis.git`
 * Download the Windows SDK version of NW.js matching the version written in
   [package.json](package.json). At the time of writing, this is
   [NW.js version 0.53.0](https://nwjs.io/blog/v0.53.0/).
 * Extract the zip contents ([7-Zip](https://www.7-zip.org/download.html) recommended as Windows ZIP can corrupt files).
-* Download the latest `Stand-Alone Production Assets` zip from the [releases page](https://github.com/aggregate1166877/Cosmosis/releases),
+* Download the latest `Stand-Alone Production Assets` zip from the [releases page](https://github.com/feynmansbongos/Cosmosis/releases),
   and extract it.
 * Your builds directory should now have these files / directories:
     * `Cosmosis`
@@ -124,5 +124,5 @@ Once all the above is complete, please run tests to ensure correct functioning:
 * Still in the dev console, run: `powerOnSelfTest()`. This runs unit tests
   (i.e. looks for obvious bugs and problems). You should have no errors.
 * If all is good, zip up FILL_ME_IN, rename the zip to `Cosmosis-win-x64.zip`.
-* Upload to the [releases](https://github.com/aggregate1166877/Cosmosis/releases)
+* Upload to the [releases](https://github.com/feynmansbongos/Cosmosis/releases)
   page.

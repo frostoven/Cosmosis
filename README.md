@@ -3,10 +3,10 @@
 <div align="center">
     <b>Downloads</b>
     <br>
-    <a href="https://github.com/aggregate1166877/Cosmosis/releases/latest">
+    <a href="https://github.com/feynmansbongos/Cosmosis/releases/latest">
         <img src="https://img.shields.io/static/v1?label=Latest%20stable&message=v0.72.0&color=blue&style=for-the-badge">
     </a>
-    <a href="https://github.com/aggregate1166877/Cosmosis/releases">
+    <a href="https://github.com/feynmansbongos/Cosmosis/releases">
         <img src="https://img.shields.io/static/v1?label=Dev%20builds&message=all%20versions&color=red&style=for-the-badge">
     </a>
     <br><br>
