@@ -9,11 +9,10 @@ import * as THREE from 'three';
 import { EffectComposer  } from 'three/examples/jsm/postprocessing/EffectComposer';
 import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass';
 import { RenderPass  } from 'three/examples/jsm/postprocessing/RenderPass';
-
 import Stats from '../../hackedlibs/stats/stats.module.js';
+
 import { forEachFn } from './utils';
 import physics from './physics';
-import res from './AssetFinder';
 import { createSpaceShip } from '../levelLogic/spaceShipLoader';
 import { PointerLockControls } from './PointerLockControls';
 import { startupEvent, getStartupEmitter } from '../emitters';
@@ -378,9 +377,9 @@ function initPlayer() {
       //  startupEvent.ready is triggered before we have a scene. This leads me
       //  to believe larger space ships delay .ready long enough for the scene
       //  to load fully.
-      setTimeout(() => {
+      // setTimeout(() => {
         startupEmitter.emit(startupEvent.playerShipLoaded);
-      });
+      // });
       logBootInfo('Ship ready');
     }
   });
