@@ -1,7 +1,7 @@
 ## Compatibility
 This game has been tested on Windows 10 build 1903 and Ubuntu Linux 18.04.
-Other operating systems might actually work with minimal fidgeting because this
-project uses a standard nw.js / webpack setup.
+Other operating systems should work with minimal effort because this project
+uses a standard nw.js / webpack setup.
 
 If you encounter problems with unofficial operating systems and would like to
 contribute a fix, feel free to raise a PR.
@@ -41,6 +41,17 @@ If all works as it should, you should see the game window pop up, refresh, and
 find yourself in a space ship.
 
 Unit tests may be performed by pressing F12 and runing `powerOnSelfTest()`.
+
+## NPM scripts
+The below table details all NPM scripts currently available.
+
+| NPM Command        | Description                                 |
+| --------------------- | ------------------------------------------------------ |
+| `npm start`           | Starts the developer build tool (Webpack) and runs the game (nw) in parallel. The game will reload as the the dev tool regenerates code (a reload always happens at least once after boot when running `npm start`).
+| `npm run start`       | Alias of `npm start`.
+| `npm run game`        | Launches the game without any background dev tools.
+| `npm run prepare-dev` | Builds the game's source code and then exits. Built source is stored in `./build`.
+| `npm run dev`         | Launches the dev tool without the game.
 
 ## Hot module reloading
 HMR is enabled by default, though it currently causes a full application
