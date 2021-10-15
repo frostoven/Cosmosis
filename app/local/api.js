@@ -14,7 +14,7 @@ import contextualInput from './contextualInput';
 const startupEmitter = getStartupEmitter();
 
 const {
-  ready, playerShipLoaded, firstFrameRendered, gameViewReady, skyBoxLoaded,
+  ready, playerShipLoaded, firstFrameRendered, gameViewReady,
 } = startupEvent;
 
 /**
