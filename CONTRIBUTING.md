@@ -84,8 +84,10 @@ The license file's name should match the asset name. For example, a mesh named
 If you have 10 spaceship meshes with the same name + a number and they share the
 same license, you may name the license file something like `spacehip{1..10}.license`
 or `spaceshipN.license` and then specify in the license file itself which files it
-covers. License files are not optional, and while contributions truly are very much
-appreciated, we cannot accept additions that lack license indications.
+covers. In case numbers aren't used, the `_ALL` suffix may be used; the license file
+then specifies the files covered. License files are not optional, and while
+contributions truly are very much appreciated, we cannot accept additions that lack
+license indications.
 
 If you're making an asset specially for this project and don't want to worry
 about legalities, feel free to simply put something like this in the license
