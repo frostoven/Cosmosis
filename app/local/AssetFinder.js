@@ -49,6 +49,10 @@ const assetDefaults = {
     // should always generate an error indicating that assets are missing.
     placeholder: 'DS69F',
   },
+  starCatalogs: {
+    dir: 'starCatalogs',
+    extensions: [ 'json' ],
+  },
   voicePacks: {
     dir: 'voicePacks',
     extensions: [ 'mp3', 'ogg' ],
@@ -74,17 +78,24 @@ AssetFinder.prototype.getRes = function getRes(name, options={}, callback) {
 
   const dev = `${devPath}/${dir}`;
   const prod = `${prodPath}/${dir}`;
+  let totalChecks = 0;
 
   // Look for resource in HQ dir. If not found, look in potato.
   forEachFn([
     (cb) => fuzzyFindFile({ name, extensions, path: prod, onFind: cb }),
     (cb) => fuzzyFindFile({ name, extensions, path: dev, onFind: cb }),
   ], (error, fileName, parentDir) => {
+    totalChecks++;
     if (!error) {
       // Return first file name found: this will be prod if exists, else dev.
       callback(error, fileName, parentDir);
       // Signal that we can stop looking.
       return false;
+    }
+    else if (totalChecks === 2) {
+      // We only do two checks: prod, and dev. If we're at count 2 and it's an
+      // error, then nothing was found.
+      callback({ error: 'ENOENT' });
     }
   }, (error) => {
     if (error) {
@@ -133,6 +144,10 @@ AssetFinder.prototype.getSfx = function getSfx({ name, options={}, callback=()=>
 
 AssetFinder.prototype.getSpaceShip = function getSpaceShip({ name, options={}, callback=()=>{} }) {
   this.getRes(name, { ...assetDefaults.spaceShips, ...options }, callback);
+};
+
+AssetFinder.prototype.getStarCatalog = function getStarCatalog({ name, options={}, callback=()=>{} }) {
+  this.getRes(name, { ...assetDefaults.starCatalogs, ...options }, callback);
 };
 
 AssetFinder.prototype.getVoiceFile = function getVoiceFile({ name, options={}, callback=()=>{} }) {
