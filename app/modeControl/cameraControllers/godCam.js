@@ -28,9 +28,10 @@ const toggles = {
 };
 
 function init() {
-  core.registerRenderHook({
-    name: 'godCam', render,
-  });
+  // TODO: re-enable: bookm
+  // core.registerRenderHook({
+  //   name: 'godCam', render,
+  // });
 
   // Key down actions.
   camController.onActions({

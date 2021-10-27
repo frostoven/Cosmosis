@@ -196,8 +196,6 @@ export function createSpaceShip({ modelName, pos, scene, world, isPlayer, onRead
   startupEmitter.on(startupEvent.gameViewReady, () => {
     if (!modelName) return console.error('createSpaceShip needs a model name.');
     if (!pos) pos = $game.camera.position;
-    if (!scene) scene = $game.levelScene;
-    if (!world) world = $game.spaceWorld;
     if (!onReady) onReady = () => {};
 
     createDefaults(modelName);

@@ -23,12 +23,12 @@ const labelData = [
   {size: 1e19, scale: 1.0, label: "mind boggling (1000 light years)"}
 ];
 
-function register() {
-  core.registerScene({
-    name: 'logDepthDemo',
-    init,
-  })
-}
+// function register() {
+//   core.registerScene({
+//     name: 'logDepthDemo',
+//     init,
+//   })
+// }
 
 function init({ font }) {
   const scene = new THREE.Scene();
@@ -89,7 +89,14 @@ function init({ font }) {
 //   init,
 // }
 
-export default {
-  name: 'logDepthDemo',
-  register,
-}
+// export default {
+//   name: 'logDepthDemo',
+//   register,
+// }
+
+const definition = {
+  init,
+  // register,
+};
+
+export default definition;

@@ -6,13 +6,13 @@
 
 import * as THREE from 'three';
 // import * as CANNON from 'cannon';
-import { EffectComposer  } from 'three/examples/jsm/postprocessing/EffectComposer';
-import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass';
-import { RenderPass  } from 'three/examples/jsm/postprocessing/RenderPass';
+// import { EffectComposer  } from 'three/examples/jsm/postprocessing/EffectComposer';
+// import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass';
+// import { RenderPass  } from 'three/examples/jsm/postprocessing/RenderPass';
 import Stats from '../../hackedlibs/stats/stats.module.js';
 
 import { forEachFn } from './utils';
-import physics from './physics';
+// import physics from './physics';
 import { createSpaceShip } from '../levelLogic/spaceShipLoader';
 import { PointerLockControls } from './PointerLockControls';
 import { startupEvent, getStartupEmitter } from '../emitters';
@@ -21,8 +21,14 @@ import { preBootPlaceholder } from '../reactComponents/Modal';
 import { logBootInfo } from './windowLoadListener';
 import levelLighting from '../lighting/levelLighting';
 import spaceLighting from '../lighting/spaceLighting';
+import {
+  activateSceneGroup,
+  createRenderer,
+  renderActiveScenes,
+  stepAllScenes,
+} from '../logicalSceneGroup';
 
-const gameFont = 'node_modules/three/examples/fonts/helvetiker_regular.typeface.json';
+// const gameFont = 'node_modules/three/examples/fonts/helvetiker_regular.typeface.json';
 
 // 1 micrometer to 100 billion light years in one scene, with 1 unit = 1 meter?
 // preposterous!  and yet...
@@ -45,18 +51,18 @@ window.$game = {
   ready: false,
   // Contains the all scenes. Mainly used for movement optimisation. It's
   // possible this has become redundant. TODO: investigate removal.
-  group: null,
+  // group: null,
   // Contains everything large, including stars / planets / moons. Does not
   // contain space ships or planetary surfaces (those belong to the level
   // scene).
-  spaceScene: null,
+  // spaceScene: null,
   // Contains everything small.
-  levelScene: null,
+  // levelScene: null,
   camera: null,
   renderer: null,
   // TODO: remame me. Contains level physics (I think). Perhaps delete and
   //  start from scratch canon-es when resuming the physics task.
-  spaceWorld: null,
+  // spaceWorld: null,
   gravityWorld: null,
   // The loaded file. The 'real' space ship is playerShip.scene.
   playerShip: null,
@@ -71,7 +77,7 @@ window.$game = {
   // only *your own* ship is a level - another players ship is not interactable
   // and just a prop in your world.
   level: null,
-  outlinePass: null,
+  // outlinePass: null,
   // If false, the ship and player moves in a static universe. If true, the
   // ship and player is stationary and the universe moves instead. This is to
   // overcome camera glitches. The ship can accelerate up to about about 3000c
@@ -112,78 +118,23 @@ window.$modal = preBootPlaceholder;
  * End global vars
  */
 
-const allScenes = {};
+// const allScenes = {};
 
-const allActionControllers = {};
-let cachedRenderHooks = [];
+// const allActionControllers = {};
+// let cachedRenderHooks = [];
 
-const actions = {};
+// const actions = {};
 
 const startupEmitter = getStartupEmitter();
 
-/**
- * Registers a scene. Requires sceneInfo object.
- */
-function registerScene(sceneInfo={}) {
-  let errors = 0;
-  if (!sceneInfo.name) {
-    console.error('Error: registerScene requires a name.');
-    errors++;
-  }
-  if (!sceneInfo.init) {
-    console.error('Error: registerScene requires an init function.');
-    errors++;
-  }
-  if (allScenes[sceneInfo.name]) {
-    console.error(
-      `Error: attempted to registering scene ${sceneInfo.name} twice. This ` +
-      'is likely a bug.'
-    );
-    errors++;
-  }
-  if (errors > 0) {
-    return;
-  }
-
-  allScenes[sceneInfo.name] = sceneInfo;
-}
-
-// TODO: this appears to be duplicate naming (action is currently used by modes
-//  to mean high-level input). Perhaps rename this project-wide to modeInfo
-//  instead.
-function registerRenderHook(actionInfo={}) {
-  let errors = 0;
-  if (!actionInfo.name) {
-    console.error('Error: registerScene requires a name.');
-    errors++;
-  }
-  if (!actionInfo.render) {
-    console.error('Error: registerScene requires a render function.');
-    errors++;
-  }
-  if (allScenes[actionInfo.name]) {
-    console.error(
-      `Error: attempted to registering scene ${actionInfo.name} twice. This ` +
-      'is likely a bug.'
-    );
-    errors++;
-  }
-  if (errors > 0) {
-    return;
-  }
-
-  allActionControllers[actionInfo.name] = actionInfo;
-  cachedRenderHooks.push(actionInfo);
-}
-
 // TODO: check if this is still needed.
-function registerGlobalAction({ action, item }) {
-  actions[action] = item;
-}
+// function registerGlobalAction({ action, item }) {
+//   actions[action] = item;
+// }
 
-function deregisterGlobalAction({ action }) {
-  actions[action] = {};
-}
+// function deregisterGlobalAction({ action }) {
+//   actions[action] = {};
+// }
 
 // TODO: remove me once the game is more stable.
 function updateModeDebugText() {
@@ -224,43 +175,69 @@ function closeLoadingScreen() {
   }
 }
 
-function init({ sceneName }) {
+function init({ defaultScene }) {
+  // console.log('==============>',defaultScene)
   console.log('Initialising core.');
   logBootInfo('Core init start');
 
   // Controls.
   contextualInput.init();
 
+  // bookm TODO: move this to space LSG.
   // Default active mode is shipPilot.
   contextualInput.camController.giveControlTo('shipPilot');
 
   // Default graphics font.
-  const fontLoader = new THREE.FontLoader();
-  fontLoader.load(gameFont, function (font) {
-    const startupScene = allScenes[sceneName];
-    if (!startupScene) {
-      return console.error(`Error: default scene ${sceneName} hasn't been registered.`);
+  // const fontLoader = new THREE.FontLoader();
+
+  const camera = new THREE.PerspectiveCamera(56.25, SCREEN_WIDTH / SCREEN_HEIGHT, NEAR, FAR);
+  const renderer = createRenderer();
+
+  activateSceneGroup({
+    renderer,
+    camera,
+    logicalSceneGroup: defaultScene,
+    callback: () => {
+      // $game contains all the essential game variables.
+      window.$game = initView({ camera, renderer });
+      startupEmitter.emit(startupEvent.gameViewReady);
+      logBootInfo('Comms relay ready');
+
+      initPlayer();
+      updateModeDebugText();
+
+      animate();
+      startupEmitter.emit(startupEvent.firstFrameRendered);
+      logBootInfo('Self-test pass');
     }
-    // const scene = initScene({ font });
-    const spaceScene = startupScene.init({ font });
-    const levelScene = new THREE.Scene();
-
-    // Load lighting (is automatically delayed until scenes are ready).
-    levelLighting.applyLighting();
-    spaceLighting.applyLighting();
-
-    // $game contains all the essential game variables.
-    window.$game = initView({ spaceScene, levelScene });
-    startupEmitter.emit(startupEvent.gameViewReady);
-    logBootInfo('Comms relay ready');
-
-    initPlayer();
-    updateModeDebugText();
-
-    animate();
-    startupEmitter.emit(startupEvent.firstFrameRendered);
-    logBootInfo('Self-test pass');
   });
+
+  // bookm
+  // fontLoader.load(gameFont, function (font) {
+  //   const startupScene = allScenes[sceneName];
+  //   if (!startupScene) {
+  //     return console.error(`Error: default scene ${sceneName} hasn't been registered.`);
+  //   }
+  //   // const scene = initScene({ font });
+  //   const spaceScene = startupScene.init({ font });
+  //   const levelScene = new THREE.Scene();
+  //
+  //   // Load lighting (is automatically delayed until scenes are ready).
+  //   levelLighting.applyLighting();
+  //   spaceLighting.applyLighting();
+  //
+  //   // $game contains all the essential game variables.
+  //   window.$game = initView({ spaceScene, levelScene });
+  //   startupEmitter.emit(startupEvent.gameViewReady);
+  //   logBootInfo('Comms relay ready');
+  //
+  //   initPlayer();
+  //   updateModeDebugText();
+  //
+  //   animate();
+  //   startupEmitter.emit(startupEvent.firstFrameRendered);
+  //   logBootInfo('Self-test pass');
+  // });
 
   $stats = new Stats();
   document.body.appendChild($stats.dom);
@@ -269,63 +246,46 @@ function init({ sceneName }) {
   window.addEventListener('resize', onWindowResize, false);
 }
 
-function initView({ spaceScene, levelScene }) {
+function initView({ renderer, camera }) {
   // TODO: make FOV adjustable in graphics menu.
   // TODO: all option to press Alt that temporarily zoom in by decreasing perspective.
-  const camera = new THREE.PerspectiveCamera(56.25, SCREEN_WIDTH / SCREEN_HEIGHT, NEAR, FAR);
+  // const camera = new THREE.PerspectiveCamera(56.25, SCREEN_WIDTH / SCREEN_HEIGHT, NEAR, FAR);
   // camera.position.copy(new THREE.Vector3(0, 0, 0));
   // camera.rotation.setFromVector3(new THREE.Vector3(0, 0, 0));
-  levelScene.add(camera);
+  // levelScene.add(camera);
   const ptrLockControls = new PointerLockControls(camera, document.body);
 
-  const renderer = new THREE.WebGLRenderer({ ...$rendererParams, logarithmicDepthBuffer: true, alpha: true });
-  renderer.setPixelRatio(window.devicePixelRatio);
-  renderer.setSize(SCREEN_WIDTH * $displayOptions.resolutionScale, SCREEN_HEIGHT * $displayOptions.resolutionScale);
+  // RENDERER HERE bookm
+  // const renderer = activateLogicalSceneGroup({
+  //   name: 'primaryRenderer',
+  //   lsg: logicalSceneGroup.space,
+  // });
 
-  renderer.shadowMap.enabled = true;
-  // TODO: move into graphics are 'soft shadows'.
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
-  // TODO: give options for shaders 'colourful' vs 'filmic'.
-  // renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  // renderer.toneMapping = THREE.NoToneMapping;
-
-  // renderer.gammaOutput = true;
-  // renderer.gammaFactor = 2.2;
-
-  renderer.domElement.style.width = '100%';
-  renderer.domElement.style.height = '100%';
-  renderer.domElement.id = 'canvas';
-
-  // -------------
-  const gl = renderer.context;
-  gl.disable(gl.DEPTH_TEST);
-  gl.enable(gl.BLEND);
-  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_DST_COLOR);
-  // -------------
-
-  document.body.appendChild(renderer.domElement);
+  // document.body.appendChild(renderer.domElement);
 
   // Postprocessing.
+  // --------------------------------------------------------------------------
   // FIXME: something with post-processing is causing webgl warnings to be
   //  spammed en-mass. I don't see any in-game side-effects, but I can imagine
   //  it's not healthy. This only happens when outlinePass.selectedObjects is
   //  set and starts rendering.
-  composer = new EffectComposer( renderer );
-  const renderPass = new RenderPass(levelScene, camera);
-  composer.addPass(renderPass);
-
-  // TODO: check if this needs recreating when window resizes.
-  // Outline pass. Used for highlighting interactable objects.
-  const outlinePass = new OutlinePass(new THREE.Vector2(SCREEN_WIDTH / SCREEN_HEIGHT), levelScene, camera);
-  outlinePass.edgeStrength = 10; //3;
-  outlinePass.edgeGlow = 1; //0;
-  outlinePass.edgeThickness = 4; //1;
-  outlinePass.pulsePeriod = 2;
-  outlinePass.visibleEdgeColor = new THREE.Color(0x00ff5a);
-  outlinePass.hiddenEdgeColor = new THREE.Color(0x00ff5a); // seems it always thinks we're hidden :/
-  // outlinePass.hiddenEdgeColor = new THREE.Color(0x190a05);
-  composer.addPass(outlinePass);
+  // --------------------------------------------------------------------------
+  // composer = new EffectComposer(renderer);
+  // const renderPass = new RenderPass(levelScene, camera);
+  // composer.addPass(renderPass);
+  //
+  // // TODO: check if this needs recreating when window resizes.
+  // // Outline pass. Used for highlighting interactable objects.
+  // const outlinePass = new OutlinePass(new THREE.Vector2(SCREEN_WIDTH / SCREEN_HEIGHT), levelScene, camera);
+  // outlinePass.edgeStrength = 10; //3;
+  // outlinePass.edgeGlow = 1; //0;
+  // outlinePass.edgeThickness = 4; //1;
+  // outlinePass.pulsePeriod = 2;
+  // outlinePass.visibleEdgeColor = new THREE.Color(0x00ff5a);
+  // outlinePass.hiddenEdgeColor = new THREE.Color(0x00ff5a); // seems it always thinks we're hidden :/
+  // // outlinePass.hiddenEdgeColor = new THREE.Color(0x190a05);
+  // composer.addPass(outlinePass);
+  // --------------------------------------------------------------------------
 
   // Default skybox.
   // TODO: This thing really, REALLY hates being zoomed out beyond 1LY.
@@ -346,46 +306,57 @@ function initView({ spaceScene, levelScene }) {
   //     });
   // });
 
-  const spaceWorld = physics.initSpacePhysics({ levelScene, debug: true });
-  const group = new THREE.Group();
-  group.add(spaceScene);
-  group.add(levelScene);
+  // bookm.
+  // TODO: this needs to happen in space LSG.
+  // const spaceWorld = physics.initSpacePhysics({ levelScene, debug: true });
+  // const group = new THREE.Group();
+  // group.add(spaceScene);
+  // group.add(levelScene);
+
+  // let spaceWorld = null;
+  // let group = null;
 
   return {
-    renderer, camera, group, spaceScene, levelScene,
-    ptrLockControls, spaceWorld, outlinePass, ready: true
+    renderer, camera,
+    ptrLockControls, ready: true
   };
 }
 
 function initPlayer() {
-  createSpaceShip({
-    modelName: 'minimal scene', onReady: (mesh, bubble) => {
-    // modelName: 'monkey', onReady: (mesh, bubble) => {
-    // modelName: 'prototype', onReady: (mesh, bubble) => {
-    // modelName: 'DS69F', onReady: (mesh, bubble) => {
-    //   modelName: 'scorpion_d', onReady: (mesh, bubble) => {
-      // modelName: 'devFlyer', onReady: (mesh, bubble) => {
-      // modelName: 'devFlyer2', onReady: (mesh, bubble) => {
-      // modelName: 'devFlyer3', onReady: (mesh, bubble) => {
-      // modelName: 'tentacleHull', onReady: (mesh, bubble) => {
-      // modelName: 'test', onReady: (mesh, bubble) => {
-      $game.playerShip = mesh;
-      $game.playerShipBubble = bubble;
-      // TODO: Investigate why setTimeout is needed. Things break pretty hard
-      //  if we have a very tiny space ship (reproducible with an empty scene
-      //  containing only a camera). The exact symptom is it that
-      //  startupEvent.ready is triggered before we have a scene. This leads me
-      //  to believe larger space ships delay .ready long enough for the scene
-      //  to load fully.
-      // setTimeout(() => {
-        startupEmitter.emit(startupEvent.playerShipLoaded);
-      // });
-      logBootInfo('Ship ready');
-    }
-  });
+  // bookm TODO: re-implement space ship loading.
+  // return;
+
+  // createSpaceShip({
+  //   // modelName: 'minimal scene', onReady: (mesh, bubble) => {
+  //   // modelName: 'monkey', onReady: (mesh, bubble) => {
+  //   // modelName: 'prototype', onReady: (mesh, bubble) => {
+  //   modelName: 'DS69F', onReady: (mesh, bubble) => {
+  //   //   modelName: 'scorpion_d', onReady: (mesh, bubble) => {
+  //     // modelName: 'devFlyer', onReady: (mesh, bubble) => {
+  //     // modelName: 'devFlyer2', onReady: (mesh, bubble) => {
+  //     // modelName: 'devFlyer3', onReady: (mesh, bubble) => {
+  //     // modelName: 'tentacleHull', onReady: (mesh, bubble) => {
+  //     // modelName: 'test', onReady: (mesh, bubble) => {
+  //     $game.playerShip = mesh;
+  //     $game.playerShipBubble = bubble;
+  //     // TODO: Investigate why setTimeout is needed. Things break pretty hard
+  //     //  if we have a very tiny space ship (reproducible with an empty scene
+  //     //  containing only a camera). The exact symptom is it that
+  //     //  startupEvent.ready is triggered before we have a scene. This leads me
+  //     //  to believe larger space ships delay .ready long enough for the scene
+  //     //  to load fully.
+  //     // setTimeout(() => {
+  //       startupEmitter.emit(startupEvent.playerShipLoaded);
+  //     // });
+  //     logBootInfo('Ship ready');
+  //   }
+  // });
 }
 
 function updateRendererSizes() {
+  if (!$game.renderer) {
+    return;
+  }
   // Recalculate size for both renderers when screen size or split location changes
   SCREEN_WIDTH = window.innerWidth;
   SCREEN_HEIGHT = window.innerHeight;
@@ -395,6 +366,8 @@ function updateRendererSizes() {
   $game.renderer.domElement.style.height = '100%';
   $game.camera.aspect = SCREEN_WIDTH / SCREEN_HEIGHT;
   $game.camera.updateProjectionMatrix();
+
+  console.log('window resized to:', SCREEN_WIDTH, SCREEN_HEIGHT);
 }
 
 /**
@@ -415,11 +388,11 @@ function animate() {
   deltaPrevTime = time;
 
   const {
-    renderer, camera, group, spaceScene, levelScene,
-    spaceWorld, gravityWorld, level, playerShip
+    renderer, camera,
+    gravityWorld, level, playerShip
   } = $game;
 
-
+  // bookm: TODO: reimplement.
   // spaceWorld && physics.renderPhysics(delta, spaceWorld);
   // gravityWorld && physics.renderPhysics(delta, gravityWorld);
 
@@ -434,26 +407,31 @@ function animate() {
   //   $game.playerShip.scene.rotateZ(0.001);
   // }
 
+  // bookm
   // === Render scenes ===============
-  renderer.autoClear = true;
-  // composer.render(); // TODO: check if this works here.
-  renderer.render(spaceScene, camera);
-  renderer.autoClear = false;
-  // clearDepth might be needed if we encounter weird clipping issues. Test me.
-  // renderer.clearDepth();
-  renderer.render(levelScene, camera);
+  // renderer.autoClear = true;
+  // // composer.render(); // TODO: check if this works here.
+  // renderer.render(spaceScene, camera);
+  // renderer.autoClear = false;
+  // // clearDepth might be needed if we encounter weird clipping issues. Test me.
+  // // renderer.clearDepth();
+  // renderer.render(levelScene, camera);
+  //
+  renderActiveScenes({ renderer, camera });
+  //
   // =================================
 
   // Run external renderers. We place this after the scene render to prevent
   // the camera from jumping around.
-  // TODO: move world, not ship.
-  for (let i = 0, len = cachedRenderHooks.length; i < len; i++) {
-    const controller = cachedRenderHooks[i];
-    controller.render(delta);
-  }
+  stepAllScenes({ delta });
+  // TODO: move world, not ship. bookm 414
+  // for (let i = 0, len = cachedRenderHooks.length; i < len; i++) {
+  //   const controller = cachedRenderHooks[i];
+  //   controller.render(delta);
+  // }
 
-  levelLighting.updateLighting();
-  spaceLighting.updateLighting();
+  // levelLighting.updateLighting();
+  // spaceLighting.updateLighting();
 
   // If the camera is currently anchored to something, update position. Note:
   // always put this after all physics have been calculated or we'll end up
@@ -530,6 +508,12 @@ function waitForAllLoaded() {
         `Total startup events: ${count}`
       );
       logBootInfo('Finalising boot');
+
+      // Adjust camera perspective on resize.
+      // window.onresize = function() {
+        // let SCREEN_WIDTH = window.innerWidth;
+        // let SCREEN_HEIGHT = window.innerHeight;
+      // }
     });
 
   setTimeout(() => {
@@ -557,11 +541,11 @@ function userMouseSpeed(x, y) {
 }
 
 export default {
-  actions,
-  registerGlobalAction,
-  deregisterGlobalAction,
+  // actions,
+  // registerGlobalAction,
+  // deregisterGlobalAction,
   init,
-  registerScene,
-  registerRenderHook,
+  // registerScene,
+  // registerRenderHook,
   userMouseSpeed,
 };

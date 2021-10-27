@@ -49,7 +49,8 @@ const toggles = {
 };
 
 function init() {
-    core.registerRenderHook({ name: 'freeCam', render });
+    // TODO: re-enable: bookm
+    // core.registerRenderHook({ name: 'freeCam', render });
 
     // Key down actions.
     camController.onActions({
