@@ -136,11 +136,6 @@ setup.
 * Install git. On Windows, it will ask you how you'd like to handle CR/LF. You
 want any option that converts to Unix LF when committing; at time of writing
 the default option does exactly the right thing.
-** This project uses pre-commit hooks. The bash that comes with Windows git
-should be fine, though is currently untested by itself. If the build number
-does not increase after a commit, try installing
-[Cygwin](https://cygwin.com/install.html) (which is what the lead contributor
-currently uses).
 * Please consider testing your changes on both Windows and Linux. It isn't
 a strict requirement, but makes PRs to master easier for those who test the
 proposed changes because some small issues will already have been caught.
