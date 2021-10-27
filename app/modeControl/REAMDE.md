@@ -1,14 +1,26 @@
 ## Introduction
 
-Mode control refers to input listeners that bridge user input with some
-high-level idea. Basically, local/contextualInput transforms user input into an
-action name, and then passes that action to a mode controller. Action names are
-defined in local/controls.
+You may think of a mode controller as a "reality controller" of sorts. It takes
+input and uses it to transform world state. Note that "no" input is still
+"input," meaning that doing nothing still has meaning to a mode controller.
+Mode controllers are therefore used to update the game each frame, and how
+they do so is influenced by user action.
+
+Mode controllers are used to, for example, calculate how a space ship's
+position changes each frame. It will continue to do so even of the space ship
+scene is not currently being rendered.
 
 If anything listens for user input, it's defined in one of these
 subdirectories. If something listens for user input in another folder that is
 not in modeControl, then it's in the wrong place and should be moved here
 (plugins do not count, and are allowed to listen from wherever they please).
+
+## Technical description
+
+Mode control refers to input listeners that bridge user input with some
+high-level idea. Basically, local/contextualInput transforms user input into an
+action name, and then passes that action to a mode controller. Action names are
+defined in local/controls.
 
 ## Logic
 
