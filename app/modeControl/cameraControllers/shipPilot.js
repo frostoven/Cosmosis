@@ -391,7 +391,7 @@ function handleHyper(delta, spaceScene, levelScene, playerShip, warpBubble) {
     hyperSpeed = currentSpeed;
   }
 
-  hyperSpeed *= delta;
+  hyperSpeed *= delta * 1000;
 
   // Move the world around the ship.
   let direction = new THREE.Vector3();
