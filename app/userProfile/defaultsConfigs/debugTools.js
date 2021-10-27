@@ -5,15 +5,16 @@ const debugTools = {
   },
   fileContent: {
     defaultShipPosition: {
-      // text: 'Directly facing the moon (default).',
-      // location: { x: -381752594, y: -691327, z: 1417254 },
-      // rotation: { x: -2.5974, y: -0.9536, z: -2.5171 }
-      //
-      text: '🏹 Facing the Orion constellation',
+      text: '🌌 Absolute center',
       location: { x: 0, y: 0, z: 0 },
-      rotation: { x: 1.4699, y: -0.0237, z: -1.5543 },
+      rotation: { x: 0, y: 0, z: 0 },
     },
     storedShipPositions: [
+      {
+        text: '🌌 Absolute center',
+        location: { x: 0, y: 0, z: 0 },
+        rotation: { x: 0, y: 0, z: 0 },
+      },
       {
         text: '🏹 Facing the Orion constellation',
         location: { x: 0, y: 0, z: 0 },
@@ -26,7 +27,7 @@ const debugTools = {
       },
       {
         text: '☾ Directly facing the moon (default).',
-        location: { x: -381752594, y: -691327, z: 1417254 },
+        location: { x: -380949797, y: 1319898, z: 235682 },
         rotation: { x: -2.5974, y: -0.9536, z: -2.5171 },
       },
       {
