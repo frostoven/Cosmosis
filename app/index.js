@@ -19,6 +19,7 @@ import { startupEvent, getStartupEmitter } from './emitters';
 import modeControl from './modeControl';
 import userProfile from './userProfile';
 import { discoverShaders } from '../shaders';
+import { logicalSceneGroup } from './logicalSceneGroup';
 
 const startupEmitter = getStartupEmitter();
 
@@ -30,7 +31,7 @@ window.debug.CANNON = CANNON;
 window.debug.api = api;
 
 // const defaultScene = 'logDepthDemo';
-const defaultScene = 'localCluster';
+const defaultScene = logicalSceneGroup.space;
 
 // Integration tests. Note that these will no longer run by itself. The user
 // manually runs these by opening the dev console and entering
@@ -71,10 +72,10 @@ logBootInfo(`System boot v${packageJson.releaseNumber}`); // ▓
 discoverShaders();
 
 // Register all scenes.
-for (let scene of scenes) {
-  console.log('Registering scene', scene.name);
-  scene.register();
-}
+// for (let scene of scenes) {
+//   console.log('Registering scene', scene.name);
+//   scene.register();
+// }
 // Register all camera controllers.
 modeControl.initAll();
 
@@ -89,7 +90,7 @@ onDocumentReady(() => {
 
 function initCore() {
   // Glue it together, and start the rendering process.
-  core.init({ sceneName: defaultScene });
+  core.init({ defaultScene });
 
   startupEmitter.on(startupEvent.gameViewReady, () => {
     // For some god-awful reason or another the browser doesn't always detect

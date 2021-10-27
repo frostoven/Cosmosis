@@ -113,9 +113,10 @@ const steer = {
 };
 
 function init() {
-  core.registerRenderHook({
-    name: 'shipPilot', render,
-  });
+  // TODO: re-enable: bookm
+  // core.registerRenderHook({
+  //   name: 'shipPilot', render,
+  // });
 
   // Key down actions.
   camController.onActions({
@@ -419,8 +420,7 @@ function handleLocal(delta) {
   // TODO: implement me.
 }
 
-let updateCount_DELETEME = 0;
-function render(delta) {
+function step({ delta }) {
   const { playerShip, playerShipBubble } = $game;
   if (!playerShip) {
     return;
@@ -465,4 +465,5 @@ function render(delta) {
 
 export default {
   init,
+  step,
 }

@@ -7,7 +7,7 @@ const startupEmitter = getStartupEmitter();
 // because in reality this lighting is all fake - this lighting is in a scene
 // physically separated from the actual star's physical reality. Only a few
 // meters worth of lighting / shadow info is actually calculated.
-function applyLighting() {
+function applyLighting({ scene }) {
   startupEmitter.on(startupEvent.playerShipLoaded, () => {
     const light = new THREE.DirectionalLight(0xffffff, 2);
     light.castShadow = true;
@@ -35,15 +35,16 @@ function applyLighting() {
     light.shadow.mapSize.width = 1024 * 4;
     light.shadow.mapSize.height= 1024 * 4;
 
-    const bubble = $game.playerShipBubble;
+    // const bubble = $game.playerShipBubble;
+    const playerShipBubble = scene;
 
     // const lightHelper = new THREE.DirectionalLightHelper(light, 5);
-    // bubble.add(lightHelper);
+    // playerShipBubble.add(lightHelper);
     // const shadowHelper = new THREE.CameraHelper(light.shadow.camera);
-    // bubble.add(shadowHelper);
+    // playerShipBubble.add(shadowHelper);
 
     light.target.updateMatrixWorld();
-    bubble.add(light);
+    playerShipBubble.add(light);
 
     debug.levelLights = { light };
   });

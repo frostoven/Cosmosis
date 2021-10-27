@@ -5,7 +5,7 @@ const startupEmitter = getStartupEmitter();
 
 // Applies lighting for all celestial bodies.
 // TODO: apply shadows to moons from their host planets somehow.
-function applyLighting() {
+function applyLighting({ scene }) {
   startupEmitter.on(startupEvent.playerShipLoaded, () => {
     // 1.5 is technically too high, but this should eventually be handled
     // mathematically by auto-exposure (and user overrides) so we can discard
@@ -22,7 +22,8 @@ function applyLighting() {
     light.target.position.set(0, 1, 0);
 
     light.target.updateMatrixWorld();
-    $game.spaceScene.add(light);
+    // $game.spaceScene.add(light);
+    scene.add(light);
 
     debug.spaceLights = { light };
   });
