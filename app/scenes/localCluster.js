@@ -1,168 +1,191 @@
 // Generate a number of text labels, from 1µm in size up to 100,000,000 light years
 // Try to use some descriptive real-world examples of objects at each scale
 
-import fs from 'fs';
 import * as THREE from 'three';
+
 import core from '../local/core';
-import { logBootInfo } from '../local/windowLoadListener';
-import { getStartupEmitter, startupEvent } from '../emitters';
-import { getShader } from '../../shaders';
-import AssetFinder from '../local/AssetFinder';
 
-const startupEmitter = getStartupEmitter();
+// const demo = new CANNON.Demo();
+// console.log(demo)
 
-const spectralCombinations = {};
+var quality = 16, step = 1024 / quality;
 
-function register() {
-  core.registerScene({
-    name: 'localCluster',
-    init,
-  });
-}
+const labelData = [
+  // {size: .01, scale: 0.0001, label: "microscopic (1µm)"}, // FIXME - triangulating text fails at this size, so we scale instead
+  // {size: .01, scale: 0.1, label: "minuscule (1mm)"},
+  // {size: .01, scale: 1.0, label: "tiny (1cm)"},
+  // {size: 1, scale: 1.0, label: "child (1m)"},
+  // {size: 10, scale: 1.0, label: "tree (10m)"},
+  // {size: 100, scale: 1.0, label: "building (100m)"},
+  // {size: 1000, scale: 1.0, label: "medium (1km)"},
+  // {size: 10000, scale: 1.0, label: "city (10km)"},
+  // https://www.scientificamerican.com/article/why-do-the-moon-and-the-s/#:~:text=Because%20the%20moon%20is%20changing,the%20moon%20appear%20very%20large.
+  // TODO: make these use the res loader.
+  {size: 3474000, scale: 1.0, label: "moon (3,474 Km)", grouped: false, nogroupOffset: -384400000, image: 'prodHqAssets/planetImg/Moon_lroc_color_poles_8k.jpg'},
+  {size: 12742000, scale: 1.0, label: "earth (12,742 km)", grouped: false, nogroupOffset: 0, image: 'prodHqAssets/planetImg/Land_ocean_ice_cloud_hires.jpg'},
+  {size: 1392700000, scale: 1.0, label: "sun (1,392,700 km)", brightness: 10, grouped: false, nogroupOffset: 149540000000, image: 'prodHqAssets/planetImg/sun_euvi_aia304_2012_carrington.jpg'},
+  // {size: 3474000, scale: 1.0, label: "moon (3,474 Km)", grouped: false, nogroupOffset: 384400000, image: 'potatoLqAssets/planetImg/Moon_lroc_color_poles_8k.jpg'},
+  // {size: 12742000, scale: 1.0, label: "earth (12,742 km)", grouped: false, nogroupOffset: 0, image: 'potatoLqAssets/planetImg/Land_ocean_ice_cloud_hires.jpg'},
+  // {size: 1392700000, scale: 1.0, label: "sun (1,392,700 km)", brightness: 10, grouped: false, nogroupOffset: -149540000000, image: 'potatoLqAssets/planetImg/sun_euvi_aia304_2012_carrington.jpg'},
+  {size: 7.47e12, scale: 1.0, label: "solar system (50Au)"},
+  {size: 9.4605284e15, scale: 1.0, label: "gargantuan (1 light year)"},
+  {size: 3.08567758e16, scale: 1.0, label: "ludicrous (1 parsec)"},
+  {size: 1e19, scale: 1.0, label: "mind boggling (1000 light years)"}
+];
 
-function createScene({ scene, catalog }) {
-  const validStars = [];
-
-  for (let i = 0; i < catalog.length; i++) {
-    if (i !== 0 && i % 50000 === 0 || i === catalog.length - 1) {
-      logBootInfo(`Loading star ${i}`, true);
-    }
-    const star = catalog[i];
-    const diameter = 0.015;
-    const scale = 1;
-
-    const starIndex = star.i;
-    const name = star.n;
-
-    let parsecs = star.p;
-    const brightness = star.b;
-    const spectralType = star.s;
-    if (!spectralCombinations[spectralType]) {
-      spectralCombinations[spectralType] = 1;
-    }
-    else {
-      spectralCombinations[spectralType]++;
-    }
-
-    if (!parsecs) {
-      console.error(`Skipping [${star.i}] ${name} because it has no distance (${parsecs}).`);
-      continue;
-    }
-
-    validStars.push(star);
-  }
-
-  populateSky({ validStars });
-}
-
-function loadAndCreate({ scene, catalogPath }) {
-  fs.readFile(catalogPath, (error, data) => {
-    if (error) {
-      console.error('Fata error loading star catalog:', error);
-    }
-    else {
-      createScene({ scene, catalog: JSON.parse(data) });
-    }
-  });
-}
+// bookm
+// function register() {
+//   core.registerScene({
+//     name: 'localCluster',
+//     init,
+//   });
+// }
 
 function init({ font }) {
   const scene = new THREE.Scene();
+  // scene.add(new THREE.AmbientLight(0x222222));
+  // const light = new THREE.DirectionalLight(0xffffff, 1);
+  // light.position.set(100, 100, 100);
+  // scene.add(light);
 
-  // Look for the prod catalog first. If not found, default to the much smaller
-  // built-in.
-  AssetFinder.getStarCatalog({
-    name: 'bsc5p_3d_min',
-    options: {
-      suppressNotFoundError: true,
-    },
-    callback: (error, fileName, parentDir) => {
-      if (error) {
-        AssetFinder.getStarCatalog({
-          name: 'constellation_test',
-          callback: (error, fileName, parentDir) => {
-            // console.log('-----> got', parentDir, fileName);
-            loadAndCreate({ scene, catalogPath: `./${parentDir}/${fileName}` });
-          }
-        });
-      }
-      else {
-        // console.log('-----> got', fileName);
-        loadAndCreate({ scene, catalogPath: `./${parentDir}/${fileName}` });
+  // Massive space bodies part below.
+  const geometry = new THREE.SphereBufferGeometry(0.5, 24*10, 12*10);
+
+  // var data = generateHeight( 1024, 1024 );
+  // var texture = new THREE.Texture( generateTexture( data, 1024, 1024 ) );
+  // texture.needsUpdate = true;
+
+  for (let i = 0; i < labelData.length; i++) {
+    const body = labelData[i];
+    const scale = body.scale || 1;
+
+    const materialArgs = {
+      color: 0xffffff,
+      specular: 0x050505,
+      shininess: 50,
+      emissive: 0x000000,
+      emissiveIntensity: body.brightness ? body.brightness : 1,
+    };
+
+    const labelGeo = new THREE.TextBufferGeometry(body.label, {
+      font: font,
+      size: body.size,
+      height: body.size / 2
+    });
+
+    labelGeo.computeBoundingSphere();
+
+    // center text
+    labelGeo.translate(-labelGeo.boundingSphere.radius, 0, 0);
+
+    const group = new THREE.Group();
+    group.position.z = -body.size * scale;
+    scene.add(group);
+
+    materialArgs.color = new THREE.Color().setHSL(Math.random(), 0.5, 0.5);
+    const material = new THREE.MeshPhongMaterial(materialArgs);
+
+    const textMesh = new THREE.Mesh(labelGeo, material);
+    textMesh.scale.set(scale, scale, scale);
+    textMesh.position.z = -body.size * scale;
+    textMesh.position.y = body.size / 4 * scale;
+    if (body.grouped !== false) {
+      group.add(textMesh);
+    }
+
+    // console.log(`[z] ${body.label}:`, -body.size * scale);
+
+    if (body.image) {
+      const loader = new THREE.TextureLoader();
+      loader.load( body.image, function ( texture ) {
+
+        // var plane = new THREE.SphereGeometry(4096, 64, 64);
+        // for ( var i = 0, l = plane.vertices.length; i < l; i ++ ) {
+        //   var x = i % quality, y = ~~ ( i / quality );
+        //   //plane.vertices[ i ].y = data[ ( x * step ) + ( y * step ) * 1024 ] * 2 - 128;
+        //   // changing points randomly instead of reading off of a height map
+        //   plane.vertices[ i ].x += Math.floor((Math.random()*50)+1) - 25;
+        //   plane.vertices[ i ].y += Math.floor((Math.random()*100)+1) - 50;
+        //   plane.vertices[ i ].z += Math.floor((Math.random()*50)+1) - 25;
+        // }
+        // // plane.computeCentroids();
+        // plane.computeFaceNormals();
+
+        const material = new THREE.MeshBasicMaterial({map: texture});
+        // const material = new THREE.MeshPhongMaterial({map: texture});
+        const mesh = new THREE.Mesh(geometry, material);
+        // mesh.castShadow = true;
+        mesh.receiveShadow = true;
+
+        // const mesh = new THREE.Mesh(plane, material);
+        // mesh.position.y = -body.size / 4 * scale;
+
+        if (body.grouped === false) {
+          mesh.scale.multiplyScalar(body.size * scale);
+          // mesh.updateMatrix();
+          mesh.position.x = body.nogroupOffset;
+          scene.add(mesh);
+        }
+        else {
+          // mesh.scale.multiplyScalar(body.size * scale);
+          // group.add(mesh);
+        }
+      });
+    }
+    else {
+      const dotMesh = new THREE.Mesh(geometry, material);
+      dotMesh.position.y = -body.size / 4 * scale;
+      dotMesh.scale.multiplyScalar(body.size * scale);
+
+      if (body.grouped !== false) {
+        group.add(dotMesh);
       }
     }
-  });
+  }
 
   return scene;
 }
 
-// TODO: continue here: this should be loaded after catalog has been loaded.
-function populateSky({ validStars }) {
-  startupEmitter.on(startupEvent.ready, () => {
-    const scene = $game.spaceScene;
+// TODO: figure out wtf is going on here.
+//  So, very simply: 3000 cubes @ 4 verts each = 12,000 verts = 11fps on an RTX 2080TI.
+//  Or, add a compressed gltf scene from blender with 2 million verts - 60 fps constant. wut..?
+//  The real confusing part here is the actual resource usage - CPU 10%, GPU 20%, RAM 50%. I.e system
+//  not being utilised.
+// startupEmitter.on(startupEvent.ready, () => {
+//   const objects = generateCubeField({
+//     scene: $game.scene,
+//     position: $game.camera.position,
+//   });
+//   console.log('cube space:', objects);
+// });
 
-    // TODO: Add ways to check for LMC, SMC, Andromeda, clusters, etc.
+// startupEmitter.on(startupEvent.ready, () => {
+//   const objects = generateCubeField({
+//     scene: $game.scene,
+//     position: $game.camera.position,
+//     cubeCount: 25,
+//     distanceMultiplier: 0.5
+//   });
+// });
 
-    const glowColor = new THREE.Color();
-    const color = [];
-    const glow = [];
-    const luminosity = [];
-    const distance = [];
-    const vertices = [];
-    const parsec = 30856775814913673;
-    const sunSize = 1392700000;
+// startupEmitter.on(startupEvent.ready, () => {
+// const objects = generateCubeField({
+//   scene: $game.scene,
+//   position: $game.camera.position,
+//   cubeCount: 100,
+// });
+// console.log('cube space:', objects);
+// });
 
-    let prevLoc = {};
-    for (let i = 0; i < validStars.length; i++) {
-      const star = validStars[i];
+const definition = {
+  init,
+  // register,
+};
 
-      // vertices.push(star.x * parsec, star.y * parsec, star.z * parsec);
-      vertices.push(star.x, star.y, star.z);
+export default definition;
 
-      // bookm
-      if (!star.K) {
-        console.warn(star.n, 'has invalid colour; setting generic placeholder. Dump:', star);
-        // 6400 K colour, medium white.
-        star.K = { r: 1, g: 0.9357, b: 0.9396 };
-      }
-
-      glow.push(star.K.r);
-      glow.push(star.K.g);
-      glow.push(star.K.b);
-
-      luminosity[i] = star.N;
-      distance[i] = star.p;
-    }
-
-    const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-    geometry.setAttribute('color', new THREE.Float32BufferAttribute(color, 3));
-    geometry.setAttribute('glow', new THREE.Float32BufferAttribute(glow, 3));
-    geometry.setAttribute('luminosity', new THREE.Float32BufferAttribute(luminosity, 1));
-    geometry.setAttribute('distance', new THREE.Float32BufferAttribute(distance, 1));
-
-    const { vertexShader, fragmentShader } = getShader('starfield-blackbody');
-    const material = new THREE.ShaderMaterial({
-      uniforms: {
-        color: { value: new THREE.Color(0xffffff) },
-        alphaTest: { value: 0.9 },
-      },
-      vertexShader,
-      fragmentShader,
-      transparent: true,
-      // depthTest: false,
-      extensions: {
-        drawBuffers: true,
-      },
-    });
-    window.material = material;
-
-    const particles = new THREE.Points(geometry, material);
-    scene.add(particles);
-  });
-}
-
-export default {
-  name: 'localCluster',
-  register,
-}
+// export {
+//   // name: 'localCluster',
+//   init,
+//   register,
+// }
