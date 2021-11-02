@@ -1,10 +1,14 @@
 import * as THREE from "three";
 
+// TODO: consider renaming this to shipControl. This module does 2 things:
+//  * Takes space ship input when sitting in the pilot's seat.
+//  * Processes ship warp physics.
+//  Might need to separate that last one into level control.
 import core from "../../local/core";
 import speedTracker from '../../local/speedTracker';
 import { lockModes } from '../../local/PointerLockControls';
 import AssetLoader from '../../local/AssetLoader';
-import { startupEvent, getStartupEmitter } from '../../emitters';
+import { getStartupEmitter, startupEvent } from '../../emitters';
 import contextualInput from '../../local/contextualInput';
 
 const { camController, ActionType } = contextualInput;
@@ -14,35 +18,6 @@ const startupEmitter = getStartupEmitter();
 
 let speedTimer = null;
 
-// 195=1c, 199=1.5c, 202=2c, 206=3c, 209=4c, 300=35600c (avoid going over 209).
-// The idea is that the player can push this number up infinitely, but with
-// huge falloff past 206 because every extra 0.1 eventually scales to 1c
-// faster. 195 is junk, 199 is beginner. 206 is end-game. 209 is something
-// achievable only through insane grind.
-let maxSpeed = 202;
-// 195=1c, 199=1.5c, 202=2c, 206=3c, 209=4c.
-let currentSpeed = 0;
-// Throttle. 0-100.
-let currentThrottle = 0;
-// 0-100 - lags behind real throttle, and struggles at higher numbers.
-let actualThrottle = 0;
-// Instantly pushes warp speed to max, bypassing acceleration and gravitational
-// drag.
-let debugFullWarpSpeed = false;
-// Hyperdrive rotation speed.
-const pitchAndYawSpeed = 0.00005;
-// When pressing A and D.
-const rollSpeed = 0.01;
-// Used to ease in/out of spinning.
-let rollBuildup = 0;
-// Used to ease in/out of spinning.
-let yawBuildup = 0;
-// Used to ease in/out of spinning.
-let pitchBuildup = 0;
-// If true, ship will automatically try to stop rotation when the thrusters
-// aren't active.
-let flightAssist = true;
-
 // Same top speed as WARP_EXPONENTIAL, but acceleration is constant.
 // Reaches 0.1c at 2% power with strongest engine (4c max).
 const WARP_LINEAR = 1;
@@ -51,79 +26,134 @@ const WARP_LINEAR = 1;
 // Reaches 0.1c at 80% power with strongest engine (4c max).
 const WARP_EXPONENTIAL = 2;
 
-// Honestly unsure which one to use, so offering both to devs at the moment.
-// Note that the top speed for all engine types is the same. Something to
-// consider: we'll have gravity to hurt our acceleration, so exponential might
-// be annoyingly slow when inside a solar system.
-const engineType = WARP_LINEAR;
+function ShipPilot(options={}) {
+  this.setDefaultValues();
+  this.initNavigationValues();
+  this.setControlActions();
 
-// Just to alleviate some confusion: 1 means 'nothing', less then 1 is negative
-// ambient energy. In other words, this number should always be 1 or more. It
-// gets exponentially higher as you get closer to a planet/star/whatever.
-let ambientGravity = 1;
-let maxThrottle = 100;
-
-const ctrl = {
-  thrustInc: false,
-  thrustDec: false,
-  thrustReset: false,
-  //
-  turnLeft: false,
-  turnRight: false,
-  lookUp: false,
-  lookDown: false,
-  rollLeft: false,
-  rollRight: false,
-};
-
-const toggles = {
-  // TODO: think about whether or not this belongs in core instead.
-  // toggleMouseSteering: () => $game.ptrLockControls.toggleCamLock(),
-  toggleMouseSteering: () => {
-    const ptr = $game.ptrLockControls;
-    const curLock = ptr.getLockMode();
-    if (curLock === lockModes.headLook) {
-      ptr.setLockMode(lockModes.frozen);
-      AssetLoader.enableCrosshairs();
+  // Apply any overrides specified.
+  for (const property in options) {
+    if (options.hasOwnProperty(property)) {
+      this[property] = options[property];
+      // ^^ Example of what this looks like to the computer:
+      //      this['something'] = options['something'];
     }
-    else {
-      ptr.setLockMode(lockModes.headLook);
-      AssetLoader.disableCrosshairs();
-    }
-    ptr.resetMouse();
-    steer.upDown = 0;
-    steer.leftRight = 0;
-  },
-  // engageHyperdrive: core.coreKeyToggles.toggleHyperMovement,
-  engageHyperdrive: () => {
-    $game.hyperMovement = !$game.hyperMovement;
-    // updateHyperdriveDebugText(); // TODO: pass to uiEmitter.
-    return $game.hyperMovement;
-  },
-  // TODO: remove me
-  _debugGravity: () => { if (ambientGravity === 10) { ambientGravity = 1; }  else { ambientGravity = 10; } },
-  debugFullWarpSpeed: () => { debugFullWarpSpeed = !debugFullWarpSpeed; },
-  toggleFlightAssist: () => flightAssist = !flightAssist,
-};
+  }
+}
 
-const steer = {
-  // TODO: get the proper technical terms for this.
-  upDown: 0,
-  leftRight: 0,
-};
+/**
+ * Resets all values to default.
+ */
+ShipPilot.prototype.setDefaultValues = function applyDefaultValues() {
+  // 195=1c, 199=1.5c, 202=2c, 206=3c, 209=4c, 300=35600c (avoid going over 209).
+  // The idea is that the player can push this number up infinitely, but with
+  // huge falloff past 206 because every extra 0.1 eventually scales to 1c
+  // faster. 195 is junk, 199 is beginner. 206 is end-game. 209 is something
+  // achievable only through insane grind.
+  this.maxSpeed = 202;
+  // 195=1c, 199=1.5c, 202=2c, 206=3c, 209=4c.
+  this.currentSpeed = 0;
+  // Throttle. 0-100.
+  this.currentThrottle = 0;
+  // 0-100 - lags behind real throttle, and struggles at higher numbers.
+  this.actualThrottle = 0;
+  // Instantly pushes warp speed to max, bypassing acceleration and gravitational
+  // drag.
+  this.debugFullWarpSpeed = false;
+  // Hyperdrive rotation speed.
+  this.pitchAndYawSpeed = 0.00005;
+  // When pressing A and D.
+  this.rollSpeed = 0.01;
+  // Used to ease in/out of spinning.
+  this.rollBuildup = 0;
+  // Used to ease in/out of spinning.
+  this.yawBuildup = 0;
+  // Used to ease in/out of spinning.
+  this.pitchBuildup = 0;
+  // If true, ship will automatically try to stop rotation when the thrusters
+  // aren't active.
+  this.flightAssist = true;
 
-function init() {
+  // Honestly unsure which one to use, so offering both to devs at the moment.
+  // Note that the top speed for all engine types is the same. Something to
+  // consider: we'll have gravity to hurt our acceleration, so exponential might
+  // be annoyingly slow when inside a solar system.
+  this.engineType = WARP_LINEAR;
+
+  // Just to alleviate some confusion: 1 means 'nothing', less then 1 is negative
+  // ambient energy. In other words, this number should always be 1 or more. It
+  // gets exponentially higher as you get closer to a planet/star/whatever.
+  this.ambientGravity = 1;
+  this.maxThrottle = 100;
+}
+
+ShipPilot.prototype.initNavigationValues = function initNavigationValues() {
+  // Keeps track of buttons being pressed.
+  this.ctrl = {
+    thrustInc: false,
+    thrustDec: false,
+    thrustReset: false,
+    //
+    turnLeft: false,
+    turnRight: false,
+    lookUp: false,
+    lookDown: false,
+    rollLeft: false,
+    rollRight: false,
+  }
+
+  this.steer = {
+    // TODO: get the proper technical terms for this.
+    upDown: 0,
+    leftRight: 0,
+  };
+}
+
+ShipPilot.prototype.setControlActions = function setControlActions() {
+  this.toggles = {
+    // toggleMouseSteering: () => $game.ptrLockControls.toggleCamLock(),
+    toggleMouseSteering: () => {
+      const ptr = $game.ptrLockControls;
+      const curLock = ptr.getLockMode();
+      if (curLock === lockModes.headLook) {
+        ptr.setLockMode(lockModes.frozen);
+        AssetLoader.enableCrosshairs();
+      }
+      else {
+        ptr.setLockMode(lockModes.headLook);
+        AssetLoader.disableCrosshairs();
+      }
+      ptr.resetMouse();
+      this.steer.upDown = 0;
+      this.steer.leftRight = 0;
+    },
+    // engageHyperdrive: core.coreKeyToggles.toggleHyperMovement,
+    engageHyperdrive: () => {
+      $game.hyperMovement = !$game.hyperMovement;
+      // updateHyperdriveDebugText(); // TODO: pass to uiEmitter.
+      return $game.hyperMovement;
+    },
+    // TODO: remove me
+    _debugGravity: () => { if (this.ambientGravity === 10) { this.ambientGravity = 1; }  else { this.ambientGravity = 10; } },
+    debugFullWarpSpeed: () => { this.debugFullWarpSpeed = !this.debugFullWarpSpeed; },
+    toggleFlightAssist: () => this.flightAssist = !this.flightAssist,
+  };
+}
+
+ShipPilot.prototype.init = function initShipPilot() {
   // TODO: re-enable: bookm
   // core.registerRenderHook({
   //   name: 'shipPilot', render,
   // });
 
+  console.log('===> ShipPilot.prototype.init:', this);
+
   // Key down actions.
   camController.onActions({
     actionType: ActionType.keyUp | ActionType.keyDown,
-    actionNames: Object.keys(ctrl), // all controls handled by shipPilot
+    actionNames: Object.keys(this.ctrl), // all controls handled by shipPilot
     modeName: shipPilotMode,
-    callback: onKeyUpOrDown,
+    callback: (args) => this.onKeyUpOrDown(args),
   });
 
   // TODO: reimplement numpad.
@@ -131,9 +161,9 @@ function init() {
   // Key press actions.
   camController.onActions({
     actionType: ActionType.keyPress,
-    actionNames: Object.keys(toggles), // all presses handled by shipPilot
+    actionNames: Object.keys(this.toggles), // all presses handled by shipPilot
     modeName: shipPilotMode,
-    callback: onKeyPress,
+    callback: (args) => this.onKeyPress(args),
   });
 
   // Analog actions.
@@ -141,7 +171,7 @@ function init() {
     actionType: ActionType.analogMove,
     actionNames: [ 'pitchUp', 'pitchDown', 'yawLeft', 'yawRight' ],
     modeName: shipPilotMode,
-    callback: onAnalogInput,
+    callback: (args) => this.onAnalogInput(args),
   });
 
   camController.onControlChange(({ next, previous }) => {
@@ -170,11 +200,11 @@ function init() {
   });
 
   startupEmitter.on(startupEvent.playerShipLoaded, () => {
-    onShipLoaded($game.playerShip);
+    this.onShipLoaded($game.playerShip);
   });
 }
 
-function onShipLoaded(mesh) {
+ShipPilot.prototype.onShipLoaded = function onShipLoaded(mesh) {
   // TODO: many changes have been made since this was implemented; check if the
   //  below still does anything at all.
 
@@ -191,27 +221,27 @@ function onShipLoaded(mesh) {
 // Snap camera to local frame of reference. Not really needed for ship pilot as we're doing this anyway.
 // Needed for walking around the ship in peace.
 // TODO: is this still needed?
-function snapCamToLocal() {
-  // keep a vector of your local coords.
-  // snap a tmp vector to ship origin.
-  // snap your cam to a position relative to the difference of local and tmp.
-}
+// function snapCamToLocal() {
+//   // keep a vector of your local coords.
+//   // snap a tmp vector to ship origin.
+//   // snap your cam to a position relative to the difference of local and tmp.
+// }
 
-function onKeyPress({ action }) {
-  // console.log('[shipPilot 1] key press:', action);
+ShipPilot.prototype.onKeyPress = function onKeyPress({ action }) {
+  console.log('[shipPilot 1] key press:', action);
   // Ex. 'toggleMouseSteering' or 'toggleMousePointer' etc.
-  const toggleFn = toggles[action];
+  const toggleFn = this.toggles[action];
   if (toggleFn) {
     toggleFn();
   }
 }
 
-function onKeyUpOrDown({ action, isDown }) {
+ShipPilot.prototype.onKeyUpOrDown = function onKeyUpOrDown({ action, isDown }) {
   // console.log('[shipPilot 2] key:', action, '->', isDown ? '(down)' : '(up)');
-  ctrl[action] = isDown;
+  this.ctrl[action] = isDown;
 }
 
-function onAnalogInput({ action, analogData }) {
+ShipPilot.prototype.onAnalogInput = function onAnalogInput({ action, analogData }) {
   const ptr = $game.ptrLockControls;
   if (!ptr || !ptr.isPointerLocked) {
     // Ptr can be null while game is still loading.
@@ -226,10 +256,10 @@ function onAnalogInput({ action, analogData }) {
     // stick instead of looking around.
     if (action === 'pitchUp' || action === 'pitchDown') {
       // console.log(`[shipPilot] analog:, ${action}, d=${delta}, ~d=${invDelta}, gd=${gravDelta}, ~gd${gravInvDelta}`);
-      steer.upDown = maxN(steer.upDown + deltaY, 200);
+      this.steer.upDown = maxN(this.steer.upDown + deltaY, 200);
     }
     if (action === 'yawLeft' || action === 'yawRight') {
-      steer.leftRight = maxN(steer.leftRight + (deltaX * -1), 200);
+      this.steer.leftRight = maxN(this.steer.leftRight + (deltaX * -1), 200);
     }
   }
   else {
@@ -240,18 +270,17 @@ function onAnalogInput({ action, analogData }) {
 
 /**
  * Changes the throttle by the specified percentage.
+ * @param delta
  * @param {number} amount - Decimal percentage.
  */
-function changeThrottle(delta, amount) {
-  let change = (maxThrottle * amount) * (delta * 60);
-  return change;
+ShipPilot.prototype.changeThrottle = function changeThrottle(delta, amount) {
+  return (this.maxThrottle * amount) * (delta * 60);
 }
 
 /**
  * Used to slow the throttle needle following the player's request.
- * TODO: actually working! remove this message before commit.
  */
-function dampenTorque(delta, value, target, growthSpeed) {
+ShipPilot.prototype.dampenTorque = function dampenTorque(delta, value, target, growthSpeed) {
   // console.log(`value=${value}, target=${target}, growthSpeed=${growthSpeed}`)
   growthSpeed *= delta;
   if (value < target) {
@@ -266,17 +295,17 @@ function dampenTorque(delta, value, target, growthSpeed) {
  * Used to slow the throttle needle more as it approaches 100% engine power.
  * Similar to dampenTorque, but here the growth speed is dynamic.
  */
-function dampenByFactor(delta, value, target) {
+ShipPilot.prototype.dampenByFactor = function dampenByFactor(delta, value, target) {
   let result;
   // Do not use delta here - it's applied in dampenTorque.
   const warpFactor = 4; // equivalent to delta [at 0.016] * 250 growth.
   if (target > value) {
-    const ratio = -((actualThrottle / (maxThrottle / ambientGravity)) - 1);
-    result = dampenTorque(delta, value, target, ratio * warpFactor);
+    const ratio = -((this.actualThrottle / (this.maxThrottle / this.ambientGravity)) - 1);
+    result = this.dampenTorque(delta, value, target, ratio * warpFactor);
   }
   else {
     // Allow fast deceleration.
-    result = dampenTorque(delta, value, target, warpFactor**2);
+    result = this.dampenTorque(delta, value, target, warpFactor**2);
   }
 
   if (result < 0) {
@@ -289,14 +318,14 @@ function dampenByFactor(delta, value, target) {
  * Blows meters per second into light years per second for fun and profit.
  * @param amount
  */
-function scaleHyperSpeed(amount) {
+ShipPilot.prototype.scaleHyperSpeed = function scaleHyperSpeed(amount) {
   return Math.exp(amount / 10);
 }
 
 /**
  * Function that eases into targets.
  */
-function easeIntoBuildup(delta, buildup, rollSpeed, factor, direction) {
+ShipPilot.prototype.easeIntoBuildup = function easeIntoBuildup(delta, buildup, rollSpeed, factor, direction) {
   buildup = Math.abs(buildup);
 
   const effectiveSpin = (rollSpeed * delta) * factor;
@@ -308,7 +337,7 @@ function easeIntoBuildup(delta, buildup, rollSpeed, factor, direction) {
   return buildup * direction;
 }
 
-function easeOutOfBuildup(delta, rollBuildup, easeFactor) {
+ShipPilot.prototype.easeOutOfBuildup = function easeOutOfBuildup(delta, rollBuildup, easeFactor) {
   if (Math.abs(rollBuildup) < 0.0001) {
     rollBuildup = 0;
   }
@@ -319,77 +348,77 @@ function easeOutOfBuildup(delta, rollBuildup, easeFactor) {
   return rollBuildup;
 }
 
-function handleHyper(delta, spaceScene, levelScene, playerShip, warpBubble) {
-  if (steer.leftRight) {
+ShipPilot.prototype.handleHyper = function handleHyper(delta, spaceScene, levelScene, playerShip, warpBubble) {
+  if (this.steer.leftRight) {
     // TODO: movement is changes sharply with sudden mouse changes. Investigate
     //  if this is what we really want (note we're in a warp bubble). Perhaps
     //  add momentum for a more natural feel.
-    yawBuildup = easeIntoBuildup(delta, yawBuildup, steer.leftRight, 38, 1);
+    this.yawBuildup = this.easeIntoBuildup(delta, this.yawBuildup, this.steer.leftRight, 38, 1);
   }
-  if (steer.upDown) {
-    pitchBuildup = easeIntoBuildup(delta, pitchBuildup, steer.upDown, 38, 1);
-  }
-
-  if (ctrl.rollLeft && !ctrl.rollRight) {
-    rollBuildup = easeIntoBuildup(delta, rollBuildup, rollSpeed, 65.2, -1);
-  }
-  if (ctrl.rollRight && !ctrl.rollLeft) {
-    rollBuildup = easeIntoBuildup(delta, rollBuildup, rollSpeed, 65.2, 1);
+  if (this.steer.upDown) {
+    this.pitchBuildup = this.easeIntoBuildup(delta, this.pitchBuildup, this.steer.upDown, 38, 1);
   }
 
-  warpBubble.rotateY(yawBuildup * pitchAndYawSpeed);
-  warpBubble.rotateX(pitchBuildup * pitchAndYawSpeed);
-  warpBubble.rotateZ(rollBuildup);
-
-  if (flightAssist) {
-    yawBuildup = easeOutOfBuildup(delta, yawBuildup, 10);
-    pitchBuildup = easeOutOfBuildup(delta, pitchBuildup, 10);
-    rollBuildup = easeOutOfBuildup(delta, rollBuildup, 10);
+  if (this.ctrl.rollLeft && !this.ctrl.rollRight) {
+    this.rollBuildup = this.easeIntoBuildup(delta, this.rollBuildup, this.rollSpeed, 65.2, -1);
+  }
+  if (this.ctrl.rollRight && !this.ctrl.rollLeft) {
+    this.rollBuildup = this.easeIntoBuildup(delta, this.rollBuildup, this.rollSpeed, 65.2, 1);
   }
 
-  if (ctrl.thrustInc) {
-    currentThrottle += changeThrottle(delta, 0.01);
-    if (currentThrottle > maxThrottle) {
-      currentThrottle = maxThrottle;
+  warpBubble.rotateY(this.yawBuildup * this.pitchAndYawSpeed);
+  warpBubble.rotateX(this.pitchBuildup * this.pitchAndYawSpeed);
+  warpBubble.rotateZ(this.rollBuildup);
+
+  if (this.flightAssist) {
+    this.yawBuildup = this.easeOutOfBuildup(delta, this.yawBuildup, 10);
+    this.pitchBuildup = this.easeOutOfBuildup(delta, this.pitchBuildup, 10);
+    this.rollBuildup = this.easeOutOfBuildup(delta, this.rollBuildup, 10);
+  }
+
+  if (this.ctrl.thrustInc) {
+    this.currentThrottle += this.changeThrottle(delta, 0.01);
+    if (this.currentThrottle > this.maxThrottle) {
+      this.currentThrottle = this.maxThrottle;
     }
   }
-  if (ctrl.thrustDec) {
-    currentThrottle += changeThrottle(delta, -0.01);
-    if (currentThrottle < 0) {
-      currentThrottle = 0;
+  if (this.ctrl.thrustDec) {
+    this.currentThrottle += this.changeThrottle(delta, -0.01);
+    if (this.currentThrottle < 0) {
+      this.currentThrottle = 0;
     }
   }
   // Can't reverse when in a warp field.
-  if (currentThrottle < 0) currentThrottle = 0;
-  if (ctrl.thrustReset) currentThrottle = 0;
+  if (this.currentThrottle < 0) this.currentThrottle = 0;
+  if (this.ctrl.thrustReset) this.currentThrottle = 0;
 
-  const throttle = (currentThrottle / maxThrottle) * 100;
+  const throttle = (this.currentThrottle / this.maxThrottle) * 100;
 
-  actualThrottle = dampenByFactor(delta, actualThrottle, throttle);
-  if (actualThrottle > maxThrottle - 0.01) {
+  this.actualThrottle = this.dampenByFactor(delta, this.actualThrottle, throttle);
+  if (this.actualThrottle > this.maxThrottle - 0.01) {
     // This helps prevent a bug where the throttle can sometimes get stuck at
     // more than 100%; when this happens, throttling down does nothing and
     // gravity increases acceleration.
-    actualThrottle = throttle - 0.01;
+    this.actualThrottle = throttle - 0.01;
   }
 
-  if (debugFullWarpSpeed) {
-    actualThrottle = maxThrottle;
+  if (this.debugFullWarpSpeed) {
+    this.actualThrottle = this.maxThrottle;
   }
 
-  currentSpeed = (actualThrottle / 100) * maxSpeed;
+  this.currentSpeed = (this.actualThrottle / 100) * this.maxSpeed;
 
   let hyperSpeed;
-  if (engineType === WARP_LINEAR) {
-    const maxHyper = scaleHyperSpeed(maxSpeed);
-    hyperSpeed = (actualThrottle / 100) * maxHyper;
+  if (this.engineType === WARP_LINEAR) {
+    const maxHyper = this.scaleHyperSpeed(this.maxSpeed);
+    hyperSpeed = (this.actualThrottle / 100) * maxHyper;
   }
-  else if (engineType === WARP_EXPONENTIAL) {
-    hyperSpeed = scaleHyperSpeed(currentSpeed);
+  else if (this.engineType === WARP_EXPONENTIAL) {
+    hyperSpeed = this.scaleHyperSpeed(this.currentSpeed);
   }
   else {
     // Very slow, reduces speed to meters per second.
-    hyperSpeed = currentSpeed;
+    hyperSpeed = this.currentSpeed;
   }
 
   hyperSpeed *= delta * 1000;
@@ -402,13 +431,15 @@ function handleHyper(delta, spaceScene, levelScene, playerShip, warpBubble) {
   warpBubble.position.addScaledVector(direction, hyperSpeed);
 }
 
-/** Returns the number, or 100 (sign preserved) if it's more than 100. */
-function max100(amount) {
-  if (amount > 100) return 100;
-  else if (amount < -100) return -100;
-  else return amount;
-}
+// // TODO: move to math utils.
+// /** Returns the number, or 100 (sign preserved) if it's more than 100. */
+// function max100(amount) {
+//   if (amount > 100) return 100;
+//   else if (amount < -100) return -100;
+//   else return amount;
+// }
 
+// TODO: move to match utils.
 /** Returns the number, or 100 (sign preserved) if it's more than 100. */
 function maxN(amount, max) {
   if (amount > max) return max;
@@ -416,11 +447,11 @@ function maxN(amount, max) {
   else return amount;
 }
 
-function handleLocal(delta) {
+ShipPilot.prototype.handleLocal = function handleLocal(delta) {
   // TODO: implement me.
 }
 
-function step({ delta }) {
+ShipPilot.prototype.step = function step({ delta }) {
   const { playerShip, playerShipBubble } = $game;
   if (!playerShip) {
     return;
@@ -435,35 +466,36 @@ function step({ delta }) {
   // update debug ui
   const div = document.getElementById('hyperdrive-stats');
   if (div) {
-    const throttle = Math.round((currentThrottle / maxThrottle) * 100);
+    const throttle = Math.round((this.currentThrottle / this.maxThrottle) * 100);
     // |
     div.innerText = `
       y: ${throttle}%
-      u/d=${steer.upDown}, l/r=${steer.leftRight}
-      Player throttle: ${throttle}% (${Math.round(currentThrottle)}/${maxThrottle})
-      Actual throttle: ${actualThrottle.toFixed(1)}
-      Microgravity: ${(((10**-(1/ambientGravity))-0.1)*10).toFixed(2)}G [factor ${ambientGravity}]
+      u/d=${this.steer.upDown}, l/r=${this.steer.leftRight}
+      Player throttle: ${throttle}% (${Math.round(this.currentThrottle)}/${this.maxThrottle})
+      Actual throttle: ${this.actualThrottle.toFixed(1)}
+      Microgravity: ${(((10**-(1/this.ambientGravity))-0.1)*10).toFixed(2)}G [factor ${this.ambientGravity}]
     `;
   }
 
-  const { spaceScene, levelScene, camera, renderer, hyperMovement } = $game;
+  const { spaceScene, levelScene, hyperMovement } = $game;
 
   // TODO: make it so that you cannot hop into hyperdrive without first
   //  speeding up, but once you're in hyperdrive you can actually float with
   //  zero speed. Although, create some form of a drawback.
   if (hyperMovement) {
-    // Hyper-movement is similar to freecam, but has a concept of inertia. The
+    // Hyper-movement is similar to freeCam, but has a concept of inertia. The
     // ship cannot strafe in this mode. The ship should have no physics in this
     // mode, and the universe moves instead of the ship.
-    handleHyper(delta, spaceScene, levelScene, playerShip, playerShipBubble);
+    this.handleHyper(delta, spaceScene, levelScene, playerShip, playerShipBubble);
   }
   else {
     // TODO: PLEASE GIVE ME PHYSICS
-    handleLocal(delta);
+    this.handleLocal(delta);
   }
 }
 
-export default {
-  init,
-  step,
+export {
+  ShipPilot,
+  WARP_EXPONENTIAL,
+  WARP_LINEAR,
 }

@@ -8,9 +8,8 @@ import { logBootInfo } from '../local/windowLoadListener';
 import localCluster from '../scenes/localCluster';
 import { createSpaceShip } from '../levelLogic/spaceShipLoader';
 import physics from '../local/physics';
-
-// TODO: change this to an instantiatable object.
-import shipPilot from '../modeControl/cameraControllers/shipPilot'
+import { ShipPilot } from '../modeControl/cameraControllers/shipPilot';
+import contextualInput from '../local/contextualInput';
 
 const startupEmitter = getStartupEmitter();
 const gameFont = 'node_modules/three/examples/fonts/helvetiker_regular.typeface.json';
@@ -27,8 +26,14 @@ let spaceWorld = null;
 //  Reintegrate registerRenderHook.
 //  If your scene does not render, see bookm 414.
 
+const shipPilot = new ShipPilot();
+shipPilot.init();
+
 const space = new LogicalSceneGroup({
   activate: ({ camera, callback=()=>{} }={ callback: ()=>{} }) => {
+    // TODO: add a removeControlFrom, and place it in deactivate?
+    contextualInput.camController.giveControlTo('shipPilot');
+    console.log('==========>activated')
     if (sceneLoaded) {
       levelScene.add(camera);
       return callback();
@@ -37,10 +42,15 @@ const space = new LogicalSceneGroup({
     const fontLoader = new THREE.FontLoader();
 
     fontLoader.load(gameFont, function (font) {
+      // const startupScene = allScenes[sceneName];
+      // if (!startupScene) {
+      //   return console.error(`Error: default scene ${sceneName} hasn't been registered.`);
+      // }
       // const scene = initScene({ font });
       spaceScene = localCluster.init({ font });
       levelScene = new THREE.Scene();
       levelScene.add(camera);
+
 
       // $game contains all the essential game variables.
       // window.$game = initView({ spaceScene, levelScene });

@@ -185,7 +185,7 @@ function init({ defaultScene }) {
 
   // bookm TODO: move this to space LSG.
   // Default active mode is shipPilot.
-  contextualInput.camController.giveControlTo('shipPilot');
+  // contextualInput.camController.giveControlTo('shipPilot');
 
   // Default graphics font.
   // const fontLoader = new THREE.FontLoader();

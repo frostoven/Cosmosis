@@ -1,10 +1,10 @@
 export default function LogicalSceneGroup(options={}) {
-  this.activate = this.deactivate = this.render = () => {};
+  const defaultFn = () => {};
+
+  this.activate = this.deactivate = this.render = this.step = defaultFn;
   this._allScenes = {};
   this._allActionControllers = {};
   this._cachedRenderHooks = [];
-
-  const defaultFn = () => {};
 
   options.activate && (this.activate = options.activate || defaultFn);
   options.deactivate && (this.deactivate = options.deactivate || defaultFn);
