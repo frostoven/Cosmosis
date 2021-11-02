@@ -77,7 +77,7 @@ discoverShaders();
 //   scene.register();
 // }
 // Register all camera controllers.
-modeControl.initAll();
+// modeControl.initAll(); // bookm - check that disabling this does not break too many things
 
 console.groupEnd();
 
