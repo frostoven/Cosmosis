@@ -41,6 +41,18 @@ generated, and ground-based combat will be souls-like.
 The source is made available to all users for backup and modding purposes, but
 this project is not free (see [Why we provide source code](README.md#why-we-provide-source-code) below).
 
+## Troubleshooting
+#### Game using wrong graphics card
+Windows may force the application to use integrated graphics, which will
+massively decrease performance. To force discrete graphics, you may do the
+following:
+* Go to Settings, the click System.
+* Scroll down to Graphics Settings.
+* Select "Classic app", then click "Browse".
+* Navigate to `Cosmosis.exe` and select it.
+* Once it's been added to the list click "Options" then select "High
+Performance".
+
 ## Why this game?
 #### Intro
 Cosmosis was brought into existence for the following reasons:
