@@ -26,7 +26,10 @@ const WARP_LINEAR = 1;
 // Reaches 0.1c at 80% power with strongest engine (4c max).
 const WARP_EXPONENTIAL = 2;
 
+// TODO: add vec3s to the instance.
+
 function ShipPilot(options={}) {
+  this.modeName = shipPilotMode;
   this.setDefaultValues();
   this.initNavigationValues();
   this.setControlActions();
@@ -141,11 +144,6 @@ ShipPilot.prototype.setControlActions = function setControlActions() {
 }
 
 ShipPilot.prototype.init = function initShipPilot() {
-  // TODO: re-enable: bookm
-  // core.registerRenderHook({
-  //   name: 'shipPilot', render,
-  // });
-
   console.log('===> ShipPilot.prototype.init:', this);
 
   // Key down actions.
@@ -174,35 +172,35 @@ ShipPilot.prototype.init = function initShipPilot() {
     callback: (args) => this.onAnalogInput(args),
   });
 
-  camController.onControlChange(({ next, previous }) => {
-    if (next === shipPilotMode) {
-      console.log('-> mode changed to', shipPilotMode);
-      // Set game lock only when the game is ready.
-      startupEmitter.on(startupEvent.gameViewReady, () => {
-        $game.ptrLockControls.setLockMode(lockModes.headLook);
-      });
-
-      startupEmitter.on(startupEvent.playerShipLoaded, () => {
-        // TODO: move this into the level loader. It needs to be dynamic based on
-        //  the level itself (in this case we attach the player to the main cam).
-        $game.playerShip.cameras[0].attach($game.camera);
-        // $game.playerShip.scene.children[2].attach($game.camera);
-        $game.camera.position.x = 0;
-        $game.camera.position.y = 0;
-        $game.camera.position.z = 0;
-      });
-
-      speedTimer = speedTracker.trackCameraSpeed();
-    }
-    else if (previous === shipPilotMode && speedTimer) {
-      speedTracker.clearSpeedTracker(speedTimer);
-    }
-  });
-
   startupEmitter.on(startupEvent.playerShipLoaded, () => {
     this.onShipLoaded($game.playerShip);
   });
 }
+
+ShipPilot.prototype.onControlChange = function shipPilotControlChange({ next, previous }) {
+  if (next === shipPilotMode) {
+    console.log('-> mode changed to', shipPilotMode);
+    // Set game lock only when the game is ready.
+    startupEmitter.on(startupEvent.gameViewReady, () => {
+      $game.ptrLockControls.setLockMode(lockModes.headLook);
+    });
+
+    startupEmitter.on(startupEvent.playerShipLoaded, () => {
+      // TODO: move this into the level loader. It needs to be dynamic based on
+      //  the level itself (in this case we attach the player to the main cam).
+      $game.playerShip.cameras[0].attach($game.camera);
+      // $game.playerShip.scene.children[2].attach($game.camera);
+      $game.camera.position.x = 0;
+      $game.camera.position.y = 0;
+      $game.camera.position.z = 0;
+    });
+
+    speedTimer = speedTracker.trackCameraSpeed();
+  }
+  else if (previous === shipPilotMode && speedTimer) {
+    speedTracker.clearSpeedTracker(speedTimer);
+  }
+};
 
 ShipPilot.prototype.onShipLoaded = function onShipLoaded(mesh) {
   // TODO: many changes have been made since this was implemented; check if the

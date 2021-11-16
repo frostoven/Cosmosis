@@ -9,7 +9,10 @@ import localCluster from '../scenes/localCluster';
 import { createSpaceShip } from '../levelLogic/spaceShipLoader';
 import physics from '../local/physics';
 import { ShipPilot } from '../modeControl/cameraControllers/shipPilot';
+import { FreeCam } from '../modeControl/cameraControllers/freeCam';
 import contextualInput from '../local/contextualInput';
+
+const { camController, ActionType } = contextualInput;
 
 const startupEmitter = getStartupEmitter();
 const gameFont = 'node_modules/three/examples/fonts/helvetiker_regular.typeface.json';
@@ -21,19 +24,26 @@ let spaceWorld = null;
 
 // TODO:
 //  Remember to recreate space world (physics).
-//  Load space ship from this file - it's now scene scope, not global scope.
-//  Investigate how registerScene, registerRenderHook, and actionInfo fall into this.
-//  Reintegrate registerRenderHook.
 //  If your scene does not render, see bookm 414.
 
-const shipPilot = new ShipPilot();
-shipPilot.init();
+const camControllers = {
+  shipPilot: new ShipPilot(),
+  freeCam: new FreeCam(),
+}
+const { shipPilot, freeCam } = camControllers;
+
+camControllers.shipPilot.init();
+camControllers.freeCam.init();
+
+camController.onControlChange(({ next, previous }) => {
+  if (next === shipPilot.modeName || next === freeCam.modeName) {
+    camControllers[next].onControlChange({ next, previous });
+  }
+});
 
 const space = new LogicalSceneGroup({
   activate: ({ camera, callback=()=>{} }={ callback: ()=>{} }) => {
-    // TODO: add a removeControlFrom, and place it in deactivate?
-    contextualInput.camController.giveControlTo('shipPilot');
-    console.log('==========>activated')
+    camController.giveControlTo('shipPilot');
     if (sceneLoaded) {
       levelScene.add(camera);
       return callback();
@@ -50,7 +60,6 @@ const space = new LogicalSceneGroup({
       spaceScene = localCluster.init({ font });
       levelScene = new THREE.Scene();
       levelScene.add(camera);
-
 
       // $game contains all the essential game variables.
       // window.$game = initView({ spaceScene, levelScene });
@@ -106,6 +115,8 @@ const space = new LogicalSceneGroup({
           //  startupEvent.ready is triggered before we have a scene. This leads me
           //  to believe larger space ships delay .ready long enough for the scene
           //  to load fully.
+          //  TODO: with the code refactor this no longer seems to be an issue;
+          //   needs additional
           // setTimeout(() => {
           startupEmitter.emit(startupEvent.playerShipLoaded);
           // });
@@ -119,8 +130,6 @@ const space = new LogicalSceneGroup({
     });
   },
   render: ({ renderer, camera }) => {
-    // console.log('----------> space render');
-
     renderer.autoClear = true;
     // composer.render(); // TODO: check if this works here; fix composer.
     renderer.render(spaceScene, camera);
@@ -133,13 +142,13 @@ const space = new LogicalSceneGroup({
     spaceLighting.updateLighting();
   },
   step: ({ delta }) => {
-    // TODO: change this to an instantiatable object, then use modes
-    //  contextually.
     shipPilot.step({ delta });
+    freeCam.step({ delta });
   },
-  // TODO: maybe add an 'always run' function for cases where it's not rendered.
+  // TODO: maybe add an 'always run' function for cases where it's not
+  //  rendered.
+  //  Revised thought: maybe the LSG should *always* be rendered, but the LSG
+  //  should know what to step and what not to step.
 });
-
-
 
 export default space;
