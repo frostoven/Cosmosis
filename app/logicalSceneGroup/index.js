@@ -77,6 +77,10 @@ function stepAllScenes({ delta }) {
  * @param {function} callback
  */
 function activateSceneGroup({ logicalSceneGroup, renderer, camera, callback }) {
+  if (activeGroup === logicalSceneGroup) {
+    // Scene already active. Do nothing.
+    return;
+  }
   if (activeGroup) {
     activeGroup.deactivate();
   }
