@@ -4,7 +4,7 @@ import Button from '../elements/KosmButton';
 import MenuNavigation from '../elements/MenuNavigation';
 import { defaultMenuProps, defaultMenuPropTypes } from './defaults';
 import userProfile from '../../userProfile';
-import { setPlayerShipLocation, setPlayerShipRotation } from '../../local/api';
+import { setPlayerShipLocation, setPlayerShipRotation, triggerAction } from '../../local/api';
 import { getStartupEmitter, startupEvent } from '../../emitters';
 import { activateSceneGroup, logicalSceneGroup } from '../../logicalSceneGroup';
 
@@ -70,6 +70,7 @@ export default class DebugTools extends React.Component {
 
   startStarFreeFlight = () => {
     getStartupEmitter().on(startupEvent.gameViewReady, () => {
+      triggerAction('emergencyMenuClose');
       activateSceneGroup({
         renderer: $game.renderer,
         camera: $game.camera,
