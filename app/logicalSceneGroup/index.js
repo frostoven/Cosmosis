@@ -65,7 +65,8 @@ function renderActiveScenes({ renderer, camera }) {
 // given a boolean value indicating whether their parent LSG is active, meaning
 // they may choose to ignore the step call based on that information.
 function stepAllScenes({ delta }) {
-  space.step({ delta });
+  space.step({ delta, isActive: activeGroup === space });
+  starFieldFreeFlight.step({ delta, isActive: activeGroup === starFieldFreeFlight });
 }
 
 /**

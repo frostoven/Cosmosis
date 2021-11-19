@@ -4,7 +4,6 @@ import levelLighting from '../lighting/levelLighting';
 import spaceLighting from '../lighting/spaceLighting';
 import { getStartupEmitter, startupEvent } from '../emitters';
 import { logBootInfo } from '../local/windowLoadListener';
-// import { init as localClusterInit } from '../scenes/localCluster';
 import localCluster from '../scenes/localCluster';
 import { createSpaceShip } from '../levelLogic/spaceShipLoader';
 import physics from '../local/physics';
@@ -35,15 +34,17 @@ const { shipPilot, freeCam } = camControllers;
 camControllers.shipPilot.init();
 camControllers.freeCam.init();
 
-camController.onControlChange(({ next, previous }) => {
+function onControlChange({ next, previous }) {
   if (next === shipPilot.modeName || next === freeCam.modeName) {
     camControllers[next].onControlChange({ next, previous });
   }
-});
+}
 
 const space = new LogicalSceneGroup({
   activate: ({ camera, callback=()=>{} }={ callback: ()=>{} }) => {
+    camController.onControlChange(onControlChange);
     camController.giveControlTo('shipPilot');
+
     if (sceneLoaded) {
       levelScene.add(camera);
       return callback();
@@ -129,6 +130,9 @@ const space = new LogicalSceneGroup({
       });
     });
   },
+  deactivate: () => {
+    camController.removeControlListener(onControlChange);
+  },
   render: ({ renderer, camera }) => {
     renderer.autoClear = true;
     // composer.render(); // TODO: check if this works here; fix composer.
@@ -141,9 +145,9 @@ const space = new LogicalSceneGroup({
     levelLighting.updateLighting();
     spaceLighting.updateLighting();
   },
-  step: ({ delta }) => {
+  step: ({ delta, isActive }) => {
     shipPilot.step({ delta });
-    freeCam.step({ delta });
+    isActive && freeCam.step({ delta });
   },
   // TODO: maybe add an 'always run' function for cases where it's not
   //  rendered.

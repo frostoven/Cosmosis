@@ -5,6 +5,8 @@ import MenuNavigation from '../elements/MenuNavigation';
 import { defaultMenuProps, defaultMenuPropTypes } from './defaults';
 import userProfile from '../../userProfile';
 import { setPlayerShipLocation, setPlayerShipRotation } from '../../local/api';
+import { getStartupEmitter, startupEvent } from '../../emitters';
+import { activateSceneGroup, logicalSceneGroup } from '../../logicalSceneGroup';
 
 // Menu's unique name.
 const thisMenu = 'debug tools';
@@ -66,6 +68,16 @@ export default class DebugTools extends React.Component {
     }
   };
 
+  startStarFreeFlight = () => {
+    getStartupEmitter().on(startupEvent.gameViewReady, () => {
+      activateSceneGroup({
+        renderer: $game.renderer,
+        camera: $game.camera,
+        logicalSceneGroup: logicalSceneGroup.starFieldFreeFlight,
+      });
+    });
+  }
+
   saveShipPos = () => {
     //
   };
@@ -122,6 +134,7 @@ export default class DebugTools extends React.Component {
         <div className='game-menu vertical-center horizontal-center'>
           <MenuNavigation {...inputProps}>
             <h1>{capitaliseFirst(thisMenu)}</h1>
+            <Button {...btnProps} onClick={this.startStarFreeFlight}>Star free-flight</Button>
             <Button {...btnProps} onClick={this.saveShipPos}>Save current ship position</Button>
             <Button {...btnProps} onClick={this.loadShipPos}>Load previous ship position</Button>
             <Button {...btnProps} onClick={this.setShipPosDefault}>Set current ship position as starting position</Button>

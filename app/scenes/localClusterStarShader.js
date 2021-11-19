@@ -10,13 +10,6 @@ const startupEmitter = getStartupEmitter();
 
 const spectralCombinations = {};
 
-// function register() {
-//   core.registerScene({
-//     name: 'localCluster',
-//     init,
-//   });
-// }
-
 function createScene({ scene, catalog }) {
   const validStars = [];
 
@@ -63,7 +56,7 @@ function loadAndCreate({ scene, catalogPath }) {
   });
 }
 
-function init({ font }) {
+function init() {
   const scene = new THREE.Scene();
 
   // Look for the prod catalog first. If not found, default to the much smaller
@@ -160,6 +153,5 @@ function populateSky({ validStars }) {
 }
 
 export default {
-  name: 'localCluster',
-  register,
+  init,
 }
