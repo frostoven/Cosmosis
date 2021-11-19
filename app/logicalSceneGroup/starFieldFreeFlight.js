@@ -5,7 +5,6 @@ import { FreeCam } from '../modeControl/cameraControllers/freeCam';
 import * as THREE from 'three';
 import { createSpaceShip } from '../levelLogic/spaceShipLoader';
 
-const gameFont = 'node_modules/three/examples/fonts/helvetiker_regular.typeface.json';
 const { camController, ActionType } = contextualInput;
 let starFieldScene = null;
 
@@ -34,22 +33,20 @@ const starFieldFreeFlight = new LogicalSceneGroup({
     starFieldScene.add(camera);
     camController.giveControlTo('freeCam');
 
-    const fontLoader = new THREE.FontLoader();
-    fontLoader.load(gameFont, function (font) {
-      callback();
+    // TODO: figure out what needs this and eliminate it.
+    $game.spaceScene = starFieldScene;
+    $game.levelScene = starFieldScene;
 
-      $game.spaceScene = starFieldScene;
-      $game.levelScene = starFieldScene;
+    callback();
 
-      // We unfortunately need some form of mesh in order for the game to set
-      // up / center itself.
-      createSpaceShip({
-        scene: starFieldScene,
-        modelName: 'minimal scene', onReady: (mesh, bubble) => {
-          $game.playerShip = mesh;
-          $game.playerShipBubble = bubble;
-        }
-      });
+    // We unfortunately need some form of mesh in order for the game to set
+    // up / center itself.
+    createSpaceShip({
+      scene: starFieldScene,
+      modelName: 'minimal scene', onReady: (mesh, bubble) => {
+        $game.playerShip = mesh;
+        $game.playerShipBubble = bubble;
+      }
     });
   },
   deactivate: ({ renderer, callback=()=>{} }={ callback: ()=>{} }) => {
