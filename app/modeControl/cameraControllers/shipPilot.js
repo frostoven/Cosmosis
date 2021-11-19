@@ -447,6 +447,8 @@ function maxN(amount, max) {
 
 ShipPilot.prototype.handleLocal = function handleLocal(delta) {
   // TODO: implement me.
+  //  Note: this meant to be used within the context of 'local space' as
+  //  apposed to 'warp space'. Need to investigate if this is still needed.
 }
 
 ShipPilot.prototype.step = function step({ delta }) {
