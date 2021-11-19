@@ -92,6 +92,8 @@ export default class Menu extends React.Component {
       case 'left':
       case 'right':
         return this.handleArrow(inputInfo);
+      case 'emergencyMenuClose':
+        return this.handleEmergencyMenuClose();
       default:
         return this.handleAction(inputInfo);
     }
@@ -120,6 +122,14 @@ export default class Menu extends React.Component {
       $options.repeatDelay,
       $options.repeatRate,
     );
+  };
+
+  handleEmergencyMenuClose = () => {
+    this.changeMenu({
+      next: 'game menu', callback: () => {
+        this.sendActionToActive({ action: 'emergencyMenuClose' });
+      }
+    });
   };
 
   /**
@@ -165,14 +175,15 @@ export default class Menu extends React.Component {
    * @param {boolean} [suppressNotify] - If true, menus won't be notified of
    *   menu changes. Default is false. This is useful for overlay menus such as
    *   modals that do not require a screen for themselves.
+   * @param callback - Called when change is complete.
    */
-  changeMenu = ({ next, suppressNotify=false }) => {
+  changeMenu = ({ next, suppressNotify=false, callback=()=>{} }) => {
     const previous = this.state.activeMenu;
     this.setState({
       activeMenu: next,
     }, () => {
       if (suppressNotify) {
-        return;
+        return callback();
       }
       const { pings } = this.menuChangeListeners.notifyAll({ next, previous });
       if (pings === 0) {
@@ -188,6 +199,7 @@ export default class Menu extends React.Component {
       else if (pings > 1) {
         alert(`More than one menu is attempting to assume "${next}" as their own identity.`);
       }
+      callback();
     });
   };
 
