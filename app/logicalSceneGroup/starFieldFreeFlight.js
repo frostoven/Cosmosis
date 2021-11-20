@@ -45,7 +45,7 @@ const starFieldFreeFlight = new LogicalSceneGroup({
       scene: starFieldScene,
       modelName: 'minimal scene', onReady: (mesh, bubble) => {
         $game.playerShip = mesh;
-        $game.playerShipBubble = bubble;
+        $game.playerWarpBubble = bubble;
       }
     });
   },

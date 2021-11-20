@@ -70,7 +70,7 @@ window.$game = {
   // what the ship's 'forward' direction is. This allows the 3D artist to model
   // their ship in any orientation, and then use a standard arrow to tell the
   // engine which direction the ship is pointing.
-  playerShipBubble: null,
+  playerWarpBubble: null,
   ptrLockControls: null,
   // The term 'level' here is used very loosely. It's any interactable
   // environment. Space ships as well planet sectors count as levels. Note that
@@ -176,7 +176,6 @@ function closeLoadingScreen() {
 }
 
 function init({ defaultScene }) {
-  // console.log('==============>',defaultScene)
   console.log('Initialising core.');
   logBootInfo('Core init start');
 
@@ -338,7 +337,7 @@ function initPlayer() {
   //     // modelName: 'tentacleHull', onReady: (mesh, bubble) => {
   //     // modelName: 'test', onReady: (mesh, bubble) => {
   //     $game.playerShip = mesh;
-  //     $game.playerShipBubble = bubble;
+  //     $game.playerWarpBubble = bubble;
   //     // TODO: Investigate why setTimeout is needed. Things break pretty hard
   //     //  if we have a very tiny space ship (reproducible with an empty scene
   //     //  containing only a camera). The exact symptom is it that

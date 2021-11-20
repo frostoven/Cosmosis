@@ -33,11 +33,11 @@ export function setPlayerShipLocation({ x, y, z }={}){
   //    are ignored from there on out (for now, anyway; we may reset every now
   //    and again if player moves very far from origin).
   startupEmitter.on(playerShipLoaded, () => {
-    // $game.playerShipBubble.local
+    // $game.playerWarpBubble.local
     if ($game.hyperMovement) {
       // TODO: get this from the active LSG.
       $game.playerShip.scene.position.set(0, 0, 0);
-      $game.playerShipBubble.position.set(x, y, z);
+      $game.playerWarpBubble.position.set(x, y, z);
 
       // Keep the macro and micro scenes positions in sync.
       $game.spaceScene.position.set(-x, -y, -z);
@@ -59,7 +59,7 @@ export function getPlayerShipLocation(cb=()=>{}){
   // TODO: test both in regular and warp bubble space.
   startupEmitter.on(playerShipLoaded, () => {
     if ($game.hyperMovement) {
-      cb($game.playerShipBubble.position);
+      cb($game.playerWarpBubble.position);
     }
     else {
       console.error(
@@ -80,7 +80,7 @@ export function setPlayerShipRotation({ x, y, z }={}){
   }
   // TODO: test both in regular and warp bubble space.
   startupEmitter.on(playerShipLoaded, () => {
-    $game.playerShipBubble.rotation.set(x, y, z);
+    $game.playerWarpBubble.rotation.set(x, y, z);
   });
 }
 
@@ -91,7 +91,7 @@ export function setPlayerShipRotation({ x, y, z }={}){
 export function getPlayerShipRotation(cb=()=>{}){
   // TODO: test both in regular and warp bubble space.
   startupEmitter.on(playerShipLoaded, () => {
-    cb($game.playerShipBubble.rotation);
+    cb($game.playerWarpBubble.rotation);
   });
 }
 

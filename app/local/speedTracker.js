@@ -48,8 +48,8 @@ function trackCameraSpeed() {
     }
     showStats();
 
-    const camPs = $game.playerShipBubble.position;
-    const camRt = $game.playerShipBubble.rotation;
+    const camPs = $game.playerWarpBubble.position;
+    const camRt = $game.playerWarpBubble.rotation;
 
     let dist = camPs.distanceTo(prevPosition);
     dist = dist / (freq / perUnit);

@@ -163,7 +163,6 @@ function processMeshCodes(name, gltf, isPlayer) {
   const level = new Level(gltf);
   const nameMap = {};
 
-  // console.log('=========> [processMeshCodes] GLTF:', gltf);
   // const nodes = gltf.parser.json.nodes;
   const nodes = gltf.scene.children;
   for (let i = 0, len = nodes.length; i < len; i++) {

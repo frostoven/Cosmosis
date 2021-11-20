@@ -35,16 +35,16 @@ function applyLighting({ scene }) {
     light.shadow.mapSize.width = 1024 * 4;
     light.shadow.mapSize.height= 1024 * 4;
 
-    // const bubble = $game.playerShipBubble;
-    const playerShipBubble = scene;
+    // const bubble = $game.playerWarpBubble;
+    const playerWarpBubble = scene;
 
     // const lightHelper = new THREE.DirectionalLightHelper(light, 5);
-    // playerShipBubble.add(lightHelper);
+    // playerWarpBubble.add(lightHelper);
     // const shadowHelper = new THREE.CameraHelper(light.shadow.camera);
-    // playerShipBubble.add(shadowHelper);
+    // playerWarpBubble.add(shadowHelper);
 
     light.target.updateMatrixWorld();
-    playerShipBubble.add(light);
+    playerWarpBubble.add(light);
 
     debug.levelLights = { light };
   });
