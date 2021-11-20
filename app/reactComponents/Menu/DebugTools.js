@@ -135,11 +135,12 @@ export default class DebugTools extends React.Component {
         <div className='game-menu vertical-center horizontal-center'>
           <MenuNavigation {...inputProps}>
             <h1>{capitaliseFirst(thisMenu)}</h1>
-            <Button {...btnProps} onClick={this.startStarFreeFlight}>Star free-flight</Button>
-            <Button {...btnProps} onClick={this.saveShipPos}>Save current ship position</Button>
-            <Button {...btnProps} onClick={this.loadShipPos}>Load previous ship position</Button>
-            <Button {...btnProps} onClick={this.setShipPosDefault}>Set current ship position as starting position</Button>
-            <Button {...btnProps} onClick={this.setMaxShipSpeed}>Override max ship speed</Button>
+            <Button {...btnProps} onClick={this.startStarFreeFlight}>Star free-flight (real Earth-visible stars)</Button>
+            <Button {...btnProps} onClick={()=>{}} invalid>Star free-flight (completely procedural)</Button>
+            <Button {...btnProps} onClick={this.saveShipPos} invalid>Save current ship position</Button>
+            <Button {...btnProps} onClick={this.loadShipPos} invalid>Load previous ship position</Button>
+            <Button {...btnProps} onClick={this.setShipPosDefault} invalid>Set current ship position as starting position</Button>
+            <Button {...btnProps} onClick={this.setMaxShipSpeed} invalid>Override max ship speed</Button>
             <Button {...btnProps} onClick={this.handleBack}>Back</Button>
           </MenuNavigation>
         </div>
