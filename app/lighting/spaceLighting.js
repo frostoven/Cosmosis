@@ -22,7 +22,6 @@ function applyLighting({ scene }) {
     light.target.position.set(0, 1, 0);
 
     light.target.updateMatrixWorld();
-    // $game.spaceScene.add(light);
     scene.add(light);
 
     debug.spaceLights = { light };
