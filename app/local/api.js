@@ -35,6 +35,7 @@ export function setPlayerShipLocation({ x, y, z }={}){
   startupEmitter.on(playerShipLoaded, () => {
     // $game.playerShipBubble.local
     if ($game.hyperMovement) {
+      // TODO: get this from the active LSG.
       $game.playerShip.scene.position.set(0, 0, 0);
       $game.playerShipBubble.position.set(x, y, z);
 

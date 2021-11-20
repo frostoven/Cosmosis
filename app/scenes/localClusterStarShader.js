@@ -42,7 +42,7 @@ function createScene({ scene, catalog }) {
     validStars.push(star);
   }
 
-  populateSky({ validStars });
+  populateSky({ scene, validStars });
 }
 
 function loadAndCreate({ scene, catalogPath }) {
@@ -87,9 +87,8 @@ function init() {
 }
 
 // TODO: continue here: this should be loaded after catalog has been loaded.
-function populateSky({ validStars }) {
+function populateSky({ scene, validStars }) {
   startupEmitter.on(startupEvent.ready, () => {
-    const scene = $game.spaceScene;
 
     // TODO: Add ways to check for LMC, SMC, Andromeda, clusters, etc.
 

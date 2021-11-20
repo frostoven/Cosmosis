@@ -86,8 +86,9 @@ const space = new LogicalSceneGroup({
       // group.add(spaceScene);
       // group.add(levelScene);
 
-      // TODO: replace this with a mechanism whereby we register that this LSG
-      //  hosts the player ship instance, level, etc.
+      // TODO: replace this with a mechanism whereby this retrieved from the
+      //  LSG manager. These vars are currently used by shipPilot,
+      //  speedTracker, and api.setPlayerShipLocation.
       // ----------------------------------------------------------------------
       $game.spaceScene = spaceScene;
       $game.levelScene = levelScene;
