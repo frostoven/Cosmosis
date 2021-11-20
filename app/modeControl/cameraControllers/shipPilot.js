@@ -48,6 +48,11 @@ function ShipPilot(options={}) {
  * Resets all values to default.
  */
 ShipPilot.prototype.setDefaultValues = function applyDefaultValues() {
+  this.spaceScene = null;
+  this.levelScene = null;
+  this.playerShip = null;
+  this.playerWarpBubble = null;
+
   // 195=1c, 199=1.5c, 202=2c, 206=3c, 209=4c, 300=35600c (avoid going over 209).
   // The idea is that the player can push this number up infinitely, but with
   // huge falloff past 206 because every extra 0.1 eventually scales to 1c
@@ -144,8 +149,6 @@ ShipPilot.prototype.setControlActions = function setControlActions() {
 }
 
 ShipPilot.prototype.init = function initShipPilot() {
-  console.log('===> ShipPilot.prototype.init:', this);
-
   // Key down actions.
   camController.onActions({
     actionType: ActionType.keyUp | ActionType.keyDown,
@@ -173,7 +176,7 @@ ShipPilot.prototype.init = function initShipPilot() {
   });
 
   startupEmitter.on(startupEvent.playerShipLoaded, () => {
-    this.onShipLoaded($game.playerShip);
+    this.onShipLoaded(this.playerShip);
   });
 }
 
@@ -188,8 +191,8 @@ ShipPilot.prototype.onControlChange = function shipPilotControlChange({ next, pr
     startupEmitter.on(startupEvent.playerShipLoaded, () => {
       // TODO: move this into the level loader. It needs to be dynamic based on
       //  the level itself (in this case we attach the player to the main cam).
-      $game.playerShip.cameras[0].attach($game.camera);
-      // $game.playerShip.scene.children[2].attach($game.camera);
+      this.playerShip.cameras[0].attach($game.camera);
+      // this.playerShip.scene.children[2].attach($game.camera);
       $game.camera.position.x = 0;
       $game.camera.position.y = 0;
       $game.camera.position.z = 0;
@@ -346,7 +349,7 @@ ShipPilot.prototype.easeOutOfBuildup = function easeOutOfBuildup(delta, rollBuil
   return rollBuildup;
 }
 
-ShipPilot.prototype.handleHyper = function handleHyper(delta, spaceScene, levelScene, playerShip, warpBubble) {
+ShipPilot.prototype.handleHyper = function handleHyper(delta) {
   if (this.steer.leftRight) {
     // TODO: movement is changes sharply with sudden mouse changes. Investigate
     //  if this is what we really want (note we're in a warp bubble). Perhaps
@@ -364,9 +367,9 @@ ShipPilot.prototype.handleHyper = function handleHyper(delta, spaceScene, levelS
     this.rollBuildup = this.easeIntoBuildup(delta, this.rollBuildup, this.rollSpeed, 65.2, 1);
   }
 
-  warpBubble.rotateY(this.yawBuildup * this.pitchAndYawSpeed);
-  warpBubble.rotateX(this.pitchBuildup * this.pitchAndYawSpeed);
-  warpBubble.rotateZ(this.rollBuildup);
+  this.playerWarpBubble.rotateY(this.yawBuildup * this.pitchAndYawSpeed);
+  this.playerWarpBubble.rotateX(this.pitchBuildup * this.pitchAndYawSpeed);
+  this.playerWarpBubble.rotateZ(this.rollBuildup);
 
   if (this.flightAssist) {
     this.yawBuildup = this.easeOutOfBuildup(delta, this.yawBuildup, 10);
@@ -423,10 +426,10 @@ ShipPilot.prototype.handleHyper = function handleHyper(delta, spaceScene, levelS
 
   // Move the world around the ship.
   let direction = new THREE.Vector3();
-  playerShip.cameras[0].getWorldDirection(direction);
-  spaceScene.position.addScaledVector(direction, -hyperSpeed);
-  levelScene.position.addScaledVector(direction, -hyperSpeed);
-  warpBubble.position.addScaledVector(direction, hyperSpeed);
+  this.playerShip.cameras[0].getWorldDirection(direction);
+  this.spaceScene.position.addScaledVector(direction, -hyperSpeed);
+  this.levelScene.position.addScaledVector(direction, -hyperSpeed);
+  this.playerWarpBubble.position.addScaledVector(direction, hyperSpeed);
 }
 
 // // TODO: move to math utils.
@@ -452,10 +455,6 @@ ShipPilot.prototype.handleLocal = function handleLocal(delta) {
 }
 
 ShipPilot.prototype.step = function step({ delta }) {
-  const { playerShip, playerShipBubble } = $game;
-  if (!playerShip) {
-    return;
-  }
   // TODO: check if we ever need to uncomment this. If render turns out to
   //  necessary for controls, we should probably have checks for specifically
   //  this when applying the effects of controls.
@@ -477,7 +476,8 @@ ShipPilot.prototype.step = function step({ delta }) {
     `;
   }
 
-  const { spaceScene, levelScene, hyperMovement } = $game;
+  // TODO: expose this as an options or profile thing.
+  const { hyperMovement } = $game;
 
   // TODO: make it so that you cannot hop into hyperdrive without first
   //  speeding up, but once you're in hyperdrive you can actually float with
@@ -486,7 +486,7 @@ ShipPilot.prototype.step = function step({ delta }) {
     // Hyper-movement is similar to freeCam, but has a concept of inertia. The
     // ship cannot strafe in this mode. The ship should have no physics in this
     // mode, and the universe moves instead of the ship.
-    this.handleHyper(delta, spaceScene, levelScene, playerShip, playerShipBubble);
+    this.handleHyper(delta);
   }
   else {
     // TODO: PLEASE GIVE ME PHYSICS
