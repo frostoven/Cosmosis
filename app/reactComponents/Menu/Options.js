@@ -58,7 +58,7 @@ export default class Options extends React.Component {
 
   getAnimation = (reverse = false) => {
     if (this.state.isVisible) {
-      return 'fadeInUpBig'
+      return 'fadeInUpBig';
     } else {
       return 'fadeOutDownBig';
     }

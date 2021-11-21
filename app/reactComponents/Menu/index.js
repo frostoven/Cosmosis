@@ -103,7 +103,7 @@ export default class Menu extends React.Component {
     if (!inputInfo.isDown) {
       return;
     }
-    this.sendActionToActive(inputInfo)
+    this.sendActionToActive(inputInfo);
   };
 
   handleArrow = (inputInfo) => {

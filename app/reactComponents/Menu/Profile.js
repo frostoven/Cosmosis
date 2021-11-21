@@ -71,7 +71,7 @@ export default class Profile extends React.Component {
   // TODO: remove 'reverse'. It's not used anywhere.
   getAnimation = (reverse = false) => {
     if (this.state.isVisible) {
-      return 'fadeInUpBig'
+      return 'fadeInUpBig';
     } else {
       return 'fadeOutDownBig';
     }

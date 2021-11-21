@@ -34,11 +34,8 @@ let lastActiveCamData = null;
 const camControllers = {
   shipPilot: new ShipPilot(),
   freeCam: new FreeCam(),
-}
+};
 const { shipPilot, freeCam } = camControllers;
-
-camControllers.shipPilot.init();
-camControllers.freeCam.init();
 
 function onControlChange({ next, previous }) {
   if (next === shipPilot.modeName || next === freeCam.modeName) {
@@ -48,6 +45,9 @@ function onControlChange({ next, previous }) {
 
 const space = new LogicalSceneGroup({
   activate: ({ camera, callback=()=>{} }={ callback: ()=>{} }) => {
+    camControllers.shipPilot.registerKeyListeners();
+    camControllers.freeCam.registerKeyListeners();
+
     camController.onControlChange(onControlChange);
     camController.giveControlTo('shipPilot');
 
@@ -122,7 +122,7 @@ const space = new LogicalSceneGroup({
     lastActiveCamData = {
       position: $game.camera.position,
       rotation: $game.camera.rotation,
-    }
+    };
     camController.removeControlListener(onControlChange);
   },
   render: ({ renderer, camera }) => {

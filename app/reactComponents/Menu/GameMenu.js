@@ -177,7 +177,7 @@ export default class GameMenu extends React.Component {
 
   genButton = (name, onClick) => {
     const isActive = this.state.activeButton === name;
-    return <KosmButton className='button-fill-parent console-text' isActive={isActive} onClick={onClick}>{name}</KosmButton>
+    return <KosmButton className='button-fill-parent console-text' isActive={isActive} onClick={onClick}>{name}</KosmButton>;
   };
 
   /**
@@ -188,7 +188,7 @@ export default class GameMenu extends React.Component {
     const buttonMap = {};
     const allButtonNames = Object.keys(directionConfig);
     allButtonNames.forEach((name) => {
-      buttonMap[name] = this.genButton(name, this.changeMenuFn(name))
+      buttonMap[name] = this.genButton(name, this.changeMenuFn(name));
     });
     return buttonMap;
   };
@@ -214,7 +214,7 @@ export default class GameMenu extends React.Component {
       <Grid.Row key={key}>
         {result}
       </Grid.Row>
-    )
+    );
   };
 
   /**
@@ -256,7 +256,7 @@ export default class GameMenu extends React.Component {
     if (currentMenu === thisMenu && previousMenu === thisMenu) {
       if (isVisible) {
         // User opened menu from gameplay.
-        return 'fadeInDown'
+        return 'fadeInDown';
       }
       else {
         // User is either exiting back to gameplay, or game has just loaded.

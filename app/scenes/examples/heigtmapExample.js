@@ -64,7 +64,7 @@ function generateHeight( width, height ) {
     size = width * height, quality = 2, z = Math.random() * 100;
 
   for (var i = 0; i < size; i++) {
-    data[i] = 0
+    data[i] = 0;
   }
 
   for (var j = 0; j < 4; j++) {

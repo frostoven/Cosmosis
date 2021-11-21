@@ -140,7 +140,7 @@ function bootLogger({ text='', isError=false }) {
 
   // TODO: make errors push as red instead.
   if (isError) {
-    bootMessageQueue.push(`<i>${text}</i>`)
+    bootMessageQueue.push(`<i>${text}</i>`);
   }
   else {
     bootMessageQueue.push(text);

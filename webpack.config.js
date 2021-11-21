@@ -54,4 +54,4 @@ module.exports = {
             (warning) => false
         ]
     }
-}
+};

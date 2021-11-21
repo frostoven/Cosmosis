@@ -44,7 +44,8 @@ this project is not free (see [Why we provide source code](README.md#why-we-prov
 ## Testing the game
 This game is currently still in pre-alpha, meaning you won't have much to do.
 The little you can you is difficult to find because the interfaces that make
-some functions obvious (or even visible) do not yet exist. It also has bugs.
+some functions obvious (or even visible) do not yet exist. It also has bugs,
+and already working features will break while the project rapidly changes.
 
 Important note: this game allows complex menu interactions by allowing mouse
 pointer locking / unlocking. If you get stuck wanting to look around but
@@ -61,6 +62,8 @@ The latest beta can currently do the following:
 * Fly around [real Earth-visible stars](https://github.com/feynmansbongos/BSC5P-JSON-XYZ)
   as a ghost. You can activate this mode by pressing Backspace and going to
   `debug tools` -> `Star free-flight`. Use `+` and `-` to change flight speed.
+* You can fly around spaceships by pressing `F8`. If the spaceship has switches
+  or other intractables, you can interact with them by pressing `E`.
 
 <!--
 TODO: Add menu option to choose a ship, then add a bullet point here that you
