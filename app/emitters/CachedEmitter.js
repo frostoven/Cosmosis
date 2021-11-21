@@ -116,17 +116,34 @@ CachedEmitter.prototype.emit = function CachedEmitterEmit(action) {
   // A part of the application booted. Store the id, then notify all the
   // listeners.
   const listeners = this._listeners;
+  // Add action to past events.
   this._pastEvents |= action;
-  for (let i = 0, len = listeners.length; i < len; i++) {
+
+  // Note: we use a loop-backwards/double-loop mechanism, because it seems to
+  // be the only way to stop concurrency issues. Basically, it seems that
+  // calling callbacks mid-loop causes execution delays, resulting in some
+  // callbacks never being triggered.
+
+  const foundCallbacks = [];
+  let i = listeners.length;
+  while (i--) {
+    // TODO: remove me.
+    if (i < 0) {
+      console.error('CachedEmitter [157]: DETECTED CONCURRENCY ISSUE');
+      break;
+    }
+
     const item = listeners[i];
     if (item.action === action) {
-      item.callback();
       listeners.splice(i, 1);
-      i--;
-      len--;
+      foundCallbacks.push(item.callback);
     }
   }
-};
+
+  for (let i = 0, len = foundCallbacks.length; i < len; i++) {
+    foundCallbacks[i]();
+  }
+}
 
 /**
  * Removes a past action from the remembered cache. If this object does not use

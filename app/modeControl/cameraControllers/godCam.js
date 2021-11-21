@@ -28,9 +28,10 @@ const toggles = {
 };
 
 function init() {
-  core.registerRenderHook({
-    name: 'godCam', render,
-  });
+  // TODO: re-enable: bookm
+  // core.registerRenderHook({
+  //   name: 'godCam', render,
+  // });
 
   // Key down actions.
   camController.onActions({
@@ -81,7 +82,7 @@ function render(delta) {
     return;
   }
 
-  const { scene, camera, renderer } = $game;
+  const { spaceScene, camera, renderer } = $game;
 
   // Put some limits on zooming
   // const minZoom = labelData[0].size * labelData[0].scale * 1;
@@ -111,7 +112,7 @@ function render(delta) {
   camera.position.x = Math.sin(.5 * Math.PI * (mouse[0] - .5)) * zoom;
   camera.position.y = Math.sin(.25 * Math.PI * (mouse[1] - .5)) * zoom;
   camera.position.z = Math.cos(.5 * Math.PI * (mouse[0] - .5)) * zoom;
-  camera.lookAt(scene.position);
+  camera.lookAt(spaceScene.position);
 }
 
 function onMouseWheel({ action, isDown }) {

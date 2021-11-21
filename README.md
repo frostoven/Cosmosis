@@ -3,10 +3,10 @@
 <div align="center">
     <b>Downloads</b>
     <br>
-    <a href="https://github.com/aggregate1166877/Cosmosis/releases/latest">
+    <a href="https://github.com/feynmansbongos/Cosmosis/releases/latest">
         <img src="https://img.shields.io/static/v1?label=Latest%20stable&message=v0.72.0&color=blue&style=for-the-badge">
     </a>
-    <a href="https://github.com/aggregate1166877/Cosmosis/releases">
+    <a href="https://github.com/feynmansbongos/Cosmosis/releases">
         <img src="https://img.shields.io/static/v1?label=Dev%20builds&message=all%20versions&color=red&style=for-the-badge">
     </a>
     <br><br>
@@ -40,6 +40,52 @@ generated, and ground-based combat will be souls-like.
 
 This game is and will always be free and open source (see [Why this game is
 open sourced](README.md#why-this-game-is-open-sourced) below).
+
+## Testing the game
+This game is currently still in pre-alpha, meaning you won't have much to do.
+The little you can you is difficult to find because the interfaces that make
+some functions obvious (or even visible) do not yet exist. It also has bugs.
+
+Important note: this game allows complex menu interactions by allowing mouse
+pointer locking / unlocking. If you get stuck wanting to look around but
+instead you have only a mouse cursor, press `Left Ctrl` and you'll switch to
+mouse-look mode. If you rebind core controls and accidentally break the game,
+go to `%AppData%` (Windows) or `~/.local/share/` (Linux) and delete the
+directory named `CosmosisGame`, then restart the game.
+
+The latest beta can currently do the following:
+* Fly around at many thousand times the speed of light in a to-scale large
+  universe (millions of light-years across) with no glitches or lag (even on
+  weak graphics cards). This mode is launched by default, and uses a spaceship
+  with a warp drive and nothing else.
+* Fly around [real Earth-visible stars](https://github.com/feynmansbongos/BSC5P-JSON-XYZ)
+  as a ghost. You can activate this mode by pressing Backspace and going to
+  `debug tools` -> `Star free-flight`. Use `+` and `-` to change flight speed.
+
+<!--
+TODO: Add menu option to choose a ship, then add a bullet point here that you
+can choose ships or even add your own via Blender. This thing of changing
+source to change ships needs to change, and soon.
+-->
+
+## Troubleshooting
+#### Game using wrong graphics card
+Windows may force the application to use integrated graphics, which will
+massively decrease performance. The game does not yet allow changing graphics
+cards, though
+[an issue is currently open](https://github.com/feynmansbongos/Cosmosis/issues/61)
+to add this feature.
+
+For now, you may force Windows to use discrete graphics by setting power
+saving mode to high performance. If your driver configuration does not provide
+the option (or you don't like that idea), you can manually force it as follows:
+* Open your Windows start menu.
+* Within the start menu, go to Settings, the click System.
+* Scroll down to Graphics Settings.
+* Select "Classic app", then click "Browse".
+* Navigate to `Cosmosis.exe` and select it.
+* Once it's been added to the list click "Options" then select "High
+Performance".
 
 ## Why this game?
 #### Intro

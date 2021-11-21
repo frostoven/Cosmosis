@@ -1,6 +1,12 @@
 /*
  * Contains a set of functions for easy access. The idea is that all major and
  * frequently used functions should reside here.
+ *
+ * When writing code intended for native use (in other words, you're not
+ * writing a mod), please do not run API functions each frame! API functions
+ * have a ton of overhead to prevent mod crashes. As an example, it's
+ * appropriate to use API function calls inside menus, but it's not appropriate
+ * to put an API function call inside a render function.
  */
 
 import { startupEvent, getStartupEmitter } from '../emitters';
@@ -8,7 +14,7 @@ import contextualInput from './contextualInput';
 const startupEmitter = getStartupEmitter();
 
 const {
-  ready, playerShipLoaded, firstFrameRendered, gameViewReady, skyBoxLoaded,
+  ready, playerShipLoaded, firstFrameRendered, gameViewReady,
 } = startupEvent;
 
 /**
@@ -27,11 +33,15 @@ export function setPlayerShipLocation({ x, y, z }={}){
   //    are ignored from there on out (for now, anyway; we may reset every now
   //    and again if player moves very far from origin).
   startupEmitter.on(playerShipLoaded, () => {
-    // $game.playerShipBubble.local
+    // $game.playerWarpBubble.local
     if ($game.hyperMovement) {
+      // TODO: get this from the active LSG.
       $game.playerShip.scene.position.set(0, 0, 0);
-      $game.playerShipBubble.position.set(x, y, z);
-      $game.scene.position.set(-x, -y, -z);
+      $game.playerWarpBubble.position.set(x, y, z);
+
+      // Keep the macro and micro scenes positions in sync.
+      $game.spaceScene.position.set(-x, -y, -z);
+      $game.levelScene.position.set(-x, -y, -z);
     }
     else {
       console.error(
@@ -49,7 +59,7 @@ export function getPlayerShipLocation(cb=()=>{}){
   // TODO: test both in regular and warp bubble space.
   startupEmitter.on(playerShipLoaded, () => {
     if ($game.hyperMovement) {
-      cb($game.playerShipBubble.position);
+      cb($game.playerWarpBubble.position);
     }
     else {
       console.error(
@@ -70,7 +80,7 @@ export function setPlayerShipRotation({ x, y, z }={}){
   }
   // TODO: test both in regular and warp bubble space.
   startupEmitter.on(playerShipLoaded, () => {
-    $game.playerShipBubble.rotation.set(x, y, z);
+    $game.playerWarpBubble.rotation.set(x, y, z);
   });
 }
 
@@ -81,7 +91,7 @@ export function setPlayerShipRotation({ x, y, z }={}){
 export function getPlayerShipRotation(cb=()=>{}){
   // TODO: test both in regular and warp bubble space.
   startupEmitter.on(playerShipLoaded, () => {
-    cb($game.playerShipBubble.rotation);
+    cb($game.playerWarpBubble.rotation);
   });
 }
 

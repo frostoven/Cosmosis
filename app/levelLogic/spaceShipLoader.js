@@ -83,22 +83,25 @@ export function getMesh(modelName, callback) {
 }
 
 function loadModel(name, callback) {
-  AssetFinder.getSpaceShip(name, (error, filename, dir) => {
-    loader.setPath(dir + '/');
-    loader.load(filename, function (gltf) {
+  AssetFinder.getSpaceShip({
+    name,
+    callback: (error, filename, dir) => {
+      loader.setPath(dir + '/');
+      loader.load(filename, function(gltf) {
 
-      // gltf.scene.traverse(function (child) {
-      //   if (child.isMesh) {
-      //     console.log(child);
-      //   }
-      // });
+        // gltf.scene.traverse(function (child) {
+        //   if (child.isMesh) {
+        //     console.log(child);
+        //   }
+        // });
 
-      storeMesh(name, gltf);
-      callback(gltf);
+        storeMesh(name, gltf);
+        callback(gltf);
 
-      // dracoLoader.dispose();
-    });
-    //
+        // dracoLoader.dispose();
+      });
+      //
+    }
   });
 }
 
@@ -133,32 +136,20 @@ function modelPostSetup(modelName, gltf, pos, scene, world, onReady) {
     matrix.makeRotationFromQuaternion(quaternion);
     mesh.scene.applyMatrix4(matrix);
 
-    // TODO: remove this light. This is only here until lights become dynamic.
-    // const warmWhite = 0xefebd8;
     // const warmWhite = 0xfff5b6;
-    const warmWhite = 0xfff5b6;
-    // const light = new THREE.PointLight( warmWhite, 1.5, 100 );
-    const light = new THREE.PointLight( warmWhite, 2, 100 );
-    // light.position.set(pos.x, pos.y + 2, pos.z);
-    // light.position.set(0, 2, 0);
-    light.position.set(0, 2, -5);
-    mesh.scene.add(light);
-    //
-    const light2 = new THREE.PointLight( warmWhite, 2, 100 );
-    // light.position.set(pos.x, pos.y + 2, pos.z);
-    light2.position.set(0, 2, 3);
-    mesh.scene.add(light2);
 
-    // TODO: implement the physics things.
-    // const body = makePhysical({
-    //   mesh: mesh.scene,
-    //   // TODO: for now we use a simple cube shape just to get the framework up.
-    //   //  This needs to become a compound shape in future using the p[a]_ tags
-    //   //  (see mesh codes -> Physics collision node codes).
-    //   bodyShape: shapeTemplates.cubeShape(1.2, 1, 1.8),
-    //   options: { mass: 1 },
-    //   world,
-    // });
+    // Make the ship cast/receive shadows, including self-shadows:
+    gltf.scene.traverse(function(node) {
+      if (node.isMesh) {
+        // Backface culling. Without this shadows get somewhat insane because
+        // *all* faces then emit shadows.
+        node.material.side = THREE.FrontSide;
+        node.castShadow = true;
+        node.receiveShadow = true;
+        // console.log('got:', node, 'cast:', node.castShadow, 'recv:', node.receiveShadow);
+      }
+    });
+
     onReady(mesh, bubble);
   });
 }
@@ -172,7 +163,6 @@ function processMeshCodes(name, gltf, isPlayer) {
   const level = new Level(gltf);
   const nameMap = {};
 
-  // console.log('=========> [processMeshCodes] GLTF:', gltf);
   // const nodes = gltf.parser.json.nodes;
   const nodes = gltf.scene.children;
   for (let i = 0, len = nodes.length; i < len; i++) {
@@ -205,8 +195,6 @@ export function createSpaceShip({ modelName, pos, scene, world, isPlayer, onRead
   startupEmitter.on(startupEvent.gameViewReady, () => {
     if (!modelName) return console.error('createSpaceShip needs a model name.');
     if (!pos) pos = $game.camera.position;
-    if (!scene) scene = $game.scene;
-    if (!world) world = $game.spaceWorld;
     if (!onReady) onReady = () => {};
 
     createDefaults(modelName);
