@@ -41,6 +41,32 @@ generated, and ground-based combat will be souls-like.
 This game is and will always be free and open source (see [Why this game is
 open sourced](README.md#why-this-game-is-open-sourced) below).
 
+## Testing the game
+This game is currently still in pre-alpha, meaning you won't have much to do.
+The little you can you is difficult to find because the interfaces that make
+some functions obvious (or even visible) do not yet exist. It also has bugs.
+
+Important note: this game allows complex menu interactions by allowing mouse
+pointer locking / unlocking. If you get stuck wanting to look around but
+instead you have only a mouse cursor, press `Left Ctrl` and you'll switch to
+mouse-look mode. If you rebind core controls and accidentally break the game,
+go to `%AppData%` (Windows) or 
+
+The latest beta can currently do the following:
+* Fly around at many thousand times the speed of light in a to-scale large
+  universe (millions if light-years across) with no glitches or lagging (even
+  on weak graphics cards). This is launched by default, and uses a space ship
+  with a warp drive and nothing else.
+* Fly around [real Earth-visible stars](https://github.com/feynmansbongos/BSC5P-JSON-XYZ)
+  as a ghost. You can activate this by pressing Backspace and going to
+  `debug tools` -> `Star free-flight`. Use `+` and `-` to change flight speed.
+
+<!--
+TODO: Add menu option to choose a ship, then add a bullet point here that you
+can choose ships or even add your own via Blender. This thing of changing
+source to change ships needs to change, and soon.
+-->
+
 ## Troubleshooting
 #### Game using wrong graphics card
 Windows may force the application to use integrated graphics, which will
