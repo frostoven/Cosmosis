@@ -201,7 +201,7 @@ sed -i.bak '/"nw":/d' ./package.json >/dev/null
 
 echo "* Installing build tools with 'npm install'"
 echo "  > Target: $friendly_name"
-npm install "$npm_arch" "$npm_platform"
+npm install --ignore-scripts "$npm_arch" "$npm_platform"
 
 echo "* Build the game from source"
 npm run prepare-dev
