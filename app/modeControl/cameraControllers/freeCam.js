@@ -42,7 +42,7 @@ FreeCam.prototype.setDefaultValues = function setDefaultValues() {
   this.speed = 10 / SPEED_UNIT; // 10KM/h
   // TODO: This really needs a better solution. It will become a problem soon.
   this.speedTimer = null;
-}
+};
 
 FreeCam.prototype.initNavigationValues = function initNavigationValues() {
   this.ctrl = {
@@ -64,13 +64,13 @@ FreeCam.prototype.initNavigationValues = function initNavigationValues() {
     speedDown: false,
     doubleSpeed: false,
   };
-}
+};
 
 FreeCam.prototype.setControlActions = function initNavigationValues() {
   this.toggles = {
     interact: () => $game.level.useNext(),
   };
-}
+};
 
 FreeCam.prototype.init = function init() {
 
@@ -97,7 +97,7 @@ FreeCam.prototype.init = function init() {
     modeName: freeCamMode,
     callback: (args) => this.onAnalogInput(args),
   });
-}
+};
 
 FreeCam.prototype.onControlChange = function freeCamControlChange({ next, previous }) {
   // Only render if mode is freeCam.
@@ -200,7 +200,7 @@ FreeCam.prototype.step = function step({ delta }) {
   if (this.ctrl.lookDown) camera.rotateX(-delta * 1.5);
   if (this.ctrl.spinLeft) camera.rotateZ(+delta * 1.5);
   if (this.ctrl.spinRight) camera.rotateZ(-delta * 1.5);
-}
+};
 
 export {
   FreeCam,

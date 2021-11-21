@@ -28,7 +28,7 @@ LogicalSceneGroup.prototype = {
     this._activate = function protoActivate() {
       this._active = true;
       fn.apply(null, arguments);
-    }
+    };
   },
 
   // Should be called whenever this LSG should no longer be rendered.
@@ -37,7 +37,7 @@ LogicalSceneGroup.prototype = {
     this._deactivate = function protoDeactivate() {
       this._active = false;
       fn.apply(null, arguments);
-    }
+    };
   },
 
   // Called during animation loop when this LSG is active.

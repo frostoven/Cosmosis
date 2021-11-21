@@ -115,7 +115,7 @@ export default class MenuNavigation extends React.Component {
       return this.handleDelete(inputInfo);
     }
     else {
-      this.props.onUnhandledInput(inputInfo)
+      this.props.onUnhandledInput(inputInfo);
     }
   };
 

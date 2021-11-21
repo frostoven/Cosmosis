@@ -62,7 +62,7 @@ export default class DebugTools extends React.Component {
 
   getAnimation = (reverse = false) => {
     if (this.state.isVisible) {
-      return 'fadeInUpBig'
+      return 'fadeInUpBig';
     } else {
       return 'fadeOutDownBig';
     }
@@ -77,7 +77,7 @@ export default class DebugTools extends React.Component {
         logicalSceneGroup: logicalSceneGroup.starFieldFreeFlight,
       });
     });
-  }
+  };
 
   saveShipPos = () => {
     //

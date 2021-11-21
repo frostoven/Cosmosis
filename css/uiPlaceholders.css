@@ -34,7 +34,7 @@
     border: thin solid green;
     margin: 3px;
     color: white;
-    text-shadow: 0px 0px 8px black;
+    text-shadow: 0 0 8px black;
 }
 
 #crosshairs {

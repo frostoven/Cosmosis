@@ -38,7 +38,7 @@ function trackCameraSpeed() {
   // Per second.  (i.e. per 1000 milliseconds). This is constant, don't change.
   const perUnit = 1000;
 
-  const timer = setInterval(() => {
+  return setInterval(() => {
     const statusDiv = document.getElementById('speed-tracker');
     if (!statusDiv || !$game.playerShip) {
       // This sometimes happens right after the game has loaded.
@@ -62,8 +62,6 @@ function trackCameraSpeed() {
       `{Rt} x:${camRt.x.toFixed(4)}, y:${camRt.y.toFixed(4)}, z:${camRt.z.toFixed(4)}`;
     prevPosition.copy(camPs);
   }, freq);
-
-  return timer;
 }
 
 /*
