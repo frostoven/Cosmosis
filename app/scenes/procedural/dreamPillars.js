@@ -51,7 +51,7 @@ export default function generate({ position, scene }) {
     box.position.x = ((Math.floor( Math.random() * 20 - 10 ) * 20 * multiplier) + position.x);
     box.position.y = ((Math.floor( Math.random() * 20 ) * 20 + 10 * multiplier) + position.y);
     box.position.z = ((Math.floor( Math.random() * 20 - 10 ) * 20 * multiplier) + position.z);
-    console.log(box.position)
+    console.log(box.position);
 
     scene.add( box );
     objects.push( box );

@@ -7,10 +7,11 @@ const tags = {
   aimLeft: null,
   aimRight: null,
   aimUp: null,
-}
+};
 
 /**
  * @param {string} name
+ * @param callback
  * @returns {HTMLImageElement}
  */
 function createImgTag(name, callback) {

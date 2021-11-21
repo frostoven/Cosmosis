@@ -119,9 +119,9 @@ border: none !important;
 }
 
 @keyframes game-menu-back-animation {
-    0%{background-position:82% 0%}
+    0%{background-position:82% 0}
     50%{background-position:19% 100%}
-    100%{background-position:82% 0%}
+    100%{background-position:82% 0}
 }
 
 .hidden-menu {

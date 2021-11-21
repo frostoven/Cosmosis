@@ -199,7 +199,7 @@ const PointerLockControls = function (camera, domElement) {
 
   this.getLockMode = function() {
     return this.lockMode;
-  }
+  };
 
   // Sets the lock mode and undoes any external quaternion references.
   this.setLockMode = function(mode) {
@@ -220,13 +220,13 @@ const PointerLockControls = function (camera, domElement) {
     euler.x = y * -0.002;
     euler.x = Math.max(PI_2 - scope.maxPolarAngle, Math.min(PI_2 - scope.minPolarAngle, euler.x));
     camera.quaternion.setFromEuler(euler);
-  }
+  };
 
   // Sets mouse to center of screen.
   this.resetMouse = function() {
     this.mouseX = 0;
     this.mouseY = 0;
-  }
+  };
 
   this.connect();
 };

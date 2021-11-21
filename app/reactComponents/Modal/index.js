@@ -27,13 +27,13 @@ function queueMessage({ type, args }) {
 
 // Store modal requests until Modal has mounted.
 export const preBootPlaceholder = {
-  show: function() { queueMessage({ type: 'show', args: arguments }) },
-  alert: function() { queueMessage({ type: 'alert', args: arguments }) },
-  confirm: function() { queueMessage({ type: 'confirm', args: arguments }) },
-  prompt:  function() { queueMessage({ type: 'prompt', args: arguments }) },
-  listPrompt:  function() { queueMessage({ type: 'listPrompt', args: arguments }) },
-  buttonPrompt:  function() { queueMessage({ type: 'buttonPrompt', args: arguments }) },
-  deactivateByTag:  function() { queueMessage({ type: 'deactivateByTag', args: arguments }) },
+  show: function() { queueMessage({ type: 'show', args: arguments }); },
+  alert: function() { queueMessage({ type: 'alert', args: arguments }); },
+  confirm: function() { queueMessage({ type: 'confirm', args: arguments }); },
+  prompt:  function() { queueMessage({ type: 'prompt', args: arguments }); },
+  listPrompt:  function() { queueMessage({ type: 'listPrompt', args: arguments }); },
+  buttonPrompt:  function() { queueMessage({ type: 'buttonPrompt', args: arguments }); },
+  deactivateByTag:  function() { queueMessage({ type: 'deactivateByTag', args: arguments }); },
 };
 
 /* == Duck punching =====  ====================== */
@@ -234,7 +234,7 @@ export default class Modal extends React.Component {
     if (typeof options === 'string') {
       options = {
         body: options,
-      }
+      };
     }
     this.show(options);
   };
@@ -253,7 +253,7 @@ export default class Modal extends React.Component {
     if (typeof options === 'string') {
       options = {
         body: options,
-      }
+      };
     }
 
     if (callback) {
@@ -356,7 +356,7 @@ export default class Modal extends React.Component {
     if (typeof options === 'string') {
       options = {
         body: options,
-      }
+      };
     }
 
     if (callback) {
@@ -409,7 +409,7 @@ export default class Modal extends React.Component {
             }/>
           </div>
         ),
-      }
+      };
     }
 
     if (callback) {
@@ -452,7 +452,7 @@ export default class Modal extends React.Component {
 
   getAnimation = (reverse = false) => {
     if (this.state.isVisible) {
-      return 'fadeIn'
+      return 'fadeIn';
     } else {
       return 'fadeOut';
     }

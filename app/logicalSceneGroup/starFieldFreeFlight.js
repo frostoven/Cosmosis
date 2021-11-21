@@ -9,7 +9,6 @@ const { camController, ActionType } = contextualInput;
 let starFieldScene = null;
 
 const freeCam = new FreeCam();
-freeCam.init();
 
 function onControlChange({ next, previous }) {
   if (next === freeCam.modeName) {
@@ -19,6 +18,7 @@ function onControlChange({ next, previous }) {
 
 const starFieldFreeFlight = new LogicalSceneGroup({
   activate: ({ camera, renderer, callback=()=>{} }={ callback: ()=>{} }) => {
+    freeCam.registerKeyListeners();
     camController.onControlChange(onControlChange);
     renderer.autoClear = true;
     const gl = renderer.context;

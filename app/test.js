@@ -13,8 +13,8 @@ export default function powerOnSelfTest() {
   console.log('--- ✄ integration tests start --------------------');
 
   let testCount = 0;
-  let testsPassed = 0
-  let testsFailed = 0
+  let testsPassed = 0;
+  let testsFailed = 0;
 
   const start = Date.now();
   for (const target of allTargets) {

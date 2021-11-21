@@ -102,7 +102,7 @@ AssetFinder.prototype.getRes = function getRes(name, options={}, callback) {
       console.error('forEachFn onReachEnd error:', error);
     }
     else {
-      let errorMessage = `No '${dir}' files found matching name: '${name}'.`
+      let errorMessage = `No '${dir}' files found matching name: '${name}'.`;
       if (placeholder) {
         if (!silenceNotFoundErrors) {
           errorMessage += ` Will instead try default placeholder '${placeholder}'.`;
