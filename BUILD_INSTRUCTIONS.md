@@ -104,7 +104,7 @@ npm installed. See 'Development' above for more details.
 * Your builds directory should now have these files / directories:
     * `Cosmosis`
     * `nwjs-sdk-v0.55.0-win-x64`
-    * `Stand-Alone.Production.Assets`
+    * `prodHqAssets`
     * `nwjs-sdk-v0.55.0-win-x64.zip`
     * `Stand-Alone.Production.Assets.zip`
         * _Note: you may delete the zip files if no longer needed._
