@@ -34,6 +34,10 @@ function ShipPilot(options={}) {
   this.initNavigationValues();
   this.setControlActions();
 
+  startupEmitter.on(startupEvent.playerShipLoaded, () => {
+    this.onShipLoaded(this.playerShip);
+  });
+
   // Apply any overrides specified.
   for (const property in options) {
     if (options.hasOwnProperty(property)) {
@@ -148,7 +152,7 @@ ShipPilot.prototype.setControlActions = function setControlActions() {
   };
 };
 
-ShipPilot.prototype.init = function initShipPilot() {
+ShipPilot.prototype.registerKeyListeners = function registerKeyListeners() {
   // Key down actions.
   camController.onActions({
     actionType: ActionType.keyUp | ActionType.keyDown,
@@ -173,10 +177,6 @@ ShipPilot.prototype.init = function initShipPilot() {
     actionNames: [ 'pitchUp', 'pitchDown', 'yawLeft', 'yawRight' ],
     modeName: shipPilotMode,
     callback: (args) => this.onAnalogInput(args),
-  });
-
-  startupEmitter.on(startupEvent.playerShipLoaded, () => {
-    this.onShipLoaded(this.playerShip);
   });
 };
 
