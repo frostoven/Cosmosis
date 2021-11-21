@@ -39,9 +39,6 @@ let fixedVersionItems = [];
 let commands = [];
 let entries = Object.entries(devDependencies);
 for (let i = 0, len = entries.length; i < len; i++) {
-
-  if (i===1) break;
-
   const [ pkg, version ] = entries[i];
 
   if (skipPkg[pkg]) {
@@ -74,7 +71,6 @@ console.log('Will now attempt to update packages.');
 console.log('');
 for (let i = 0, len = commands.length; i < len; i++) {
   const command = commands[i];
-
   console.log('Running:', command);
   child_process.execSync(command, { stdio: [ 0, 1, 2 ] });
   console.log('');
