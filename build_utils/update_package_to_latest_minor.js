@@ -78,5 +78,13 @@ for (let i = 0, len = commands.length; i < len; i++) {
 
 console.log('');
 console.log('All done. Please check above output for errors.');
+console.log('');
+console.log('Next steps:');
+console.log('* Test that code building and hot reloading works.');
+console.log('* Test menus.');
+console.log('* Test scene switching.');
+console.log('* Test all cam modes.');
+console.log('');
 console.log('Please remove the "^" from the following package.json entries:');
 console.log(fixedVersionItems);
+console.log('');
