@@ -64,7 +64,7 @@ function init() {
   AssetFinder.getStarCatalog({
     name: 'bsc5p_3d_min',
     options: {
-      silenceErrors: true,
+      silenceNotFoundErrors: true,
     },
     callback: (error, fileName, parentDir) => {
       if (error) {
