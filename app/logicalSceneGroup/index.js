@@ -82,7 +82,7 @@ function activateSceneGroup({ logicalSceneGroup, renderer, camera, callback }) {
     return;
   }
   if (activeGroup) {
-    activeGroup.deactivate();
+    activeGroup.deactivate({ renderer, camera });
   }
   activeGroup = logicalSceneGroup;
   activeGroup.activate({ renderer, camera, callback });

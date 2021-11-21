@@ -15,7 +15,7 @@ const { camController, ActionType } = contextualInput;
 const startupEmitter = getStartupEmitter();
 const gameFont = 'node_modules/three/examples/fonts/helvetiker_regular.typeface.json';
 
-let sceneLoaded = false;
+let initAlreadyDone = false;
 let spaceScene = null;
 let levelScene = null;
 let spaceWorld = null;
@@ -24,6 +24,8 @@ let playerWarpBubble = null;
 // If false, no shipPilot or freeCam processing will take place. This is
 // usually set to true after completely loading.
 let enableStep = false;
+
+let lastActiveCamData = null;
 
 // TODO:
 //  Remember to recreate space world (physics).
@@ -49,10 +51,18 @@ const space = new LogicalSceneGroup({
     camController.onControlChange(onControlChange);
     camController.giveControlTo('shipPilot');
 
-    if (sceneLoaded) {
+    if (initAlreadyDone) {
       levelScene.add(camera);
+      if (lastActiveCamData) {
+        // TODO: this does not entirely fix the camera; it only partially fixes
+        //  it (rotation is a tad off). Investigate a fix.
+        camera.position.copy(lastActiveCamData.position);
+        camera.rotation.copy(lastActiveCamData.rotation);
+        lastActiveCamData = null;
+      }
       return callback();
     }
+    initAlreadyDone = true;
 
     const fontLoader = new THREE.FontLoader();
 
@@ -109,6 +119,10 @@ const space = new LogicalSceneGroup({
     });
   },
   deactivate: () => {
+    lastActiveCamData = {
+      position: $game.camera.position,
+      rotation: $game.camera.rotation,
+    }
     camController.removeControlListener(onControlChange);
   },
   render: ({ renderer, camera }) => {
