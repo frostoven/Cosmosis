@@ -55,8 +55,12 @@ const keySchema = {
     'left',
     'right',
     'delete',
+    'search',
     'manageMacros',
     'advanced',
+    // Goes straight back to the game, regardless of how deeply nested the menu
+    // is. It then attempts to lock the cursor.
+    'emergencyMenuClose',
   ],
   shipPilot: [
     'thrustInc',

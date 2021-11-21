@@ -1,9 +1,11 @@
 import allProfiles from './allProfiles';
 import controls from './controls';
+import debugTools from './debugTools';
 
 const all = {
   allProfiles,
   controls,
+  debugTools,
 };
 
 function getAllDefaults({ asArray=false }={}) {

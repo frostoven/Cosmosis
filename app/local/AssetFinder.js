@@ -38,16 +38,20 @@ const assetDefaults = {
     dir: 'sfx',
     extensions: [ 'mp3', 'ogg' ],
   },
-  skyboxes: {
-    dir: 'skyboxes',
-    extensions: [ 'jpg', 'png', 'gif' ],
-  },
+  // skyboxes: {
+  //   dir: 'skyboxes',
+  //   extensions: [ 'jpg', 'png', 'gif' ],
+  // },
   spaceShips: {
     dir: 'spaceShips',
     extensions: [ 'gltf', 'glb' ],
     // Helps to make things 'just work' in dev builds, although doing this
     // should always generate an error indicating that assets are missing.
     placeholder: 'DS69F',
+  },
+  starCatalogs: {
+    dir: 'starCatalogs',
+    extensions: [ 'json' ],
   },
   voicePacks: {
     dir: 'voicePacks',
@@ -64,7 +68,7 @@ function getCache(dir, name) {
 function AssetFinder() {}
 
 AssetFinder.prototype.getRes = function getRes(name, options={}, callback) {
-  const { dir, extensions, placeholder } = options;
+  const { dir, extensions, placeholder, silenceNotFoundErrors } = options;
 
   const cache = getCache(dir, name);
   if (cache) {
@@ -74,69 +78,82 @@ AssetFinder.prototype.getRes = function getRes(name, options={}, callback) {
 
   const dev = `${devPath}/${dir}`;
   const prod = `${prodPath}/${dir}`;
+  let totalChecks = 0;
 
   // Look for resource in HQ dir. If not found, look in potato.
   forEachFn([
     (cb) => fuzzyFindFile({ name, extensions, path: prod, onFind: cb }),
     (cb) => fuzzyFindFile({ name, extensions, path: dev, onFind: cb }),
   ], (error, fileName, parentDir) => {
+    totalChecks++;
     if (!error) {
       // Return first file name found: this will be prod if exists, else dev.
       callback(error, fileName, parentDir);
       // Signal that we can stop looking.
       return false;
     }
+    else if (totalChecks === 2) {
+      // We only do two checks: prod, and dev. If we're at count 2 and it's an
+      // error, then nothing was found.
+      callback({ error: 'ENOENT' });
+    }
   }, (error) => {
     if (error) {
-      console.error('forEachFn onReachEnd error:', error)
+      console.error('forEachFn onReachEnd error:', error);
     }
     else {
       let errorMessage = `No '${dir}' files found matching name: '${name}'.`
       if (placeholder) {
-        errorMessage += ` Will instead try default placeholder '${placeholder}'.`;
-        console.error(errorMessage);
+        if (!silenceNotFoundErrors) {
+          errorMessage += ` Will instead try default placeholder '${placeholder}'.`;
+          console.error(errorMessage);
+        }
         // Try once more with the default placeholder. Null it out to prevent
         // further attempts if it fails.
         const retryOpts = { ...options, placeholder: null };
         this.getRes(placeholder, retryOpts, callback);
       }
-      else {
+      else if (!silenceNotFoundErrors) {
         console.error(errorMessage);
       }
     }
   });
 };
 
-AssetFinder.prototype.getIcon = function getIcon(name, callback=()=>{}) {
-  this.getRes(name, assetDefaults.icons, callback);
+AssetFinder.prototype.getIcon = function getIcon({ name, options={}, callback=()=>{} }) {
+  this.getRes(name, { ...assetDefaults.icons, ...options }, callback);
 };
 
-AssetFinder.prototype.getModel = function getModel(name, callback=()=>{}) {
-  this.getRes(name, assetDefaults.models, callback);
+AssetFinder.prototype.getModel = function getModel({ name, options={}, callback=()=>{} }) {
+  this.getRes(name, { ...assetDefaults.models, ...options }, callback);
 };
 
-AssetFinder.prototype.getMusic = function getMusic(name, callback=()=>{}) {
-  this.getRes(name, assetDefaults.music, callback);
+AssetFinder.prototype.getMusic = function getMusic({ name, options={}, callback=()=>{} }) {
+  this.getRes(name, { ...assetDefaults.music, ...options }, callback);
 };
 
-AssetFinder.prototype.getPlanetImg = function getPlanetImg(name, callback=()=>{}) {
-  this.getRes(name, assetDefaults.planetImg, callback);
+AssetFinder.prototype.getPlanetImg = function getPlanetImg({ name, options={}, callback=()=>{} }) {
+  this.getRes(name, { ...assetDefaults.planetImg, ...options }, callback);
 };
 
-AssetFinder.prototype.getSfx = function getSfx(name, callback=()=>{}) {
-  this.getRes(name, assetDefaults.sfx, callback);
+AssetFinder.prototype.getSfx = function getSfx({ name, options={}, callback=()=>{} }) {
+  this.getRes(name, { ...assetDefaults.sfx, ...options }, callback);
 };
 
-AssetFinder.prototype.getSkybox = function getSkybox(name, callback=()=>{}) {
-  this.getRes(name, assetDefaults.skyboxes, callback);
+// AssetFinder.prototype.getSkybox = function getSkybox({ name, options={}, callback=()=>{} }) {
+//   this.getRes(name, { ...assetDefaults.skyboxes, ...options }, callback);
+// };
+
+AssetFinder.prototype.getSpaceShip = function getSpaceShip({ name, options={}, callback=()=>{} }) {
+  this.getRes(name, { ...assetDefaults.spaceShips, ...options }, callback);
 };
 
-AssetFinder.prototype.getSpaceShip = function getSpaceShip(name, callback=()=>{}) {
-  this.getRes(name, assetDefaults.spaceShips, callback);
+AssetFinder.prototype.getStarCatalog = function getStarCatalog({ name, options={}, callback=()=>{} }) {
+  this.getRes(name, { ...assetDefaults.starCatalogs, ...options }, callback);
 };
 
-AssetFinder.prototype.getVoiceFile = function getVoiceFile(name, callback=()=>{}) {
-  this.getRes(name, assetDefaults.voicePacks, callback);
+AssetFinder.prototype.getVoiceFile = function getVoiceFile({ name, options={}, callback=()=>{} }) {
+  this.getRes(name, { ...assetDefaults.voicePacks, ...options }, callback);
 };
 
 const finder = new AssetFinder();

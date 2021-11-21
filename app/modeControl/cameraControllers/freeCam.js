@@ -12,19 +12,40 @@ const freeCamMode = camController.enroll('freeCam');
 
 const startupEmitter = getStartupEmitter();
 
-// const mode = core.modes.freeCam;
-// const camControls = controls.freeCam;
-let speedTimer = null;
-
-let velocity = new THREE.Vector3();
-let direction = new THREE.Vector3();
-let speed = 10 / 14.388; // 10KM/h
-// let speed = 120 / 14.388; // 120KM/h
-// let speed = 25e6 / 14.388;
+const SPEED_UNIT = 14.388;
 
 let controllerActive = false;
 
-const ctrl = {
+function FreeCam(options={}) {
+  this.modeName = freeCamMode;
+  this.setDefaultValues();
+  this.initNavigationValues();
+  this.setControlActions();
+
+  // Apply any overrides specified.
+  for (const property in options) {
+    if (options.hasOwnProperty(property)) {
+      this[property] = options[property];
+      // ^^ Example of what this looks like to the computer:
+      //      this['something'] = options['something'];
+    }
+  }
+}
+
+FreeCam.prototype.setDefaultValues = function setDefaultValues() {
+  this.velocity = new THREE.Vector3();
+  this.direction = new THREE.Vector3();
+  // The cam free-flight speed. You can calculate this speed in km/h using the
+  // formula "desired_speed / SPEED_UNIT". So, 120km/h would be
+  // "speed = 120 / SPEED_UNIT". Default speed is 10km/h. Also see methods
+  // getSpeedKmh and setSpeedKmh, which manage these details for you.
+  this.speed = 10 / SPEED_UNIT; // 10KM/h
+  // TODO: This really needs a better solution. It will become a problem soon.
+  this.speedTimer = null;
+}
+
+FreeCam.prototype.initNavigationValues = function initNavigationValues() {
+  this.ctrl = {
     moveForward: false,
     moveBackward: false,
     moveLeft: false,
@@ -42,126 +63,146 @@ const ctrl = {
     speedUp: false,
     speedDown: false,
     doubleSpeed: false,
+  };
 }
 
-const toggles = {
+FreeCam.prototype.setControlActions = function initNavigationValues() {
+  this.toggles = {
     interact: () => $game.level.useNext(),
+  };
+}
+
+FreeCam.prototype.init = function init() {
+
+  // Key down actions.
+  camController.onActions({
+    actionType: ActionType.keyUp | ActionType.keyDown,
+    actionNames: Object.keys(this.ctrl), // all controls handled by freeCam
+    modeName: freeCamMode,
+    callback: (args) => this.onKeyUpOrDown(args),
+  });
+
+  // Key press actions.
+  camController.onActions({
+    actionType: ActionType.keyPress,
+    actionNames: Object.keys(this.toggles), // all presses handled by freeCam
+    modeName: freeCamMode,
+    callback: (args) => this.onKeyPress(args),
+  });
+
+  // Analog actions.
+  camController.onActions({
+    actionType: ActionType.analogMove,
+    actionNames: [ 'pitchUp', 'pitchDown', 'yawLeft', 'yawRight' ],
+    modeName: freeCamMode,
+    callback: (args) => this.onAnalogInput(args),
+  });
+}
+
+FreeCam.prototype.onControlChange = function freeCamControlChange({ next, previous }) {
+  // Only render if mode is freeCam.
+  if (next === freeCamMode) {
+    console.log('-> mode changed to', freeCamMode);
+    controllerActive = true;
+    // Set game lock only when the game is ready.
+    startupEmitter.on(startupEvent.gameViewReady, () => {
+      $game.ptrLockControls.setLockMode(lockModes.freeLook);
+      AssetLoader.disableCrosshairs();
+    });
+    this.speedTimer = speedTracker.trackCameraSpeed();
+  }
+  else if (previous === freeCamMode && this.speedTimer) {
+    controllerActive = false;
+    speedTracker.clearSpeedTracker(this.speedTimer);
+  }
 };
 
-function init() {
-    core.registerRenderHook({ name: 'freeCam', render });
+FreeCam.prototype.onKeyPress = function onKeyPress({ action }) {
+  // console.log('[freeCam 1] key press:', action);
+  // Ex. 'toggleMouseSteering' or 'toggleMousePointer' etc.
+  const toggleFn = this.toggles[action];
+  if (toggleFn) {
+    toggleFn();
+  }
+};
 
-    // Key down actions.
-    camController.onActions({
-        actionType: ActionType.keyUp | ActionType.keyDown,
-        actionNames: Object.keys(ctrl), // all controls handled by freeCam
-        modeName: freeCamMode,
-        callback: onKeyUpOrDown,
-    });
+FreeCam.prototype.onKeyUpOrDown = function onKeyUpOrDown({ action, isDown }) {
+  // console.log('[freeCam 2] key:', action, '->', isDown ? '(down)' : '(up)');
+  this.ctrl[action] = isDown;
+};
 
-    // Key press actions.
-    camController.onActions({
-        actionType: ActionType.keyPress,
-        actionNames: Object.keys(toggles), // all presses handled by freeCam
-        modeName: freeCamMode,
-        callback: onKeyPress,
-    });
+FreeCam.prototype.onAnalogInput = function onAnalogInput({ analogData }) {
+  const mouse = core.userMouseSpeed(analogData.x.delta, analogData.y.delta);
+  $game.ptrLockControls.onMouseMove(mouse.x, mouse.y);
+};
 
-    // Analog actions.
-    camController.onActions({
-        actionType: ActionType.analogMove,
-        actionNames: [ 'pitchUp', 'pitchDown', 'yawLeft', 'yawRight' ],
-        modeName: freeCamMode,
-        callback: onAnalogInput,
-    });
+/**
+ * Returns current free-flight cam in km/h.
+ * @returns {number}
+ */
+FreeCam.prototype.getSpeedKmh = function setSpeedKm() {
+  return this.speed * SPEED_UNIT;
+};
 
-    camController.onControlChange(({ next, previous }) => {
-        // Only render if mode is freeCam.
-        if (next === freeCamMode) {
-            console.log('-> mode changed to', freeCamMode);
-            controllerActive = true;
-            // Set game lock only when the game is ready.
-            startupEmitter.on(startupEvent.gameViewReady, () => {
-                $game.ptrLockControls.setLockMode(lockModes.freeLook);
-                AssetLoader.disableCrosshairs();
-            });
-            speedTimer = speedTracker.trackCameraSpeed();
-        }
-        else if (previous === freeCamMode && speedTimer) {
-            controllerActive = false;
-            speedTracker.clearSpeedTracker(speedTimer);
-        }
-    });
-}
+/**
+ * Sets current free-flight cam in km/h.
+ * @returns {number}
+ */
+FreeCam.prototype.setSpeedKmh = function setSpeedKm(speed) {
+  this.speed = speed / SPEED_UNIT;
+};
 
+FreeCam.prototype.step = function step({ delta }) {
+  if (!controllerActive) {
+    // This is an optimisation: all the below math is pointless if this
+    // controller is not active. Removing this check, functionally, produces
+    // the same result, but lowers performance.
+    return;
+  }
 
-function onKeyPress({ action }) {
-    // console.log('[freeCam 1] key press:', action);
-    // Ex. 'toggleMouseSteering' or 'toggleMousePointer' etc.
-    const toggleFn = toggles[action];
-    if (toggleFn) {
-        toggleFn();
+  const { camera, renderer } = $game;
+
+  if (this.ctrl.speedUp) {
+    this.speed += (delta * 200) + (this.speed * 0.01);
+  }
+  else if (this.ctrl.speedDown) {
+    this.speed -= (delta * 200) + (this.speed * 0.01);
+    if (this.speed < 0) {
+      this.speed = 0;
     }
+  }
+  const effSpeed = this.speed * (this.ctrl.doubleSpeed ? 2 : 1);
+
+  // The rest of this function is for keyboard controls. Note that the mouse
+  // is not handled in this function.
+
+  this.velocity.x -= this.velocity.x * 10 * delta;
+  this.velocity.z -= this.velocity.z * 10 * delta;
+  this.velocity.y -= this.velocity.y * 10 * delta;
+
+  this.direction.z = Number(this.ctrl.moveForward) - Number(this.ctrl.moveBackward);
+  this.direction.x = Number(this.ctrl.moveRight) - Number(this.ctrl.moveLeft);
+  this.direction.y = Number(this.ctrl.moveDown) - Number(this.ctrl.moveUp);
+  // This ensures consistent movements in all directions.
+  this.direction.normalize();
+
+  if (this.ctrl.moveForward || this.ctrl.moveBackward) this.velocity.z -= this.direction.z * effSpeed * 40.0 * delta;
+  if (this.ctrl.moveLeft || this.ctrl.moveRight) this.velocity.x -= this.direction.x * effSpeed * 40.0 * delta;
+  if (this.ctrl.moveUp || this.ctrl.moveDown) this.velocity.y -= this.direction.y * effSpeed * 40.0 * delta;
+
+  camera.translateX(-this.velocity.x * delta);
+  camera.translateY(this.velocity.y * delta);
+  camera.translateZ(this.velocity.z * delta);
+
+  if (this.ctrl.turnLeft) camera.rotateY(+delta * 1.5);
+  if (this.ctrl.turnRight) camera.rotateY(-delta * 1.5);
+  if (this.ctrl.lookUp) camera.rotateX(+delta * 1.5);
+  if (this.ctrl.lookDown) camera.rotateX(-delta * 1.5);
+  if (this.ctrl.spinLeft) camera.rotateZ(+delta * 1.5);
+  if (this.ctrl.spinRight) camera.rotateZ(-delta * 1.5);
 }
 
-function onKeyUpOrDown({ action, isDown }) {
-    // console.log('[freeCam 2] key:', action, '->', isDown ? '(down)' : '(up)');
-    ctrl[action] = isDown;
+export {
+  FreeCam,
+  SPEED_UNIT,
 }
-
-function onAnalogInput({ analogData }) {
-    const mouse = core.userMouseSpeed(analogData.x.delta, analogData.y.delta);
-    $game.ptrLockControls.onMouseMove(mouse.x, mouse.y);
-}
-
-function render(delta) {
-    if (!controllerActive) {
-        return;
-    }
-
-    const { scene, camera, renderer } = $game;
-
-    if (ctrl.speedUp) {
-        speed += (delta * 200) + (speed * 0.01);
-    }
-    else if (ctrl.speedDown) {
-        speed -= (delta * 200) + (speed * 0.01);
-        if (speed < 0) {
-            speed = 0;
-        }
-    }
-    const effSpeed = speed * (ctrl.doubleSpeed ? 2 : 1);
-
-    // The rest of this function is for keyboard controls. Note that the mouse
-    // is not handled in this function.
-
-    velocity.x -= velocity.x * 10 * delta;
-    velocity.z -= velocity.z * 10 * delta;
-    velocity.y -= velocity.y * 10 * delta;
-
-    direction.z = Number(ctrl.moveForward) - Number(ctrl.moveBackward);
-    direction.x = Number(ctrl.moveRight) - Number(ctrl.moveLeft);
-    direction.y = Number(ctrl.moveDown) - Number(ctrl.moveUp);
-    // This ensures consistent movements in all directions.
-    direction.normalize();
-
-    if (ctrl.moveForward || ctrl.moveBackward) velocity.z -= direction.z * effSpeed * 40.0 * delta;
-    if (ctrl.moveLeft || ctrl.moveRight) velocity.x -= direction.x * effSpeed * 40.0 * delta;
-    if (ctrl.moveUp || ctrl.moveDown) velocity.y -= direction.y * effSpeed * 40.0 * delta;
-
-    camera.translateX(-velocity.x * delta);
-    camera.translateY(velocity.y * delta);
-    camera.translateZ(velocity.z * delta);
-
-    if (ctrl.turnLeft) camera.rotateY( +delta * 1.5);
-    if (ctrl.turnRight) camera.rotateY( -delta * 1.5);
-    if (ctrl.lookUp) camera.rotateX( +delta * 1.5);
-    if (ctrl.lookDown) camera.rotateX(-delta * 1.5);
-    if (ctrl.spinLeft) camera.rotateZ(+delta * 1.5);
-    if (ctrl.spinRight) camera.rotateZ( -delta * 1.5);
-}
-
-export default {
-    init,
-}
-

@@ -31,6 +31,7 @@ export const preBootPlaceholder = {
   alert: function() { queueMessage({ type: 'alert', args: arguments }) },
   confirm: function() { queueMessage({ type: 'confirm', args: arguments }) },
   prompt:  function() { queueMessage({ type: 'prompt', args: arguments }) },
+  listPrompt:  function() { queueMessage({ type: 'listPrompt', args: arguments }) },
   buttonPrompt:  function() { queueMessage({ type: 'buttonPrompt', args: arguments }) },
   deactivateByTag:  function() { queueMessage({ type: 'deactivateByTag', args: arguments }) },
 };
@@ -283,12 +284,61 @@ export default class Modal extends React.Component {
     this.show(options);
   };
 
-  // TODO: create listPrompt
   /**
    * Asks a question and offers the user with a list of options to select from.
+   * Intended to be used in place of dropdowns, which in their standard form
+   * are somewhat difficult to get right in a video game context if not using
+   * the mouse.
+   * @param {object} options
+   * @param {string|JSX.Element} options.header
+   * @param {[{text: string, value: any}]} options.list
+   * @param {undefined|JSX.Element} options.actions
+   * @param {undefined|Array} options.buttons - Additional buttons. Simply pass a string array.
+   * @param {undefined|function} options.callback
    */
-  listPrompt = () => {
-    //
+  listPrompt = (options={}) => {
+    if (!options.callback) {
+      options.callback = () => console.warn('No callbacks passed to listPrompt.');
+    }
+
+    if (!options.actions) {
+      options.actions = <div>&nbsp;</div>;
+    }
+
+    if (!options.list) {
+      options.list = [{ text: 'Default', value: 0 }];
+    }
+
+    const btnProps = {
+      selectable: true,
+      block: true,
+      wide: true,
+      autoScroll: true,
+    };
+
+    options.body = (
+      <>
+        <MenuNavigation
+          {...this.props}
+          identifier={thisMenu}
+          onUnhandledInput={this.handleInput}
+        >
+          {
+            options.list.map(item =>
+              <Button key={`listPrompt-${item.text}`} {...btnProps} selectable onClick={() => {
+                this.deactivateModal();
+                options.callback(item);
+              }}
+              >
+                {item.text}
+              </Button>
+            )
+          }
+        </MenuNavigation>
+      </>
+    );
+
+    this.show(options);
   };
 
   /**
@@ -314,7 +364,7 @@ export default class Modal extends React.Component {
     }
 
     if (!options.callback) {
-      options.callback = () => console.warn('No callbacks passed to confirm.');
+      options.callback = () => console.warn('No callbacks passed to buttonPrompt.');
     }
 
     if (!options.actions) options.actions = (

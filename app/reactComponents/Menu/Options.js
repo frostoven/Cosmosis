@@ -1,5 +1,5 @@
 import React from 'react';
-import { capitaliseEachWord } from '../../local/utils';
+import { capitaliseFirst } from '../../local/utils';
 import Button from '../elements/KosmButton';
 import MenuNavigation from '../elements/MenuNavigation';
 import { defaultMenuProps, defaultMenuPropTypes } from './defaults';
@@ -87,7 +87,7 @@ export default class Options extends React.Component {
       <div className={`primary-menu ${animation}`}>
         <div className='game-menu vertical-center horizontal-center'>
           <MenuNavigation {...inputProps}>
-            <h1>{capitaliseEachWord(thisMenu)}</h1>
+            <h1>{capitaliseFirst(thisMenu)}</h1>
             <Button {...btnProps} onClick={changeMenuFn('controls')}>Controls</Button>
             <Button {...btnProps} invalid onClick={changeMenuFn('graphics')}>Graphics</Button>
             <Button {...btnProps} invalid onClick={changeMenuFn('audio')}>Audio</Button>

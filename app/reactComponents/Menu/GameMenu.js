@@ -94,6 +94,8 @@ export default class GameMenu extends React.Component {
     switch (action) {
       case 'back':
         return this.handleBack();
+      case 'emergencyMenuClose':
+        return this.handleEmergencyMenuClose();
       case 'up':
       case 'down':
       case 'left':
@@ -111,6 +113,10 @@ export default class GameMenu extends React.Component {
     else {
       this.showMenu();
     }
+  };
+
+  handleEmergencyMenuClose = () => {
+    this.resume();
   };
 
   handleSelect = () => {
@@ -148,9 +154,8 @@ export default class GameMenu extends React.Component {
         body: 'Are you sure you want to exit?',
         callback: (jumpOffACliffAndDie) => {
           if (jumpOffACliffAndDie) {
-            // Exit full screen if open, because it can sometimes hang exiting.
             nw.Window.get().leaveFullscreen();
-            process.exit();
+            require('nw.gui').App.closeAllWindows();
           }
         }
       });

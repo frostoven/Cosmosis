@@ -17,6 +17,9 @@ import * as CANNON from 'cannon';
 import { Vector3 } from 'three';
 import { startupEvent, getStartupEmitter } from './emitters';
 import modeControl from './modeControl';
+import userProfile from './userProfile';
+import { discoverShaders } from '../shaders';
+import { logicalSceneGroup } from './logicalSceneGroup';
 
 const startupEmitter = getStartupEmitter();
 
@@ -28,7 +31,7 @@ window.debug.CANNON = CANNON;
 window.debug.api = api;
 
 // const defaultScene = 'logDepthDemo';
-const defaultScene = 'localCluster';
+const defaultScene = logicalSceneGroup.space;
 
 // Integration tests. Note that these will no longer run by itself. The user
 // manually runs these by opening the dev console and entering
@@ -66,14 +69,15 @@ if (process.env && process.env.NODE_ENV !== 'production') {
 
 console.groupCollapsed(`Pre-init (build number: ${packageJson.releaseNumber}).`);
 logBootInfo(`System boot v${packageJson.releaseNumber}`); // ▓
+discoverShaders();
 
 // Register all scenes.
-for (let scene of scenes) {
-  console.log('Registering scene', scene.name);
-  scene.register();
-}
+// for (let scene of scenes) {
+//   console.log('Registering scene', scene.name);
+//   scene.register();
+// }
 // Register all camera controllers.
-modeControl.initAll();
+// modeControl.initAll(); // bookm - check that disabling this does not break too many things
 
 console.groupEnd();
 
@@ -84,9 +88,9 @@ onDocumentReady(() => {
   );
 });
 
-onReadyToBoot(() => {
+function initCore() {
   // Glue it together, and start the rendering process.
-  core.init({ sceneName: defaultScene });
+  core.init({ defaultScene });
 
   startupEmitter.on(startupEvent.gameViewReady, () => {
     // For some god-awful reason or another the browser doesn't always detect
@@ -115,37 +119,21 @@ onReadyToBoot(() => {
     api.triggerAction('toggleMousePointer');
     api.triggerAction('engageHyperdrive');
 
-    // Next to moon, good place to test lighting.
-    // api.setPlayerShipLocation(new Vector3(-390249080, -2468483, 5996841));
-    // api.setPlayerShipRotation(new Vector3(2.5626, -1.2120, 2.6454));
+    // TODO: implement mechanism to always keep track of player ship location
+    //  and auto-save on occasion. This is not however a current priority and
+    //  should only be done once the player actually has systems to explore.
+    const { defaultShipPosition } = userProfile.getCurrentConfig({
+      identifier: 'debugTools'
+    });
 
-    // Directly facing the moon, another good place to test lighting.
-    api.setPlayerShipLocation(new Vector3(-381752594, -691327, 1417254));
-    api.setPlayerShipRotation(new Vector3(-2.5974, -0.9536, -2.5171));
+    api.setPlayerShipLocation(defaultShipPosition.location);
+    api.setPlayerShipRotation(defaultShipPosition.rotation);
+  });
+}
 
-    // Facing Earth with moon in view, back to sun.
-    // api.setPlayerShipLocation(new Vector3(26914792, -5727037, 5578466));
-    // api.setPlayerShipRotation(new Vector3(0.8734, 1.5370, 1.6702));
-
-    // Behind the Earth, shrouded in night. Used to make sure we're getting
-    // shadows.
-    // api.setPlayerShipLocation(new Vector3(-12715908, -3376086, 3944229));
-    // api.setPlayerShipRotation(new Vector3(2.3031, -1.1355, 0.7181));
-
-    // Close to moon, good place to test overexposure.
-    // api.setPlayerShipLocation(new Vector3(-384046753, 938728, -2120968));
-    // api.setPlayerShipRotation(new Vector3(0.2875, -0.0703, 0.0226));
-
-    // On Earth's surface at night, facing moon.
-    // api.setPlayerShipLocation(new Vector3(26914792, -5727037, 5578466));
-    // api.setPlayerShipRotation(new Vector3(0.8734, 1.5370, 1.6702));
-
-    // Behind Earth. Useful for testing shadow casting, atmospheric lensing, etc.
-    // api.setPlayerShipLocation(new Vector3(-27656524, 835865, -766508));
-    // api.setPlayerShipRotation(new Vector3(-0.1851, -1.5549, -0.0682));
-
-    // Next to that crazy fucking huge fireball.
-    // api.setPlayerShipLocation(new Vector3(150064242871, 485401441, -392001660));
-    // api.setPlayerShipRotation(new Vector3(-0.8526, -0.3184, -1.4681));
+onReadyToBoot(() => {
+  discoverShaders(() => {
+    logBootInfo('Process units ready');
+    initCore();
   });
 });

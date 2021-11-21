@@ -7,8 +7,8 @@
   "window": {
     "title": "Cosmosis",
     "toolbar": false,
-    "width": 1109,
-    "height": 624,
+    "width": 777,
+    "height": 588,
     "icon": "icon.png"
   },
   "chromium-args": "--enable-logging=stderr",
@@ -17,15 +17,15 @@
     "//": "prepare-dev is actually redundant, but it saves telling new users to reload nw after game.js first build.",
     "prepare-dev": "webpack --mode development",
     "dev": "webpack --mode development --watch",
-    "serve": "nw --enable-node-worker",
-    "start": "npm-run-all --parallel dev serve"
+    "game": "nw --enable-node-worker",
+    "start": "npm-run-all --parallel dev game"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/aggregate1166877/RSB3-NW"
+    "url": "https://github.com/feynmansbongos/Cosmosis"
   },
   "keywords": [
-    "SpaceJunkie"
+    "Cosmosis"
   ],
   "author": "aggregate1166877",
   "license": "All rights reserved",
@@ -48,7 +48,7 @@
     "file-loader": "1.1.10",
     "lodash": "^4.17.21",
     "npm-run-all": "4.1.2",
-    "nw": "0.53.0",
+    "nw": "0.55.0",
     "react": "16.13.1",
     "react-dom": "16.13.1",
     "semantic-ui-react": "^2.0.3",

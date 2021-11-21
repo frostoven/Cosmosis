@@ -1,5 +1,6 @@
 ## Copyright infringement
-**If your work has been unlawfully used in this project, please [raise an issue](https://github.com/aggregate1166877/Cosmosis/issues/new/choose)
+**If your work has been unlawfully used in this project, please
+[raise an issue](https://github.com/feynmansbongos/Cosmosis/issues/new/choose)
 and we'll remove it ASAP.** This project is maintained for free during
 contributors' spare time, so it may take us a few days to notice the complaint.
 However, rest assured copyright infringement is taken very seriously and your issue
@@ -83,14 +84,16 @@ The license file's name should match the asset name. For example, a mesh named
 If you have 10 spaceship meshes with the same name + a number and they share the
 same license, you may name the license file something like `spacehip{1..10}.license`
 or `spaceshipN.license` and then specify in the license file itself which files it
-covers. License files are not optional, and while contributions truly are very much
-appreciated, we cannot accept additions that lack license indications.
+covers. In case numbers aren't used, the `_ALL` suffix may be used; the license file
+then specifies the files covered. License files are not optional, and while
+contributions truly are very much appreciated, we cannot accept additions that lack
+license indications.
 
 If you're making an asset specially for this project and don't want to worry
 about legalities, feel free to simply put something like this in the license
 file:
 ```text
-This model is original work made for the SpaceJunkie project, and follows the
+This model is original work made for the Cosmosis project, and follows the
 same license.
 
 @author Your Name
@@ -107,7 +110,7 @@ described above.
 
 
 
-Please [raise an issue](https://github.com/aggregate1166877/SpaceJunkie/issues)
+Please [raise an issue](https://github.com/feynmansbongos/Cosmosis/issues/new/choose)
 before starting work. This game's art style has a very specific direction. Even
 if you create art much better than what's already in the project, it might
 simply be rejected on the basis that it does not match existing style. Once
@@ -133,11 +136,6 @@ setup.
 * Install git. On Windows, it will ask you how you'd like to handle CR/LF. You
 want any option that converts to Unix LF when committing; at time of writing
 the default option does exactly the right thing.
-** This project uses pre-commit hooks. The bash that comes with Windows git
-should be fine, though is currently untested by itself. If the build number
-does not increase after a commit, try installing
-[Cygwin](https://cygwin.com/install.html) (which is what the lead contributor
-currently uses).
 * Please consider testing your changes on both Windows and Linux. It isn't
 a strict requirement, but makes PRs to master easier for those who test the
 proposed changes because some small issues will already have been caught.
