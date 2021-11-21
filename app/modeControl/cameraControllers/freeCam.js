@@ -72,8 +72,7 @@ FreeCam.prototype.setControlActions = function initNavigationValues() {
   };
 };
 
-FreeCam.prototype.init = function init() {
-
+FreeCam.prototype.registerKeyListeners = function registerKeyListeners() {
   // Key down actions.
   camController.onActions({
     actionType: ActionType.keyUp | ActionType.keyDown,

@@ -37,9 +37,6 @@ const camControllers = {
 };
 const { shipPilot, freeCam } = camControllers;
 
-camControllers.shipPilot.init();
-camControllers.freeCam.init();
-
 function onControlChange({ next, previous }) {
   if (next === shipPilot.modeName || next === freeCam.modeName) {
     camControllers[next].onControlChange({ next, previous });
@@ -48,6 +45,9 @@ function onControlChange({ next, previous }) {
 
 const space = new LogicalSceneGroup({
   activate: ({ camera, callback=()=>{} }={ callback: ()=>{} }) => {
+    camControllers.shipPilot.registerKeyListeners();
+    camControllers.freeCam.registerKeyListeners();
+
     camController.onControlChange(onControlChange);
     camController.giveControlTo('shipPilot');
 
