@@ -97,15 +97,15 @@ npm installed. See 'Development' above for more details.
 * Do a git clone of the repo, example `git clone https://github.com/feynmansbongos/Cosmosis.git`
 * Download the Windows SDK version of NW.js matching the version written in
   [package.json](package.json). At the time of writing, this is
-  [NW.js version 0.53.0](https://nwjs.io/blog/v0.53.0/).
+  [NW.js version 0.55.0](https://nwjs.io/blog/v0.55.0/).
 * Extract the zip contents ([7-Zip](https://www.7-zip.org/download.html) recommended as Windows ZIP can corrupt files).
 * Download the latest `Stand-Alone Production Assets` zip from the [releases page](https://github.com/feynmansbongos/Cosmosis/releases),
   and extract it.
 * Your builds directory should now have these files / directories:
     * `Cosmosis`
-    * `nwjs-sdk-v0.53.0-win-x64`
+    * `nwjs-sdk-v0.55.0-win-x64`
     * `Stand-Alone.Production.Assets`
-    * `nwjs-sdk-v0.53.0-win-x64.zip`
+    * `nwjs-sdk-v0.55.0-win-x64.zip`
     * `Stand-Alone.Production.Assets.zip`
         * _Note: you may delete the zip files if no longer needed._
 * Back in your terminal, run `ls -1`. You should see the same files as above.
@@ -113,7 +113,7 @@ npm installed. See 'Development' above for more details.
   build script. It requires passing the NW.js download folder as its only argument.<br>
   Example:
 ```bash
-./Cosmosis/build_utils/create_windows_distributable.sh nwjs-sdk-v0.53.0-win-x64/nwjs-sdk-v0.53.0-win-x64
+./Cosmosis/build_utils/create_windows_distributable.sh nwjs-sdk-v0.55.0-win-x64/nwjs-sdk-v0.55.0-win-x64
 ```
 The build script will copy the NW.js and Cosmosis folders into a new folder
 named `Cosmosis-win-x64`. It will then install the needed build tools, build
