@@ -68,7 +68,7 @@ function getCache(dir, name) {
 function AssetFinder() {}
 
 AssetFinder.prototype.getRes = function getRes(name, options={}, callback) {
-  const { dir, extensions, placeholder } = options;
+  const { dir, extensions, placeholder, silenceNotFoundErrors } = options;
 
   const cache = getCache(dir, name);
   if (cache) {
@@ -99,19 +99,21 @@ AssetFinder.prototype.getRes = function getRes(name, options={}, callback) {
     }
   }, (error) => {
     if (error) {
-      console.error('forEachFn onReachEnd error:', error)
+      console.error('forEachFn onReachEnd error:', error);
     }
     else {
       let errorMessage = `No '${dir}' files found matching name: '${name}'.`
       if (placeholder) {
-        errorMessage += ` Will instead try default placeholder '${placeholder}'.`;
-        console.error(errorMessage);
+        if (!silenceNotFoundErrors) {
+          errorMessage += ` Will instead try default placeholder '${placeholder}'.`;
+          console.error(errorMessage);
+        }
         // Try once more with the default placeholder. Null it out to prevent
         // further attempts if it fails.
         const retryOpts = { ...options, placeholder: null };
         this.getRes(placeholder, retryOpts, callback);
       }
-      else {
+      else if (!silenceNotFoundErrors) {
         console.error(errorMessage);
       }
     }
