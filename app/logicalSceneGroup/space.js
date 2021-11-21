@@ -45,8 +45,8 @@ function onControlChange({ next, previous }) {
 
 const space = new LogicalSceneGroup({
   activate: ({ camera, callback=()=>{} }={ callback: ()=>{} }) => {
-    camControllers.shipPilot.registerKeyListeners();
-    camControllers.freeCam.registerKeyListeners();
+    camControllers.shipPilot.replaceKeyListeners();
+    camControllers.freeCam.replaceKeyListeners();
 
     camController.onControlChange(onControlChange);
     camController.giveControlTo('shipPilot');

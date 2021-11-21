@@ -326,13 +326,14 @@ ContextualInput.prototype.disenroll = function enrollChild(childId) {
 
 /**
  * Registers a listener for an action. Please not that every enrolled child is
- * allowed only one callback per action.
+ * allowed only one callback per action. That is, registering the same name
+ * again replaces the previous.
  * @param {string} actionName
  * @param {ActionType} actionType
  * @param {number} modeName
  * @param {function} callback
  */
-ContextualInput.prototype.onAction = function onModeAction(
+ContextualInput.prototype.replaceAction = function onModeAction(
   { actionName, actionType=ActionType.any, modeName, callback }
 ) {
   // Listener for controls.
@@ -343,17 +344,19 @@ ContextualInput.prototype.onAction = function onModeAction(
 };
 
 /**
- *
+ * Registers listeners for the specified actions. Please not that every
+ * enrolled child is allowed only one callback per action. That is, registering
+ * the same name again replaces the previous.
  * @param {string[]} actionNames
  * @param {ActionType} actionType
  * @param {number} modeName
  * @param {function} callback
  */
-ContextualInput.prototype.onActions = function onModeAction(
+ContextualInput.prototype.replaceActions = function onModeAction(
   { actionNames, actionType, modeName, callback }
 ) {
   for (let i = 0, len = actionNames.length; i < len; i++) {
-    this.onAction({ actionName: actionNames[i], actionType, modeName, callback });
+    this.replaceAction({ actionName: actionNames[i], actionType, modeName, callback });
   }
 };
 
