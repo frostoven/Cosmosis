@@ -10,7 +10,7 @@ let discoveryComplete = false;
 const term = {
   vert: 'vertexShader',
   frag: 'fragmentShader',
-}
+};
 
 // Counts the amount of shaders loaded. Calls 'onComplete' if loaded shader
 // count equals initial total count.

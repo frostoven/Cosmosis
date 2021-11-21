@@ -238,7 +238,7 @@ function init({ defaultScene }) {
   //   logBootInfo('Self-test pass');
   // });
 
-  $stats = new Stats();
+  window.$stats = new Stats();
   document.body.appendChild($stats.dom);
 
   // TODO: move to top of document?
@@ -536,7 +536,7 @@ function userMouseSpeed(x, y) {
   return {
     x: $options.mouseSpeed[0] * x,
     y: $options.mouseSpeed[1] * y,
-  }
+  };
 }
 
 export default {

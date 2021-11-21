@@ -201,7 +201,7 @@ export function createSpaceShip({ modelName, pos, scene, world, isPlayer, onRead
     loadModel(modelName, (gltf) => {
       processMeshCodes(modelName, gltf, isPlayer);
       modelPostSetup(modelName, gltf, pos, scene, world, onReady);
-    })
+    });
   });
 }
 

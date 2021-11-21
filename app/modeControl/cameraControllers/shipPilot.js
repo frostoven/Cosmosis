@@ -93,7 +93,7 @@ ShipPilot.prototype.setDefaultValues = function applyDefaultValues() {
   // gets exponentially higher as you get closer to a planet/star/whatever.
   this.ambientGravity = 1;
   this.maxThrottle = 100;
-}
+};
 
 ShipPilot.prototype.initNavigationValues = function initNavigationValues() {
   // Keeps track of buttons being pressed.
@@ -108,14 +108,14 @@ ShipPilot.prototype.initNavigationValues = function initNavigationValues() {
     lookDown: false,
     rollLeft: false,
     rollRight: false,
-  }
+  };
 
   this.steer = {
     // TODO: get the proper technical terms for this.
     upDown: 0,
     leftRight: 0,
   };
-}
+};
 
 ShipPilot.prototype.setControlActions = function setControlActions() {
   this.toggles = {
@@ -146,7 +146,7 @@ ShipPilot.prototype.setControlActions = function setControlActions() {
     debugFullWarpSpeed: () => { this.debugFullWarpSpeed = !this.debugFullWarpSpeed; },
     toggleFlightAssist: () => this.flightAssist = !this.flightAssist,
   };
-}
+};
 
 ShipPilot.prototype.init = function initShipPilot() {
   // Key down actions.
@@ -178,7 +178,7 @@ ShipPilot.prototype.init = function initShipPilot() {
   startupEmitter.on(startupEvent.playerShipLoaded, () => {
     this.onShipLoaded(this.playerShip);
   });
-}
+};
 
 ShipPilot.prototype.onControlChange = function shipPilotControlChange({ next, previous }) {
   if (next === shipPilotMode) {
@@ -217,7 +217,7 @@ ShipPilot.prototype.onShipLoaded = function onShipLoaded(mesh) {
   // rotation 90,0,0.
   vec.x += 1.5708; // 90 degrees
   $game.camera.rotation.setFromVector3(vec);
-}
+};
 
 // Snap camera to local frame of reference. Not really needed for ship pilot as we're doing this anyway.
 // Needed for walking around the ship in peace.
@@ -235,12 +235,12 @@ ShipPilot.prototype.onKeyPress = function onKeyPress({ action }) {
   if (toggleFn) {
     toggleFn();
   }
-}
+};
 
 ShipPilot.prototype.onKeyUpOrDown = function onKeyUpOrDown({ action, isDown }) {
   // console.log('[shipPilot 2] key:', action, '->', isDown ? '(down)' : '(up)');
   this.ctrl[action] = isDown;
-}
+};
 
 ShipPilot.prototype.onAnalogInput = function onAnalogInput({ action, analogData }) {
   const ptr = $game.ptrLockControls;
@@ -267,7 +267,7 @@ ShipPilot.prototype.onAnalogInput = function onAnalogInput({ action, analogData 
     const mouse = core.userMouseSpeed(deltaX, deltaY);
     $game.ptrLockControls.onMouseMove(mouse.x, mouse.y);
   }
-}
+};
 
 /**
  * Changes the throttle by the specified percentage.
@@ -276,7 +276,7 @@ ShipPilot.prototype.onAnalogInput = function onAnalogInput({ action, analogData 
  */
 ShipPilot.prototype.changeThrottle = function changeThrottle(delta, amount) {
   return (this.maxThrottle * amount) * (delta * 60);
-}
+};
 
 /**
  * Used to slow the throttle needle following the player's request.
@@ -290,7 +290,7 @@ ShipPilot.prototype.dampenTorque = function dampenTorque(delta, value, target, g
   else {
     return value - growthSpeed;
   }
-}
+};
 
 /**
  * Used to slow the throttle needle more as it approaches 100% engine power.
@@ -313,7 +313,7 @@ ShipPilot.prototype.dampenByFactor = function dampenByFactor(delta, value, targe
     return 0;
   }
   return result;
-}
+};
 
 /**
  * Blows meters per second into light years per second for fun and profit.
@@ -321,7 +321,7 @@ ShipPilot.prototype.dampenByFactor = function dampenByFactor(delta, value, targe
  */
 ShipPilot.prototype.scaleHyperSpeed = function scaleHyperSpeed(amount) {
   return Math.exp(amount / 10);
-}
+};
 
 /**
  * Function that eases into targets.
@@ -336,7 +336,7 @@ ShipPilot.prototype.easeIntoBuildup = function easeIntoBuildup(delta, buildup, r
   }
 
   return buildup * direction;
-}
+};
 
 ShipPilot.prototype.easeOutOfBuildup = function easeOutOfBuildup(delta, rollBuildup, easeFactor) {
   if (Math.abs(rollBuildup) < 0.0001) {
@@ -347,7 +347,7 @@ ShipPilot.prototype.easeOutOfBuildup = function easeOutOfBuildup(delta, rollBuil
   }
 
   return rollBuildup;
-}
+};
 
 ShipPilot.prototype.handleHyper = function handleHyper(delta) {
   if (this.steer.leftRight) {
@@ -430,7 +430,7 @@ ShipPilot.prototype.handleHyper = function handleHyper(delta) {
   this.spaceScene.position.addScaledVector(direction, -hyperSpeed);
   this.levelScene.position.addScaledVector(direction, -hyperSpeed);
   this.playerWarpBubble.position.addScaledVector(direction, hyperSpeed);
-}
+};
 
 // // TODO: move to math utils.
 // /** Returns the number, or 100 (sign preserved) if it's more than 100. */
@@ -452,7 +452,7 @@ ShipPilot.prototype.handleLocal = function handleLocal(delta) {
   // TODO: implement me.
   //  Note: this meant to be used within the context of 'local space' as
   //  apposed to 'warp space'. Need to investigate if this is still needed.
-}
+};
 
 ShipPilot.prototype.step = function step({ delta }) {
   // TODO: check if we ever need to uncomment this. If render turns out to
@@ -492,7 +492,7 @@ ShipPilot.prototype.step = function step({ delta }) {
     // TODO: PLEASE GIVE ME PHYSICS
     this.handleLocal(delta);
   }
-}
+};
 
 export {
   ShipPilot,

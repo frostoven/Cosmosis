@@ -143,7 +143,7 @@ CachedEmitter.prototype.emit = function CachedEmitterEmit(action) {
   for (let i = 0, len = foundCallbacks.length; i < len; i++) {
     foundCallbacks[i]();
   }
-}
+};
 
 /**
  * Removes a past action from the remembered cache. If this object does not use

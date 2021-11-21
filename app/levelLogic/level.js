@@ -44,7 +44,7 @@ Level.prototype.createAction = function createAction(clip, clipName) {
   this._animating[clipName] = action;
   // action.time = 2; // used make the object jump to a specific time frame.
   return action;
-}
+};
 
 // Starts an animation. If the animation has run before, reverses direction and
 // starts it again.
@@ -59,7 +59,7 @@ Level.prototype.triggerAnimation = function triggerAnimation(action) {
     action.timeScale = action.timeScale === 1 ? -1 : 1;
     action.paused = false;
   }
-}
+};
 
 /**
  * Does all level processing.
@@ -105,7 +105,7 @@ Level.prototype.process = function process(delta) {
     this._useNext = false;
   }
   this.runAnimations(delta);
-}
+};
 
 let stop = 0;
 Level.prototype.runAnimations = function runAnimations(delta) {
@@ -113,12 +113,12 @@ Level.prototype.runAnimations = function runAnimations(delta) {
   // if (stop++ === 60) {
   //   console.log('The illusive mixer:', this._mixer);
   // }
-}
+};
 
 Level.prototype.setNameMap = function setNameMap(map) {
   this.nameMap = map;
-}
+};
 
 Level.prototype.useNext = function useNext() {
   this._useNext = true;
-}
+};

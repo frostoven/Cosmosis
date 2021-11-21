@@ -34,7 +34,7 @@ let lastActiveCamData = null;
 const camControllers = {
   shipPilot: new ShipPilot(),
   freeCam: new FreeCam(),
-}
+};
 const { shipPilot, freeCam } = camControllers;
 
 camControllers.shipPilot.init();
@@ -122,7 +122,7 @@ const space = new LogicalSceneGroup({
     lastActiveCamData = {
       position: $game.camera.position,
       rotation: $game.camera.rotation,
-    }
+    };
     camController.removeControlListener(onControlChange);
   },
   render: ({ renderer, camera }) => {

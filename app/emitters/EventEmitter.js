@@ -28,7 +28,7 @@ if (typeof Array.prototype.indexOf === 'function') {
 
     return idx;
   };
-};
+}
 
 
 /* Polyfill EventEmitter. */

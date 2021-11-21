@@ -178,7 +178,7 @@ export default class Controls extends React.Component {
 
   getAnimation = () => {
     if (this.state.isVisible) {
-      return 'fadeIn'
+      return 'fadeIn';
     } else {
       return 'fadeOut';
     }
@@ -216,7 +216,7 @@ export default class Controls extends React.Component {
       onClose: ({ reboundAction }) => {
         this.reboundActions[reboundAction] = true;
         console.log('reboundAction:', reboundAction);
-        ContextualInput.relinquishFullExclusivity({ mode: modeName })
+        ContextualInput.relinquishFullExclusivity({ mode: modeName });
       },
     };
 
