@@ -100,11 +100,11 @@ npm installed. See 'Development' above for more details.
   [NW.js version 0.55.0](https://nwjs.io/blog/v0.55.0/).
 * Extract the zip contents ([7-Zip](https://www.7-zip.org/download.html) recommended as Windows ZIP can corrupt files).
 * Download the latest `Stand-Alone Production Assets` zip from the [releases page](https://github.com/feynmansbongos/Cosmosis/releases),
-  and extract it.
+  and extract it into a directory named `Stand-Alone.Production.Assets`. `Stand-Alone.Production.Assets` should contain `prodHqAssets`.
 * Your builds directory should now have these files / directories:
     * `Cosmosis`
     * `nwjs-sdk-v0.55.0-win-x64`
-    * `prodHqAssets`
+    * `Stand-Alone.Production.Assets`
     * `nwjs-sdk-v0.55.0-win-x64.zip`
     * `Stand-Alone.Production.Assets.zip`
         * _Note: you may delete the zip files if no longer needed._
