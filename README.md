@@ -50,15 +50,16 @@ Important note: this game allows complex menu interactions by allowing mouse
 pointer locking / unlocking. If you get stuck wanting to look around but
 instead you have only a mouse cursor, press `Left Ctrl` and you'll switch to
 mouse-look mode. If you rebind core controls and accidentally break the game,
-go to `%AppData%` (Windows) or 
+go to `%AppData%` (Windows) or `~/.local/share/` (Linux) and delete the
+directory named `CosmosisGame`, then restart the game.
 
 The latest beta can currently do the following:
 * Fly around at many thousand times the speed of light in a to-scale large
-  universe (millions if light-years across) with no glitches or lagging (even
-  on weak graphics cards). This is launched by default, and uses a space ship
+  universe (millions of light-years across) with no glitches or lag (even on
+  weak graphics cards). This mode is launched by default, and uses a spaceship
   with a warp drive and nothing else.
 * Fly around [real Earth-visible stars](https://github.com/feynmansbongos/BSC5P-JSON-XYZ)
-  as a ghost. You can activate this by pressing Backspace and going to
+  as a ghost. You can activate this mode by pressing Backspace and going to
   `debug tools` -> `Star free-flight`. Use `+` and `-` to change flight speed.
 
 <!--
