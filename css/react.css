@@ -138,7 +138,7 @@ border: none !important;
     background-color: red;
     bottom: 0;
     left: 0;
-    right: 8px; /* this gives the scrollbar space */
+    right: 16px; /* this gives the scrollbar space */
     padding: 5px;
     height: 28px;
 }
