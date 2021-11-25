@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { FontLoader } from 'three/examples/jsm/loaders/FontLoader';
 import LogicalSceneGroup from './LogicalSceneGroup';
 import levelLighting from '../lighting/levelLighting';
 import spaceLighting from '../lighting/spaceLighting';
@@ -45,8 +46,8 @@ function onControlChange({ next, previous }) {
 
 const space = new LogicalSceneGroup({
   activate: ({ camera, callback=()=>{} }={ callback: ()=>{} }) => {
-    camControllers.shipPilot.registerKeyListeners();
-    camControllers.freeCam.registerKeyListeners();
+    camControllers.shipPilot.replaceKeyListeners();
+    camControllers.freeCam.replaceKeyListeners();
 
     camController.onControlChange(onControlChange);
     camController.giveControlTo('shipPilot');
@@ -64,7 +65,7 @@ const space = new LogicalSceneGroup({
     }
     initAlreadyDone = true;
 
-    const fontLoader = new THREE.FontLoader();
+    const fontLoader = new FontLoader();
 
     fontLoader.load(gameFont, function (font) {
       spaceScene = localCluster.init({ font });

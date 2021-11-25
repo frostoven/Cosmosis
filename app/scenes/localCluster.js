@@ -2,6 +2,7 @@
 // Try to use some descriptive real-world examples of objects at each scale
 
 import * as THREE from 'three';
+import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
 
 import core from '../local/core';
 
@@ -67,7 +68,7 @@ function init({ font }) {
       emissiveIntensity: body.brightness ? body.brightness : 1,
     };
 
-    const labelGeo = new THREE.TextBufferGeometry(body.label, {
+    const labelGeo = new TextGeometry(body.label, {
       font: font,
       size: body.size,
       height: body.size / 2

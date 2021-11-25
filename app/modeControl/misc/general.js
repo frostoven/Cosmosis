@@ -30,7 +30,7 @@ const actions = {
 
 startupEmitter.on(startupEvent.gameViewReady, () => {
   // Key press actions.
-  misc.onActions({
+  misc.replaceActions({
     actionType: ActionType.keyPress,
     actionNames: Object.keys(actions),
     modeName: generalMode,

@@ -18,7 +18,7 @@ function onControlChange({ next, previous }) {
 
 const starFieldFreeFlight = new LogicalSceneGroup({
   activate: ({ camera, renderer, callback=()=>{} }={ callback: ()=>{} }) => {
-    freeCam.registerKeyListeners();
+    freeCam.replaceKeyListeners();
     camController.onControlChange(onControlChange);
     renderer.autoClear = true;
     const gl = renderer.context;

@@ -18,7 +18,7 @@ for (let i = 0, len = actions.length; i < len; i++) {
   };
 }
 
-menuController.onActions({
+menuController.replaceActions({
   actionType: ActionType.keyUp | ActionType.keyDown,
   actionNames: Object.keys(uiActions),
   modeName: menuViewerMode,

@@ -72,9 +72,9 @@ FreeCam.prototype.setControlActions = function initNavigationValues() {
   };
 };
 
-FreeCam.prototype.registerKeyListeners = function registerKeyListeners() {
+FreeCam.prototype.replaceKeyListeners = function replaceKeyListeners() {
   // Key down actions.
-  camController.onActions({
+  camController.replaceActions({
     actionType: ActionType.keyUp | ActionType.keyDown,
     actionNames: Object.keys(this.ctrl), // all controls handled by freeCam
     modeName: freeCamMode,
@@ -82,7 +82,7 @@ FreeCam.prototype.registerKeyListeners = function registerKeyListeners() {
   });
 
   // Key press actions.
-  camController.onActions({
+  camController.replaceActions({
     actionType: ActionType.keyPress,
     actionNames: Object.keys(this.toggles), // all presses handled by freeCam
     modeName: freeCamMode,
@@ -90,7 +90,7 @@ FreeCam.prototype.registerKeyListeners = function registerKeyListeners() {
   });
 
   // Analog actions.
-  camController.onActions({
+  camController.replaceActions({
     actionType: ActionType.analogMove,
     actionNames: [ 'pitchUp', 'pitchDown', 'yawLeft', 'yawRight' ],
     modeName: freeCamMode,

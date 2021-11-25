@@ -1,0 +1,56 @@
+::-webkit-scrollbar {
+    width: 16px !important;
+}
+
+::-webkit-scrollbar:horizontal {
+    height: 16px !important;
+}
+
+::-webkit-scrollbar-corner {
+    background: #4f3f3f !important;
+}
+
+::-webkit-scrollbar-track {
+    background-image: url(/css/kosm-scrollbar-img/scrollbar-track.png) !important;
+}
+
+::-webkit-scrollbar-thumb:vertical {
+    border-top: 3px solid #4f3f3f;
+    border-bottom: 3px solid #4f3f3f;
+    background-image: url(/css/kosm-scrollbar-img/scrollbar-thumb.png) !important;
+    border-radius: 0 !important;
+}
+
+::-webkit-scrollbar-thumb:horizontal {
+    border-left: 3px solid #4f3f3f;
+    border-right: 3px solid #4f3f3f;
+    background-image: url(/css/kosm-scrollbar-img/scrollbar-thumb.png) !important;
+    border-radius: 0 !important;
+}
+
+::-webkit-scrollbar-button:horizontal:start:decrement,
+::-webkit-scrollbar-button:horizontal:end:increment,
+::-webkit-scrollbar-button:vertical:start:decrement,
+::-webkit-scrollbar-button:vertical:end:increment {
+    display: block !important;
+}
+
+::-webkit-scrollbar-button:vertical:start {
+    height: 8px !important;
+    background-image: url(/css/kosm-scrollbar-img/scrollbar-button-vertical-start.png) !important;
+}
+
+::-webkit-scrollbar-button:vertical:end {
+    height: 8px !important;
+    background-image: url(/css/kosm-scrollbar-img/scrollbar-button-vertical-end.png) !important;
+}
+
+::-webkit-scrollbar-button:horizontal:start {
+    width: 8px !important;
+    background-image: url(/css/kosm-scrollbar-img/scrollbar-button-horizontal-start.png) !important;
+}
+
+::-webkit-scrollbar-button:horizontal:end {
+    width: 8px !important;
+    background-image: url(/css/kosm-scrollbar-img/scrollbar-button-horizontal-end.png) !important;
+}

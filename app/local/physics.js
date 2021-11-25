@@ -1,7 +1,9 @@
 import * as THREE from "three";
 import * as CANNON from "cannon";
 
-import './cannonDebugRenderer';
+
+// TODO: see migration guide: https://github.com/mrdoob/three.js/wiki/Migration-Guide#r125--r126
+// import './cannonDebugRenderer';
 
 // If true, draw bounding boxes over all physics objects.
 // const debugBodyConstraints = true;
@@ -34,13 +36,14 @@ export function initSpacePhysics({ scene, debug=false }={}) {
   physicsWorld.gravity.set(0, 0, 0);
   physicsWorld.solver.tolerance = 0.001;
 
-  if (debug) {
-    // Enable physics debugger.
-    physicsWorld.debugRenderer = new THREE.CannonDebugRenderer(
-      scene,
-      physicsWorld
-    );
-  }
+  // TODO: reintroduce Cannon in a more modern way. Disabled because of three.js upgrade.
+  // if (debug) {
+  //   // Enable physics debugger.
+  //   physicsWorld.debugRenderer = new THREE.CannonDebugRenderer(
+  //     scene,
+  //     physicsWorld
+  //   );
+  // }
 
   return physicsWorld;
 }
