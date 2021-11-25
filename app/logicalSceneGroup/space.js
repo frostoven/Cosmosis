@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { FontLoader } from 'three/examples/jsm/loaders/FontLoader';
 import LogicalSceneGroup from './LogicalSceneGroup';
 import levelLighting from '../lighting/levelLighting';
 import spaceLighting from '../lighting/spaceLighting';
@@ -64,7 +65,7 @@ const space = new LogicalSceneGroup({
     }
     initAlreadyDone = true;
 
-    const fontLoader = new THREE.FontLoader();
+    const fontLoader = new FontLoader();
 
     fontLoader.load(gameFont, function (font) {
       spaceScene = localCluster.init({ font });
