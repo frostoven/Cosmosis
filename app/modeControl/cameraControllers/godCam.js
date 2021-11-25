@@ -34,7 +34,7 @@ function init() {
   // });
 
   // Key down actions.
-  camController.onActions({
+  camController.replaceActions({
     actionType: ActionType.keyUp | ActionType.keyDown,
     actionNames: [ 'zoomIn', 'zoomOut' ],
     modeName: godCamMode,
@@ -42,7 +42,7 @@ function init() {
   });
 
   // Key press actions.
-  camController.onActions({
+  camController.replaceActions({
     actionType: ActionType.keyPress,
     actionNames: Object.keys(toggles), // all presses handled by godCam
     modeName: godCamMode,
@@ -50,7 +50,7 @@ function init() {
   });
 
   // Analog actions.
-  camController.onActions({
+  camController.replaceActions({
     actionType: ActionType.analogMove,
     actionNames: [ 'pitchUp', 'pitchDown', 'yawLeft', 'yawRight' ],
     modeName: godCamMode,

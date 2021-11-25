@@ -152,9 +152,9 @@ ShipPilot.prototype.setControlActions = function setControlActions() {
   };
 };
 
-ShipPilot.prototype.registerKeyListeners = function registerKeyListeners() {
+ShipPilot.prototype.replaceKeyListeners = function replaceKeyListeners() {
   // Key down actions.
-  camController.onActions({
+  camController.replaceActions({
     actionType: ActionType.keyUp | ActionType.keyDown,
     actionNames: Object.keys(this.ctrl), // all controls handled by shipPilot
     modeName: shipPilotMode,
@@ -164,7 +164,7 @@ ShipPilot.prototype.registerKeyListeners = function registerKeyListeners() {
   // TODO: reimplement numpad.
 
   // Key press actions.
-  camController.onActions({
+  camController.replaceActions({
     actionType: ActionType.keyPress,
     actionNames: Object.keys(this.toggles), // all presses handled by shipPilot
     modeName: shipPilotMode,
@@ -172,7 +172,7 @@ ShipPilot.prototype.registerKeyListeners = function registerKeyListeners() {
   });
 
   // Analog actions.
-  camController.onActions({
+  camController.replaceActions({
     actionType: ActionType.analogMove,
     actionNames: [ 'pitchUp', 'pitchDown', 'yawLeft', 'yawRight' ],
     modeName: shipPilotMode,
