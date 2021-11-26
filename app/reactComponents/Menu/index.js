@@ -186,7 +186,7 @@ export default class Menu extends React.Component {
         return callback();
       }
       const { pings } = this.menuChangeListeners.notifyAll({ next, previous });
-      if (pings === 0) {
+      if (pings === 0 && next !== 'modal') {
         alert(`No menus are willing to accept responsibility for "${next}".`);
         // Default to 'game menu' as a fallback.
         return this.setState({ activeMenu: 'game menu' }, () => {
