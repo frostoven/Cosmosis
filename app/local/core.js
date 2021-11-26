@@ -23,10 +23,11 @@ import levelLighting from '../lighting/levelLighting';
 import spaceLighting from '../lighting/spaceLighting';
 import {
   activateSceneGroup,
-  createRenderer,
   renderActiveScenes,
   stepAllScenes,
 } from '../logicalSceneGroup';
+
+import { createRenderer } from './renderer';
 
 // const gameFont = 'node_modules/three/examples/fonts/helvetiker_regular.typeface.json';
 
@@ -59,8 +60,11 @@ window.$game = {
   // Contains everything small.
   // levelScene: null,
   camera: null,
-  renderer: null,
-  // TODO: remame me. Contains level physics (I think). Perhaps delete and
+  // The primary graphics renderer.
+  primaryRenderer: null,
+  // Offscreen renderer used for skybox generation.
+  skyboxRenderer: null,
+  // TODO: rename me. Contains level physics (I think). Perhaps delete and
   //  start from scratch canon-es when resuming the physics task.
   // spaceWorld: null,
   gravityWorld: null,
@@ -106,7 +110,7 @@ window.$displayOptions = {
   // a known ~9% drop.
   fpsLimit: 30 * 1.09,
 };
-window.$rendererParams = {
+window.$primaryRendererParams = {
   antialias: true,
 };
 // The preBootPlaceholder stores functions that match the actual model object.
@@ -188,17 +192,53 @@ function init({ defaultScene }) {
 
   // Default graphics font.
   // const fontLoader = new THREE.FontLoader();
+  const primaryCanvas = document.getElementById('primary-canvas');
+  const starfieldCanvas = document.getElementById('starfield-canvas');
+  if (!primaryCanvas) {
+    $modal.alert('Error: canvas not available; no rendering will work.');
+  }
 
   const camera = new THREE.PerspectiveCamera(56.25, SCREEN_WIDTH / SCREEN_HEIGHT, NEAR, FAR);
-  const renderer = createRenderer();
+  const primaryRenderer = createRenderer({
+    initialisation: {
+      canvas: primaryCanvas,
+    },
+    options: {
+      width: window.innerWidth,
+      height: window.innerHeight / 2,
+      shadowMapEnabled: true,
+      // TODO: move into graphics are 'soft shadows'.
+      shadowMapType: THREE.PCFSoftShadowMap,
+      devicePixelRatio: window.devicePixelRatio,
+    }
+  });
+  // const skyboxRenderer = createRenderer('skyboxRenderer', {
+  //   doNotCreateElement: true,
+  // });
+
+  if ('transferControlToOffscreen' in starfieldCanvas) {
+    const offscreen = starfieldCanvas.transferControlToOffscreen();
+    // Note: offscreenRenderer.js is made available via Webpack bundling.
+    const worker = new Worker('./build/offscreenRenderer.js', { type: 'module' });
+    worker.postMessage({
+      drawingSurface: offscreen,
+      width: starfieldCanvas.clientWidth,
+      height: starfieldCanvas.clientHeight,
+      pixelRatio: window.devicePixelRatio,
+      path: '../',
+    }, [ offscreen ]);
+  }
+  else {
+    $modal.alert('Error: offscreen canvas not available; stars will not show.');
+  }
 
   activateSceneGroup({
-    renderer,
+    primaryRenderer,
     camera,
     logicalSceneGroup: defaultScene,
     callback: () => {
       // $game contains all the essential game variables.
-      window.$game = initView({ camera, renderer });
+      window.$game = initView({ camera, primaryRenderer });
       startupEmitter.emit(startupEvent.gameViewReady);
       logBootInfo('Comms relay ready');
 
@@ -245,7 +285,7 @@ function init({ defaultScene }) {
   window.addEventListener('resize', onWindowResize, false);
 }
 
-function initView({ renderer, camera }) {
+function initView({ primaryRenderer, camera }) {
   // TODO: make FOV adjustable in graphics menu.
   // TODO: all option to press Alt that temporarily zoom in by decreasing perspective.
   // const camera = new THREE.PerspectiveCamera(56.25, SCREEN_WIDTH / SCREEN_HEIGHT, NEAR, FAR);
@@ -256,7 +296,7 @@ function initView({ renderer, camera }) {
 
   // RENDERER HERE bookm
   // const renderer = activateLogicalSceneGroup({
-  //   name: 'primaryRenderer',
+  //   name: 'primary-canvas',
   //   lsg: logicalSceneGroup.space,
   // });
 
@@ -316,7 +356,7 @@ function initView({ renderer, camera }) {
   // let group = null;
 
   return {
-    renderer, camera,
+    primaryRenderer, camera,
     ptrLockControls, ready: true
   };
 }
@@ -352,17 +392,17 @@ function initPlayer() {
   // });
 }
 
-function updateRendererSizes() {
-  if (!$game.renderer) {
+function updatePrimaryRendererSizes() {
+  if (!$game.primaryRenderer) {
     return;
   }
   // Recalculate size for both renderers when screen size or split location changes
   SCREEN_WIDTH = window.innerWidth;
   SCREEN_HEIGHT = window.innerHeight;
 
-  $game.renderer.setSize( SCREEN_WIDTH * $displayOptions.resolutionScale, SCREEN_HEIGHT * $displayOptions.resolutionScale);
-  $game.renderer.domElement.style.width = '100%';
-  $game.renderer.domElement.style.height = '100%';
+  $game.primaryRenderer.setSize( SCREEN_WIDTH * $displayOptions.resolutionScale, SCREEN_HEIGHT * $displayOptions.resolutionScale);
+  $game.primaryRenderer.domElement.style.width = '100%';
+  $game.primaryRenderer.domElement.style.height = '100%';
   $game.camera.aspect = SCREEN_WIDTH / SCREEN_HEIGHT;
   $game.camera.updateProjectionMatrix();
 
@@ -387,7 +427,7 @@ function animate() {
   deltaPrevTime = time;
 
   const {
-    renderer, camera,
+    primaryRenderer, camera,
     gravityWorld, level, playerShip
   } = $game;
 
@@ -416,7 +456,7 @@ function animate() {
   // // renderer.clearDepth();
   // renderer.render(levelScene, camera);
   //
-  renderActiveScenes({ renderer, camera });
+  renderActiveScenes({ renderer: primaryRenderer, camera });
   //
   // =================================
 
@@ -448,7 +488,7 @@ function animate() {
 }
 
 function onWindowResize() {
-  updateRendererSizes();
+  updatePrimaryRendererSizes();
 }
 
 // TODO: remove me once the game is more stable.

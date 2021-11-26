@@ -5,9 +5,6 @@ import starFieldFreeFlight from './starFieldFreeFlight';
 import skyboxGenerator from './skyboxGenerator';
 import galaxyMap from './galaxyMap';
 
-let STARTING_SCREEN_WIDTH = window.innerWidth;
-let STARTING_SCREEN_HEIGHT = window.innerHeight;
-
 const logicalSceneGroup = {
   space,
   starFieldFreeFlight,
@@ -16,38 +13,6 @@ const logicalSceneGroup = {
 };
 
 let activeGroup = null;
-
-function createRenderer(id='primaryRenderer') {
-  const renderer = new THREE.WebGLRenderer({
-    ...$rendererParams,
-    logarithmicDepthBuffer: true,
-    alpha: true,
-  });
-  renderer.setPixelRatio(window.devicePixelRatio);
-  renderer.setSize(
-    STARTING_SCREEN_WIDTH * $displayOptions.resolutionScale,
-    STARTING_SCREEN_HEIGHT * $displayOptions.resolutionScale,
-  );
-
-  renderer.shadowMap.enabled = true;
-  // TODO: move into graphics are 'soft shadows'.
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
-  // TODO: give options for shaders 'colourful' vs 'filmic'.
-  // renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  // renderer.toneMapping = THREE.NoToneMapping;
-
-  // TODO: add to graphics menu.
-  // renderer.gammaOutput = true;
-  // renderer.gammaFactor = 2.2;
-
-  renderer.domElement.style.width = '100%';
-  renderer.domElement.style.height = '100%';
-  renderer.domElement.id = id;
-  document.body.appendChild(renderer.domElement);
-
-  return renderer;
-}
 
 // Calls the render functions for all active scenes.
 function renderActiveScenes({ renderer, camera }) {
@@ -90,7 +55,6 @@ function activateSceneGroup({ logicalSceneGroup, renderer, camera, callback }) {
 
 export {
   logicalSceneGroup,
-  createRenderer,
   renderActiveScenes,
   activateSceneGroup,
   stepAllScenes,
