@@ -24,10 +24,11 @@ Once you've cloned the project
 (`git clone https://github.com/feynmansbongos/Cosmosis.git`)
 you'll want to make sure all dependencies are installed:
 ```bash
-npm install --ignore-scripts
+npm install
 ```
-_Note: `--ignore-scripts` is not strictly necessary, but greatly improves
-security._
+_Note: you may use `npm install --ignore-scripts` instead, which improves
+security in some contexts. Doing so however breaks the nw package, which you'll
+need to manually correct._
 
 If this is the very first time running the application, prepare the initial
 bundle:
