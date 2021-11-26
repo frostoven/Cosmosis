@@ -30,7 +30,7 @@
   "author": "aggregate1166877",
   "license": "All rights reserved",
   "dependencies": {
-    "three": "0.134.0"
+    "three": "0.135.0"
   },
   "devDependencies": {
     "@babel/core": "7.16.0",
