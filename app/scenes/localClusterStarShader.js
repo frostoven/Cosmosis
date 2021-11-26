@@ -71,13 +71,11 @@ function init() {
         AssetFinder.getStarCatalog({
           name: 'constellation_test',
           callback: (error, fileName, parentDir) => {
-            // console.log('-----> got', parentDir, fileName);
             loadAndCreate({ scene, catalogPath: `./${parentDir}/${fileName}` });
           }
         });
       }
       else {
-        // console.log('-----> got', fileName);
         loadAndCreate({ scene, catalogPath: `./${parentDir}/${fileName}` });
       }
     }
