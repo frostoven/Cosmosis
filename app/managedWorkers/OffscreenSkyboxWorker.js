@@ -74,7 +74,7 @@ export default class OffscreenSkyboxWorker extends ManagedWorker {
       height,
       pixelRatio,
       catalogPath,
-      debugCorners: true,
+      // debugCorners: true,
     }, [ offscreenControl ]);
   }
 

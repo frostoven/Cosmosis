@@ -5,6 +5,7 @@ import { FreeCam } from '../modeControl/cameraControllers/freeCam';
 import { createSpaceShip } from '../levelLogic/spaceShipLoader';
 import AssetFinder from '../local/AssetFinder';
 import fs from 'fs';
+import { getShader } from '../../shaders';
 
 const { camController, ActionType } = contextualInput;
 let starFieldScene = null;
@@ -39,6 +40,7 @@ const starFieldFreeFlight = new LogicalSceneGroup({
             if (!starFieldScene) {
               starFieldScene = localClusterStarShader.init({
                 catalogJson: JSON.parse(catalogBlob),
+                shaderLoader: getShader,
               });
             }
 

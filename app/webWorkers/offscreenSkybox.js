@@ -5,7 +5,7 @@
 
 import * as THREE from 'three';
 import localClusterStarShader from '../scenes/localClusterStarShader';
-import { getJson } from './fileLoader';
+import { getJson, getShader } from './fileLoader';
 import { addDebugCornerIndicators, addDebugSideCounters } from './debugTools';
 import { jsonNoiseGen } from '../universeFactory/noise';
 import { createRenderer } from '../local/renderer';
@@ -89,6 +89,7 @@ function init(canvas, width, height, pixelRatio, catalogJson) {
   let starFieldScene = localClusterStarShader.init({
     // catalogBlob: new TextDecoder().decode(catalogBlob),
     catalogJson,
+    shaderLoader: getShader,
     onLoaded: doInitCallbackWhenReady,
   });
   scene.add(starFieldScene);
