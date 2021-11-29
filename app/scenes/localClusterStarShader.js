@@ -3,7 +3,7 @@ import * as THREE from 'three';
 
 const spectralCombinations = {};
 
-function createScene({ scene, catalog, onLoaded=()=>{} }) {
+function createScene({ scene, catalog, shaderLoader, onLoaded=()=>{} }) {
   const validStars = [];
 
   for (let i = 0; i < catalog.length; i++) {
@@ -35,17 +35,26 @@ function createScene({ scene, catalog, onLoaded=()=>{} }) {
     validStars.push(star);
   }
 
-  populateSky({ scene, validStars, onLoaded });
+  populateSky({ scene, validStars, shaderLoader, onLoaded });
 }
 
-function init({ catalogJson, onLoaded=()=>{} }) {
+/**
+ * Initialises the star field.
+ * @param {JSON} catalogJson - JSON object containing all stars
+ * @param {function} shaderLoader - Function used to load shader files. The
+ *   reason this cannot be handled automatically is because web workers and
+ *   main thread workers currently use incompatible file loading mechanisms.
+ * @param {function} onLoaded - Called when everything is done loading.
+ * @returns {Scene}
+ */
+function init({ catalogJson, shaderLoader, onLoaded=()=>{} }) {
   const scene = new THREE.Scene();
-  createScene({ scene, catalog: catalogJson, onLoaded });
+  createScene({ scene, catalog: catalogJson, shaderLoader, onLoaded });
   return scene;
 }
 
 // TODO: continue here: this should be loaded after catalog has been loaded.
-function populateSky({ scene, validStars, onLoaded=()=>{} }) {
+function populateSky({ scene, validStars, shaderLoader, onLoaded=()=>{} }) {
   // TODO: Add ways to check for LMC, SMC, Andromeda, clusters, etc.
 
   const glowColor = new THREE.Color();
@@ -88,45 +97,30 @@ function populateSky({ scene, validStars, onLoaded=()=>{} }) {
 
   // TODO: reimplement me.
   // const { vertexShader, fragmentShader } = getShader('starfield-blackbody');
-  const material = new THREE.ShaderMaterial({
-    uniforms: {
-      color: { value: new THREE.Color(0xffffff) },
-      alphaTest: { value: 0.9 },
-    },
-    // TODO: REMOVE THIS. Temporarily hard-coding shaders here because the
-    //  current setup requires `fs`, which web workers do not have. I'd
-    //  rather not include the shader loading mechanism in this commit, so
-    //  we're just pasting it here.
-    //  DO NOT MERGE INTO MASTER BRANCH.
-    vertexShader:
-      `
-#define PI 3.141592653589
-#define RLOG10 (1.0 / log(10.0))
-attribute vec3 glow;attribute float luminosity;varying vec3 vGlow;varying float pointSize;varying float lum;
-float log10(float number) {return RLOG10 * log(number);}
-void main() {vGlow = normalize(glow);vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);float brightness = luminosity / pow(4.0 * PI * -mvPosition.z, 2.0);pointSize = log10(brightness * 500000.0) + (log((brightness * 7500.0)) * 1.75);
-if (pointSize < 2.0) {pointSize = log10(brightness * 500000.0) + (brightness * 3500.0);}gl_PointSize = pointSize;gl_Position = projectionMatrix * mvPosition;}
-      `,
-    fragmentShader:
-      `
-#define PI 3.141592653589
-#define MIN_SIZE (1.75)
-#define MIN_SIZE_FACTOR (1.0 / MIN_SIZE)
-#define COLORFUL_DISTANT 0
-varying vec3 vGlow;varying float pointSize;varying float lum;
-void main() {if (pointSize == 0.0 || isinf(pointSize) || isnan(pointSize)) {discard;}if (pointSize < MIN_SIZE) {gl_FragColor = vec4(mix(vGlow, vec3(1.0, 1.0, 1.0), 0.95),max(pointSize * MIN_SIZE_FACTOR, 0.1));return;}float scale  = 7500.0;
-float invRadius = 50.0;float invGlowRadius = 3.0;vec2 position = gl_PointCoord;position.x -= 0.5;position.y -= 0.5;
-float diskScale = length(position) * invRadius;vec3 spectrum  = scale * vGlow;vec3 glow = spectrum / pow(diskScale, invGlowRadius);gl_FragColor = vec4(glow, (glow.r + glow.g + glow.b) / 3.0 * 1.1 - 0.1);}`,
-    transparent: true,
-    // depthTest: false,
-    extensions: {
-      drawBuffers: true,
-    },
-  });
+  shaderLoader('starfield-blackbody', (error, { vertexShader, fragmentShader }) => {
+    if (error) {
+      return console.error(
+        'Failed to load starfield-blackbody shader; error:', error
+      );
+    }
 
-  const particles = new THREE.Points(geometry, material);
-  scene.add(particles);
-  onLoaded();
+    const material = new THREE.ShaderMaterial({
+      uniforms: {
+        color: { value: new THREE.Color(0xffffff) },
+        alphaTest: { value: 0.9 },
+      },
+      vertexShader,
+      fragmentShader,
+      transparent: true,
+      extensions: {
+        drawBuffers: true,
+      },
+    });
+
+    const particles = new THREE.Points(geometry, material);
+    scene.add(particles);
+    onLoaded();
+  });
 }
 
 export default {
