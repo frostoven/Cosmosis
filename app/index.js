@@ -1,3 +1,4 @@
+import './polyfills';
 import React from 'react';
 import * as ReactDOM from 'react-dom';
 import RootNode from './reactComponents/RootNode';
@@ -14,9 +15,8 @@ import scenes from './scenes';
 import './local/toast';
 import * as THREE from 'three';
 import * as CANNON from 'cannon';
-import { Vector3 } from 'three';
 import { startupEvent, getStartupEmitter } from './emitters';
-import modeControl from './modeControl';
+import './modeControl';
 import userProfile from './userProfile';
 import { discoverShaders } from '../shaders';
 import { logicalSceneGroup } from './logicalSceneGroup';
@@ -46,8 +46,7 @@ if (process.env && process.env.NODE_ENV !== 'production') {
   // debugging.
   window.hmrEnabled = true;
 
-  const fs = require('fs');
-  fs.watch('./build/game.js', (event, filename) => {
+  function reload(event, filename) {
     if (filename) {
       if (!window.hmrEnabled) {
         return console.log('HMR: Ignoring external changes.');
@@ -61,7 +60,11 @@ if (process.env && process.env.NODE_ENV !== 'production') {
         chrome.tabs.reload();
       }, 250);
     }
-  });
+  }
+
+  const fs = require('fs');
+  fs.watch('./build/game.js', reload);
+  fs.watch('./build/offscreenSkybox.js', reload);
 }
 
 /* Main
