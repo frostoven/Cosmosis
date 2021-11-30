@@ -57,7 +57,8 @@ ShipPilot.prototype.setDefaultValues = function applyDefaultValues() {
   this.playerShip = null;
   this.playerWarpBubble = null;
 
-  // 195=1c, 199=1.5c, 202=2c, 206=3c, 209=4c, 300=35600c (avoid going over 209).
+  // 195 = 1,000c, 199 = 1,500c, 202 = 2,000c, 206 = 3,000c, 209 = 4,000c,
+  // 300 = 35,600,000c (avoid going over 209).
   // The idea is that the player can push this number up infinitely, but with
   // huge falloff past 206 because every extra 0.1 eventually scales to 1c
   // faster. 195 is junk, 199 is beginner. 206 is end-game. 209 is something

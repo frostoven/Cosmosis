@@ -5,7 +5,7 @@ function createRenderer({
   options = {},
 } = { initialisation: {}, options: {} }) {
   const renderer = new THREE.WebGLRenderer({
-    ...$primaryRendererParams,
+    antialias: true,
     logarithmicDepthBuffer: true,
     alpha: true,
     ...initialisation,
@@ -29,11 +29,6 @@ function createRenderer({
   // TODO: add to graphics menu.
   // renderer.gammaOutput = true;
   // renderer.gammaFactor = 2.2;
-
-  // renderer.domElement.style.width = '100%';
-  // renderer.domElement.style.height = '100%';
-  // renderer.domElement.id = id;
-  // document.body.appendChild(renderer.domElement); // <canvas>
 
   return renderer;
 }

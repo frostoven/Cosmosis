@@ -13,14 +13,11 @@ import Stats from '../../hackedlibs/stats/stats.module.js';
 
 import { forEachFn } from './utils';
 // import physics from './physics';
-import { createSpaceShip } from '../levelLogic/spaceShipLoader';
 import { PointerLockControls } from './PointerLockControls';
 import { startupEvent, getStartupEmitter } from '../emitters';
 import contextualInput from './contextualInput';
 import { preBootPlaceholder } from '../reactComponents/Modal';
 import { logBootInfo } from './windowLoadListener';
-import levelLighting from '../lighting/levelLighting';
-import spaceLighting from '../lighting/spaceLighting';
 import {
   activateSceneGroup,
   renderActiveScenes,
@@ -28,8 +25,8 @@ import {
 } from '../logicalSceneGroup';
 
 import { createRenderer } from './renderer';
-
-// const gameFont = 'node_modules/three/examples/fonts/helvetiker_regular.typeface.json';
+import AssetFinder from './AssetFinder';
+import OffscreenSkyboxWorker from '../managedWorkers/OffscreenSkyboxWorker';
 
 // 1 micrometer to 100 billion light years in one scene, with 1 unit = 1 meter?
 // preposterous!  and yet...
@@ -110,9 +107,13 @@ window.$displayOptions = {
   // a known ~9% drop.
   fpsLimit: 30 * 1.09,
 };
-window.$primaryRendererParams = {
-  antialias: true,
-};
+window.$webWorkers = {
+  offscreenSkybox: new OffscreenSkyboxWorker(),
+}
+// TODO: implement anti-aliasing (and other options) in the graphics menu.
+// window.$primaryRendererParams = {
+//   antialias: true,
+// };
 // The preBootPlaceholder stores functions that match the actual model object.
 // Calling those functions queue them as requests. Once the menu system has
 // booted, all requests are then honored as the actual modal functions.
@@ -186,10 +187,6 @@ function init({ defaultScene }) {
   // Controls.
   contextualInput.init();
 
-  // bookm TODO: move this to space LSG.
-  // Default active mode is shipPilot.
-  // contextualInput.camController.giveControlTo('shipPilot');
-
   // Default graphics font.
   // const fontLoader = new THREE.FontLoader();
   const primaryCanvas = document.getElementById('primary-canvas');
@@ -205,7 +202,7 @@ function init({ defaultScene }) {
     },
     options: {
       width: window.innerWidth,
-      height: window.innerHeight / 2,
+      height: window.innerHeight,
       shadowMapEnabled: true,
       // TODO: move into graphics are 'soft shadows'.
       shadowMapType: THREE.PCFSoftShadowMap,
@@ -216,21 +213,20 @@ function init({ defaultScene }) {
   //   doNotCreateElement: true,
   // });
 
-  if ('transferControlToOffscreen' in starfieldCanvas) {
-    const offscreen = starfieldCanvas.transferControlToOffscreen();
-    // Note: offscreenRenderer.js is made available via Webpack bundling.
-    const worker = new Worker('./build/offscreenRenderer.js', { type: 'module' });
-    worker.postMessage({
-      drawingSurface: offscreen,
-      width: starfieldCanvas.clientWidth,
-      height: starfieldCanvas.clientHeight,
-      pixelRatio: window.devicePixelRatio,
-      path: '../',
-    }, [ offscreen ]);
-  }
-  else {
-    $modal.alert('Error: offscreen canvas not available; stars will not show.');
-  }
+  AssetFinder.getStarCatalogWFallback({
+    name: 'bsc5p_3d_min',
+    fallbackName: 'constellation_test',
+    callback: (error, fileName, parentDir) => {
+      console.log('catalog path:', { error, fileName, parentDir });
+      $webWorkers.offscreenSkybox.init({
+        canvas: starfieldCanvas,
+        width: 2048, // TODO: move skybox resolution to graphics menu.
+        height: 2048,
+        pixelRatio: window.devicePixelRatio,
+        catalogPath: `../${parentDir}/${fileName}`,
+      });
+    },
+  });
 
   activateSceneGroup({
     primaryRenderer,
@@ -251,33 +247,6 @@ function init({ defaultScene }) {
     }
   });
 
-  // bookm
-  // fontLoader.load(gameFont, function (font) {
-  //   const startupScene = allScenes[sceneName];
-  //   if (!startupScene) {
-  //     return console.error(`Error: default scene ${sceneName} hasn't been registered.`);
-  //   }
-  //   // const scene = initScene({ font });
-  //   const spaceScene = startupScene.init({ font });
-  //   const levelScene = new THREE.Scene();
-  //
-  //   // Load lighting (is automatically delayed until scenes are ready).
-  //   levelLighting.applyLighting();
-  //   spaceLighting.applyLighting();
-  //
-  //   // $game contains all the essential game variables.
-  //   window.$game = initView({ spaceScene, levelScene });
-  //   startupEmitter.emit(startupEvent.gameViewReady);
-  //   logBootInfo('Comms relay ready');
-  //
-  //   initPlayer();
-  //   updateModeDebugText();
-  //
-  //   animate();
-  //   startupEmitter.emit(startupEvent.firstFrameRendered);
-  //   logBootInfo('Self-test pass');
-  // });
-
   window.$stats = new Stats();
   document.body.appendChild($stats.dom);
 
@@ -293,14 +262,6 @@ function initView({ primaryRenderer, camera }) {
   // camera.rotation.setFromVector3(new THREE.Vector3(0, 0, 0));
   // levelScene.add(camera);
   const ptrLockControls = new PointerLockControls(camera, document.body);
-
-  // RENDERER HERE bookm
-  // const renderer = activateLogicalSceneGroup({
-  //   name: 'primary-canvas',
-  //   lsg: logicalSceneGroup.space,
-  // });
-
-  // document.body.appendChild(renderer.domElement);
 
   // Postprocessing.
   // --------------------------------------------------------------------------
@@ -345,13 +306,6 @@ function initView({ primaryRenderer, camera }) {
   //     });
   // });
 
-  // bookm.
-  // TODO: this needs to happen in space LSG.
-  // const spaceWorld = physics.initSpacePhysics({ levelScene, debug: true });
-  // const group = new THREE.Group();
-  // group.add(spaceScene);
-  // group.add(levelScene);
-
   // let spaceWorld = null;
   // let group = null;
 
@@ -362,34 +316,7 @@ function initView({ primaryRenderer, camera }) {
 }
 
 function initPlayer() {
-  // bookm TODO: re-implement space ship loading.
-  // return;
-
-  // createSpaceShip({
-  //   // modelName: 'minimal scene', onReady: (mesh, bubble) => {
-  //   // modelName: 'monkey', onReady: (mesh, bubble) => {
-  //   // modelName: 'prototype', onReady: (mesh, bubble) => {
-  //   modelName: 'DS69F', onReady: (mesh, bubble) => {
-  //   //   modelName: 'scorpion_d', onReady: (mesh, bubble) => {
-  //     // modelName: 'devFlyer', onReady: (mesh, bubble) => {
-  //     // modelName: 'devFlyer2', onReady: (mesh, bubble) => {
-  //     // modelName: 'devFlyer3', onReady: (mesh, bubble) => {
-  //     // modelName: 'tentacleHull', onReady: (mesh, bubble) => {
-  //     // modelName: 'test', onReady: (mesh, bubble) => {
-  //     $game.playerShip = mesh;
-  //     $game.playerWarpBubble = bubble;
-  //     // TODO: Investigate why setTimeout is needed. Things break pretty hard
-  //     //  if we have a very tiny space ship (reproducible with an empty scene
-  //     //  containing only a camera). The exact symptom is it that
-  //     //  startupEvent.ready is triggered before we have a scene. This leads me
-  //     //  to believe larger space ships delay .ready long enough for the scene
-  //     //  to load fully.
-  //     // setTimeout(() => {
-  //       startupEmitter.emit(startupEvent.playerShipLoaded);
-  //     // });
-  //     logBootInfo('Ship ready');
-  //   }
-  // });
+  // TODO: determine if this function still belongs here at all.
 }
 
 function updatePrimaryRendererSizes() {
@@ -431,34 +358,11 @@ function animate() {
     gravityWorld, level, playerShip
   } = $game;
 
-  // bookm: TODO: reimplement.
-  // spaceWorld && physics.renderPhysics(delta, spaceWorld);
-  // gravityWorld && physics.renderPhysics(delta, gravityWorld);
-
   if (level) {
     level.process(delta);
   }
 
-  // TODO: REMOVE ME - this is here to test the cam attaching to the bridge with rotation.
-  // if ($game.playerShip) {
-  //   $game.playerShip.scene.rotateY(0.001);
-  //   $game.playerShip.scene.rotateX(0.001);
-  //   $game.playerShip.scene.rotateZ(0.001);
-  // }
-
-  // bookm
-  // === Render scenes ===============
-  // renderer.autoClear = true;
-  // // composer.render(); // TODO: check if this works here.
-  // renderer.render(spaceScene, camera);
-  // renderer.autoClear = false;
-  // // clearDepth might be needed if we encounter weird clipping issues. Test me.
-  // // renderer.clearDepth();
-  // renderer.render(levelScene, camera);
-  //
   renderActiveScenes({ renderer: primaryRenderer, camera });
-  //
-  // =================================
 
   // Run external renderers. We place this after the scene render to prevent
   // the camera from jumping around.
@@ -468,9 +372,6 @@ function animate() {
   //   const controller = cachedRenderHooks[i];
   //   controller.render(delta);
   // }
-
-  // levelLighting.updateLighting();
-  // spaceLighting.updateLighting();
 
   // If the camera is currently anchored to something, update position. Note:
   // always put this after all physics have been calculated or we'll end up
