@@ -55,13 +55,24 @@ function trackCameraSpeed() {
     dist = dist / (freq / perUnit);
 
     statusDiv.innerText =
-      dist.toFixed(1) + ' m/s ' +
-      '[' + (dist * 3.6).toFixed(1) + 'km/h' + '] ' +
-      '<' + (dist / C).toFixed(1) + 'C>\n' +
+      formatSpeed(dist) + ' m/s ' +
+      '[' + formatSpeed(dist * 3.6) + 'km/h' + '] ' +
+      '<' + formatSpeed(dist / C) + 'C>\n' +
       `{Ps} x:${Math.floor(camPs.x)}, y:${Math.floor(camPs.y)}, z:${Math.floor(camPs.z)}\n` +
       `{Rt} x:${camRt.x.toFixed(4)}, y:${camRt.y.toFixed(4)}, z:${camRt.z.toFixed(4)}`;
     prevPosition.copy(camPs);
   }, freq);
+}
+
+/**
+ * @param {number} number
+ * @returns {string}
+ */
+function formatSpeed(number) {
+  return number.toLocaleString(
+    undefined,
+    { minimumFractionDigits: 1, maximumFractionDigits: 1 }
+  );
 }
 
 /*
