@@ -152,6 +152,27 @@ AssetFinder.prototype.getStarCatalog = function getStarCatalog({ name, options={
   this.getRes(name, { ...assetDefaults.starCatalogs, ...options }, callback);
 };
 
+AssetFinder.prototype.getStarCatalogWFallback = function getStarCatalog({ name, fallbackName, options={}, callback=()=>{} }) {
+  this.getRes(
+    name, {
+      ...assetDefaults.starCatalogs,
+      silenceNotFoundErrors: true,
+      ...options
+    },
+    (error, fileName, parentDir) => {
+      if (error) {
+        this.getStarCatalog({
+          name: fallbackName,
+          callback,
+        });
+      }
+      else {
+        callback(error, fileName, parentDir);
+      }
+    }
+  );
+};
+
 AssetFinder.prototype.getVoiceFile = function getVoiceFile({ name, options={}, callback=()=>{} }) {
   this.getRes(name, { ...assetDefaults.voicePacks, ...options }, callback);
 };
@@ -160,6 +181,6 @@ const finder = new AssetFinder();
 export default finder;
 
 // TODO: tests should ensure that some obvious results are sane. For example,
-//  an image over 50kb is obviously a mistake, whereas a 500kb space ship is
+//  an image over 500kb is obviously a mistake, whereas a 500kb space ship is
 //  normal. Tests should also check if the prod folder contains stuff that dev
 //  doesn't; this indicates the user forgot to make a low quality version.
