@@ -17,7 +17,7 @@
     "//": "prepare-dev is actually redundant, but it saves telling new users to reload nw after game.js first build.",
     "prepare-dev": "webpack --mode development",
     "dev": "webpack --mode development --watch",
-    "game": "nw --enable-node-worker",
+    "game": "nw",
     "start": "npm-run-all --parallel dev game"
   },
   "repository": {
