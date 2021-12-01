@@ -122,15 +122,17 @@ export default class OffscreenSkyboxWorker extends ManagedWorker {
     const distance = Unit.centiParsec.inMeters;
     const geometry = new THREE.BoxGeometry(distance, distance, distance);
     // const geometry = new THREE.BoxGeometry(10, 10, 10);
-    if (!this.skyboxCube) {
-      this.skyboxCube = new THREE.Mesh(geometry, materials);
-      $game.spaceScene.add(this.skyboxCube);
-    }
-    else {
-      this.skyboxCube.materials = materials;
-    }
+    $game.playerShip.getOnce(({ centerPoint }) => {
+      if (!this.skyboxCube) {
+        this.skyboxCube = new THREE.Mesh(geometry, materials);
+        centerPoint.add(this.skyboxCube);
+      }
+      else {
+        this.skyboxCube.materials = materials;
+      }
 
-    console.log('New skybox generated and applied.');
+      console.log('New skybox generated and applied.');
+    });
   }
 
   // Generates 500MB of data in the skybox worker and copies it to the main

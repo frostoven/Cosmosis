@@ -56,6 +56,7 @@ ShipPilot.prototype.setDefaultValues = function applyDefaultValues() {
   this.levelScene = null;
   this.playerShip = null;
   this.playerWarpBubble = null;
+  this.playerShipCenter = null;
 
   // 195 = 1,000c, 199 = 1,500c, 202 = 2,000c, 206 = 3,000c, 209 = 4,000c,
   // 300 = 35,600,000c (avoid going over 209).
@@ -63,7 +64,7 @@ ShipPilot.prototype.setDefaultValues = function applyDefaultValues() {
   // huge falloff past 206 because every extra 0.1 eventually scales to 1c
   // faster. 195 is junk, 199 is beginner. 206 is end-game. 209 is something
   // achievable only through insane grind.
-  this.maxSpeed = 202;
+  this.maxSpeed = 209;
   // 195=1c, 199=1.5c, 202=2c, 206=3c, 209=4c.
   this.currentSpeed = 0;
   // Throttle. 0-100.
@@ -431,6 +432,7 @@ ShipPilot.prototype.handleHyper = function handleHyper(delta) {
   this.spaceScene.position.addScaledVector(direction, -hyperSpeed);
   this.levelScene.position.addScaledVector(direction, -hyperSpeed);
   this.playerWarpBubble.position.addScaledVector(direction, hyperSpeed);
+  this.playerShipCenter.position.copy(this.playerWarpBubble.position);
 };
 
 // // TODO: move to math utils.
