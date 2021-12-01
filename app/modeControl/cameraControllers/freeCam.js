@@ -2,7 +2,6 @@ import * as THREE from "three";
 
 import AssetLoader from '../../local/AssetLoader';
 import core from '../../local/core';
-import speedTracker from '../../local/speedTracker';
 import { lockModes } from '../../local/PointerLockControls';
 import { startupEvent, getStartupEmitter } from '../../emitters';
 import contextualInput from '../../local/contextualInput';
@@ -41,7 +40,8 @@ FreeCam.prototype.setDefaultValues = function setDefaultValues() {
   // getSpeedKmh and setSpeedKmh, which manage these details for you.
   this.speed = 10 / SPEED_UNIT; // 10KM/h
   // TODO: This really needs a better solution. It will become a problem soon.
-  this.speedTimer = null;
+  //  Disabling this for now as it clashes with shipPilot in new code.
+  // this.speedTimer = null;
 };
 
 FreeCam.prototype.initNavigationValues = function initNavigationValues() {
@@ -108,11 +108,11 @@ FreeCam.prototype.onControlChange = function freeCamControlChange({ next, previo
       $game.ptrLockControls.setLockMode(lockModes.freeLook);
       AssetLoader.disableCrosshairs();
     });
-    this.speedTimer = speedTracker.trackCameraSpeed();
+    // this.speedTimer = speedTracker.trackCameraSpeed();
   }
   else if (previous === freeCamMode && this.speedTimer) {
     controllerActive = false;
-    speedTracker.clearSpeedTracker(this.speedTimer);
+    // speedTracker.clearSpeedTracker(this.speedTimer);
   }
 };
 

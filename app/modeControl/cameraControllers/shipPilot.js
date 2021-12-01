@@ -200,11 +200,13 @@ ShipPilot.prototype.onControlChange = function shipPilotControlChange({ next, pr
       $game.camera.position.z = 0;
     });
 
-    speedTimer = speedTracker.trackCameraSpeed();
+    if (!speedTimer) {
+      speedTimer = speedTracker.trackCameraSpeed();
+    }
   }
-  else if (previous === shipPilotMode && speedTimer) {
-    speedTracker.clearSpeedTracker(speedTimer);
-  }
+  // else if (previous === shipPilotMode && speedTimer) {
+  //   speedTracker.clearSpeedTracker(speedTimer);
+  // }
 };
 
 ShipPilot.prototype.onShipLoaded = function onShipLoaded(mesh) {
