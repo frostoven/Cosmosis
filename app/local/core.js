@@ -50,7 +50,7 @@ window.$game = {
   // possible this has become redundant. TODO: investigate removal.
   // group: null,
   // Contains everything large, including stars / planets / moons. Does not
-  // contain space ships or planetary surfaces (those belong to the level
+  // contain spaceships or planetary surfaces (those belong to the level
   // scene).
   // spaceScene: null,
   // Contains everything small.
@@ -64,12 +64,12 @@ window.$game = {
   //  start from scratch canon-es when resuming the physics task.
   // spaceWorld: null,
   gravityWorld: null,
-  // The loaded file. The 'real' space ship is playerShip.scene.
+  // The loaded file. The 'real' spaceship is playerShip.scene.
   playerShip: new ChangeTracker(),
   // playerWarpBubble: null, moved into $game.playerShip
   ptrLockControls: null,
   // The term 'level' here is used very loosely. It's any interactable
-  // environment. Space ships as well planet sectors count as levels. Note that
+  // environment. Spaceships as well planet sectors count as levels. Note that
   // only *your own* ship is a level - another players ship is not interactable
   // and just a prop in your world.
   level: null,

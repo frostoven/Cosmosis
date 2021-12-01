@@ -42,8 +42,8 @@ const assetDefaults = {
   //   dir: 'skyboxes',
   //   extensions: [ 'jpg', 'png', 'gif' ],
   // },
-  spaceShips: {
-    dir: 'spaceShips',
+  spaceships: {
+    dir: 'spaceships',
     extensions: [ 'gltf', 'glb' ],
     // Helps to make things 'just work' in dev builds, although doing this
     // should always generate an error indicating that assets are missing.
@@ -144,8 +144,8 @@ AssetFinder.prototype.getSfx = function getSfx({ name, options={}, callback=()=>
 //   this.getRes(name, { ...assetDefaults.skyboxes, ...options }, callback);
 // };
 
-AssetFinder.prototype.getSpaceShip = function getSpaceShip({ name, options={}, callback=()=>{} }) {
-  this.getRes(name, { ...assetDefaults.spaceShips, ...options }, callback);
+AssetFinder.prototype.getSpaceship = function getSpaceship({ name, options={}, callback=()=>{} }) {
+  this.getRes(name, { ...assetDefaults.spaceships, ...options }, callback);
 };
 
 AssetFinder.prototype.getStarCatalog = function getStarCatalog({ name, options={}, callback=()=>{} }) {
@@ -181,6 +181,6 @@ const finder = new AssetFinder();
 export default finder;
 
 // TODO: tests should ensure that some obvious results are sane. For example,
-//  an image over 500kb is obviously a mistake, whereas a 500kb space ship is
+//  an image over 500kb is obviously a mistake, whereas a 500kb spaceship is
 //  normal. Tests should also check if the prod folder contains stuff that dev
 //  doesn't; this indicates the user forgot to make a low quality version.

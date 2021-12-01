@@ -48,7 +48,7 @@ core issue. 1.8GB is around 15 million verts, which runs at 40FPS on a 2080TI
 shouldn't exceed 1 million verts.
 
 Where keeping under 1 million verts is possible:
-* A small to medium sized space ship. Subtle details can be replaced with
+* A small to medium sized spaceship. Subtle details can be replaced with
 normal maps, bevels with more than 2 divisions can't be seen anyway, subsurf
 modifiers should have geo cleaned up with tools like hardops, etc.
 

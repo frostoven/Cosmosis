@@ -2,7 +2,7 @@ import LogicalSceneGroup from './LogicalSceneGroup';
 import localClusterStarShader from '../scenes/localClusterStarShader';
 import contextualInput from '../local/contextualInput';
 import { FreeCam } from '../modeControl/cameraControllers/freeCam';
-import { createSpaceShip } from '../levelLogic/spaceShipLoader';
+import { createSpaceship } from '../levelLogic/spaceshipLoader';
 import AssetFinder from '../local/AssetFinder';
 import fs from 'fs';
 import { getShader } from '../../shaders';
@@ -55,7 +55,7 @@ const starFieldFreeFlight = new LogicalSceneGroup({
 
             // We unfortunately need some form of mesh in order for the game to set
             // up / center itself.
-            createSpaceShip({
+            createSpaceship({
               scene: starFieldScene,
               modelName: 'minimal scene', onReady: (mesh, warpBubble) => {
                 // TODO: this is not the player ship though - it's just a

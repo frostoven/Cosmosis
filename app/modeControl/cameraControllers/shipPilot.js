@@ -1,7 +1,7 @@
 import * as THREE from "three";
 
 // TODO: consider renaming this to shipControl. This module does 2 things:
-//  * Takes space ship input when sitting in the pilot's seat.
+//  * Takes spaceship input when sitting in the pilot's seat.
 //  * Processes ship warp physics.
 //  Might need to separate that last one into level control.
 import core from "../../local/core";
