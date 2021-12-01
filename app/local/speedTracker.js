@@ -14,7 +14,6 @@
 import * as THREE from "three";
 
 // Used to calculate meters per second.
-let speedMeterTimer = null;
 let prevPosition = new THREE.Vector3( 0, 0, 0 );
 
 // Speed of light in a vacuum. Obviously.
@@ -39,28 +38,30 @@ function trackCameraSpeed() {
   const perUnit = 1000;
 
   return setInterval(() => {
-    const statusDiv = document.getElementById('speed-tracker');
-    if (!statusDiv || !$game.playerShip) {
-      // This sometimes happens right after the game has loaded.
-      // TODO: hook this into the game loading process.
-      console.log('Waiting for camera to become ready...');
-      return;
-    }
-    showStats();
+    $game.playerShip.getOnce((playerShip) => {
+      const statusDiv = document.getElementById('speed-tracker');
+      if (!statusDiv) {
+        // This sometimes happens right after the game has loaded.
+        // TODO: hook this into the game loading process.
+        console.log('Waiting for camera to become ready...');
+        return;
+      }
+      showStats();
 
-    const camPs = $game.playerWarpBubble.position;
-    const camRt = $game.playerWarpBubble.rotation;
+      const camPs = playerShip.warpBubble.position;
+      const camRt = playerShip.warpBubble.rotation;
 
-    let dist = camPs.distanceTo(prevPosition);
-    dist = dist / (freq / perUnit);
+      let dist = camPs.distanceTo(prevPosition);
+      dist = dist / (freq / perUnit);
 
-    statusDiv.innerText =
-      formatSpeed(dist) + ' m/s ' +
-      '[' + formatSpeed(dist * 3.6) + 'km/h' + '] ' +
-      '<' + formatSpeed(dist / C) + 'C>\n' +
-      `{Ps} x:${Math.floor(camPs.x)}, y:${Math.floor(camPs.y)}, z:${Math.floor(camPs.z)}\n` +
-      `{Rt} x:${camRt.x.toFixed(4)}, y:${camRt.y.toFixed(4)}, z:${camRt.z.toFixed(4)}`;
-    prevPosition.copy(camPs);
+      statusDiv.innerText =
+        formatSpeed(dist) + ' m/s ' +
+        '[' + formatSpeed(dist * 3.6) + 'km/h' + '] ' +
+        '<' + formatSpeed(dist / C) + 'C>\n' +
+        `{Ps} x:${Math.floor(camPs.x)}, y:${Math.floor(camPs.y)}, z:${Math.floor(camPs.z)}\n` +
+        `{Rt} x:${camRt.x.toFixed(4)}, y:${camRt.y.toFixed(4)}, z:${camRt.z.toFixed(4)}`;
+      prevPosition.copy(camPs);
+    });
   }, freq);
 }
 

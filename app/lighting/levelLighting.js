@@ -1,14 +1,11 @@
-import { startupEvent, getStartupEmitter } from '../emitters';
 import * as THREE from 'three';
-
-const startupEmitter = getStartupEmitter();
 
 // Applies lighting from local star. This is here and not in spaceLighting
 // because in reality this lighting is all fake - this lighting is in a scene
 // physically separated from the actual star's physical reality. Only a few
 // meters worth of lighting / shadow info is actually calculated.
 function applyLighting({ scene }) {
-  startupEmitter.on(startupEvent.playerShipLoaded, () => {
+  $game.playerShip.getOnce(() => {
     const light = new THREE.DirectionalLight(0xffffff, 2);
     light.castShadow = true;
 
@@ -53,7 +50,7 @@ function applyLighting({ scene }) {
 // Update things like position relative to the sun.
 function updateLighting() {
   // TODO: move this positioning into a celestial body manager.
-  const sunPosition = new THREE.Vector3(149961697593, -384342478, 224789015);
+  // const sunPosition = new THREE.Vector3(149961697593, -384342478, 224789015);
   // light.lookAt(sunPosition);
   // light.target.lookAt(sunPosition);
 }
