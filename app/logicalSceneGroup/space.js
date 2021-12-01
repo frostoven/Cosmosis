@@ -4,7 +4,7 @@ import LogicalSceneGroup from './LogicalSceneGroup';
 import levelLighting from '../lighting/levelLighting';
 import spaceLighting from '../lighting/spaceLighting';
 import localCluster from '../scenes/localCluster';
-import { createSpaceShip } from '../levelLogic/spaceShipLoader';
+import { createSpaceship } from '../levelLogic/spaceshipLoader';
 import physics from '../local/physics';
 import { ShipPilot } from '../modeControl/cameraControllers/shipPilot';
 import { FreeCam } from '../modeControl/cameraControllers/freeCam';
@@ -73,7 +73,7 @@ const space = new LogicalSceneGroup({
       const { spaceScene, levelScene } = cache;
 
       // This inform core that it may continue booting. It prevents unrelated
-      // functionality waiting for the space ship to load, and improves boot
+      // functionality waiting for the spaceship to load, and improves boot
       // time.
       callback();
 
@@ -89,10 +89,7 @@ const space = new LogicalSceneGroup({
       spaceLighting.applyLighting({ scene: spaceScene });
       levelLighting.applyLighting({ scene: levelScene });
 
-      //
-      // TODO: rename all occurences of spaceShip to spaceship. Nice fuckup btw.
-      //
-      createSpaceShip({
+      createSpaceship({
         scene: levelScene,
         world: spaceWorld,
         // modelName: 'minimal scene', onReady: (mesh, bubble) => {

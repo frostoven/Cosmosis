@@ -105,7 +105,7 @@ Cosmosis was brought into existence for the following reasons:
   traditional ones.
 
 #### Excellent modding support
-You can make a fully interactable space ship yourself **with zero programming
+You can make a fully interactable spaceship yourself **with zero programming
 experience**. All you need is a copy of Blender 2.8+ and to follow the guide on
 mesh codes. Blender does not even need any special add-ons for this to work,
 though a future add-on is on the roadmap to make some tedious tasks faster.
@@ -136,7 +136,7 @@ bounty missions to fuel your drug addiction.
 
 <!-- We aim to be the following; uncomment when achieved :) --
 Cosmosis is an open world space game with RPG elements. It aims to have
-realistic space ship mechanics (if a game with FTL and Lovecraftian Great
+realistic spaceship mechanics (if a game with FTL and Lovecraftian Great
 Ones can fall into such a category), and souls-like combat on planets. It also
 has an FPS shooter class for those who do refuse to praise the sun
 \[blasphemes].
