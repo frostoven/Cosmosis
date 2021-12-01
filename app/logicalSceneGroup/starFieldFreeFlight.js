@@ -7,7 +7,7 @@ import AssetFinder from '../local/AssetFinder';
 import fs from 'fs';
 import { getShader } from '../../shaders';
 
-const { camController, ActionType } = contextualInput;
+const { camController } = contextualInput;
 let starFieldScene = null;
 
 const freeCam = new FreeCam();
@@ -57,9 +57,12 @@ const starFieldFreeFlight = new LogicalSceneGroup({
             // up / center itself.
             createSpaceShip({
               scene: starFieldScene,
-              modelName: 'minimal scene', onReady: (mesh, bubble) => {
-                $game.playerShip = mesh;
-                $game.playerWarpBubble = bubble;
+              modelName: 'minimal scene', onReady: (mesh, warpBubble) => {
+                // TODO: this is not the player ship though - it's just a
+                //  reference. This is likely unneeded. Investigate.
+                $game.playerShip.setValue({
+                  mesh, warpBubble,
+                });
               }
             });
           }

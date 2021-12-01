@@ -12,16 +12,13 @@
 import { startupEvent, getStartupEmitter } from '../emitters';
 import contextualInput from './contextualInput';
 const startupEmitter = getStartupEmitter();
-
-const {
-  ready, playerShipLoaded, firstFrameRendered, gameViewReady,
-} = startupEvent;
+const ready = startupEvent.ready;
 
 /**
  * Sets the player ship location. If the ship has not yet been loaded, queues
  * the request.
  */
-export function setPlayerShipLocation({ x, y, z }={}){
+export function setPlayerShipLocation({ x, y, z }={}) {
   if (isNaN(x) || isNaN(y) || isNaN(z)) {
     return console.error('api.setPlayerShipLocation requires {x,y,z}.');
   }
@@ -32,12 +29,11 @@ export function setPlayerShipLocation({ x, y, z }={}){
   //  * If regular space, ship is set to center of universe and transformations
   //    are ignored from there on out (for now, anyway; we may reset every now
   //    and again if player moves very far from origin).
-  startupEmitter.on(playerShipLoaded, () => {
-    // $game.playerWarpBubble.local
+  $game.playerShip.getOnce((playerShip) => {
     if ($game.hyperMovement) {
       // TODO: get this from the active LSG.
-      $game.playerShip.scene.position.set(0, 0, 0);
-      $game.playerWarpBubble.position.set(x, y, z);
+      playerShip.mesh.scene.position.set(0, 0, 0);
+      playerShip.warpBubble.position.set(x, y, z);
 
       // Keep the macro and micro scenes positions in sync.
       $game.spaceScene.position.set(-x, -y, -z);
@@ -55,11 +51,11 @@ export function setPlayerShipLocation({ x, y, z }={}){
  * Gets the player ship rotation by reference. If the ship has not yet been
  * loaded, queues the request.
  */
-export function getPlayerShipLocation(cb=()=>{}){
+export function getPlayerShipLocation(cb=()=>{}) {
   // TODO: test both in regular and warp bubble space.
-  startupEmitter.on(playerShipLoaded, () => {
+  $game.playerShip.getOnce((playerShip) => {
     if ($game.hyperMovement) {
-      cb($game.playerWarpBubble.position);
+      cb(playerShip.warpBubble.position);
     }
     else {
       console.error(
@@ -74,13 +70,13 @@ export function getPlayerShipLocation(cb=()=>{}){
  * Sets the player ship rotation. If the ship has not yet been loaded, queues
  * the request.
  */
-export function setPlayerShipRotation({ x, y, z }={}){
+export function setPlayerShipRotation({ x, y, z }={}) {
   if (isNaN(x) || isNaN(y) || isNaN(z)) {
     return console.error('api.setPlayerShipRotation requires {x,y,z}.');
   }
   // TODO: test both in regular and warp bubble space.
-  startupEmitter.on(playerShipLoaded, () => {
-    $game.playerWarpBubble.rotation.set(x, y, z);
+  $game.playerShip.getOnce((playerShip) => {
+    playerShip.warpBubble.rotation.set(x, y, z);
   });
 }
 
@@ -90,7 +86,7 @@ export function setPlayerShipRotation({ x, y, z }={}){
  */
 export function getPlayerShipRotation(cb=()=>{}){
   // TODO: test both in regular and warp bubble space.
-  startupEmitter.on(playerShipLoaded, () => {
+  $game.playerShip.getOnce(() => {
     cb($game.playerWarpBubble.rotation);
   });
 }

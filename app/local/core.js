@@ -27,6 +27,7 @@ import {
 import { createRenderer } from './renderer';
 import AssetFinder from './AssetFinder';
 import OffscreenSkyboxWorker from '../managedWorkers/OffscreenSkyboxWorker';
+import ChangeTracker from '../emitters/ChangeTracker';
 
 // 1 micrometer to 100 billion light years in one scene, with 1 unit = 1 meter?
 // preposterous!  and yet...
@@ -36,8 +37,6 @@ let SCREEN_HEIGHT = window.innerHeight;
 
 // Used to generate delta.
 let deltaPrevTime = Date.now();
-
-let composer;
 
 /*
  * Global vars
@@ -66,12 +65,8 @@ window.$game = {
   // spaceWorld: null,
   gravityWorld: null,
   // The loaded file. The 'real' space ship is playerShip.scene.
-  playerShip: null,
-  // Container for the player ship. Used especially by the warp drive to know
-  // what the ship's 'forward' direction is. This allows the 3D artist to model
-  // their ship in any orientation, and then use a standard arrow to tell the
-  // engine which direction the ship is pointing.
-  playerWarpBubble: null,
+  playerShip: new ChangeTracker(),
+  // playerWarpBubble: null, moved into $game.playerShip
   ptrLockControls: null,
   // The term 'level' here is used very loosely. It's any interactable
   // environment. Space ships as well planet sectors count as levels. Note that
@@ -83,7 +78,8 @@ window.$game = {
   // ship and player is stationary and the universe moves instead. This is to
   // overcome camera glitches. The ship can accelerate up to about about 3000c
   // before hyperspeed becomes non-optional.
-  hyperMovement: true,
+  // TODO: determine if this has become redundant (we're implementing new positioning methods).
+  hyperMovement: false,
 };
 window.$options = {
   // 0=off, 1=basic, 2=full
@@ -109,7 +105,7 @@ window.$displayOptions = {
 };
 window.$webWorkers = {
   offscreenSkybox: new OffscreenSkyboxWorker(),
-}
+};
 // TODO: implement anti-aliasing (and other options) in the graphics menu.
 // window.$primaryRendererParams = {
 //   antialias: true,
@@ -233,8 +229,7 @@ function init({ defaultScene }) {
     camera,
     logicalSceneGroup: defaultScene,
     callback: () => {
-      // $game contains all the essential game variables.
-      window.$game = initView({ camera, primaryRenderer });
+      initView({ camera, primaryRenderer });
       startupEmitter.emit(startupEvent.gameViewReady);
       logBootInfo('Comms relay ready');
 
@@ -309,10 +304,10 @@ function initView({ primaryRenderer, camera }) {
   // let spaceWorld = null;
   // let group = null;
 
-  return {
-    primaryRenderer, camera,
-    ptrLockControls, ready: true
-  };
+  $game.primaryRenderer = primaryRenderer;
+  $game.camera = camera;
+  $game.ptrLockControls = ptrLockControls;
+  $game.ready = true;
 }
 
 function initPlayer() {
@@ -353,10 +348,7 @@ function animate() {
   });
   deltaPrevTime = time;
 
-  const {
-    primaryRenderer, camera,
-    gravityWorld, level, playerShip
-  } = $game;
+  const { primaryRenderer, camera, gravityWorld, level } = $game;
 
   if (level) {
     level.process(delta);
@@ -393,7 +385,7 @@ function onWindowResize() {
 }
 
 // TODO: remove me once the game is more stable.
-startupEmitter.on(startupEvent.playerShipLoaded, () => {
+$game.playerShip.getOnce(() => {
   updateHyperdriveDebugText();
 });
 

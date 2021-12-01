@@ -1,12 +1,9 @@
-import { startupEvent, getStartupEmitter } from '../emitters';
 import * as THREE from 'three';
-
-const startupEmitter = getStartupEmitter();
 
 // Applies lighting for all celestial bodies.
 // TODO: apply shadows to moons from their host planets somehow.
 function applyLighting({ scene }) {
-  startupEmitter.on(startupEvent.playerShipLoaded, () => {
+  $game.playerShip.getOnce(() => {
     // 1.5 is technically too high, but this should eventually be handled
     // mathematically by auto-exposure (and user overrides) so we can discard
     // realism for now in favour of prettiness and let the future dynamic
@@ -31,7 +28,7 @@ function applyLighting({ scene }) {
 // Update things like position relative to the sun.
 function updateLighting() {
   // TODO: move this positioning into a celestial body manager.
-  const sunPosition = new THREE.Vector3(149961697593, -384342478, 224789015);
+  // const sunPosition = new THREE.Vector3(149961697593, -384342478, 224789015);
   // light.lookAt(sunPosition);
   // light.target.lookAt(sunPosition);
 }
