@@ -98,7 +98,7 @@ const space = new LogicalSceneGroup({
         // modelName: 'minimal scene', onReady: (mesh, bubble) => {
         // modelName: 'monkey', onReady: (mesh, bubble) => {
         // modelName: 'prototype', onReady: (mesh, bubble) => {
-        modelName: 'DS69F', onReady: (mesh, warpBubble) => {
+        modelName: 'DS69F', onReady: (mesh, warpBubble, centerPoint) => {
         // modelName: 'scorpion_d', onReady: (mesh, bubble) => {
         // modelName: 'devFlyer', onReady: (mesh, bubble) => {
         // modelName: 'devFlyer2', onReady: (mesh, bubble) => {
@@ -106,13 +106,14 @@ const space = new LogicalSceneGroup({
         // modelName: 'tentacleHull', onReady: (mesh, bubble) => {
         // modelName: 'test', onReady: (mesh, bubble) => {
 
-          cache.playerShip = { mesh, warpBubble };
+          cache.playerShip = { mesh, warpBubble, centerPoint };
 
           // $game.playerShip.setValue(mesh);
           // $game.playerWarpBubble = bubble;
 
           shipPilot.playerShip = mesh;
           shipPilot.playerWarpBubble = warpBubble;
+          shipPilot.playerShipCenter = centerPoint;
           shipPilot.spaceScene = spaceScene;
           shipPilot.levelScene = levelScene;
           enableStep = true;

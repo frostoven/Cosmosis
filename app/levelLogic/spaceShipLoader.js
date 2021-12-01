@@ -120,6 +120,10 @@ function modelPostSetup(modelName, gltf, pos, scene, world, onReady) {
     let bubbleDirection = new THREE.Vector3();
     bubble.getWorldDirection(bubbleDirection);
 
+    // Follows the ship, but does not rotate with it.
+    const centerPoint = new THREE.Group();
+    scene.add(centerPoint);
+
     // Get standard arrow world direction:
     let camDirection = new THREE.Vector3();
     standardArrow.getWorldDirection(camDirection);
@@ -150,7 +154,7 @@ function modelPostSetup(modelName, gltf, pos, scene, world, onReady) {
       }
     });
 
-    onReady(mesh, bubble);
+    onReady(mesh, bubble, centerPoint);
   });
 }
 
@@ -189,7 +193,11 @@ function processMeshCodes(name, gltf, isPlayer) {
  * @param {THREE.scene} scene
  * @param {CANNON.World} world
  * @param {boolean} isPlayer - If true, this is the player's ship.
- * @param {function} onReady
+ * @param {function} onReady - onReady(mesh, warpBubble, centerPoint);
+ *   mesh: spaceship model.
+ *   warpBubble: group containing everything that needs to move and rotate with
+ *     the ship.
+ *   centerPoint: group that moves with the ship, but does not rotate with it.
  */
 export function createSpaceShip({ modelName, pos, scene, world, isPlayer, onReady }) {
   startupEmitter.on(startupEvent.gameViewReady, () => {
