@@ -25,7 +25,6 @@ export default class ChangeTracker {
   // Using this, you'll be notified every time the value changes. If the value
   // has already been set, you'll be notified immediately.
   getEveryChange(callback) {
-    console.log('=========== SHOULD BE NUMEROUS')
     this._multiListeners.push(callback);
     if (this._valueAlreadySet) {
       callback(this._value);
