@@ -38,7 +38,7 @@ function trackCameraSpeed() {
   const perUnit = 1000;
 
   return setInterval(() => {
-    $game.playerShip.getOnce((playerShip) => {
+    $game.playerShip.getOnce(({ warpBubble }) => {
       const statusDiv = document.getElementById('speed-tracker');
       if (!statusDiv) {
         // This sometimes happens right after the game has loaded.
@@ -48,8 +48,8 @@ function trackCameraSpeed() {
       }
       showStats();
 
-      const camPs = playerShip.warpBubble.position;
-      const camRt = playerShip.warpBubble.rotation;
+      const camPs = warpBubble.position;
+      const camRt = warpBubble.rotation;
 
       let dist = camPs.distanceTo(prevPosition);
       dist = dist / (freq / perUnit);

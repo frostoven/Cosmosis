@@ -193,8 +193,8 @@ ShipPilot.prototype.onControlChange = function shipPilotControlChange({ next, pr
     $game.playerShip.getOnce(() => {
       // TODO: move this into the level loader. It needs to be dynamic based on
       //  the level itself (in this case we attach the player to the main cam).
-      this.playerShip.cameras[0].attach($game.camera); // bookm playership
-      // this.playerShip.scene.children[2].attach($game.camera); // bookm playership
+      this.playerShip.cameras[0].attach($game.camera);
+      // this.playerShip.scene.children[2].attach($game.camera);
       $game.camera.position.x = 0;
       $game.camera.position.y = 0;
       $game.camera.position.z = 0;

@@ -83,7 +83,7 @@ const space = new LogicalSceneGroup({
       //  LSG manager. These vars are currently used by shipPilot,
       //  speedTracker, and api.setPlayerShipLocation.
       // ----------------------------------------------------------------------
-      $game.spaceScene = spaceScene; // TODO: bookm playership - you're next, bitch.
+      $game.spaceScene = spaceScene;
       $game.levelScene = levelScene;
       // ----------------------------------------------------------------------
       spaceLighting.applyLighting({ scene: spaceScene });

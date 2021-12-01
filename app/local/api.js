@@ -29,11 +29,11 @@ export function setPlayerShipLocation({ x, y, z }={}) {
   //  * If regular space, ship is set to center of universe and transformations
   //    are ignored from there on out (for now, anyway; we may reset every now
   //    and again if player moves very far from origin).
-  $game.playerShip.getOnce((playerShip) => {
+  $game.playerShip.getOnce(({ mesh, warpBubble }) => {
     if ($game.hyperMovement) {
       // TODO: get this from the active LSG.
-      playerShip.mesh.scene.position.set(0, 0, 0);
-      playerShip.warpBubble.position.set(x, y, z);
+      mesh.scene.position.set(0, 0, 0);
+      warpBubble.position.set(x, y, z);
 
       // Keep the macro and micro scenes positions in sync.
       $game.spaceScene.position.set(-x, -y, -z);
@@ -53,9 +53,9 @@ export function setPlayerShipLocation({ x, y, z }={}) {
  */
 export function getPlayerShipLocation(cb=()=>{}) {
   // TODO: test both in regular and warp bubble space.
-  $game.playerShip.getOnce((playerShip) => {
+  $game.playerShip.getOnce(({ warpBubble }) => {
     if ($game.hyperMovement) {
-      cb(playerShip.warpBubble.position);
+      cb(warpBubble.position);
     }
     else {
       console.error(
@@ -75,8 +75,8 @@ export function setPlayerShipRotation({ x, y, z }={}) {
     return console.error('api.setPlayerShipRotation requires {x,y,z}.');
   }
   // TODO: test both in regular and warp bubble space.
-  $game.playerShip.getOnce((playerShip) => {
-    playerShip.warpBubble.rotation.set(x, y, z);
+  $game.playerShip.getOnce(({ warpBubble }) => {
+    warpBubble.rotation.set(x, y, z);
   });
 }
 
