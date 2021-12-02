@@ -1,5 +1,7 @@
+// Used to draw stars that are outside usual rendering range. This scene is
+// mostly used to generate skyboxes, but can also be used for catalog testing.
+
 import * as THREE from 'three';
-// import { getShader } from '../../shaders';
 
 const spectralCombinations = {};
 
