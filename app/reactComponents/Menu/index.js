@@ -11,6 +11,7 @@ import Modal from '../Modal';
 import ControlsOverlay from '../ControlsOverlay';
 import { logBootInfo, onReadyToBoot } from '../../local/windowLoadListener';
 import DebugTools from './DebugTools';
+import userProfile from '../../userProfile';
 
 const startupEmitter = getStartupEmitter();
 const uiEmitter = getUiEmitter();
@@ -47,13 +48,18 @@ export default class Menu extends React.Component {
   };
 
   componentDidMount() {
-    onReadyToBoot(() => {
-      this.setState({ profileWasLoaded: true }, () => {
-        startupEmitter.emit(startupEvent.menuLoaded);
-        logBootInfo('Operator interface ready');
-        this.registerListeners();
-        this.changeMenu({
-          next: this.state.activeMenu,
+    userProfile.cacheChangeEvent.getOnce(({ userOptions }) => {
+      onReadyToBoot(() => {
+        this.setState({
+          profileWasLoaded: true,
+          showControlsHelp: userOptions.customisation.showControlsHelp,
+        }, () => {
+          startupEmitter.emit(startupEvent.menuLoaded);
+          logBootInfo('Operator interface ready');
+          this.registerListeners();
+          this.changeMenu({
+            next: this.state.activeMenu,
+          });
         });
       });
     });
@@ -186,7 +192,7 @@ export default class Menu extends React.Component {
         return callback();
       }
       const { pings } = this.menuChangeListeners.notifyAll({ next, previous });
-      if (pings === 0) {
+      if (pings === 0 && next !== 'modal') {
         alert(`No menus are willing to accept responsibility for "${next}".`);
         // Default to 'game menu' as a fallback.
         return this.setState({ activeMenu: 'game menu' }, () => {
@@ -235,7 +241,7 @@ export default class Menu extends React.Component {
     else {
       return (
         <div>
-          <ControlsOverlay />
+          {this.state.showControlsHelp ? <ControlsOverlay/> : null}
           <GameMenu {...props} />
           <DebugTools {...props} />
           <Options {...props} />

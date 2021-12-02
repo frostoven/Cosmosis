@@ -6,8 +6,8 @@ input and uses it to transform world state. Note that "no" input is still
 Mode controllers are therefore used to update the game each frame, and how
 they do so is influenced by user action.
 
-Mode controllers are used to, for example, calculate how a space ship's
-position changes each frame. It will continue to do so even of the space ship
+Mode controllers are used to, for example, calculate how a spaceship's
+position changes each frame. It will continue to do so even of the spaceship
 scene is not currently being rendered.
 
 If anything listens for user input, it's defined in one of these

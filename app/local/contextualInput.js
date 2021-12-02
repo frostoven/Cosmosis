@@ -696,7 +696,7 @@ const misc = new ContextualInput('misc');
 // The main menu, the pause menu, and inventory screen are primary menus.
 const menuController = new ContextualInput('menuController');
 
-// Interactive in-game menu (such as menus of space ships and computers).
+// Interactive in-game menu (such as menus of spaceships and computers).
 const virtualMenu = new ContextualInput('virtualMenu');
 
 // Note: you'll notice we have an allModes mode in controls, yet it's not

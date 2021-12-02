@@ -41,7 +41,7 @@ You can now start the application:
 npm start
 ```
 If all works as it should, you should see the game window pop up, refresh, and
-find yourself in a space ship.
+find yourself in a spaceship.
 
 Unit tests may be performed by pressing F12 and runing `powerOnSelfTest()`.
 

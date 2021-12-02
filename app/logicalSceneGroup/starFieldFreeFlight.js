@@ -2,10 +2,12 @@ import LogicalSceneGroup from './LogicalSceneGroup';
 import localClusterStarShader from '../scenes/localClusterStarShader';
 import contextualInput from '../local/contextualInput';
 import { FreeCam } from '../modeControl/cameraControllers/freeCam';
-import * as THREE from 'three';
-import { createSpaceShip } from '../levelLogic/spaceShipLoader';
+import { createSpaceship } from '../levelLogic/spaceshipLoader';
+import AssetFinder from '../local/AssetFinder';
+import fs from 'fs';
+import { getShader } from '../../shaders';
 
-const { camController, ActionType } = contextualInput;
+const { camController } = contextualInput;
 let starFieldScene = null;
 
 const freeCam = new FreeCam();
@@ -26,26 +28,45 @@ const starFieldFreeFlight = new LogicalSceneGroup({
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_DST_COLOR);
 
-    if (!starFieldScene) {
-      starFieldScene = localClusterStarShader.init();
-    }
+    AssetFinder.getStarCatalogWFallback({
+      name: 'bsc5p_3d_min',
+      fallbackName: 'constellation_test',
+      callback: (error, fileName, parentDir) => {
+        fs.readFile(`./${parentDir}/${fileName}`, (error, catalogBlob) => {
+          if (error) {
+            console.error('Fata error loading star catalog:', error);
+          }
+          else {
+            if (!starFieldScene) {
+              starFieldScene = localClusterStarShader.init({
+                catalogJson: JSON.parse(catalogBlob),
+                shaderLoader: getShader,
+              });
+            }
 
-    starFieldScene.add(camera);
-    camController.giveControlTo('freeCam');
+            starFieldScene.add(camera);
+            camController.giveControlTo('freeCam');
 
-    // TODO: figure out what needs this and eliminate it.
-    $game.spaceScene = starFieldScene;
-    $game.levelScene = starFieldScene;
+            // TODO: figure out what needs this and eliminate it.
+            $game.spaceScene = starFieldScene;
+            $game.levelScene = starFieldScene;
 
-    callback();
+            callback();
 
-    // We unfortunately need some form of mesh in order for the game to set
-    // up / center itself.
-    createSpaceShip({
-      scene: starFieldScene,
-      modelName: 'minimal scene', onReady: (mesh, bubble) => {
-        $game.playerShip = mesh;
-        $game.playerWarpBubble = bubble;
+            // We unfortunately need some form of mesh in order for the game to set
+            // up / center itself.
+            createSpaceship({
+              scene: starFieldScene,
+              modelName: 'minimal scene', onReady: (mesh, warpBubble) => {
+                // TODO: this is not the player ship though - it's just a
+                //  reference. This is likely unneeded. Investigate.
+                $game.playerShip.setValue({
+                  mesh, warpBubble,
+                });
+              }
+            });
+          }
+        });
       }
     });
   },

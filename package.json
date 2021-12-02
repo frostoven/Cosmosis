@@ -7,8 +7,8 @@
   "window": {
     "title": "Cosmosis",
     "toolbar": false,
-    "width": 1109,
-    "height": 624,
+    "width": 1104,
+    "height": 621,
     "icon": "icon.png"
   },
   "chromium-args": "--enable-logging=stderr",
@@ -17,7 +17,7 @@
     "//": "prepare-dev is actually redundant, but it saves telling new users to reload nw after game.js first build.",
     "prepare-dev": "webpack --mode development",
     "dev": "webpack --mode development --watch",
-    "game": "nw --enable-node-worker",
+    "game": "nw",
     "start": "npm-run-all --parallel dev game"
   },
   "repository": {

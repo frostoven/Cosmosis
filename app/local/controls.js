@@ -26,7 +26,7 @@ let doublePresses;
 
 // Load controls from profile. This will run at boot, and every time the user
 // remaps their controls.
-userProfile.addCacheListener(({ controls: storedControls }) => {
+userProfile.cacheChangeEvent.getEveryChange(({ controls: storedControls }) => {
   controls = storedControls.controls;
   doublePresses = storedControls.doublePresses;
 });

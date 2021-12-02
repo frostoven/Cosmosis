@@ -72,7 +72,7 @@ export default class DebugTools extends React.Component {
     getStartupEmitter().on(startupEvent.gameViewReady, () => {
       triggerAction('emergencyMenuClose');
       activateSceneGroup({
-        renderer: $game.renderer,
+        renderer: $game.primaryRenderer,
         camera: $game.camera,
         logicalSceneGroup: logicalSceneGroup.starFieldFreeFlight,
       });
@@ -85,7 +85,7 @@ export default class DebugTools extends React.Component {
 
   loadShipPos = () => {
     const positions = userProfile.getCurrentConfig({
-      identifier: 'debugTools'
+      identifier: 'debugTools',
     }).storedShipPositions;
 
     $modal.listPrompt({

@@ -13,33 +13,30 @@ import Stats from '../../hackedlibs/stats/stats.module.js';
 
 import { forEachFn } from './utils';
 // import physics from './physics';
-import { createSpaceShip } from '../levelLogic/spaceShipLoader';
 import { PointerLockControls } from './PointerLockControls';
 import { startupEvent, getStartupEmitter } from '../emitters';
 import contextualInput from './contextualInput';
 import { preBootPlaceholder } from '../reactComponents/Modal';
 import { logBootInfo } from './windowLoadListener';
-import levelLighting from '../lighting/levelLighting';
-import spaceLighting from '../lighting/spaceLighting';
+import userProfile from '../userProfile';
 import {
   activateSceneGroup,
-  createRenderer,
   renderActiveScenes,
   stepAllScenes,
 } from '../logicalSceneGroup';
 
-// const gameFont = 'node_modules/three/examples/fonts/helvetiker_regular.typeface.json';
+import { createRenderer } from './renderer';
+import AssetFinder from './AssetFinder';
+import OffscreenSkyboxWorker from '../managedWorkers/OffscreenSkyboxWorker';
+import ChangeTracker from '../emitters/ChangeTracker';
+import { getEnums } from '../userProfile/defaultsConfigs';
 
 // 1 micrometer to 100 billion light years in one scene, with 1 unit = 1 meter?
 // preposterous!  and yet...
 const NEAR = 0.001, FAR = 1e27;
-let SCREEN_WIDTH = window.innerWidth;
-let SCREEN_HEIGHT = window.innerHeight;
 
 // Used to generate delta.
 let deltaPrevTime = Date.now();
-
-let composer;
 
 /*
  * Global vars
@@ -53,27 +50,25 @@ window.$game = {
   // possible this has become redundant. TODO: investigate removal.
   // group: null,
   // Contains everything large, including stars / planets / moons. Does not
-  // contain space ships or planetary surfaces (those belong to the level
+  // contain spaceships or planetary surfaces (those belong to the level
   // scene).
   // spaceScene: null,
   // Contains everything small.
   // levelScene: null,
   camera: null,
-  renderer: null,
-  // TODO: remame me. Contains level physics (I think). Perhaps delete and
+  // The primary graphics renderer.
+  primaryRenderer: null,
+  // Offscreen renderer used for skybox generation.
+  skyboxRenderer: null,
+  // TODO: rename me. Contains level physics (I think). Perhaps delete and
   //  start from scratch canon-es when resuming the physics task.
   // spaceWorld: null,
   gravityWorld: null,
-  // The loaded file. The 'real' space ship is playerShip.scene.
-  playerShip: null,
-  // Container for the player ship. Used especially by the warp drive to know
-  // what the ship's 'forward' direction is. This allows the 3D artist to model
-  // their ship in any orientation, and then use a standard arrow to tell the
-  // engine which direction the ship is pointing.
-  playerWarpBubble: null,
+  // The loaded file. The 'real' spaceship is playerShip.scene.
+  playerShip: new ChangeTracker(),
   ptrLockControls: null,
   // The term 'level' here is used very loosely. It's any interactable
-  // environment. Space ships as well planet sectors count as levels. Note that
+  // environment. Spaceships as well planet sectors count as levels. Note that
   // only *your own* ship is a level - another players ship is not interactable
   // and just a prop in your world.
   level: null,
@@ -82,7 +77,11 @@ window.$game = {
   // ship and player is stationary and the universe moves instead. This is to
   // overcome camera glitches. The ship can accelerate up to about about 3000c
   // before hyperspeed becomes non-optional.
-  hyperMovement: true,
+  // TODO: determine if this has become redundant (we're implementing new positioning methods).
+  hyperMovement: false,
+  event: {
+    skyboxLoaded: new ChangeTracker(),
+  }
 };
 window.$options = {
   // 0=off, 1=basic, 2=full
@@ -95,10 +94,6 @@ window.$options = {
   repeatRate: 50,
 };
 window.$displayOptions = {
-  // Rendering resolution scale. Great for developers and wood PCs alike.
-  // TODO: Call this "Resolution quality (Supersampling)" in the graphics menu. // 20% 50% 75% 'match native' 150% 200% 400%
-  resolutionScale: 1,
-
   limitFps: false,
   // On my machine, the frame limiter itself actually causes a 9% performance
   // drop when enabled, hence the 1.09. May need to actually track this
@@ -106,8 +101,8 @@ window.$displayOptions = {
   // a known ~9% drop.
   fpsLimit: 30 * 1.09,
 };
-window.$rendererParams = {
-  antialias: true,
+window.$webWorkers = {
+  offscreenSkybox: new OffscreenSkyboxWorker(),
 };
 // The preBootPlaceholder stores functions that match the actual model object.
 // Calling those functions queue them as requests. Once the menu system has
@@ -179,26 +174,65 @@ function init({ defaultScene }) {
   console.log('Initialising core.');
   logBootInfo('Core init start');
 
+  // User configurations.
+  const { debug, display, graphics } = userProfile.getCurrentConfig({
+    identifier: 'userOptions'
+  });
+
   // Controls.
   contextualInput.init();
 
-  // bookm TODO: move this to space LSG.
-  // Default active mode is shipPilot.
-  // contextualInput.camController.giveControlTo('shipPilot');
-
   // Default graphics font.
   // const fontLoader = new THREE.FontLoader();
+  const primaryCanvas = document.getElementById('primary-canvas');
+  const starfieldCanvas = document.getElementById('starfield-canvas');
+  if (!primaryCanvas) {
+    $modal.alert('Error: canvas not available; no rendering will work.');
+  }
 
-  const camera = new THREE.PerspectiveCamera(56.25, SCREEN_WIDTH / SCREEN_HEIGHT, NEAR, FAR);
-  const renderer = createRenderer();
+  const camera = new THREE.PerspectiveCamera(
+    display.fieldOfView, window.innerWidth / window.innerHeight, NEAR, FAR
+  );
+  const primaryRenderer = createRenderer({
+    initialisation: {
+      canvas: primaryCanvas,
+      // This is unfortunately only done during init, so changing at runtime
+      // requires recreating the whole renderer.
+      antialias: graphics.antialias,
+    },
+    options: {
+      width: window.innerWidth,
+      height: window.innerHeight,
+      shadowMapEnabled: graphics.enableShadows,
+      shadowMapType: graphics.shadowType,
+      devicePixelRatio: window.devicePixelRatio,
+      toneMapping: display.toneMapping,
+    }
+  });
+
+  AssetFinder.getStarCatalogWFallback({
+    name: 'bsc5p_3d_min',
+    fallbackName: 'constellation_test',
+    callback: (error, fileName, parentDir) => {
+      $webWorkers.offscreenSkybox.init({
+        canvas: starfieldCanvas,
+        width: graphics.skyboxResolution,
+        height: graphics.skyboxResolution,
+        skyboxAntialias: graphics.skyboxAntialias,
+        pixelRatio: window.devicePixelRatio,
+        catalogPath: `../${parentDir}/${fileName}`,
+        debugSides: debug.debugSkyboxSides,
+        debugCorners: debug.debugSkyboxCorners,
+      });
+    },
+  });
 
   activateSceneGroup({
-    renderer,
+    primaryRenderer,
     camera,
     logicalSceneGroup: defaultScene,
     callback: () => {
-      // $game contains all the essential game variables.
-      window.$game = initView({ camera, renderer });
+      initView({ camera, primaryRenderer });
       startupEmitter.emit(startupEvent.gameViewReady);
       logBootInfo('Comms relay ready');
 
@@ -207,36 +241,10 @@ function init({ defaultScene }) {
 
       animate();
       startupEmitter.emit(startupEvent.firstFrameRendered);
+      updatePrimaryRendererSizes();
       logBootInfo('Self-test pass');
     }
   });
-
-  // bookm
-  // fontLoader.load(gameFont, function (font) {
-  //   const startupScene = allScenes[sceneName];
-  //   if (!startupScene) {
-  //     return console.error(`Error: default scene ${sceneName} hasn't been registered.`);
-  //   }
-  //   // const scene = initScene({ font });
-  //   const spaceScene = startupScene.init({ font });
-  //   const levelScene = new THREE.Scene();
-  //
-  //   // Load lighting (is automatically delayed until scenes are ready).
-  //   levelLighting.applyLighting();
-  //   spaceLighting.applyLighting();
-  //
-  //   // $game contains all the essential game variables.
-  //   window.$game = initView({ spaceScene, levelScene });
-  //   startupEmitter.emit(startupEvent.gameViewReady);
-  //   logBootInfo('Comms relay ready');
-  //
-  //   initPlayer();
-  //   updateModeDebugText();
-  //
-  //   animate();
-  //   startupEmitter.emit(startupEvent.firstFrameRendered);
-  //   logBootInfo('Self-test pass');
-  // });
 
   window.$stats = new Stats();
   document.body.appendChild($stats.dom);
@@ -245,22 +253,8 @@ function init({ defaultScene }) {
   window.addEventListener('resize', onWindowResize, false);
 }
 
-function initView({ renderer, camera }) {
-  // TODO: make FOV adjustable in graphics menu.
-  // TODO: all option to press Alt that temporarily zoom in by decreasing perspective.
-  // const camera = new THREE.PerspectiveCamera(56.25, SCREEN_WIDTH / SCREEN_HEIGHT, NEAR, FAR);
-  // camera.position.copy(new THREE.Vector3(0, 0, 0));
-  // camera.rotation.setFromVector3(new THREE.Vector3(0, 0, 0));
-  // levelScene.add(camera);
+function initView({ primaryRenderer, camera }) {
   const ptrLockControls = new PointerLockControls(camera, document.body);
-
-  // RENDERER HERE bookm
-  // const renderer = activateLogicalSceneGroup({
-  //   name: 'primaryRenderer',
-  //   lsg: logicalSceneGroup.space,
-  // });
-
-  // document.body.appendChild(renderer.domElement);
 
   // Postprocessing.
   // --------------------------------------------------------------------------
@@ -305,68 +299,41 @@ function initView({ renderer, camera }) {
   //     });
   // });
 
-  // bookm.
-  // TODO: this needs to happen in space LSG.
-  // const spaceWorld = physics.initSpacePhysics({ levelScene, debug: true });
-  // const group = new THREE.Group();
-  // group.add(spaceScene);
-  // group.add(levelScene);
-
   // let spaceWorld = null;
   // let group = null;
 
-  return {
-    renderer, camera,
-    ptrLockControls, ready: true
-  };
+  $game.primaryRenderer = primaryRenderer;
+  $game.camera = camera;
+  $game.ptrLockControls = ptrLockControls;
+  $game.ready = true;
 }
 
 function initPlayer() {
-  // bookm TODO: re-implement space ship loading.
-  // return;
-
-  // createSpaceShip({
-  //   // modelName: 'minimal scene', onReady: (mesh, bubble) => {
-  //   // modelName: 'monkey', onReady: (mesh, bubble) => {
-  //   // modelName: 'prototype', onReady: (mesh, bubble) => {
-  //   modelName: 'DS69F', onReady: (mesh, bubble) => {
-  //   //   modelName: 'scorpion_d', onReady: (mesh, bubble) => {
-  //     // modelName: 'devFlyer', onReady: (mesh, bubble) => {
-  //     // modelName: 'devFlyer2', onReady: (mesh, bubble) => {
-  //     // modelName: 'devFlyer3', onReady: (mesh, bubble) => {
-  //     // modelName: 'tentacleHull', onReady: (mesh, bubble) => {
-  //     // modelName: 'test', onReady: (mesh, bubble) => {
-  //     $game.playerShip = mesh;
-  //     $game.playerWarpBubble = bubble;
-  //     // TODO: Investigate why setTimeout is needed. Things break pretty hard
-  //     //  if we have a very tiny space ship (reproducible with an empty scene
-  //     //  containing only a camera). The exact symptom is it that
-  //     //  startupEvent.ready is triggered before we have a scene. This leads me
-  //     //  to believe larger space ships delay .ready long enough for the scene
-  //     //  to load fully.
-  //     // setTimeout(() => {
-  //       startupEmitter.emit(startupEvent.playerShipLoaded);
-  //     // });
-  //     logBootInfo('Ship ready');
-  //   }
-  // });
+  // TODO: determine if this function still belongs here at all.
 }
 
-function updateRendererSizes() {
-  if (!$game.renderer) {
+function updatePrimaryRendererSizes() {
+  if (!$game.primaryRenderer) {
+    console.error('Cannot update primary renderer: not ready.');
     return;
   }
-  // Recalculate size for both renderers when screen size or split location changes
-  SCREEN_WIDTH = window.innerWidth;
-  SCREEN_HEIGHT = window.innerHeight;
 
-  $game.renderer.setSize( SCREEN_WIDTH * $displayOptions.resolutionScale, SCREEN_HEIGHT * $displayOptions.resolutionScale);
-  $game.renderer.domElement.style.width = '100%';
-  $game.renderer.domElement.style.height = '100%';
-  $game.camera.aspect = SCREEN_WIDTH / SCREEN_HEIGHT;
+  // Recalculate size for both renderers when screen size or split location changes
+  let screenWidth = window.innerWidth;
+  let screenHeight = window.innerHeight;
+
+  const { graphics } = userProfile.getCurrentConfig({
+    identifier: 'userOptions',
+  });
+
+  const scale = graphics.resolutionScale;
+  $game.primaryRenderer.setSize(screenWidth * scale, screenHeight * scale);
+  $game.primaryRenderer.domElement.style.width = '100%';
+  $game.primaryRenderer.domElement.style.height = '100%';
+  $game.camera.aspect = screenWidth / screenHeight;
   $game.camera.updateProjectionMatrix();
 
-  console.log('window resized to:', SCREEN_WIDTH, SCREEN_HEIGHT);
+  console.log('window resized to:', screenWidth, screenHeight);
 }
 
 /**
@@ -386,39 +353,13 @@ function animate() {
   });
   deltaPrevTime = time;
 
-  const {
-    renderer, camera,
-    gravityWorld, level, playerShip
-  } = $game;
-
-  // bookm: TODO: reimplement.
-  // spaceWorld && physics.renderPhysics(delta, spaceWorld);
-  // gravityWorld && physics.renderPhysics(delta, gravityWorld);
+  const { primaryRenderer, camera, gravityWorld, level } = $game;
 
   if (level) {
     level.process(delta);
   }
 
-  // TODO: REMOVE ME - this is here to test the cam attaching to the bridge with rotation.
-  // if ($game.playerShip) {
-  //   $game.playerShip.scene.rotateY(0.001);
-  //   $game.playerShip.scene.rotateX(0.001);
-  //   $game.playerShip.scene.rotateZ(0.001);
-  // }
-
-  // bookm
-  // === Render scenes ===============
-  // renderer.autoClear = true;
-  // // composer.render(); // TODO: check if this works here.
-  // renderer.render(spaceScene, camera);
-  // renderer.autoClear = false;
-  // // clearDepth might be needed if we encounter weird clipping issues. Test me.
-  // // renderer.clearDepth();
-  // renderer.render(levelScene, camera);
-  //
-  renderActiveScenes({ renderer, camera });
-  //
-  // =================================
+  renderActiveScenes({ renderer: primaryRenderer, camera });
 
   // Run external renderers. We place this after the scene render to prevent
   // the camera from jumping around.
@@ -428,9 +369,6 @@ function animate() {
   //   const controller = cachedRenderHooks[i];
   //   controller.render(delta);
   // }
-
-  // levelLighting.updateLighting();
-  // spaceLighting.updateLighting();
 
   // If the camera is currently anchored to something, update position. Note:
   // always put this after all physics have been calculated or we'll end up
@@ -448,17 +386,30 @@ function animate() {
 }
 
 function onWindowResize() {
-  updateRendererSizes();
+  updatePrimaryRendererSizes();
 }
 
 // TODO: remove me once the game is more stable.
-startupEmitter.on(startupEvent.playerShipLoaded, () => {
+$game.playerShip.getOnce(() => {
   updateHyperdriveDebugText();
 });
 
 // TODO: remove me once the game is more stable.
 startupEmitter.on(startupEvent.ready, () => {
   closeLoadingScreen();
+
+  // For some reason the game takes nearly 5x longer to boot in fullscreen...
+  // slower boot happens even if the res scale is at 0.1 (less than 200x200
+  // effective res), albeit not as bad. So I guess we wait until fully booted
+  // before switching. Might need to create tiny splash in future that covers
+  // the whole window during boot.
+  userProfile.cacheChangeEvent.getOnce(({ userOptions }) => {
+    const userDisplayChoice = userOptions.display.displayMode;
+    const displayEnum = getEnums({ identifier: 'userOptions' }).display;
+    if (userDisplayChoice === displayEnum.displayMode.borderlessFullscreen) {
+      nw.Window.get().enterFullscreen();
+    }
+  });
 });
 
 // Waits for the game to load so that it can trigger startupEvent.ready.
@@ -466,7 +417,7 @@ function waitForAllLoaded() {
   // If the game hasn't booted after this amount of time, complain. Note that
   // it's timed with a low priority timer, so the game may exceed load times by
   // over 500ms before a complaint is triggered. Out target is approximate.
-  let warnTime = 3000;
+  let warnTime = 4000;
 
   // Used to measure boot time. The start time is intentionally only after core
   // has loaded because we don't care about the boot time of external factors
@@ -495,24 +446,24 @@ function waitForAllLoaded() {
     startupEmitters,
     () => count++,
     () => {
-      // Everything has loaded.
+      // World and level has loaded.
       count++;
-      startupEmitter.emit(startupEvent.ready);
-      logBootInfo('Pilot access confirmed');
+      // TODO: we probably need to migrate the existing systems to the change
+      //  tracker, then add change forEachFn to use those instead.
+      $game.playerShip.getOnce(() => {
+        $game.event.skyboxLoaded.getOnce(() => {
+          startupEmitter.emit(startupEvent.ready);
+          logBootInfo('Pilot access confirmed');
 
-      // Log boot time.
-      const bootTime = ((Date.now() - startTime) / 1000).toFixed(2);
-      console.log(
-        `Game finished booting after ${bootTime}s. ` +
-        `Total startup events: ${count}`
-      );
-      logBootInfo('Finalising boot');
-
-      // Adjust camera perspective on resize.
-      // window.onresize = function() {
-        // let SCREEN_WIDTH = window.innerWidth;
-        // let SCREEN_HEIGHT = window.innerHeight;
-      // }
+          // Log boot time.
+          const bootTime = ((Date.now() - startTime) / 1000).toFixed(2);
+          console.log(
+            `Game finished booting after ${bootTime}s. ` +
+            `Total startup events: ${count}`
+          );
+          logBootInfo('Finalising boot');
+        });
+      });
     });
 
   setTimeout(() => {

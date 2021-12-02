@@ -26,14 +26,15 @@ Demo:
 
 ## What is Cosmosis?
 Cosmosis plans to eventually be a high quality open world space exploration
-game. It will have the Milky Way galaxy as its home and use real NASA data
-where possible. Where NASA data does not exist, procedural generation will be
-used. In this regard it aims to be hyperrealistic.
+game. It has the Milky Way galaxy as its home and currently uses real NASA data
+for nearby stars (constellations are visible from Earth). A procedural
+generation system is currently being designed to be used where NASA data does
+not exist. In this regard it aims to be hyperrealistic.
 
 Space flight will be very flight-sim-like (i.e. player has manual control over
 every aspect of the ship). Ship internals will be modular. It currently has
-functional warp drives (but no celestial bodies to travel to yet). A physics
-system is being implemented.
+functional warp drives, though travel is currently limited while functionality
+is smoothed out. A physics system is being implemented.
 
 Planets and their (hostile Lovecraftian) inhabitants will be procedurally
 generated, and ground-based combat will be souls-like.
@@ -56,14 +57,16 @@ directory named `CosmosisGame`, then restart the game.
 
 The latest beta can currently do the following:
 * Fly around at many thousand times the speed of light in a to-scale large
-  universe (millions of light-years across) with no glitches or lag (even on
-  weak graphics cards). This mode is launched by default, and uses a spaceship
-  with a warp drive and nothing else.
+  (albeit mostly empty) universe that's millions of light-years across. This
+  mode is launched by default, and uses a spaceship with a warp drive and
+  nothing else. Note that it currently generates a static skybox based on real
+  star data when the game boots; to actually fly amongst nearby stars, see the
+  next point.
 * Fly around [real Earth-visible stars](https://github.com/feynmansbongos/BSC5P-JSON-XYZ)
   as a ghost. You can activate this mode by pressing Backspace and going to
   `debug tools` -> `Star free-flight`. Use `+` and `-` to change flight speed.
-* You can fly around spaceships by pressing `F8`. If the spaceship has switches
-  or other intractables, you can interact with them by pressing `E`.
+* You can fly around your spaceship by pressing `F8`. If the spaceship has
+  switches or other intractables, you can interact with them by pressing `E`.
 
 <!--
 TODO: Add menu option to choose a ship, then add a bullet point here that you
@@ -105,7 +108,7 @@ Cosmosis was brought into existence for the following reasons:
   traditional ones.
 
 #### Excellent modding support
-You can make a fully interactable space ship yourself **with zero programming
+You can make a fully interactable spaceship yourself **with zero programming
 experience**. All you need is a copy of Blender 2.8+ and to follow the guide on
 mesh codes. Blender does not even need any special add-ons for this to work,
 though a future add-on is on the roadmap to make some tedious tasks faster.
@@ -136,7 +139,7 @@ bounty missions to fuel your drug addiction.
 
 <!-- We aim to be the following; uncomment when achieved :) --
 Cosmosis is an open world space game with RPG elements. It aims to have
-realistic space ship mechanics (if a game with FTL and Lovecraftian Great
+realistic spaceship mechanics (if a game with FTL and Lovecraftian Great
 Ones can fall into such a category), and souls-like combat on planets. It also
 has an FPS shooter class for those who do refuse to praise the sun
 \[blasphemes].

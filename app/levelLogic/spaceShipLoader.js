@@ -14,7 +14,7 @@ const startupEmitter = getStartupEmitter();
 // dracoLoader.setDecoderPath( 'three/examples/js/libs/draco/' );
 // dracoLoader.setDecoderConfig( { type: 'js' } );
 
-// var loader = new GLTFLoader().setPath( 'potatoLqAssets/spaceShips/' );
+// var loader = new GLTFLoader().setPath( 'potatoLqAssets/spaceships/' );
 const loader = new GLTFLoader();
 
 // loader.load( 'DamagedHelmet.gltf', function ( gltf ) {
@@ -83,7 +83,7 @@ export function getMesh(modelName, callback) {
 }
 
 function loadModel(name, callback) {
-  AssetFinder.getSpaceShip({
+  AssetFinder.getSpaceship({
     name,
     callback: (error, filename, dir) => {
       loader.setPath(dir + '/');
@@ -107,11 +107,11 @@ function loadModel(name, callback) {
 
 function modelPostSetup(modelName, gltf, pos, scene, world, onReady) {
   getMesh(modelName, (mesh) => {
-    // TODO: improve the way this is decided. The space ship designer should be
+    // TODO: improve the way this is decided. The spaceship designer should be
     //  choosing what the standard arrow is.
     const standardArrow = mesh.cameras[0];
 
-    // Space ship container.
+    // Spaceship container.
     const bubble = new THREE.Group();
     bubble.add(mesh.scene);
     scene.add(bubble);
@@ -119,6 +119,10 @@ function modelPostSetup(modelName, gltf, pos, scene, world, onReady) {
     // Get warp bubble world direction:
     let bubbleDirection = new THREE.Vector3();
     bubble.getWorldDirection(bubbleDirection);
+
+    // Follows the ship, but does not rotate with it.
+    const centerPoint = new THREE.Group();
+    scene.add(centerPoint);
 
     // Get standard arrow world direction:
     let camDirection = new THREE.Vector3();
@@ -150,7 +154,7 @@ function modelPostSetup(modelName, gltf, pos, scene, world, onReady) {
       }
     });
 
-    onReady(mesh, bubble);
+    onReady(mesh, bubble, centerPoint);
   });
 }
 
@@ -189,11 +193,15 @@ function processMeshCodes(name, gltf, isPlayer) {
  * @param {THREE.scene} scene
  * @param {CANNON.World} world
  * @param {boolean} isPlayer - If true, this is the player's ship.
- * @param {function} onReady
+ * @param {function} onReady - onReady(mesh, warpBubble, centerPoint);
+ *   mesh: spaceship model.
+ *   warpBubble: group containing everything that needs to move and rotate with
+ *     the ship.
+ *   centerPoint: group that moves with the ship, but does not rotate with it.
  */
-export function createSpaceShip({ modelName, pos, scene, world, isPlayer, onReady }) {
+export function createSpaceship({ modelName, pos, scene, world, isPlayer, onReady }) {
   startupEmitter.on(startupEvent.gameViewReady, () => {
-    if (!modelName) return console.error('createSpaceShip needs a model name.');
+    if (!modelName) return console.error('createSpaceship needs a model name.');
     if (!pos) pos = $game.camera.position;
     if (!onReady) onReady = () => {};
 
@@ -207,5 +215,5 @@ export function createSpaceShip({ modelName, pos, scene, world, isPlayer, onRead
 
 export default {
   getMesh,
-  createSpaceShip,
+  createSpaceship,
 };
