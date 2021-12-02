@@ -146,7 +146,7 @@ echo "Build script will use the following paths:"
 echo " * NW.js path: $nw_path"
 echo " * Cloned Cosmosis path: $cosmosis_path"
 echo " * Prod assets path: $prod_assets"
-echo " * Build path: $$dist_path"
+echo " * Build path: $dist_path"
 echo
 echo "Target environment: $friendly_name"
 
@@ -199,7 +199,7 @@ cd "$dist_path"  >/dev/null
 echo "* Removing line 'nw' from package.json to speed up build."
 sed -i.bak '/"nw":/d' ./package.json >/dev/null
 
-echo "* Installing build tools with 'npm install'"
+echo "* Installing build tools with 'npm install (using ignore-scripts)'"
 echo "  > Target: $friendly_name"
 npm install --ignore-scripts "$npm_arch" "$npm_platform"
 
@@ -222,7 +222,7 @@ echo "* Remove files not needed to run final product."
 # Directories
 rm -rf .git .github app build_utils
 # Files
-rm build/.gitkeep .gitignore .npmrc package-lock.json webpack.config.js
+rm .gitignore .npmrc package-lock.json webpack.config.js
 
 echo
 echo
@@ -238,6 +238,6 @@ echo "1) Start the Cosmosis application."
 echo "2) Press F12 and make sure there are no errors in the developer console."
 echo "3) From the developer console, run: powerOnSelfTest(). This runs unit "
 echo "   tests. You should have no errors."
-echo "4) If all is good, zip it up, rename the zip to $(dist_name).zip"
+echo "4) If all is good, zip it up, rename the zip to $dist_name.zip"
 echo "5) Publish zip."
 echo
