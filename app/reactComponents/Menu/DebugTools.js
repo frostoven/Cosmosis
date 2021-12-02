@@ -85,7 +85,7 @@ export default class DebugTools extends React.Component {
 
   loadShipPos = () => {
     const positions = userProfile.getCurrentConfig({
-      identifier: 'debugTools'
+      identifier: 'debugTools',
     }).storedShipPositions;
 
     $modal.listPrompt({

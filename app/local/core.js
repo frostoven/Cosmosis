@@ -18,6 +18,7 @@ import { startupEvent, getStartupEmitter } from '../emitters';
 import contextualInput from './contextualInput';
 import { preBootPlaceholder } from '../reactComponents/Modal';
 import { logBootInfo } from './windowLoadListener';
+import userProfile from '../userProfile';
 import {
   activateSceneGroup,
   renderActiveScenes,
@@ -28,12 +29,11 @@ import { createRenderer } from './renderer';
 import AssetFinder from './AssetFinder';
 import OffscreenSkyboxWorker from '../managedWorkers/OffscreenSkyboxWorker';
 import ChangeTracker from '../emitters/ChangeTracker';
+import { getEnums } from '../userProfile/defaultsConfigs';
 
 // 1 micrometer to 100 billion light years in one scene, with 1 unit = 1 meter?
 // preposterous!  and yet...
 const NEAR = 0.001, FAR = 1e27;
-let SCREEN_WIDTH = window.innerWidth;
-let SCREEN_HEIGHT = window.innerHeight;
 
 // Used to generate delta.
 let deltaPrevTime = Date.now();
@@ -94,10 +94,6 @@ window.$options = {
   repeatRate: 50,
 };
 window.$displayOptions = {
-  // Rendering resolution scale. Great for developers and wood PCs alike.
-  // TODO: Call this "Resolution quality (Supersampling)" in the graphics menu. // 20% 50% 75% 'match native' 150% 200% 400%
-  resolutionScale: 1,
-
   limitFps: false,
   // On my machine, the frame limiter itself actually causes a 9% performance
   // drop when enabled, hence the 1.09. May need to actually track this
@@ -108,10 +104,6 @@ window.$displayOptions = {
 window.$webWorkers = {
   offscreenSkybox: new OffscreenSkyboxWorker(),
 };
-// TODO: implement anti-aliasing (and other options) in the graphics menu.
-// window.$primaryRendererParams = {
-//   antialias: true,
-// };
 // The preBootPlaceholder stores functions that match the actual model object.
 // Calling those functions queue them as requests. Once the menu system has
 // booted, all requests are then honored as the actual modal functions.
@@ -182,6 +174,11 @@ function init({ defaultScene }) {
   console.log('Initialising core.');
   logBootInfo('Core init start');
 
+  // User configurations.
+  const { debug, display, graphics } = userProfile.getCurrentConfig({
+    identifier: 'userOptions'
+  });
+
   // Controls.
   contextualInput.init();
 
@@ -193,35 +190,39 @@ function init({ defaultScene }) {
     $modal.alert('Error: canvas not available; no rendering will work.');
   }
 
-  const camera = new THREE.PerspectiveCamera(56.25, SCREEN_WIDTH / SCREEN_HEIGHT, NEAR, FAR);
+  const camera = new THREE.PerspectiveCamera(
+    display.fieldOfView, window.innerWidth / window.innerHeight, NEAR, FAR
+  );
   const primaryRenderer = createRenderer({
     initialisation: {
       canvas: primaryCanvas,
+      // This is unfortunately only done during init, so changing at runtime
+      // requires recreating the whole renderer.
+      antialias: graphics.antialias,
     },
     options: {
       width: window.innerWidth,
       height: window.innerHeight,
-      shadowMapEnabled: true,
-      // TODO: move into graphics are 'soft shadows'.
-      shadowMapType: THREE.PCFSoftShadowMap,
+      shadowMapEnabled: graphics.enableShadows,
+      shadowMapType: graphics.shadowType,
       devicePixelRatio: window.devicePixelRatio,
+      toneMapping: display.toneMapping,
     }
   });
-  // const skyboxRenderer = createRenderer('skyboxRenderer', {
-  //   doNotCreateElement: true,
-  // });
 
   AssetFinder.getStarCatalogWFallback({
     name: 'bsc5p_3d_min',
     fallbackName: 'constellation_test',
     callback: (error, fileName, parentDir) => {
-      console.log('catalog path:', { error, fileName, parentDir });
       $webWorkers.offscreenSkybox.init({
         canvas: starfieldCanvas,
-        width: 2048, // TODO: move skybox resolution to graphics menu.
-        height: 2048,
+        width: graphics.skyboxResolution,
+        height: graphics.skyboxResolution,
+        skyboxAntialias: graphics.skyboxAntialias,
         pixelRatio: window.devicePixelRatio,
         catalogPath: `../${parentDir}/${fileName}`,
+        debugSides: debug.debugSkyboxSides,
+        debugCorners: debug.debugSkyboxCorners,
       });
     },
   });
@@ -240,6 +241,7 @@ function init({ defaultScene }) {
 
       animate();
       startupEmitter.emit(startupEvent.firstFrameRendered);
+      updatePrimaryRendererSizes();
       logBootInfo('Self-test pass');
     }
   });
@@ -252,12 +254,6 @@ function init({ defaultScene }) {
 }
 
 function initView({ primaryRenderer, camera }) {
-  // TODO: make FOV adjustable in graphics menu.
-  // TODO: all option to press Alt that temporarily zoom in by decreasing perspective.
-  // const camera = new THREE.PerspectiveCamera(56.25, SCREEN_WIDTH / SCREEN_HEIGHT, NEAR, FAR);
-  // camera.position.copy(new THREE.Vector3(0, 0, 0));
-  // camera.rotation.setFromVector3(new THREE.Vector3(0, 0, 0));
-  // levelScene.add(camera);
   const ptrLockControls = new PointerLockControls(camera, document.body);
 
   // Postprocessing.
@@ -318,19 +314,26 @@ function initPlayer() {
 
 function updatePrimaryRendererSizes() {
   if (!$game.primaryRenderer) {
+    console.error('Cannot update primary renderer: not ready.');
     return;
   }
-  // Recalculate size for both renderers when screen size or split location changes
-  SCREEN_WIDTH = window.innerWidth;
-  SCREEN_HEIGHT = window.innerHeight;
 
-  $game.primaryRenderer.setSize( SCREEN_WIDTH * $displayOptions.resolutionScale, SCREEN_HEIGHT * $displayOptions.resolutionScale);
+  // Recalculate size for both renderers when screen size or split location changes
+  let screenWidth = window.innerWidth;
+  let screenHeight = window.innerHeight;
+
+  const { graphics } = userProfile.getCurrentConfig({
+    identifier: 'userOptions',
+  });
+
+  const scale = graphics.resolutionScale;
+  $game.primaryRenderer.setSize(screenWidth * scale, screenHeight * scale);
   $game.primaryRenderer.domElement.style.width = '100%';
   $game.primaryRenderer.domElement.style.height = '100%';
-  $game.camera.aspect = SCREEN_WIDTH / SCREEN_HEIGHT;
+  $game.camera.aspect = screenWidth / screenHeight;
   $game.camera.updateProjectionMatrix();
 
-  console.log('window resized to:', SCREEN_WIDTH, SCREEN_HEIGHT);
+  console.log('window resized to:', screenWidth, screenHeight);
 }
 
 /**
@@ -394,6 +397,19 @@ $game.playerShip.getOnce(() => {
 // TODO: remove me once the game is more stable.
 startupEmitter.on(startupEvent.ready, () => {
   closeLoadingScreen();
+
+  // For some reason the game takes nearly 5x longer to boot in fullscreen...
+  // slower boot happens even if the res scale is at 0.1 (less than 200x200
+  // effective res), albeit not as bad. So I guess we wait until fully booted
+  // before switching. Might need to create tiny splash in future that covers
+  // the whole window during boot.
+  userProfile.cacheChangeEvent.getOnce(({ userOptions }) => {
+    const userDisplayChoice = userOptions.display.displayMode;
+    const displayEnum = getEnums({ identifier: 'userOptions' }).display;
+    if (userDisplayChoice === displayEnum.displayMode.borderlessFullscreen) {
+      nw.Window.get().enterFullscreen();
+    }
+  });
 });
 
 // Waits for the game to load so that it can trigger startupEvent.ready.

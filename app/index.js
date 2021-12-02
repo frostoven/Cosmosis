@@ -11,7 +11,6 @@ import { onDocumentReady, onReadyToBoot, logBootInfo }
   from './local/windowLoadListener';
 
 // Game modules.
-import scenes from './scenes';
 import './local/toast';
 import * as THREE from 'three';
 import * as CANNON from 'cannon';
@@ -30,7 +29,6 @@ window.debug.CANNON = CANNON;
 // Debug reference to API.
 window.debug.api = api;
 
-// const defaultScene = 'logDepthDemo';
 const defaultScene = logicalSceneGroup.space;
 
 // Integration tests. Note that these will no longer run by itself. The user
@@ -73,15 +71,6 @@ if (process.env && process.env.NODE_ENV !== 'production') {
 console.groupCollapsed(`Pre-init (build number: ${packageJson.releaseNumber}).`);
 logBootInfo(`System boot v${packageJson.releaseNumber}`); // ▓
 discoverShaders();
-
-// Register all scenes.
-// for (let scene of scenes) {
-//   console.log('Registering scene', scene.name);
-//   scene.register();
-// }
-// Register all camera controllers.
-// modeControl.initAll(); // bookm - check that disabling this does not break too many things
-
 console.groupEnd();
 
 onDocumentReady(() => {
@@ -125,12 +114,12 @@ function initCore() {
     // TODO: implement mechanism to always keep track of player ship location
     //  and auto-save on occasion. This is not however a current priority and
     //  should only be done once the player actually has systems to explore.
-    const { defaultShipPosition } = userProfile.getCurrentConfig({
-      identifier: 'debugTools'
+    const { currentPosition } = userProfile.getCurrentConfig({
+      identifier: 'gameState',
     });
 
-    api.setPlayerShipLocation(defaultShipPosition.location);
-    api.setPlayerShipRotation(defaultShipPosition.rotation);
+    api.setPlayerShipLocation(currentPosition.location);
+    api.setPlayerShipRotation(currentPosition.rotation);
   });
 }
 

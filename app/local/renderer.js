@@ -5,7 +5,6 @@ function createRenderer({
   options = {},
 } = { initialisation: {}, options: {} }) {
   const renderer = new THREE.WebGLRenderer({
-    antialias: true,
     logarithmicDepthBuffer: true,
     alpha: true,
     ...initialisation,
@@ -18,17 +17,9 @@ function createRenderer({
 
   renderer.setPixelRatio(options.devicePixelRatio);
   renderer.setSize(options.width, options.height);
-
   renderer.shadowMap.enabled = !!options.shadowMapEnabled;
   renderer.shadowMap.type = options.shadowMapType;
-
-  // TODO: give options for shaders 'colourful' vs 'filmic'.
-  // renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  // renderer.toneMapping = THREE.NoToneMapping;
-
-  // TODO: add to graphics menu.
-  // renderer.gammaOutput = true;
-  // renderer.gammaFactor = 2.2;
+  renderer.toneMapping = options.toneMapping;
 
   return renderer;
 }

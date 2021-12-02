@@ -8,7 +8,6 @@ import localClusterStarShader from '../scenes/localClusterStarShader';
 import { getJson, getShader } from './fileLoader';
 import { addDebugCornerIndicators, addDebugSideCounters } from './debugTools';
 import { jsonNoiseGen } from '../universeFactory/noise';
-import { createRenderer } from '../local/renderer';
 
 const options = {
   debugSides: false,
@@ -29,20 +28,20 @@ self.onmessage = function createOffscreenSkybox(message) {
 };
 
 const api = {
-  init: ({ drawingSurface, width, height, pixelRatio, catalogPath, debugSides, debugCorners }) => {
-    self.debugSides = !!debugSides;
-    self.debugCorners = !!debugCorners;
+  init: ({ drawingSurface, width, height, skyboxAntialias, pixelRatio, catalogPath, debugSides, debugCorners }) => {
+    options.debugSides = !!debugSides;
+    options.debugCorners = !!debugCorners;
 
     getJson(catalogPath, (error, catalogJson) => {
       if (error) {
         console.error('Could not load star catalog', catalogPath);
       }
       else {
-        init(drawingSurface, width, height, pixelRatio, catalogJson);
+        init(drawingSurface, width, height, skyboxAntialias, pixelRatio, catalogJson);
       }
     });
   },
-  renderFace: ({ x, y, z, sideNumber, tag }) => { renderFace( x, y, z, sideNumber, tag) },
+  renderFace: ({ x, y, z, sideNumber, tag }) => { renderFace( x, y, z, sideNumber, tag); },
   // Tests heavy data copies. Defaults to 300MB, which is the expected
   // worst-case scenario.
   testHeavyPayload: ({ size=300000 }) => {
@@ -58,7 +57,7 @@ function doInitCallbackWhenReady() {
   }
 }
 
-function init(canvas, width, height, pixelRatio, catalogJson) {
+function init(canvas, width, height, skyboxAntialias, pixelRatio, catalogJson) {
   scene = new THREE.Scene();
 
   /* =========================================================== */
@@ -70,8 +69,7 @@ function init(canvas, width, height, pixelRatio, catalogJson) {
   // });
 
   renderer = new THREE.WebGLRenderer({
-    // TODO: set star-based anti-alias in graphics menu.
-    antialias: true,
+    antialias: skyboxAntialias,
     logarithmicDepthBuffer: true,
     canvas: canvas,
   });
@@ -104,10 +102,10 @@ function init(canvas, width, height, pixelRatio, catalogJson) {
 
   cubeCamera.update(renderer, scene);
 
-  if (self.debugSides) {
+  if (options.debugSides) {
     addDebugSideCounters(scene);
   }
-  if (self.debugCorners) {
+  if (options.debugCorners) {
     addDebugCornerIndicators(scene);
   }
 
@@ -120,7 +118,7 @@ function init(canvas, width, height, pixelRatio, catalogJson) {
   });
 }
 
-function renderFace(x, y, z, sideNumber, tag, silent=false) {
+function renderFace(x, y, z, sideNumber, tag) {
   if (sideNumber > 5) {
     return console.error('Side number', sideNumber, 'is not in range 0..5');
   }
