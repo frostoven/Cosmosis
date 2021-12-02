@@ -79,9 +79,7 @@ const space = new LogicalSceneGroup({
 
       const spaceWorld = physics.initSpacePhysics({ scene: cache.levelScene, debug: true });
 
-      // TODO: replace this with a mechanism whereby this retrieved from the
-      //  LSG manager. These vars are currently used by shipPilot,
-      //  speedTracker, and api.setPlayerShipLocation.
+      // TODO: make this work with the new ChangeTracker mechanism.
       // ----------------------------------------------------------------------
       $game.spaceScene = spaceScene;
       $game.levelScene = levelScene;

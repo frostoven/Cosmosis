@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import userProfile from '../userProfile';
 
 // Applies lighting from local star. This is here and not in spaceLighting
 // because in reality this lighting is all fake - this lighting is in a scene
@@ -9,9 +10,11 @@ function applyLighting({ scene }) {
     const light = new THREE.DirectionalLight(0xffffff, 2);
     light.castShadow = true;
 
-    // TODO: move into graphics menu as 'horizontal shadow distance (in meters)'.
-    const shadowCamWidth = 3;
-    const shadowCamHeight = 3;
+    const { graphics } = userProfile.getCurrentConfig({
+      identifier: 'userOptions',
+    });
+    const shadowCamWidth = graphics.shadowDistanceMeters;
+    const shadowCamHeight = graphics.shadowDistanceMeters;
 
     light.shadow.camera.top = shadowCamHeight;
     light.shadow.camera.bottom = -shadowCamHeight;

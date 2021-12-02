@@ -1,6 +1,7 @@
 import ManagedWorker from './ManagedWorker';
 import * as THREE from 'three';
 import Unit from '../local/Unit';
+import { logBootInfo } from '../local/windowLoadListener';
 
 export default class OffscreenSkyboxWorker extends ManagedWorker {
   constructor() {
@@ -26,7 +27,7 @@ export default class OffscreenSkyboxWorker extends ManagedWorker {
       }
     });
 
-    this.addWorkerListener('renderFace', ({ error, value }) => {
+    this.addWorkerListener('renderFace', ({ value }) => {
       const { x, y, z, sideNumber, tag } = value;
       if (tag === 'internal cascade') {
         // Caution: this is request**Post**AnimationFrame, not
@@ -48,18 +49,22 @@ export default class OffscreenSkyboxWorker extends ManagedWorker {
                   this.applySkyboxFromCache();
                 }
               }
-            )
+            );
           }
         );
       }
     });
 
     this.addWorkerListener('testHeavyPayload', ({ error, value }) => {
-      console.log('testHeavyPayload:', value.length, 'KB transferred.');
+      console.log('testHeavyPayload:', value.length, 'KB transferred. Error:', error);
     });
   }
 
-  init({ canvas, width, height, pixelRatio, catalogPath }) {
+  init({
+    canvas, width, height, skyboxAntialias, pixelRatio, catalogPath,
+    debugSides, debugCorners,
+  }) {
+    logBootInfo('Scanning skies');
     if (!'transferControlToOffscreen' in canvas) {
       console.error('offscreenControl required for skybox to render.');
       return $modal.alert('Error: offscreen canvas not available; stars will not render.');
@@ -72,9 +77,11 @@ export default class OffscreenSkyboxWorker extends ManagedWorker {
       drawingSurface: offscreenControl,
       width,
       height,
+      skyboxAntialias,
       pixelRatio,
       catalogPath,
-      // debugCorners: true,
+      debugSides,
+      debugCorners,
     }, [ offscreenControl ]);
   }
 
