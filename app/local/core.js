@@ -428,24 +428,22 @@ function waitForAllLoaded() {
     startupEmitters,
     () => count++,
     () => {
-      // Everything has loaded.
+      // World and level has loaded.
       count++;
-      startupEmitter.emit(startupEvent.ready);
-      logBootInfo('Pilot access confirmed');
+      // TODO: we probably need to migrate the existing systems to the change
+      //  tracker, then add change forEachFn to use those instead.
+      $game.playerShip.getOnce(() => {
+        startupEmitter.emit(startupEvent.ready);
+        logBootInfo('Pilot access confirmed');
 
-      // Log boot time.
-      const bootTime = ((Date.now() - startTime) / 1000).toFixed(2);
-      console.log(
-        `Game finished booting after ${bootTime}s. ` +
-        `Total startup events: ${count}`
-      );
-      logBootInfo('Finalising boot');
-
-      // Adjust camera perspective on resize.
-      // window.onresize = function() {
-        // let SCREEN_WIDTH = window.innerWidth;
-        // let SCREEN_HEIGHT = window.innerHeight;
-      // }
+        // Log boot time.
+        const bootTime = ((Date.now() - startTime) / 1000).toFixed(2);
+        console.log(
+          `Game finished booting after ${bootTime}s. ` +
+          `Total startup events: ${count}`
+        );
+        logBootInfo('Finalising boot');
+      });
     });
 
   setTimeout(() => {
