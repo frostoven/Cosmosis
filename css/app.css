@@ -13,7 +13,6 @@
 html, body {
     height: 100%;
     margin: 0;
-    overflow: hidden;
 }
 
 * {
@@ -21,12 +20,22 @@ html, body {
     cursor: url(/potatoLqAssets/icons/cursor1_sharp_32.png) 3 3, auto !important;
 }
 
-#canvas {
+#primary-canvas {
+    z-index: 10;
     position: fixed;
     top: 0;
     bottom: 0;
     left: 0;
     right: 0;
+}
+
+#starfield-canvas {
+    z-index: 12;
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    width: 12px;
+    height: 12px;
 }
 
 /* Snackbar - a toast implementation.*/

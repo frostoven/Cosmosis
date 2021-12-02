@@ -5,7 +5,7 @@ const ACTION_DIST = 1;
 
 /**
  * The term 'level' here is used very loosely. It's any interactable
- * environment. Space ships as well planet sectors count as levels. Note that
+ * environment. Spaceships as well planet sectors count as levels. Note that
  * only *your own* ship is a level - another players ship is not interactable
  * and just a prop in your world.
  * @constructor

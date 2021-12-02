@@ -1,22 +1,15 @@
-import fs from 'fs';
 import * as THREE from 'three';
-import core from '../local/core';
-import { logBootInfo } from '../local/windowLoadListener';
-import { getStartupEmitter, startupEvent } from '../emitters';
-import { getShader } from '../../shaders';
-import AssetFinder from '../local/AssetFinder';
-
-const startupEmitter = getStartupEmitter();
+// import { getShader } from '../../shaders';
 
 const spectralCombinations = {};
 
-function createScene({ scene, catalog }) {
+function createScene({ scene, catalog, shaderLoader, onLoaded=()=>{} }) {
   const validStars = [];
 
   for (let i = 0; i < catalog.length; i++) {
-    if (i !== 0 && i % 50000 === 0 || i === catalog.length - 1) {
-      logBootInfo(`Loading star ${i}`, true);
-    }
+    // if (i !== 0 && i % 50000 === 0 || i === catalog.length - 1) {
+    //   console.log(`Loading star ${i}`, true);
+    // }
     const star = catalog[i];
     const diameter = 0.015;
     const scale = 1;
@@ -42,95 +35,75 @@ function createScene({ scene, catalog }) {
     validStars.push(star);
   }
 
-  populateSky({ scene, validStars });
+  populateSky({ scene, validStars, shaderLoader, onLoaded });
 }
 
-function loadAndCreate({ scene, catalogPath }) {
-  fs.readFile(catalogPath, (error, data) => {
-    if (error) {
-      console.error('Fata error loading star catalog:', error);
-    }
-    else {
-      createScene({ scene, catalog: JSON.parse(data) });
-    }
-  });
-}
-
-function init() {
+/**
+ * Initialises the star field.
+ * @param {JSON} catalogJson - JSON object containing all stars
+ * @param {function} shaderLoader - Function used to load shader files. The
+ *   reason this cannot be handled automatically is because web workers and
+ *   main thread workers currently use incompatible file loading mechanisms.
+ * @param {function} onLoaded - Called when everything is done loading.
+ * @returns {Scene}
+ */
+function init({ catalogJson, shaderLoader, onLoaded=()=>{} }) {
   const scene = new THREE.Scene();
-
-  // Look for the prod catalog first. If not found, default to the much smaller
-  // built-in.
-  AssetFinder.getStarCatalog({
-    name: 'bsc5p_3d_min',
-    options: {
-      silenceNotFoundErrors: true,
-    },
-    callback: (error, fileName, parentDir) => {
-      if (error) {
-        AssetFinder.getStarCatalog({
-          name: 'constellation_test',
-          callback: (error, fileName, parentDir) => {
-            // console.log('-----> got', parentDir, fileName);
-            loadAndCreate({ scene, catalogPath: `./${parentDir}/${fileName}` });
-          }
-        });
-      }
-      else {
-        // console.log('-----> got', fileName);
-        loadAndCreate({ scene, catalogPath: `./${parentDir}/${fileName}` });
-      }
-    }
-  });
-
+  createScene({ scene, catalog: catalogJson, shaderLoader, onLoaded });
   return scene;
 }
 
 // TODO: continue here: this should be loaded after catalog has been loaded.
-function populateSky({ scene, validStars }) {
-  startupEmitter.on(startupEvent.ready, () => {
+function populateSky({ scene, validStars, shaderLoader, onLoaded=()=>{} }) {
+  // TODO: Add ways to check for LMC, SMC, Andromeda, clusters, etc.
 
-    // TODO: Add ways to check for LMC, SMC, Andromeda, clusters, etc.
+  const glowColor = new THREE.Color();
+  const color = [];
+  const glow = [];
+  const luminosity = [];
+  const distance = [];
+  const vertices = [];
+  const parsec = 30856775814913673;
+  const sunSize = 1392700000;
 
-    const glowColor = new THREE.Color();
-    const color = [];
-    const glow = [];
-    const luminosity = [];
-    const distance = [];
-    const vertices = [];
-    const parsec = 30856775814913673;
-    const sunSize = 1392700000;
+  let prevLoc = {};
+  for (let i = 0; i < validStars.length; i++) {
+    const star = validStars[i];
 
-    let prevLoc = {};
-    for (let i = 0; i < validStars.length; i++) {
-      const star = validStars[i];
+    // vertices.push(star.x * parsec, star.y * parsec, star.z * parsec);
+    vertices.push(star.x, star.y, star.z);
 
-      // vertices.push(star.x * parsec, star.y * parsec, star.z * parsec);
-      vertices.push(star.x, star.y, star.z);
-
-      // bookm
-      if (!star.K) {
-        console.warn(star.n, 'has invalid colour; setting generic placeholder. Dump:', star);
-        // 6400 K colour, medium white.
-        star.K = { r: 1, g: 0.9357, b: 0.9396 };
-      }
-
-      glow.push(star.K.r);
-      glow.push(star.K.g);
-      glow.push(star.K.b);
-
-      luminosity[i] = star.N;
-      distance[i] = star.p;
+    // bookm
+    if (!star.K) {
+      console.warn(star.n, 'has invalid colour; setting generic placeholder. Dump:', star);
+      // 6400 K colour, medium white.
+      star.K = { r: 1, g: 0.9357, b: 0.9396 };
     }
 
-    const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-    geometry.setAttribute('color', new THREE.Float32BufferAttribute(color, 3));
-    geometry.setAttribute('glow', new THREE.Float32BufferAttribute(glow, 3));
-    geometry.setAttribute('luminosity', new THREE.Float32BufferAttribute(luminosity, 1));
-    geometry.setAttribute('distance', new THREE.Float32BufferAttribute(distance, 1));
+    glow.push(star.K.r);
+    glow.push(star.K.g);
+    glow.push(star.K.b);
 
-    const { vertexShader, fragmentShader } = getShader('starfield-blackbody');
+    luminosity[i] = star.N;
+    distance[i] = star.p;
+  }
+
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+  geometry.setAttribute('color', new THREE.Float32BufferAttribute(color, 3));
+  geometry.setAttribute('glow', new THREE.Float32BufferAttribute(glow, 3));
+  geometry.setAttribute('luminosity', new THREE.Float32BufferAttribute(luminosity, 1));
+  geometry.setAttribute('distance', new THREE.Float32BufferAttribute(distance, 1));
+
+  // TODO: reimplement me.
+  // const { vertexShader, fragmentShader } = getShader('starfield-blackbody');
+  shaderLoader('starfield-blackbody', (error, { vertexShader, fragmentShader }) => {
+    if (error) {
+      return console.error(
+        'Failed to load starfield-blackbody shader; error:', error
+      );
+    }
+
     const material = new THREE.ShaderMaterial({
       uniforms: {
         color: { value: new THREE.Color(0xffffff) },
@@ -139,15 +112,14 @@ function populateSky({ scene, validStars }) {
       vertexShader,
       fragmentShader,
       transparent: true,
-      // depthTest: false,
       extensions: {
         drawBuffers: true,
       },
     });
-    window.material = material;
 
     const particles = new THREE.Points(geometry, material);
     scene.add(particles);
+    onLoaded();
   });
 }
 

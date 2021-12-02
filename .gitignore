@@ -113,7 +113,7 @@ dist
 
 # Specific to this project
 build/game.js
-build/worker.js
+build/offscreenSkybox.js
 
 # The final product is excluded to prevent this repo blowing up into
 # terrabytes. Offer as separate download, and leave the rest to runtime
@@ -122,6 +122,9 @@ prodHqAssets/
 
 # Incomprehensible notes I write for myself.
 madRamblings.txt
+
+# Windows meta files.
+desktop.ini
 
 # Contains things like temporary files copied from the internet to test all
 # sorts of concepts, functions, formulas, etc.

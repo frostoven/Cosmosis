@@ -149,8 +149,8 @@ CachedEmitter.prototype.emit = function CachedEmitterEmit(action) {
  * Removes a past action from the remembered cache. If this object does not use
  * caching, then this function does nothing.
  *
- * This is used to unset events such as the player's space ship being loaded.
- * When loading a new space ship, a new event is triggered.
+ * This is used to unset events such as the player's spaceship being loaded.
+ * When loading a new spaceship, a new event is triggered.
  *
  * TODO: send out an event specifying that we're forgetting a cached action.
  *  This may help with things like clean-up, loading indicators, etc.

@@ -60,8 +60,20 @@ function discoverShaders(onComplete=()=>{}) {
   });
 }
 
-function getShader(name) {
-  return shader[name];
+/**
+ *
+ * @param name
+ * @param {function} [callback] - If specified, calls back with the requested
+ *   shaders. Otherwise just returns shaders outright.
+ * @returns {*}
+ */
+function getShader(name, callback) {
+  if (callback) {
+    callback(null, shader[name]);
+  }
+  else {
+    return shader[name];
+  }
 }
 
 export {

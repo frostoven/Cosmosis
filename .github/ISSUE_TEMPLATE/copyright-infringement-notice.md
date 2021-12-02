@@ -13,8 +13,8 @@ REPLACE THE TEXT HERE WITH YOUR ANSWER
 Please be as descriptive as possible! We cannot remove something if we cannot find it!
 
 For example:
-* The space ship named "John's Space Ship"
-* prodHqAssets\spaceShips\mySpaceShip.bin
+* The spaceship named "John's Spaceship"
+* prodHqAssets\spaceships\mySpaceship.bin
 
 
 **Licensing info**

@@ -18,12 +18,6 @@ export const startupEvent = {
   gameViewReady: startupEmitter.nextEnum(),
   /** The first animation() frame has been rendered. */
   firstFrameRendered: startupEmitter.nextEnum(),
-  // TODO: The next one is complicated. The whole 'onshiploaded' thing should
-  //  definitely exist as some processes require it, however it shouldn't block
-  //  booting because some scene groups (correctly) don't support it. Needs
-  //  some thought.
-  /* This includes all GLTF preprocessing. */
-  playerShipLoaded: startupEmitter.nextEnum(),
   /** Game is fully loaded, core functions (like rendering) is already
    * happening. */
   ready: startupEmitter.nextEnum(),

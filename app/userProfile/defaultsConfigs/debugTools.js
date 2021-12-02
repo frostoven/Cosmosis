@@ -4,11 +4,6 @@ const debugTools = {
     fileName: 'debugTools.json',
   },
   fileContent: {
-    defaultShipPosition: {
-      text: '🌌 Absolute center',
-      location: { x: 0, y: 0, z: 0 },
-      rotation: { x: 0, y: 0, z: 0 },
-    },
     storedShipPositions: [
       {
         text: '🌌 Absolute center',

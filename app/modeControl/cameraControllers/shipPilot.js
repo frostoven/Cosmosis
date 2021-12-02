@@ -1,7 +1,7 @@
 import * as THREE from "three";
 
 // TODO: consider renaming this to shipControl. This module does 2 things:
-//  * Takes space ship input when sitting in the pilot's seat.
+//  * Takes spaceship input when sitting in the pilot's seat.
 //  * Processes ship warp physics.
 //  Might need to separate that last one into level control.
 import core from "../../local/core";
@@ -34,7 +34,7 @@ function ShipPilot(options={}) {
   this.initNavigationValues();
   this.setControlActions();
 
-  startupEmitter.on(startupEvent.playerShipLoaded, () => {
+  $game.playerShip.getOnce(() => {
     this.onShipLoaded(this.playerShip);
   });
 
@@ -56,13 +56,15 @@ ShipPilot.prototype.setDefaultValues = function applyDefaultValues() {
   this.levelScene = null;
   this.playerShip = null;
   this.playerWarpBubble = null;
+  this.playerShipCenter = null;
 
-  // 195=1c, 199=1.5c, 202=2c, 206=3c, 209=4c, 300=35600c (avoid going over 209).
+  // 195 = 1,000c, 199 = 1,500c, 202 = 2,000c, 206 = 3,000c, 209 = 4,000c,
+  // 300 = 35,600,000c (avoid going over 209).
   // The idea is that the player can push this number up infinitely, but with
   // huge falloff past 206 because every extra 0.1 eventually scales to 1c
   // faster. 195 is junk, 199 is beginner. 206 is end-game. 209 is something
   // achievable only through insane grind.
-  this.maxSpeed = 202;
+  this.maxSpeed = 209;
   // 195=1c, 199=1.5c, 202=2c, 206=3c, 209=4c.
   this.currentSpeed = 0;
   // Throttle. 0-100.
@@ -188,7 +190,7 @@ ShipPilot.prototype.onControlChange = function shipPilotControlChange({ next, pr
       $game.ptrLockControls.setLockMode(lockModes.headLook);
     });
 
-    startupEmitter.on(startupEvent.playerShipLoaded, () => {
+    $game.playerShip.getOnce(() => {
       // TODO: move this into the level loader. It needs to be dynamic based on
       //  the level itself (in this case we attach the player to the main cam).
       this.playerShip.cameras[0].attach($game.camera);
@@ -198,11 +200,13 @@ ShipPilot.prototype.onControlChange = function shipPilotControlChange({ next, pr
       $game.camera.position.z = 0;
     });
 
-    speedTimer = speedTracker.trackCameraSpeed();
+    if (!speedTimer) {
+      speedTimer = speedTracker.trackCameraSpeed();
+    }
   }
-  else if (previous === shipPilotMode && speedTimer) {
-    speedTracker.clearSpeedTracker(speedTimer);
-  }
+  // else if (previous === shipPilotMode && speedTimer) {
+  //   speedTracker.clearSpeedTracker(speedTimer);
+  // }
 };
 
 ShipPilot.prototype.onShipLoaded = function onShipLoaded(mesh) {
@@ -430,6 +434,7 @@ ShipPilot.prototype.handleHyper = function handleHyper(delta) {
   this.spaceScene.position.addScaledVector(direction, -hyperSpeed);
   this.levelScene.position.addScaledVector(direction, -hyperSpeed);
   this.playerWarpBubble.position.addScaledVector(direction, hyperSpeed);
+  this.playerShipCenter.position.copy(this.playerWarpBubble.position);
 };
 
 // // TODO: move to math utils.

@@ -1,5 +1,3 @@
-import CbQueue from '../local/CbQueue';
-
 const fs = require('fs');
 const { spawn } = require('child_process');
 
@@ -11,6 +9,7 @@ import {
   getFriendlyFsError, convertToOsPath, createJsonIfNotExists
 } from '../local/fsUtils';
 import { logBootInfo } from '../local/windowLoadListener';
+import ChangeTracker from '../emitters/ChangeTracker';
 
 // TODO: create readme in CosmosisGame on boot that tells users not to create dirs as dirs are treated as profiles.
 //  Mention that they may create customs dirs with {dot}whatever, and that these will be ignored by the engines.
@@ -38,8 +37,6 @@ load rest of game. add little note on how long profile init took.
 
 // --- Vars ---------------------------------------------------------------- //
 
-const startupEmitter = getStartupEmitter();
-
 // Used to measure how long profile load takes.
 let startTime = null;
 // This is set to true if an error is encountered.
@@ -56,7 +53,7 @@ let activeProfile = defaultProfileName;
 // Used to prevent unnecessary disk reads.
 let configCache = {};
 // Used for invalidation callbacks.
-const cacheListeners = new CbQueue();
+const cacheChangeEvent = new ChangeTracker();
 
 // --- Profile functions --------------------------------------------------- //
 
@@ -309,7 +306,7 @@ function setActiveProfile({ profileName, preventFallback=false, callback }) {
           onComplete: (error) => {
             if (error) {
               configCache = cacheBackup;
-              cacheListeners.notifyAll(configCache);
+              cacheChangeEvent.setValue(configCache);
 
               if (!preventFallback) {
                 $modal.alert({
@@ -325,7 +322,7 @@ function setActiveProfile({ profileName, preventFallback=false, callback }) {
               }
               else {
                 configCache = cacheBackup;
-                cacheListeners.notifyAll(configCache);
+                cacheChangeEvent.setValue(configCache);
 
                 // TODO: concoct some catastrophic situation to test this (such
                 //  as corrupting the default profile templates or whatever).
@@ -344,7 +341,7 @@ function setActiveProfile({ profileName, preventFallback=false, callback }) {
               activeProfile = profileName;
               configCache.allProfiles.activeProfile = activeProfile;
               callback(null);
-              cacheListeners.notifyAll(configCache);
+              cacheChangeEvent.setValue(configCache);
               saveActiveName();
             }
           }
@@ -352,7 +349,7 @@ function setActiveProfile({ profileName, preventFallback=false, callback }) {
       }
       else {
         configCache = cacheBackup;
-        cacheListeners.notifyAll(configCache);
+        cacheChangeEvent.setValue(configCache);
       }
     }
   });
@@ -453,16 +450,6 @@ function getCurrentConfig({ identifier }) {
     return null;
   }
   return configCache[identifier];
-}
-
-// Adds a listener that is called when user configs are changed or loaded from
-// disk.
-function addCacheListener(onCacheInvalidate) {
-  cacheListeners.register(onCacheInvalidate);
-}
-
-function removeCacheListener(listener) {
-  cacheListeners.deregister(listener);
 }
 
 // Creates all profile configs needed for the game to function normally. Does
@@ -611,7 +598,7 @@ function loadAllConfigs({ profileName, onComplete }) {
     () => {
       let errorInfo = null;
       try {
-        cacheListeners.notifyAll(configCache);
+        cacheChangeEvent.setValue(configCache);
       }
       catch (notifyError) {
         console.error('[userProfile/loadAllConfigs/notifyAll]', notifyError);
@@ -847,8 +834,7 @@ export default {
   setActiveProfile,
   getBackupList,
   getCurrentConfig,
-  addCacheListener,
-  removeCacheListener,
+  cacheChangeEvent,
   getAvailableProfiles,
   reloadConfigs,
 }

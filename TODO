@@ -76,7 +76,7 @@ Make the border be in the direction of the switch highlighted.
 Maybe place an actual arrow next the border closer the the interactable, but
 this last one is optional.
 
-spaceShipLoader.modelPostSetup:
+spaceshipLoader.modelPostSetup:
 Implement mechanism to load player ship at specific world position.
 
 Implement a queueable toast system.
