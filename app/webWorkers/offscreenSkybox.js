@@ -4,7 +4,7 @@
 // If it's a three.js issue, need to report a bug.
 
 import * as THREE from 'three';
-import localClusterStarShader from '../scenes/localClusterStarShader';
+import distantStars from '../scenes/distantStars';
 import { getJson, getShader } from './fileLoader';
 import { addDebugCornerIndicators, addDebugSideCounters } from './debugTools';
 import { jsonNoiseGen } from '../universeFactory/noise';
@@ -84,7 +84,7 @@ function init(canvas, width, height, skyboxAntialias, pixelRatio, catalogJson) {
   gl.enable(gl.BLEND);
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_DST_COLOR);
 
-  let starFieldScene = localClusterStarShader.init({
+  let starFieldScene = distantStars.init({
     // catalogBlob: new TextDecoder().decode(catalogBlob),
     catalogJson,
     shaderLoader: getShader,

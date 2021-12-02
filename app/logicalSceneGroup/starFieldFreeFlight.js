@@ -1,5 +1,5 @@
 import LogicalSceneGroup from './LogicalSceneGroup';
-import localClusterStarShader from '../scenes/localClusterStarShader';
+import distantStars from '../scenes/distantStars';
 import contextualInput from '../local/contextualInput';
 import { FreeCam } from '../modeControl/cameraControllers/freeCam';
 import { createSpaceship } from '../levelLogic/spaceshipLoader';
@@ -38,7 +38,7 @@ const starFieldFreeFlight = new LogicalSceneGroup({
           }
           else {
             if (!starFieldScene) {
-              starFieldScene = localClusterStarShader.init({
+              starFieldScene = distantStars.init({
                 catalogJson: JSON.parse(catalogBlob),
                 shaderLoader: getShader,
               });
