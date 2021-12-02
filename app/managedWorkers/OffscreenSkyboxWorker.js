@@ -8,6 +8,8 @@ export default class OffscreenSkyboxWorker extends ManagedWorker {
     // Note: offscreenRenderer.js is made available via Webpack bundling.
     super('./build/offscreenSkybox.js');
     this.skyboxCube = null;
+    // Just a tad bigger than the Milky Way. Yes, we can do that. In meters.
+    this.skyboxSize = Number(Unit.parsec.inMeters * BigInt(32768));
 
     this._collectedImages = [
       null, null, null, null, null, null,
@@ -126,9 +128,8 @@ export default class OffscreenSkyboxWorker extends ManagedWorker {
       }, 10 * i);
     }
 
-    const distance = Unit.centiParsec.inMeters;
+    const distance = this.skyboxSize;
     const geometry = new THREE.BoxGeometry(distance, distance, distance);
-    // const geometry = new THREE.BoxGeometry(10, 10, 10);
     $game.playerShip.getOnce(({ centerPoint }) => {
       if (!this.skyboxCube) {
         this.skyboxCube = new THREE.Mesh(geometry, materials);
