@@ -93,7 +93,7 @@ function windowLoadListener(readyCb=()=>{}) {
 
   // Loading text
   const loadingTextDiv = document.getElementById('loading-text');
-  const build = packageJson.releaseNumber;
+  const build = packageJson.version;
   if (loadingTextDiv) {
     loadingTextDiv.innerHTML = `Cosmosis build ${build}<br>Loading...<br>`;
     fs.access('prodHqAssets', (error) => {
