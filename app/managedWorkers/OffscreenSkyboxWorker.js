@@ -132,6 +132,7 @@ export default class OffscreenSkyboxWorker extends ManagedWorker {
       }
 
       console.log('New skybox generated and applied.');
+      $game.event.skyboxLoaded.setValue({ when: new Date() });
     });
   }
 
