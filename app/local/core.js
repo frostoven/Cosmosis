@@ -66,7 +66,6 @@ window.$game = {
   gravityWorld: null,
   // The loaded file. The 'real' spaceship is playerShip.scene.
   playerShip: new ChangeTracker(),
-  // playerWarpBubble: null, moved into $game.playerShip
   ptrLockControls: null,
   // The term 'level' here is used very loosely. It's any interactable
   // environment. Spaceships as well planet sectors count as levels. Note that
@@ -80,6 +79,9 @@ window.$game = {
   // before hyperspeed becomes non-optional.
   // TODO: determine if this has become redundant (we're implementing new positioning methods).
   hyperMovement: false,
+  event: {
+    skyboxLoaded: new ChangeTracker(),
+  }
 };
 window.$options = {
   // 0=off, 1=basic, 2=full
@@ -399,7 +401,7 @@ function waitForAllLoaded() {
   // If the game hasn't booted after this amount of time, complain. Note that
   // it's timed with a low priority timer, so the game may exceed load times by
   // over 500ms before a complaint is triggered. Out target is approximate.
-  let warnTime = 3000;
+  let warnTime = 4000;
 
   // Used to measure boot time. The start time is intentionally only after core
   // has loaded because we don't care about the boot time of external factors
@@ -433,16 +435,18 @@ function waitForAllLoaded() {
       // TODO: we probably need to migrate the existing systems to the change
       //  tracker, then add change forEachFn to use those instead.
       $game.playerShip.getOnce(() => {
-        startupEmitter.emit(startupEvent.ready);
-        logBootInfo('Pilot access confirmed');
+        $game.event.skyboxLoaded.getOnce(() => {
+          startupEmitter.emit(startupEvent.ready);
+          logBootInfo('Pilot access confirmed');
 
-        // Log boot time.
-        const bootTime = ((Date.now() - startTime) / 1000).toFixed(2);
-        console.log(
-          `Game finished booting after ${bootTime}s. ` +
-          `Total startup events: ${count}`
-        );
-        logBootInfo('Finalising boot');
+          // Log boot time.
+          const bootTime = ((Date.now() - startTime) / 1000).toFixed(2);
+          console.log(
+            `Game finished booting after ${bootTime}s. ` +
+            `Total startup events: ${count}`
+          );
+          logBootInfo('Finalising boot');
+        });
       });
     });
 
