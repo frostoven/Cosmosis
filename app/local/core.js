@@ -6,9 +6,6 @@
 
 import * as THREE from 'three';
 // import * as CANNON from 'cannon';
-// import { EffectComposer  } from 'three/examples/jsm/postprocessing/EffectComposer';
-// import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass';
-// import { RenderPass  } from 'three/examples/jsm/postprocessing/RenderPass';
 import Stats from '../../hackedlibs/stats/stats.module.js';
 
 import { forEachFn } from './utils';
@@ -72,7 +69,8 @@ window.$game = {
   // only *your own* ship is a level - another players ship is not interactable
   // and just a prop in your world.
   level: null,
-  // outlinePass: null,
+  // Draws a flashing border around items that can be interacted with.
+  interactablesOutlinePass: null,
   // If false, the ship and player moves in a static universe. If true, the
   // ship and player is stationary and the universe moves instead. This is to
   // overcome camera glitches. The ship can accelerate up to about about 3000c
@@ -228,7 +226,7 @@ function init({ defaultScene }) {
   });
 
   activateSceneGroup({
-    primaryRenderer,
+    renderer: primaryRenderer,
     camera,
     logicalSceneGroup: defaultScene,
     callback: () => {
@@ -256,52 +254,10 @@ function init({ defaultScene }) {
 function initView({ primaryRenderer, camera }) {
   const ptrLockControls = new PointerLockControls(camera, document.body);
 
-  // Postprocessing.
-  // --------------------------------------------------------------------------
-  // FIXME: something with post-processing is causing webgl warnings to be
-  //  spammed en-mass. I don't see any in-game side-effects, but I can imagine
-  //  it's not healthy. This only happens when outlinePass.selectedObjects is
-  //  set and starts rendering.
-  // --------------------------------------------------------------------------
-  // composer = new EffectComposer(renderer);
-  // const renderPass = new RenderPass(levelScene, camera);
-  // composer.addPass(renderPass);
-  //
-  // // TODO: check if this needs recreating when window resizes.
-  // // Outline pass. Used for highlighting interactable objects.
-  // const outlinePass = new OutlinePass(new THREE.Vector2(SCREEN_WIDTH / SCREEN_HEIGHT), levelScene, camera);
-  // outlinePass.edgeStrength = 10; //3;
-  // outlinePass.edgeGlow = 1; //0;
-  // outlinePass.edgeThickness = 4; //1;
-  // outlinePass.pulsePeriod = 2;
-  // outlinePass.visibleEdgeColor = new THREE.Color(0x00ff5a);
-  // outlinePass.hiddenEdgeColor = new THREE.Color(0x00ff5a); // seems it always thinks we're hidden :/
-  // // outlinePass.hiddenEdgeColor = new THREE.Color(0x190a05);
-  // composer.addPass(outlinePass);
-  // --------------------------------------------------------------------------
-
-  // Default skybox.
-  // TODO: This thing really, REALLY hates being zoomed out beyond 1LY.
-  //  Need to find some sort of fix.
-  // const textureLoader = new THREE.TextureLoader();
-  // res.getSkybox('panoramic_dark', (error, filename, dir) => {
-  //   if (error) {
-  //     return console.error(error);
-  //   }
-  //   const texture = textureLoader.load(
-  //     `${dir}/${filename}`,
-  //     () => {
-  //       const renderTarget = new THREE.WebGLCubeRenderTarget(texture.image.height);
-  //       renderTarget.fromEquirectangularTexture(renderer, texture);
-  //       spaceScene.background = renderTarget;
-  //       startupEmitter.emit(startupEvent.skyBoxLoaded);
-  //       logBootInfo('Astrometrics ready');
-  //     });
-  // });
-
   // let spaceWorld = null;
   // let group = null;
 
+  // TODO: migrate these the ChangeTracker mechanism.
   $game.primaryRenderer = primaryRenderer;
   $game.camera = camera;
   $game.ptrLockControls = ptrLockControls;
@@ -355,6 +311,7 @@ function animate() {
 
   const { primaryRenderer, camera, gravityWorld, level } = $game;
 
+  // TODO: move to space LSG?
   if (level) {
     level.process(delta);
   }
@@ -380,9 +337,6 @@ function animate() {
   $game.ptrLockControls.updateOrientation();
 
   $stats.update();
-
-  // TODO: This currently erases spaceScene. Find a way to prevent that.
-  // composer.render();
 }
 
 function onWindowResize() {
