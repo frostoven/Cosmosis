@@ -65,7 +65,7 @@ ShipPilot.prototype.setDefaultValues = function applyDefaultValues() {
   // faster. 195 is junk, 199 is beginner. 206 is end-game. 209 is something
   // achievable only through insane grind.
   this.maxSpeed = 209;
-  // 195=1c, 199=1.5c, 202=2c, 206=3c, 209=4c.
+  // 195=1kc, 199=1.5kc, 202=2kc, 206=3kc, 209=4kc.
   this.currentSpeed = 0;
   // Throttle. 0-100.
   this.currentThrottle = 0;
