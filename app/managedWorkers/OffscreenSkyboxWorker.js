@@ -93,9 +93,12 @@ export default class OffscreenSkyboxWorker extends Worker {
 
   init({
     canvas, width, height, skyboxAntialias, pixelRatio, catalogPath,
-    debugSides, debugCorners,
+    disableSkybox, debugSides, debugCorners,
   }) {
-    logBootInfo('Scanning skies');
+    disableSkybox ?
+      logBootInfo('[!] Skybox disabled') : // Blasphemous acts.
+      logBootInfo('Scanning skies');
+
     if (!'transferControlToOffscreen' in canvas) {
       console.error('offscreenControl required for skybox to render.');
       return $modal.alert('Error: offscreen canvas not available; stars will not render.');
@@ -111,6 +114,7 @@ export default class OffscreenSkyboxWorker extends Worker {
       skyboxAntialias,
       pixelRatio,
       catalogPath,
+      disableSkybox,
       debugSides,
       debugCorners,
     }, [ offscreenControl ]);
