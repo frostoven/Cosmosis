@@ -19,7 +19,8 @@ Unit.parsec = {};
 // Note that, while this exact value is correct, it's larger than
 // Number.MAX_SAFE_INTEGER and will produce bad results in contexts where
 // accuracy is needed.
-Unit.parsec.inMeters = BigInt('30856775814913673');
+Unit.parsec.inMetersBigInt = BigInt('30856775814913673');
+Unit.parsec.inMeters = Number(Unit.parsec.inMetersBigInt);
 // ^^ factors:
 // 1801n, 12269n, 22096469n, 1396457317n
 
@@ -30,6 +31,7 @@ Unit.lightYear = {};
 // Note that, while this exact value is correct, it's larger than
 // Number.MAX_SAFE_INTEGER and will produce bad results in contexts where
 // accuracy is needed (we're accurate up to just over 0.9ly).
-Unit.lightYear.inMeters = BigInt('9460730472580800');
+Unit.lightYear.inMetersBigInt = BigInt('9460730472580800');
+Unit.lightYear.inMeters = Number(Unit.lightYear.inMetersBigInt);
 
 export default Unit;
