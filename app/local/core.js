@@ -220,6 +220,7 @@ function init({ defaultScene }) {
         skyboxAntialias: graphics.skyboxAntialias,
         pixelRatio: window.devicePixelRatio,
         catalogPath: `../${parentDir}/${fileName}`,
+        disableSkybox: debug.disableSkybox,
         debugSides: debug.debugSkyboxSides,
         debugCorners: debug.debugSkyboxCorners,
       });

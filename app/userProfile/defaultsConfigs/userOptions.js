@@ -51,6 +51,7 @@ const userOptions = {
       // Once implemented, will prevent player ship location from being saved
       // to the user's profile.
       discardShipPosition: true,
+      disableSkybox: false, // rename to disableStars?
       debugSkyboxSides: false,
       debugSkyboxCorners: false,
       logDistanceToInteractables: false,

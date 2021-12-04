@@ -10,25 +10,19 @@ import { addDebugCornerIndicators, addDebugSideCounters } from './debugTools';
 import { jsonNoiseGen } from '../universeFactory/noise';
 
 const options = {
+  disableSkybox: false,
   debugSides: false,
   debugCorners: false,
 };
 
 let scene, renderer, starFieldScene, cubeCamera, cubeRenderTarget;
 
-self.onmessage = function createOffscreenSkybox(message) {
-  const options = message.data;
-  const target = api[options.endpoint];
-  if (target) {
-    target(options);
-  }
-  else {
-    console.error(`[offscreenSkybox] Unknown endpoint '${options.endpoint}'.`);
-  }
-};
-
 const api = {
-  init: ({ drawingSurface, width, height, skyboxAntialias, pixelRatio, catalogPath, debugSides, debugCorners }) => {
+  init: ({
+    drawingSurface, width, height, skyboxAntialias, pixelRatio, catalogPath,
+    disableSkybox, debugSides, debugCorners, ticket,
+  }) => {
+    options.disableSkybox = !!disableSkybox;
     options.debugSides = !!debugSides;
     options.debugCorners = !!debugCorners;
 
@@ -51,6 +45,9 @@ const api = {
 };
 
 let totalInitCallbacks = 0;
+// The init process has multiple asynchronous processes. This function triggers
+// an 'init complete' message when all of them have executed. They're currently
+// hardcoded as 3 operations, we may need to move them to a more robust queue.
 function doInitCallbackWhenReady() {
   if (++totalInitCallbacks >= 2) {
     postMessage({ error: null, key: 'init', value: true });
@@ -84,13 +81,18 @@ function init(canvas, width, height, skyboxAntialias, pixelRatio, catalogJson) {
   gl.enable(gl.BLEND);
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_DST_COLOR);
 
-  let starFieldScene = distantStars.init({
-    // catalogBlob: new TextDecoder().decode(catalogBlob),
-    catalogJson,
-    shaderLoader: getShader,
-    onLoaded: doInitCallbackWhenReady,
-  });
-  scene.add(starFieldScene);
+  if (options.disableSkybox) {
+    doInitCallbackWhenReady();
+  }
+  else {
+    let starFieldScene = distantStars.init({
+      // catalogBlob: new TextDecoder().decode(catalogBlob),
+      catalogJson,
+      shaderLoader: getShader,
+      onLoaded: doInitCallbackWhenReady,
+    });
+    scene.add(starFieldScene);
+  }
 
   cubeRenderTarget = new THREE.WebGLCubeRenderTarget(128, {
     format: THREE.RGBFormat,
