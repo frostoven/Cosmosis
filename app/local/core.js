@@ -78,6 +78,7 @@ window.$game = {
   // TODO: determine if this has become redundant (we're implementing new positioning methods).
   hyperMovement: false,
   event: {
+    offscreenSkyboxReady: new ChangeTracker(),
     skyboxLoaded: new ChangeTracker(),
   }
 };

@@ -1,15 +1,20 @@
-import ManagedWorker from './ManagedWorker';
 import * as THREE from 'three';
 import Unit from '../local/Unit';
 import { logBootInfo } from '../local/windowLoadListener';
+import ChangeTracker from '../emitters/ChangeTracker';
 
-export default class OffscreenSkyboxWorker extends ManagedWorker {
+// TODO: maybe rename to astrometrics worker? It's become more than just a
+//  skybox machine.
+export default class OffscreenSkyboxWorker extends Worker {
   constructor() {
     // Note: offscreenRenderer.js is made available via Webpack bundling.
-    super('./build/offscreenSkybox.js');
+    super('./build/offscreenSkybox.js', { type: 'module' });
     this.skyboxCube = null;
+    this.initComplete = false;
     // Just a tad bigger than the Milky Way. Yes, we can do that. In meters.
-    this.skyboxSize = Number(Unit.parsec.inMeters * BigInt(32768));
+    this.skyboxSize = Number(Unit.parsec.inMetersBigInt * BigInt(32768));
+    // Used to uniquely identify each web worker request.
+    this.ticketCount = 0;
 
     this._collectedImages = [
       null, null, null, null, null, null,
@@ -19,17 +24,41 @@ export default class OffscreenSkyboxWorker extends ManagedWorker {
   }
 
   prepListeners() {
-    this.addWorkerListener('init', ({ error, value }) => {
+    // Create worker listeners.
+    this.workerListener = {
+      init: new ChangeTracker(),
+      renderFace: new ChangeTracker(),
+      testHeavyPayload: new ChangeTracker(),
+    };
+
+    // Hook listeners into onmessage.
+    this.onmessage = (message) => {
+      const payload = message.data;
+      const listener = this.workerListener[payload.key];
+      if (!listener) {
+        return console.error(
+          '[OffscreenSkyboxWorker] Nothing to receive', payload.key
+        );
+      }
+      listener.setValue(payload);
+    };
+
+    // Define listener responses.
+    this.workerListener.init.getEveryChange(({ error, value }) => {
+      if (this.initComplete) {
+        return console.error('[OffscreenSkyboxWorker] Init received twice.');
+      }
+      this.initComplete = true;
       if (error || !value) {
         console.error(error, '- got:', value);
       }
       else {
-        this.ready = true;
         this.generateSkybox();
+        $game.event.offscreenSkyboxReady.setValue({ when: new Date() });
       }
     });
 
-    this.addWorkerListener('renderFace', ({ value }) => {
+    this.workerListener.renderFace.getEveryChange(({ value }) => {
       const { x, y, z, sideNumber, tag } = value;
       if (tag === 'internal cascade') {
         // Caution: this is request**Post**AnimationFrame, not
@@ -57,7 +86,7 @@ export default class OffscreenSkyboxWorker extends ManagedWorker {
       }
     });
 
-    this.addWorkerListener('testHeavyPayload', ({ error, value }) => {
+    this.workerListener.testHeavyPayload.getEveryChange(({ error, value }) => {
       console.log('testHeavyPayload:', value.length, 'KB transferred. Error:', error);
     });
   }
