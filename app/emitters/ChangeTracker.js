@@ -9,11 +9,13 @@ export default class ChangeTracker {
     this._singleListeners = [];
     // Contains all listeners that should be notified for every change.
     this._multiListeners = [];
+    // Like _singleListeners, but ignored current value.
+    this._nextListeners = [];
   }
 
   // Using this, you'll be notified the first time the value changes. If the
   // value has already been set, you'll be notified immediately.
-  getOnce(callback, x) {
+  getOnce(callback) {
     if (this._valueAlreadySet) {
       callback(this._value);
     }
@@ -31,6 +33,12 @@ export default class ChangeTracker {
     }
   }
 
+  // Notified you the next time the value changes. Does not return the current
+  // value.
+  getNext(callback) {
+    this._nextListeners.push(callback);
+  }
+
   // Sets the value, then notifies those waiting for it.
   setValue(value) {
     this._value = value;
@@ -46,6 +54,15 @@ export default class ChangeTracker {
       // Mark for garbage collection.
       this._singleListeners = null;
     }
+
+    // Notify next-only listeners.
+    const nextListeners = this._nextListeners.slice();
+    for (let i = 0; i < nextListeners.length; i++) {
+      nextListeners[i](value);
+    }
+
+    // Mark next-only listeners for garbage collection.
+    this._nextListeners = [];
 
     // Notify all subscribers.
     for (let i = 0; i < this._multiListeners.length; i++) {
