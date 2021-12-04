@@ -80,9 +80,9 @@ for clarification).
 ##### Attribution
 Include a license file with every asset (it should be in the same directory).
 The license file's name should match the asset name. For example, a mesh named
-`spacehip1.gltf` should be accompanied by a file named `spaceship1.license`.
+`spaceship1.gltf` should be accompanied by a file named `spaceship1.license`.
 If you have 10 spaceship meshes with the same name + a number and they share the
-same license, you may name the license file something like `spacehip{1..10}.license`
+same license, you may name the license file something like `spaceship{1..10}.license`
 or `spaceshipN.license` and then specify in the license file itself which files it
 covers. In case numbers aren't used, the `_ALL` suffix may be used; the license file
 then specifies the files covered. License files are not optional, and while
