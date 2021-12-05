@@ -68,8 +68,8 @@ if (process.env && process.env.NODE_ENV !== 'production') {
 /* Main
 /* --------------------------------- */
 
-console.groupCollapsed(`Pre-init (build number: ${packageJson.releaseNumber}).`);
-logBootInfo(`System boot v${packageJson.releaseNumber}`); // ▓
+console.groupCollapsed(`Pre-init (build number: ${packageJson.version}).`);
+logBootInfo(`System boot v${packageJson.version}`); // ▓
 discoverShaders();
 console.groupEnd();
 
