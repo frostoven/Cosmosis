@@ -27,7 +27,12 @@ void main() {
   //                       Luminosity
   // Apparent Brightness = ----------
   //                          4πd²
+  // Note that this is NOT apparent magnitude; '0' in this case = 'no light'.
   float brightness = luminosity / pow(4.0 * PI * -mvPosition.z, 2.0);
+  // TODO: ^^ Bug discovered: formula should instead be:
+  //  luminosity / (4.0 * PI * pow(-mvPosition.z, 2.0));
+  // We cannot however outright replace the function because it breaks existing
+  // visuals. Please adjust, then correct other visuals.
 
   // The log10 sets a dynamic 'zero' point, while the log(brightness) adjusts
   // the actual size. It's correct up to about 5 ly, at which point stars get
