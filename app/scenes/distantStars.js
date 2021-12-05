@@ -13,12 +13,8 @@ function createScene({ scene, catalog, shaderLoader, onLoaded=()=>{} }) {
     //   console.log(`Loading star ${i}`, true);
     // }
     const star = catalog[i];
-    const diameter = 0.015;
-    const scale = 1;
-
     const starIndex = star.i;
     const name = star.n;
-
     let parsecs = star.p;
     const brightness = star.b;
     const spectralType = star.s;

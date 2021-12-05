@@ -8,6 +8,7 @@ import distantStars from '../scenes/distantStars';
 import { getJson, getShader } from './fileLoader';
 import { addDebugCornerIndicators, addDebugSideCounters } from './debugTools';
 import { jsonNoiseGen } from '../universeFactory/noise';
+import { prepareGalaxyData, getVisibleStars } from '../universeFactory';
 
 const options = {
   disableSkybox: false,
@@ -35,12 +36,22 @@ const api = {
       }
     });
   },
-  renderFace: ({ x, y, z, sideNumber, tag }) => { renderFace( x, y, z, sideNumber, tag); },
+  renderFace: ({ x, y, z, sideNumber, tag, ticket }) => { renderFace( x, y, z, sideNumber, tag, ticket); },
   // Tests heavy data copies. Defaults to 300MB, which is the expected
   // worst-case scenario.
   testHeavyPayload: ({ size=300000 }) => {
     const crazyResult = jsonNoiseGen(size);
     postMessage({ error: null, key: 'testHeavyPayload', value: crazyResult });
+  },
+  getVisibleStars: (options) => {
+    console.time('Star query processing time');
+    options.result = getVisibleStars(options);
+    console.timeEnd('Star query processing time');
+    postMessage({
+      error: null,
+      key: 'getVisibleStars',
+      value: options,
+    });
   },
 };
 
@@ -53,6 +64,20 @@ function doInitCallbackWhenReady() {
     postMessage({ error: null, key: 'init', value: true });
   }
 }
+
+self.onmessage = function createOffscreenSkybox(message) {
+  const options = message.data;
+  if (options.ticket) {
+    console.log(`%cThank you for your request, your ticket is number is #${options.ticket}`, 'font-style: italic;');
+  }
+  const target = api[options.endpoint];
+  if (target) {
+    target(options);
+  }
+  else {
+    console.error(`[offscreenSkybox] Unknown endpoint '${options.endpoint}'.`);
+  }
+};
 
 function init(canvas, width, height, skyboxAntialias, pixelRatio, catalogJson) {
   scene = new THREE.Scene();
@@ -80,6 +105,13 @@ function init(canvas, width, height, skyboxAntialias, pixelRatio, catalogJson) {
   gl.disable(gl.DEPTH_TEST);
   gl.enable(gl.BLEND);
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_DST_COLOR);
+
+  // Adds data to the universe factory for later use. It doesn't actually parse
+  // anything and is very fast.
+  // TODO: add loaded catalog data to prepareGalaxyData. Also, starFieldScene
+  //  should get its data from prepareGalaxyData, not from catalogs. This would
+  //  allow for procedural data to enter the skybox.
+  prepareGalaxyData(/*{ catalogs: [ catalogJson ] }*/); // TODO: UNCOMMENT CATALOG.
 
   if (options.disableSkybox) {
     doInitCallbackWhenReady();
@@ -120,7 +152,7 @@ function init(canvas, width, height, skyboxAntialias, pixelRatio, catalogJson) {
   });
 }
 
-function renderFace(x, y, z, sideNumber, tag) {
+function renderFace(x, y, z, sideNumber, tag, ticket) {
   if (sideNumber > 5) {
     return console.error('Side number', sideNumber, 'is not in range 0..5');
   }
@@ -129,7 +161,7 @@ function renderFace(x, y, z, sideNumber, tag) {
 
   postMessage({
     error: null,
-    key: 'renderFace',
+    key: 'renderFace', ticket,
     value: { x, y, z, sideNumber, tag },
   });
 }

@@ -15,6 +15,8 @@ export default class OffscreenSkyboxWorker extends Worker {
     this.skyboxSize = Number(Unit.parsec.inMetersBigInt * BigInt(32768));
     // Used to uniquely identify each web worker request.
     this.ticketCount = 0;
+    // Callbacks for each ticket is stored here.
+    this.ticketCallbacks = {};
 
     this._collectedImages = [
       null, null, null, null, null, null,
@@ -28,6 +30,7 @@ export default class OffscreenSkyboxWorker extends Worker {
     this.workerListener = {
       init: new ChangeTracker(),
       renderFace: new ChangeTracker(),
+      getVisibleStars: new ChangeTracker(),
       testHeavyPayload: new ChangeTracker(),
     };
 
@@ -86,6 +89,14 @@ export default class OffscreenSkyboxWorker extends Worker {
       }
     });
 
+    this.workerListener.getVisibleStars.getEveryChange(({ value }) => {
+      const ticketCallback = this.ticketCallbacks[value.ticket];
+      if (ticketCallback) {
+        ticketCallback(value);
+        delete this.ticketCallbacks[value.ticket];
+      }
+    });
+
     this.workerListener.testHeavyPayload.getEveryChange(({ error, value }) => {
       console.log('testHeavyPayload:', value.length, 'KB transferred. Error:', error);
     });
@@ -135,6 +146,17 @@ export default class OffscreenSkyboxWorker extends Worker {
     console.log('Starting skybox generation process.');
     // TODO: take real position in universe into account.
     this.renderFace({ x, y, z, sideNumber: 0, tag: 'internal cascade' });
+  }
+
+  // Gets the astrometrics worker to determine which stars are visible at the
+  // specified coordinates.
+  getVisibleStars({ x, y, z , distanceLimit=Infinity, callback }) {
+    const ticket = ++this.ticketCount;
+    this.ticketCallbacks[ticket] = callback;
+    this.postMessage({
+      endpoint: 'getVisibleStars', ticket,
+      x, y, z , distanceLimit,
+    });
   }
 
   applySkyboxFromCache() {
