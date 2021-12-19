@@ -1,13 +1,22 @@
-import ManagedWorker from './ManagedWorker';
 import * as THREE from 'three';
 import Unit from '../local/Unit';
 import { logBootInfo } from '../local/windowLoadListener';
+import ChangeTracker from '../emitters/ChangeTracker';
 
-export default class OffscreenSkyboxWorker extends ManagedWorker {
+// TODO: maybe rename to astrometrics worker? It's become more than just a
+//  skybox machine.
+export default class OffscreenSkyboxWorker extends Worker {
   constructor() {
     // Note: offscreenRenderer.js is made available via Webpack bundling.
-    super('./build/offscreenSkybox.js');
+    super('./build/offscreenSkybox.js', { type: 'module' });
     this.skyboxCube = null;
+    this.initComplete = false;
+    // Just a tad bigger than the Milky Way. Yes, we can do that. In meters.
+    this.skyboxSize = Number(Unit.parsec.inMetersBigInt * BigInt(32768));
+    // Used to uniquely identify each web worker request.
+    this.ticketCount = 0;
+    // Callbacks for each ticket is stored here.
+    this.ticketCallbacks = {};
 
     this._collectedImages = [
       null, null, null, null, null, null,
@@ -17,17 +26,42 @@ export default class OffscreenSkyboxWorker extends ManagedWorker {
   }
 
   prepListeners() {
-    this.addWorkerListener('init', ({ error, value }) => {
+    // Create worker listeners.
+    this.workerListener = {
+      init: new ChangeTracker(),
+      renderFace: new ChangeTracker(),
+      getVisibleStars: new ChangeTracker(),
+      testHeavyPayload: new ChangeTracker(),
+    };
+
+    // Hook listeners into onmessage.
+    this.onmessage = (message) => {
+      const payload = message.data;
+      const listener = this.workerListener[payload.key];
+      if (!listener) {
+        return console.error(
+          '[OffscreenSkyboxWorker] Nothing to receive', payload.key
+        );
+      }
+      listener.setValue(payload);
+    };
+
+    // Define listener responses.
+    this.workerListener.init.getEveryChange(({ error, value }) => {
+      if (this.initComplete) {
+        return console.error('[OffscreenSkyboxWorker] Init received twice.');
+      }
+      this.initComplete = true;
       if (error || !value) {
         console.error(error, '- got:', value);
       }
       else {
-        this.ready = true;
         this.generateSkybox();
+        $game.event.offscreenSkyboxReady.setValue({ when: new Date() });
       }
     });
 
-    this.addWorkerListener('renderFace', ({ value }) => {
+    this.workerListener.renderFace.getEveryChange(({ value }) => {
       const { x, y, z, sideNumber, tag } = value;
       if (tag === 'internal cascade') {
         // Caution: this is request**Post**AnimationFrame, not
@@ -55,16 +89,27 @@ export default class OffscreenSkyboxWorker extends ManagedWorker {
       }
     });
 
-    this.addWorkerListener('testHeavyPayload', ({ error, value }) => {
+    this.workerListener.getVisibleStars.getEveryChange(({ value }) => {
+      const ticketCallback = this.ticketCallbacks[value.ticket];
+      if (ticketCallback) {
+        ticketCallback(value);
+        delete this.ticketCallbacks[value.ticket];
+      }
+    });
+
+    this.workerListener.testHeavyPayload.getEveryChange(({ error, value }) => {
       console.log('testHeavyPayload:', value.length, 'KB transferred. Error:', error);
     });
   }
 
   init({
     canvas, width, height, skyboxAntialias, pixelRatio, catalogPath,
-    debugSides, debugCorners,
+    disableSkybox, debugSides, debugCorners,
   }) {
-    logBootInfo('Scanning skies');
+    disableSkybox ?
+      logBootInfo('[!] Skybox disabled') : // Blasphemous acts.
+      logBootInfo('Scanning skies');
+
     if (!'transferControlToOffscreen' in canvas) {
       console.error('offscreenControl required for skybox to render.');
       return $modal.alert('Error: offscreen canvas not available; stars will not render.');
@@ -80,6 +125,7 @@ export default class OffscreenSkyboxWorker extends ManagedWorker {
       skyboxAntialias,
       pixelRatio,
       catalogPath,
+      disableSkybox,
       debugSides,
       debugCorners,
     }, [ offscreenControl ]);
@@ -100,6 +146,17 @@ export default class OffscreenSkyboxWorker extends ManagedWorker {
     console.log('Starting skybox generation process.');
     // TODO: take real position in universe into account.
     this.renderFace({ x, y, z, sideNumber: 0, tag: 'internal cascade' });
+  }
+
+  // Gets the astrometrics worker to determine which stars are visible at the
+  // specified coordinates.
+  getVisibleStars({ x, y, z , distanceLimit=Infinity, callback }) {
+    const ticket = ++this.ticketCount;
+    this.ticketCallbacks[ticket] = callback;
+    this.postMessage({
+      endpoint: 'getVisibleStars', ticket,
+      x, y, z , distanceLimit,
+    });
   }
 
   applySkyboxFromCache() {
@@ -126,9 +183,8 @@ export default class OffscreenSkyboxWorker extends ManagedWorker {
       }, 10 * i);
     }
 
-    const distance = Unit.centiParsec.inMeters;
+    const distance = this.skyboxSize;
     const geometry = new THREE.BoxGeometry(distance, distance, distance);
-    // const geometry = new THREE.BoxGeometry(10, 10, 10);
     $game.playerShip.getOnce(({ centerPoint }) => {
       if (!this.skyboxCube) {
         this.skyboxCube = new THREE.Mesh(geometry, materials);

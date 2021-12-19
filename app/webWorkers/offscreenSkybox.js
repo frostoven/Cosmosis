@@ -4,31 +4,26 @@
 // If it's a three.js issue, need to report a bug.
 
 import * as THREE from 'three';
-import localClusterStarShader from '../scenes/localClusterStarShader';
+import distantStars from '../scenes/distantStars';
 import { getJson, getShader } from './fileLoader';
 import { addDebugCornerIndicators, addDebugSideCounters } from './debugTools';
 import { jsonNoiseGen } from '../universeFactory/noise';
+import { prepareGalaxyData, getVisibleStars } from '../universeFactory';
 
 const options = {
+  disableSkybox: false,
   debugSides: false,
   debugCorners: false,
 };
 
 let scene, renderer, starFieldScene, cubeCamera, cubeRenderTarget;
 
-self.onmessage = function createOffscreenSkybox(message) {
-  const options = message.data;
-  const target = api[options.endpoint];
-  if (target) {
-    target(options);
-  }
-  else {
-    console.error(`[offscreenSkybox] Unknown endpoint '${options.endpoint}'.`);
-  }
-};
-
 const api = {
-  init: ({ drawingSurface, width, height, skyboxAntialias, pixelRatio, catalogPath, debugSides, debugCorners }) => {
+  init: ({
+    drawingSurface, width, height, skyboxAntialias, pixelRatio, catalogPath,
+    disableSkybox, debugSides, debugCorners, ticket,
+  }) => {
+    options.disableSkybox = !!disableSkybox;
     options.debugSides = !!debugSides;
     options.debugCorners = !!debugCorners;
 
@@ -41,21 +36,48 @@ const api = {
       }
     });
   },
-  renderFace: ({ x, y, z, sideNumber, tag }) => { renderFace( x, y, z, sideNumber, tag); },
+  renderFace: ({ x, y, z, sideNumber, tag, ticket }) => { renderFace( x, y, z, sideNumber, tag, ticket); },
   // Tests heavy data copies. Defaults to 300MB, which is the expected
   // worst-case scenario.
   testHeavyPayload: ({ size=300000 }) => {
     const crazyResult = jsonNoiseGen(size);
     postMessage({ error: null, key: 'testHeavyPayload', value: crazyResult });
   },
+  getVisibleStars: (options) => {
+    console.time('Star query processing time');
+    options.result = getVisibleStars(options);
+    console.timeEnd('Star query processing time');
+    postMessage({
+      error: null,
+      key: 'getVisibleStars',
+      value: options,
+    });
+  },
 };
 
 let totalInitCallbacks = 0;
+// The init process has multiple asynchronous processes. This function triggers
+// an 'init complete' message when all of them have executed. They're currently
+// hardcoded as 3 operations, we may need to move them to a more robust queue.
 function doInitCallbackWhenReady() {
   if (++totalInitCallbacks >= 2) {
     postMessage({ error: null, key: 'init', value: true });
   }
 }
+
+self.onmessage = function createOffscreenSkybox(message) {
+  const options = message.data;
+  if (options.ticket) {
+    console.log(`%cThank you for your request, your ticket is number is #${options.ticket}`, 'font-style: italic;');
+  }
+  const target = api[options.endpoint];
+  if (target) {
+    target(options);
+  }
+  else {
+    console.error(`[offscreenSkybox] Unknown endpoint '${options.endpoint}'.`);
+  }
+};
 
 function init(canvas, width, height, skyboxAntialias, pixelRatio, catalogJson) {
   scene = new THREE.Scene();
@@ -84,13 +106,25 @@ function init(canvas, width, height, skyboxAntialias, pixelRatio, catalogJson) {
   gl.enable(gl.BLEND);
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_DST_COLOR);
 
-  let starFieldScene = localClusterStarShader.init({
-    // catalogBlob: new TextDecoder().decode(catalogBlob),
-    catalogJson,
-    shaderLoader: getShader,
-    onLoaded: doInitCallbackWhenReady,
-  });
-  scene.add(starFieldScene);
+  // Adds data to the universe factory for later use. It doesn't actually parse
+  // anything and is very fast.
+  // TODO: add loaded catalog data to prepareGalaxyData. Also, starFieldScene
+  //  should get its data from prepareGalaxyData, not from catalogs. This would
+  //  allow for procedural data to enter the skybox.
+  prepareGalaxyData(/*{ catalogs: [ catalogJson ] }*/); // TODO: UNCOMMENT CATALOG.
+
+  if (options.disableSkybox) {
+    doInitCallbackWhenReady();
+  }
+  else {
+    let starFieldScene = distantStars.init({
+      // catalogBlob: new TextDecoder().decode(catalogBlob),
+      catalogJson,
+      shaderLoader: getShader,
+      onLoaded: doInitCallbackWhenReady,
+    });
+    scene.add(starFieldScene);
+  }
 
   cubeRenderTarget = new THREE.WebGLCubeRenderTarget(128, {
     format: THREE.RGBFormat,
@@ -118,7 +152,7 @@ function init(canvas, width, height, skyboxAntialias, pixelRatio, catalogJson) {
   });
 }
 
-function renderFace(x, y, z, sideNumber, tag) {
+function renderFace(x, y, z, sideNumber, tag, ticket) {
   if (sideNumber > 5) {
     return console.error('Side number', sideNumber, 'is not in range 0..5');
   }
@@ -127,7 +161,7 @@ function renderFace(x, y, z, sideNumber, tag) {
 
   postMessage({
     error: null,
-    key: 'renderFace',
+    key: 'renderFace', ticket,
     value: { x, y, z, sideNumber, tag },
   });
 }

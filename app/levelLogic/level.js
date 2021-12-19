@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import userProfile from '../userProfile';
 
 // Distance in meters the players needs to be from an object to interact with it.
 const ACTION_DIST = 1;
@@ -61,26 +62,41 @@ Level.prototype.triggerAnimation = function triggerAnimation(action) {
   }
 };
 
+// User configurations.
+let logDistanceToInteractables = false;
+let distanceDebugCounter = 0;
+userProfile.cacheChangeEvent.getEveryChange(({ userOptions }) => {
+  logDistanceToInteractables = userOptions.debug.logDistanceToInteractables;
+});
+
 /**
  * Does all level processing.
  */
 Level.prototype.process = function process(delta) {
-  const tmpVec3 = new THREE.Vector3(0, 0, 0);
-  // console.log('**** dist to ship:', levelPos.distanceTo($game.camera.position));
-  // const relPos = levelPos.distanceTo($game.camera.position);
+  const nodeVec3 = new THREE.Vector3(0, 0, 0);
+  const camVec3 = new THREE.Vector3(0, 0, 0);
+  // Check distance to interactable items. // TODO: disable in shipPilot mode.
   for (let i = 0, len = this.interactables.length; i < len; i++) {
     const node = this.interactables[i];
-    node.getWorldPosition(tmpVec3);
-    const dist = tmpVec3.distanceTo($game.camera.position);
+    node.getWorldPosition(nodeVec3);
+    $game.camera.getWorldPosition(camVec3);
+    const dist = nodeVec3.distanceTo(camVec3);
+
+    if (logDistanceToInteractables) {
+      if (distanceDebugCounter++ % 240 === 0) {
+        console.log(`[debug:level] Distance to interactable ${i}:`, dist);
+      }
+    }
+
     if (dist <= ACTION_DIST) {
       // console.log(`**** dist to ${node.name}:`, dist);
-      $game.outlinePass.selectedObjects = [node];
+      $game.interactablesOutlinePass.selectedObjects = [node];
       if (this._useNext) {
         let clip;
         // Switches have targets, which are other 3D objects. Items like chairs
         // do not have targets, so they themselves are the targets.
         let clipName = node.csmTarget ? node.csmTarget : node.name;
-        console.log('INTERACTING WITH NODE:', clipName);
+        console.log('Player has activated:', clipName);
 
         // Action cache.
         let action = this._animating[clipName];
@@ -100,19 +116,15 @@ Level.prototype.process = function process(delta) {
       }
     }
     else {
-      $game.outlinePass.selectedObjects = [];
+      $game.interactablesOutlinePass.selectedObjects = [];
     }
     this._useNext = false;
   }
   this.runAnimations(delta);
 };
 
-let stop = 0;
 Level.prototype.runAnimations = function runAnimations(delta) {
   this._mixer.update(delta);
-  // if (stop++ === 60) {
-  //   console.log('The illusive mixer:', this._mixer);
-  // }
 };
 
 Level.prototype.setNameMap = function setNameMap(map) {

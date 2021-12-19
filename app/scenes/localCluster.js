@@ -3,8 +3,7 @@
 
 import * as THREE from 'three';
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
-
-import core from '../local/core';
+import Unit from '../local/Unit';
 
 // const demo = new CANNON.Demo();
 // console.log(demo)
@@ -28,21 +27,57 @@ const labelData = [
   // {size: 3474000, scale: 1.0, label: "moon (3,474 Km)", grouped: false, nogroupOffset: 384400000, image: 'potatoLqAssets/planetImg/Moon_lroc_color_poles_8k.jpg'},
   // {size: 12742000, scale: 1.0, label: "earth (12,742 km)", grouped: false, nogroupOffset: 0, image: 'potatoLqAssets/planetImg/Land_ocean_ice_cloud_hires.jpg'},
   // {size: 1392700000, scale: 1.0, label: "sun (1,392,700 km)", brightness: 10, grouped: false, nogroupOffset: -149540000000, image: 'potatoLqAssets/planetImg/sun_euvi_aia304_2012_carrington.jpg'},
-  {size: 7.47e12, scale: 1.0, label: "solar system (50Au)"},
-  {size: 9.4605284e15, scale: 1.0, label: "gargantuan (1 light year)"},
-  {size: 3.08567758e16, scale: 1.0, label: "ludicrous (1 parsec)"},
-  {size: 1e19, scale: 1.0, label: "mind boggling (1000 light years)"}
+  // {size: 7.47e12, scale: 1.0, label: "solar system (50Au)"},
+  // {size: 9.4605284e15, scale: 1.0, label: "gargantuan (1 light year)"},
+  // {size: 3.08567758e16, scale: 1.0, label: "ludicrous (1 parsec)"},
+  // {size: 1e19, scale: 1.0, label: "mind boggling (1000 light years)"}
 ];
 
-// bookm
-// function register() {
-//   core.registerScene({
-//     name: 'localCluster',
-//     init,
-//   });
-// }
 
-function init({ font }) {
+function init() {
+  const scene = new THREE.Scene();
+
+  $game.event.offscreenSkyboxReady.getOnce(() => {
+    $webWorkers.offscreenSkybox.getVisibleStars({
+      x: 0, y: 0, z: 0,
+      callback: (data) => {
+        console.log('--> [localCluster] star data:', data);
+        generateStars({ scene, data: data.result });
+      },
+    });
+  });
+
+  return scene;
+}
+
+function createStarMesh(x, y, z) {
+  const unit = Unit.parsec.inMeters;
+  x *= unit;
+  y *= unit;
+  z *= unit;
+  const radius = 696340000; // sun's radius
+  // TODO: start this off as non-detailed (maybe 40x20 or less), and only
+  //  increase to 240x120 when the user gets close. You might even have a
+  //  single 240x120 that it 'snapped' and resized to closest star positions
+  //  (i.e. ever single star is the same instance). Then when you get far
+  //  enough, replace with shader dot and move star to another position.
+  const geometry = new THREE.SphereBufferGeometry(radius, 240, 120);
+  const material = new THREE.MeshBasicMaterial({ color: 0xfff3b3 });
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.position.set(x, y, z);
+  console.log('====> creating star', {x,y,z})
+  return mesh;
+}
+
+function generateStars({ scene, data }) {
+  const { stars, nearestStar } = data;
+  for (let i = 0, len = stars.length; i < len; i++) {
+    const star = stars[i];
+    scene.add(createStarMesh(star.x, star.y, star.z));
+  }
+}
+
+function initTestsWithText({ font }) {
   const scene = new THREE.Scene();
   // scene.add(new THREE.AmbientLight(0x222222));
   // const light = new THREE.DirectionalLight(0xffffff, 1);
@@ -99,37 +134,17 @@ function init({ font }) {
     if (body.image) {
       const loader = new THREE.TextureLoader();
       loader.load( body.image, function ( texture ) {
-
-        // var plane = new THREE.SphereGeometry(4096, 64, 64);
-        // for ( var i = 0, l = plane.vertices.length; i < l; i ++ ) {
-        //   var x = i % quality, y = ~~ ( i / quality );
-        //   //plane.vertices[ i ].y = data[ ( x * step ) + ( y * step ) * 1024 ] * 2 - 128;
-        //   // changing points randomly instead of reading off of a height map
-        //   plane.vertices[ i ].x += Math.floor((Math.random()*50)+1) - 25;
-        //   plane.vertices[ i ].y += Math.floor((Math.random()*100)+1) - 50;
-        //   plane.vertices[ i ].z += Math.floor((Math.random()*50)+1) - 25;
-        // }
-        // // plane.computeCentroids();
-        // plane.computeFaceNormals();
-
         const material = new THREE.MeshBasicMaterial({map: texture});
         // const material = new THREE.MeshPhongMaterial({map: texture});
         const mesh = new THREE.Mesh(geometry, material);
         // mesh.castShadow = true;
         mesh.receiveShadow = true;
 
-        // const mesh = new THREE.Mesh(plane, material);
-        // mesh.position.y = -body.size / 4 * scale;
-
         if (body.grouped === false) {
           mesh.scale.multiplyScalar(body.size * scale);
           // mesh.updateMatrix();
           mesh.position.x = body.nogroupOffset;
           scene.add(mesh);
-        }
-        else {
-          // mesh.scale.multiplyScalar(body.size * scale);
-          // group.add(mesh);
         }
       });
     }
@@ -143,50 +158,11 @@ function init({ font }) {
       }
     }
   }
-
   return scene;
 }
 
-// TODO: figure out wtf is going on here.
-//  So, very simply: 3000 cubes @ 4 verts each = 12,000 verts = 11fps on an RTX 2080TI.
-//  Or, add a compressed gltf scene from blender with 2 million verts - 60 fps constant. wut..?
-//  The real confusing part here is the actual resource usage - CPU 10%, GPU 20%, RAM 50%. I.e system
-//  not being utilised.
-// startupEmitter.on(startupEvent.ready, () => {
-//   const objects = generateCubeField({
-//     scene: $game.scene,
-//     position: $game.camera.position,
-//   });
-//   console.log('cube space:', objects);
-// });
-
-// startupEmitter.on(startupEvent.ready, () => {
-//   const objects = generateCubeField({
-//     scene: $game.scene,
-//     position: $game.camera.position,
-//     cubeCount: 25,
-//     distanceMultiplier: 0.5
-//   });
-// });
-
-// startupEmitter.on(startupEvent.ready, () => {
-// const objects = generateCubeField({
-//   scene: $game.scene,
-//   position: $game.camera.position,
-//   cubeCount: 100,
-// });
-// console.log('cube space:', objects);
-// });
-
 const definition = {
   init,
-  // register,
 };
 
 export default definition;
-
-// export {
-//   // name: 'localCluster',
-//   init,
-//   register,
-// }
