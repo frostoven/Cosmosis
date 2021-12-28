@@ -24,45 +24,6 @@ function getJson(path, callback) {
   });
 }
 
-/**
- * Loads all shader files that have the specified name.
- * @param {string} name - Shader file name, excluding extension.
- * @param {function} callback - cb(error, { fragmentShader, vertexShader });
- */
-function getShader(name, callback) {
-  const file = `../shaders/${name}`;
-  const responseType = 'text';
-
-  // Get fragment shader.
-  xmrRequest({
-    path: `${file}.frag`,
-    responseType,
-    onload: (error, fragmentShader) => {
-      if (error) {
-        return callback(error);
-      }
-
-      // Get vertex shader.
-      xmrRequest({
-        path: `${file}.vert`,
-        responseType,
-        onload: (error, vertexShader) => {
-          if (error) {
-            return callback(error);
-          }
-
-          // Return results.
-          callback(null, {
-            fragmentShader,
-            vertexShader,
-          });
-        },
-      });
-    },
-  });
-}
-
 export {
   getJson,
-  getShader,
 }

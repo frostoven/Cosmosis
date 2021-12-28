@@ -18,7 +18,6 @@ import * as CANNON from 'cannon';
 import { startupEvent, getStartupEmitter } from './emitters';
 import './modeControl';
 import userProfile from './userProfile';
-import { discoverShaders } from '../shaders';
 import { logicalSceneGroup } from './logicalSceneGroup';
 
 const startupEmitter = getStartupEmitter();
@@ -42,7 +41,6 @@ window.powerOnSelfTest = powerOnSelfTest;
 
 console.groupCollapsed(`Pre-init (build number: ${packageJson.version}).`);
 logBootInfo(`System boot v${packageJson.version}`); // ▓
-discoverShaders();
 console.groupEnd();
 
 onDocumentReady(() => {
@@ -96,8 +94,6 @@ function initCore() {
 }
 
 onReadyToBoot(() => {
-  discoverShaders(() => {
-    logBootInfo('Process units ready');
-    initCore();
-  });
+  logBootInfo('Process units ready');
+  initCore();
 });
