@@ -72,7 +72,7 @@ export default class UniverseFactory {
 
   // Used to add data that is not procedural (such as those from real star
   // catalogs). Accepts the (3D) format presented by this repo:
-  // https://github.com/feynmansbongos/BSC5P-JSON-XYZ
+  // https://github.com/frostoven/BSC5P-JSON-XYZ
   addStarData(array) {
     if (!Array.isArray(array)) {
       throw 'addStarData only accepts arrays of objects.';

@@ -1,6 +1,6 @@
 ## Copyright infringement
 **If your work has been unlawfully used in this project, please
-[raise an issue](https://github.com/feynmansbongos/Cosmosis/issues/new/choose)
+[raise an issue](https://github.com/frostoven/Cosmosis/issues/new/choose)
 and we'll remove it ASAP.** This project is maintained for free during
 contributors' spare time, so it may take us a few days to notice the complaint.
 However, rest assured copyright infringement is taken very seriously and your issue
@@ -110,7 +110,7 @@ described above.
 
 
 
-Please [raise an issue](https://github.com/feynmansbongos/Cosmosis/issues/new/choose)
+Please [raise an issue](https://github.com/frostoven/Cosmosis/issues/new/choose)
 before starting work. This game's art style has a very specific direction. Even
 if you create art much better than what's already in the project, it might
 simply be rejected on the basis that it does not match existing style. Once
