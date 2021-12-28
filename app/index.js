@@ -1,4 +1,5 @@
 import './polyfills';
+import './earlyLoad';
 import React from 'react';
 import * as ReactDOM from 'react-dom';
 import RootNode from './reactComponents/RootNode';
@@ -35,35 +36,6 @@ const defaultScene = logicalSceneGroup.space;
 // manually runs these by opening the dev console and entering
 // 'powerOnSelfTest()'.
 window.powerOnSelfTest = powerOnSelfTest;
-
-/* Auto dev reloading
-/* --------------------------------- */
-
-if (process.env && process.env.NODE_ENV !== 'production') {
-  // This flag allows us to disable HMR when we don't want reloads during
-  // debugging.
-  window.hmrEnabled = true;
-
-  function reload(event, filename) {
-    if (filename) {
-      if (!window.hmrEnabled) {
-        return console.log('HMR: Ignoring external changes.');
-      }
-      // console.log(`${filename} file Changed`);
-      setTimeout(() => {
-        // Webpack sometimes modifies files multiple times in a short span,
-        // causing a broken reload. Wait a bit for it to finish.
-        // Currently a bug in nw.js. TODO: remove once they fix it.
-        // nw.Window.get().reload();
-        chrome.tabs.reload();
-      }, 250);
-    }
-  }
-
-  const fs = require('fs');
-  fs.watch('./build/game.js', reload);
-  fs.watch('./build/offscreenSkybox.js', reload);
-}
 
 /* Main
 /* --------------------------------- */
