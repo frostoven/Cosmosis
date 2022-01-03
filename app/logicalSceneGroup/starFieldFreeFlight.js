@@ -5,7 +5,6 @@ import { FreeCam } from '../modeControl/cameraControllers/freeCam';
 import { createSpaceship } from '../levelLogic/spaceshipLoader';
 import AssetFinder from '../local/AssetFinder';
 import fs from 'fs';
-import { getShader } from '../../shaders';
 
 const { camController } = contextualInput;
 let starFieldScene = null;
@@ -23,7 +22,7 @@ const starFieldFreeFlight = new LogicalSceneGroup({
     freeCam.replaceKeyListeners();
     camController.onControlChange(onControlChange);
     renderer.autoClear = true;
-    const gl = renderer.context;
+    const gl = renderer.getContext();
     gl.disable(gl.DEPTH_TEST);
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_DST_COLOR);
@@ -40,7 +39,6 @@ const starFieldFreeFlight = new LogicalSceneGroup({
             if (!starFieldScene) {
               starFieldScene = distantStars.init({
                 catalogJson: JSON.parse(catalogBlob),
-                shaderLoader: getShader,
               });
             }
 
@@ -72,7 +70,7 @@ const starFieldFreeFlight = new LogicalSceneGroup({
   },
   deactivate: ({ renderer, callback=()=>{} }={ callback: ()=>{} }) => {
     camController.removeControlListener(onControlChange);
-    const gl = renderer.context;
+    const gl = renderer.getContext();
     gl.enable(gl.DEPTH_TEST);
     gl.disable(gl.BLEND);
     callback();

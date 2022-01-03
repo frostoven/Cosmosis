@@ -1,7 +1,9 @@
 import './polyfills';
+import './earlyLoad';
 import React from 'react';
 import * as ReactDOM from 'react-dom';
 import RootNode from './reactComponents/RootNode';
+import v8 from 'v8';
 
 import core from './local/core';
 import powerOnSelfTest from './test';
@@ -17,7 +19,6 @@ import * as CANNON from 'cannon';
 import { startupEvent, getStartupEmitter } from './emitters';
 import './modeControl';
 import userProfile from './userProfile';
-import { discoverShaders } from '../shaders';
 import { logicalSceneGroup } from './logicalSceneGroup';
 
 const startupEmitter = getStartupEmitter();
@@ -36,42 +37,27 @@ const defaultScene = logicalSceneGroup.space;
 // 'powerOnSelfTest()'.
 window.powerOnSelfTest = powerOnSelfTest;
 
-/* Auto dev reloading
-/* --------------------------------- */
-
-if (process.env && process.env.NODE_ENV !== 'production') {
-  // This flag allows us to disable HMR when we don't want reloads during
-  // debugging.
-  window.hmrEnabled = true;
-
-  function reload(event, filename) {
-    if (filename) {
-      if (!window.hmrEnabled) {
-        return console.log('HMR: Ignoring external changes.');
-      }
-      // console.log(`${filename} file Changed`);
-      setTimeout(() => {
-        // Webpack sometimes modifies files multiple times in a short span,
-        // causing a broken reload. Wait a bit for it to finish.
-        // Currently a bug in nw.js. TODO: remove once they fix it.
-        // nw.Window.get().reload();
-        chrome.tabs.reload();
-      }, 250);
-    }
-  }
-
-  const fs = require('fs');
-  fs.watch('./build/game.js', reload);
-  fs.watch('./build/offscreenSkybox.js', reload);
-}
-
 /* Main
 /* --------------------------------- */
 
-console.groupCollapsed(`Pre-init (build number: ${packageJson.version}).`);
+// Generated using https://fsymbols.com/signs/square/
+console.log(
+  '\n' +
+  ' █████╗  █████╗  ██████╗███╗   ███╗ █████╗  ██████╗██╗ ██████╗\n' +
+  '██╔══██╗██╔══██╗██╔════╝████╗░████║██╔══██╗██╔════╝██║██╔════╝\n' +
+  '██║░░╚═╝██║░░██║╚█████╗░██╔████╔██║██║░░██║╚█████╗░██║╚█████╗ \n' +
+  '██║░░██╗██║░░██║░╚═══██╗██║╚██╔╝██║██║░░██║░╚═══██╗██║░╚═══██╗\n' +
+  '╚█████╔╝╚█████╔╝██████╔╝██║░╚═╝░██║╚█████╔╝██████╔╝██║██████╔╝\n' +
+  ' ╚════╝  ╚════╝ ╚═════╝ ╚═╝     ╚═╝ ╚════╝ ╚═════╝ ╚═╝╚═════╝ ' +
+  '\n\n'
+);
+
+console.log(`%c► Build ${packageJson.version}`, 'font-weight: bold;');
 logBootInfo(`System boot v${packageJson.version}`); // ▓
-discoverShaders();
-console.groupEnd();
+const heapSize = (
+  (v8.getHeapStatistics().heap_size_limit / (1024 * 1024 * 1024)).toFixed(2)
+);
+console.log(`▪ Max heap size: ${heapSize}GB`);
 
 onDocumentReady(() => {
   window.rootNode = ReactDOM.render(
@@ -124,8 +110,30 @@ function initCore() {
 }
 
 onReadyToBoot(() => {
-  discoverShaders(() => {
-    logBootInfo('Process units ready');
-    initCore();
-  });
+  logBootInfo('Process units ready');
+  initCore();
 });
+
+
+
+
+
+// let count = 0;
+// let parentArrayI = 0;
+// let parentArray = [[]];
+// // let arr = [];
+// let i = 0;
+//
+// while (true) {
+//   parentArray[parentArrayI].push(i);
+//   if (i % 10000000 === 0) {
+//     console.log(`[MAIN] [${count++}] at`, count, 'billion');
+//     parentArray.push([]);
+//     parentArrayI++;
+//     i = 0;
+//   }
+//
+//   i++;
+// }
+
+

@@ -2,10 +2,11 @@
 // mostly used to generate skyboxes, but can also be used for catalog testing.
 
 import * as THREE from 'three';
+import { shader } from '../shaders'
 
 const spectralCombinations = {};
 
-function createScene({ scene, catalog, shaderLoader, onLoaded=()=>{} }) {
+function createScene({ scene, catalog, onLoaded=()=>{} }) {
   const validStars = [];
 
   for (let i = 0; i < catalog.length; i++) {
@@ -13,10 +14,10 @@ function createScene({ scene, catalog, shaderLoader, onLoaded=()=>{} }) {
     //   console.log(`Loading star ${i}`, true);
     // }
     const star = catalog[i];
-    const starIndex = star.i;
+    // const starIndex = star.i;
     const name = star.n;
     let parsecs = star.p;
-    const brightness = star.b;
+    // const brightness = star.b;
     const spectralType = star.s;
     if (!spectralCombinations[spectralType]) {
       spectralCombinations[spectralType] = 1;
@@ -33,38 +34,35 @@ function createScene({ scene, catalog, shaderLoader, onLoaded=()=>{} }) {
     validStars.push(star);
   }
 
-  populateSky({ scene, validStars, shaderLoader, onLoaded });
+  populateSky({ scene, validStars, onLoaded });
 }
 
 /**
  * Initialises the star field.
  * @param {JSON} catalogJson - JSON object containing all stars
- * @param {function} shaderLoader - Function used to load shader files. The
- *   reason this cannot be handled automatically is because web workers and
- *   main thread workers currently use incompatible file loading mechanisms.
  * @param {function} onLoaded - Called when everything is done loading.
  * @returns {Scene}
  */
-function init({ catalogJson, shaderLoader, onLoaded=()=>{} }) {
+function init({ catalogJson, onLoaded=()=>{} }) {
   const scene = new THREE.Scene();
-  createScene({ scene, catalog: catalogJson, shaderLoader, onLoaded });
+  createScene({ scene, catalog: catalogJson, onLoaded });
   return scene;
 }
 
 // TODO: continue here: this should be loaded after catalog has been loaded.
-function populateSky({ scene, validStars, shaderLoader, onLoaded=()=>{} }) {
+function populateSky({ scene, validStars, onLoaded=()=>{} }) {
   // TODO: Add ways to check for LMC, SMC, Andromeda, clusters, etc.
 
-  const glowColor = new THREE.Color();
+  // const glowColor = new THREE.Color();
   const color = [];
   const glow = [];
   const luminosity = [];
   const distance = [];
   const vertices = [];
-  const parsec = 30856775814913673;
-  const sunSize = 1392700000;
+  // const parsec = 30856775814913673;
+  // const sunSize = 1392700000;
 
-  let prevLoc = {};
+  // let prevLoc = {};
   for (let i = 0; i < validStars.length; i++) {
     const star = validStars[i];
 
@@ -93,32 +91,23 @@ function populateSky({ scene, validStars, shaderLoader, onLoaded=()=>{} }) {
   geometry.setAttribute('luminosity', new THREE.Float32BufferAttribute(luminosity, 1));
   geometry.setAttribute('distance', new THREE.Float32BufferAttribute(distance, 1));
 
-  // TODO: reimplement me.
-  // const { vertexShader, fragmentShader } = getShader('starfield-blackbody');
-  shaderLoader('starfield-blackbody', (error, { vertexShader, fragmentShader }) => {
-    if (error) {
-      return console.error(
-        'Failed to load starfield-blackbody shader; error:', error
-      );
-    }
-
-    const material = new THREE.ShaderMaterial({
-      uniforms: {
-        color: { value: new THREE.Color(0xffffff) },
-        alphaTest: { value: 0.9 },
-      },
-      vertexShader,
-      fragmentShader,
-      transparent: true,
-      extensions: {
-        drawBuffers: true,
-      },
-    });
-
-    const particles = new THREE.Points(geometry, material);
-    scene.add(particles);
-    onLoaded();
+  const { vertexShader, fragmentShader } = shader.starfieldBlackbody;
+  const material = new THREE.ShaderMaterial({
+    uniforms: {
+      color: { value: new THREE.Color(0xffffff) },
+      alphaTest: { value: 0.9 },
+    },
+    vertexShader,
+    fragmentShader,
+    transparent: true,
+    extensions: {
+      drawBuffers: true,
+    },
   });
+
+  const particles = new THREE.Points(geometry, material);
+  scene.add(particles);
+  onLoaded();
 }
 
 export default {

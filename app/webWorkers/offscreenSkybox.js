@@ -5,7 +5,7 @@
 
 import * as THREE from 'three';
 import distantStars from '../scenes/distantStars';
-import { getJson, getShader } from './fileLoader';
+import { getJson } from './fileLoader';
 import { addDebugCornerIndicators, addDebugSideCounters } from './debugTools';
 import { jsonNoiseGen } from '../universeFactory/noise';
 import { prepareGalaxyData, getVisibleStars } from '../universeFactory';
@@ -16,12 +16,12 @@ const options = {
   debugCorners: false,
 };
 
-let scene, renderer, starFieldScene, cubeCamera, cubeRenderTarget;
+let scene, renderer, cubeCamera, cubeRenderTarget;
 
 const api = {
   init: ({
     drawingSurface, width, height, skyboxAntialias, pixelRatio, catalogPath,
-    disableSkybox, debugSides, debugCorners, ticket,
+    disableSkybox, debugSides, debugCorners,
   }) => {
     options.disableSkybox = !!disableSkybox;
     options.debugSides = !!debugSides;
@@ -36,7 +36,9 @@ const api = {
       }
     });
   },
-  renderFace: ({ x, y, z, sideNumber, tag, ticket }) => { renderFace( x, y, z, sideNumber, tag, ticket); },
+  renderFace: ({ x, y, z, sideNumber, tag, ticket }) => {
+    renderFace(x, y, z, sideNumber, tag, ticket);
+  },
   // Tests heavy data copies. Defaults to 300MB, which is the expected
   // worst-case scenario.
   testHeavyPayload: ({ size=300000 }) => {
@@ -120,7 +122,6 @@ function init(canvas, width, height, skyboxAntialias, pixelRatio, catalogJson) {
     let starFieldScene = distantStars.init({
       // catalogBlob: new TextDecoder().decode(catalogBlob),
       catalogJson,
-      shaderLoader: getShader,
       onLoaded: doInitCallbackWhenReady,
     });
     scene.add(starFieldScene);

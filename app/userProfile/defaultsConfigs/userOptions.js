@@ -47,6 +47,7 @@ const userOptions = {
   enums,
   fileContent: {
     debug: {
+      autoOpenDevTools: false,
       // Note: saving of position not yet implemented.
       // Once implemented, will prevent player ship location from being saved
       // to the user's profile.

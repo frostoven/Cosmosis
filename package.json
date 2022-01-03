@@ -21,7 +21,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/feynmansbongos/Cosmosis"
+    "url": "https://github.com/frostoven/Cosmosis"
   },
   "keywords": [
     "Cosmosis"
@@ -48,6 +48,7 @@
     "lodash": "4.17.21",
     "npm-run-all": "4.1.5",
     "nw": "0.55.0",
+    "postprocessing": "6.23.3",
     "react": "16.14.0",
     "react-dom": "16.14.0",
     "semantic-ui-react": "2.0.3",

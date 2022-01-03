@@ -50,7 +50,7 @@ function init() {
   return scene;
 }
 
-function createStarMesh(x, y, z) {
+function createStarMesh({ x, y, z, K }) {
   const unit = Unit.parsec.inMeters;
   x *= unit;
   y *= unit;
@@ -62,10 +62,14 @@ function createStarMesh(x, y, z) {
   //  (i.e. ever single star is the same instance). Then when you get far
   //  enough, replace with shader dot and move star to another position.
   const geometry = new THREE.SphereBufferGeometry(radius, 240, 120);
-  const material = new THREE.MeshBasicMaterial({ color: 0xfff3b3 });
+  const material = new THREE.MeshBasicMaterial({
+    color: new THREE.Color(K.r, K.g, K.b),
+    transparent: true,
+    fog: false,
+  });
   const mesh = new THREE.Mesh(geometry, material);
   mesh.position.set(x, y, z);
-  console.log('====> creating star', {x,y,z})
+
   return mesh;
 }
 
@@ -73,7 +77,16 @@ function generateStars({ scene, data }) {
   const { stars, nearestStar } = data;
   for (let i = 0, len = stars.length; i < len; i++) {
     const star = stars[i];
-    scene.add(createStarMesh(star.x, star.y, star.z));
+    const mesh = createStarMesh(star);
+    scene.add(mesh);
+
+    // TODO: apply this for nearest star instead of only sun.
+    if (star.n === 'Sol') {
+      // Add postprocessing effects.
+      $gfx.spaceEffects.getOnce((context) => {
+        context.setGodRays({ mesh });
+      });
+    }
   }
 }
 

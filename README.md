@@ -3,10 +3,10 @@
 <div align="center">
     <b>Downloads</b>
     <br>
-    <a href="https://github.com/feynmansbongos/Cosmosis/releases/latest">
+    <a href="https://github.com/frostoven/Cosmosis/releases/latest">
         <img src="https://img.shields.io/static/v1?label=Latest%20stable&message=v0.72.0&color=blue&style=for-the-badge">
     </a>
-    <a href="https://github.com/feynmansbongos/Cosmosis/releases">
+    <a href="https://github.com/frostoven/Cosmosis/releases">
         <img src="https://img.shields.io/static/v1?label=Dev%20builds&message=all%20versions&color=red&style=for-the-badge">
     </a>
     <br><br>
@@ -62,7 +62,7 @@ The latest beta can currently do the following:
   nothing else. Note that it currently generates a static skybox based on real
   star data when the game boots; to actually fly amongst nearby stars, see the
   next point.
-* Fly around [real Earth-visible stars](https://github.com/feynmansbongos/BSC5P-JSON-XYZ)
+* Fly around [real Earth-visible stars](https://github.com/frostoven/BSC5P-JSON-XYZ)
   as a ghost. You can activate this mode by pressing Backspace and going to
   `debug tools` -> `Star free-flight`. Use `+` and `-` to change flight speed.
 * You can fly around your spaceship by pressing `F8`. If the spaceship has
@@ -79,7 +79,7 @@ source to change ships needs to change, and soon.
 Windows may force the application to use integrated graphics, which will
 massively decrease performance. The game does not yet allow changing graphics
 cards, though
-[an issue is currently open](https://github.com/feynmansbongos/Cosmosis/issues/61)
+[an issue is currently open](https://github.com/frostoven/Cosmosis/issues/61)
 to add this feature.
 
 For now, you may force Windows to use discrete graphics by setting power

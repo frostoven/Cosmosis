@@ -200,6 +200,7 @@ function processMeshCodes(name, gltf, isPlayer) {
  *   centerPoint: group that moves with the ship, but does not rotate with it.
  */
 export function createSpaceship({ modelName, pos, scene, world, isPlayer, onReady }) {
+  console.log(`Loading ship %c${modelName}`, 'font-weight: bold;');
   startupEmitter.on(startupEvent.gameViewReady, () => {
     if (!modelName) return console.error('createSpaceship needs a model name.');
     if (!pos) pos = $game.camera.position;

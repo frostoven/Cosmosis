@@ -7,6 +7,7 @@
 import * as THREE from 'three';
 // import * as CANNON from 'cannon';
 import Stats from '../../hackedlibs/stats/stats.module.js';
+import packageJson from '../../package.json';
 
 import { forEachFn } from './utils';
 // import physics from './physics';
@@ -33,7 +34,7 @@ import { getEnums } from '../userProfile/defaultsConfigs';
 const NEAR = 0.001, FAR = 1e27;
 
 // Used to generate delta.
-let deltaPrevTime = Date.now();
+let deltaPrevTime = 0;
 
 /*
  * Global vars
@@ -41,6 +42,11 @@ let deltaPrevTime = Date.now();
 
 window.$stats = null;
 window.$game = {
+  // Used to stop all main thread graphics processing in an emergency. Game can
+  // be halted from the dev console by typing "$game.halt = true".
+  halt: false,
+  // Note: versions below 0.73.0-beta.4 will not have this value defined.
+  version: packageJson.version,
   // Set to true once the world is fully initialised.
   ready: false,
   // Contains the all scenes. Mainly used for movement optimisation. It's
@@ -56,7 +62,7 @@ window.$game = {
   // The primary graphics renderer.
   primaryRenderer: null,
   // Offscreen renderer used for skybox generation.
-  skyboxRenderer: null,
+  // skyboxRenderer: null,
   // TODO: rename me. Contains level physics (I think). Perhaps delete and
   //  start from scratch canon-es when resuming the physics task.
   // spaceWorld: null,
@@ -80,7 +86,7 @@ window.$game = {
   event: {
     offscreenSkyboxReady: new ChangeTracker(),
     skyboxLoaded: new ChangeTracker(),
-  }
+  },
 };
 window.$options = {
   // 0=off, 1=basic, 2=full
@@ -102,6 +108,11 @@ window.$displayOptions = {
 };
 window.$webWorkers = {
   offscreenSkybox: new OffscreenSkyboxWorker(),
+};
+window.$gfx = {
+  fullscreenEffects: new ChangeTracker(),
+  spaceEffects: new ChangeTracker(),
+  levelEffects: new ChangeTracker(),
 };
 // The preBootPlaceholder stores functions that match the actual model object.
 // Calling those functions queue them as requests. Once the menu system has
@@ -298,6 +309,10 @@ function updatePrimaryRendererSizes() {
  * Invokes all registered render functions.
  */
 function animate() {
+  if ($game.halt) {
+    return;
+  }
+
   const time = performance.now();
   const delta = (time - deltaPrevTime) / 1000;
 
@@ -318,7 +333,7 @@ function animate() {
     level.process(delta);
   }
 
-  renderActiveScenes({ renderer: primaryRenderer, camera });
+  renderActiveScenes({ delta, renderer: primaryRenderer, camera });
 
   // Run external renderers. We place this after the scene render to prevent
   // the camera from jumping around.
@@ -338,7 +353,9 @@ function animate() {
   // TODO: move this to shipPilot?
   $game.ptrLockControls.updateOrientation();
 
-  $stats.update();
+  if ($stats) {
+    $stats.update();
+  }
 }
 
 function onWindowResize() {

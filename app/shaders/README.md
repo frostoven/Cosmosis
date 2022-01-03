@@ -1,16 +1,17 @@
 All game shaders are placed in this directory.
 
-Only `.vert` and `.frag` files are loaded; all other extensions are ignored.
-
 Shader language used: GLSL ES2.
 
+<!--
 Usage:
+TODO: no longer relevant - update.
 ```js
 import getShader from './shaders';
 const shader = getShader('shaderName');
 console.log(shader);
 // { vertex: '...', fragment: '...' }
 ```
+-->
 
 References:
  * https://www.khronos.org/files/opengles_shading_language.pdf

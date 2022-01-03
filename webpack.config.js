@@ -13,8 +13,13 @@ module.exports = {
   output: {
     path: __dirname + '/build',
     publicPath: 'build/',
-    filename: '[name].js'
+    filename: '[name].js',
+    // sourceMapFilename: '[name].js.map',
   },
+  // Could not get these to work properly (Chrome appears to have a but at time
+  // of writing), but these are our source-map options:
+  // devtool: 'source-map',
+  // devtool: 'eval-source-map',
   module: {
     rules: [
       {
