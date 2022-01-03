@@ -9,6 +9,10 @@ function createRenderer({
     alpha: true,
     ...initialisation,
     // preserveDrawingBuffer: true,
+    powerPreference: "high-performance",
+    antialias: false,
+    stencil: false,
+    depth: false,
   });
 
   if (!initialisation.canvas) {

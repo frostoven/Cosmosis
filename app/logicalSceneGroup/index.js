@@ -15,12 +15,12 @@ const logicalSceneGroup = {
 let activeGroup = null;
 
 // Calls the render functions for all active scenes.
-function renderActiveScenes({ renderer, camera }) {
+function renderActiveScenes(opts) {
   if (!activeGroup) {
     return;
   }
 
-  activeGroup.render({ renderer, camera });
+  activeGroup.render(opts);
 }
 
 // Calls all step functions. Note that inactive scenes will have their step
