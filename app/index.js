@@ -3,6 +3,7 @@ import './earlyLoad';
 import React from 'react';
 import * as ReactDOM from 'react-dom';
 import RootNode from './reactComponents/RootNode';
+import v8 from 'v8';
 
 import core from './local/core';
 import powerOnSelfTest from './test';
@@ -39,9 +40,24 @@ window.powerOnSelfTest = powerOnSelfTest;
 /* Main
 /* --------------------------------- */
 
-console.groupCollapsed(`Pre-init (build number: ${packageJson.version}).`);
+// Generated using https://fsymbols.com/signs/square/
+console.log(
+  '\n' +
+  ' █████╗  █████╗  ██████╗███╗   ███╗ █████╗  ██████╗██╗ ██████╗\n' +
+  '██╔══██╗██╔══██╗██╔════╝████╗░████║██╔══██╗██╔════╝██║██╔════╝\n' +
+  '██║░░╚═╝██║░░██║╚█████╗░██╔████╔██║██║░░██║╚█████╗░██║╚█████╗ \n' +
+  '██║░░██╗██║░░██║░╚═══██╗██║╚██╔╝██║██║░░██║░╚═══██╗██║░╚═══██╗\n' +
+  '╚█████╔╝╚█████╔╝██████╔╝██║░╚═╝░██║╚█████╔╝██████╔╝██║██████╔╝\n' +
+  ' ╚════╝  ╚════╝ ╚═════╝ ╚═╝     ╚═╝ ╚════╝ ╚═════╝ ╚═╝╚═════╝ ' +
+  '\n\n'
+);
+
+console.log(`%c► Build ${packageJson.version}`, 'font-weight: bold;');
 logBootInfo(`System boot v${packageJson.version}`); // ▓
-console.groupEnd();
+const heapSize = (
+  (v8.getHeapStatistics().heap_size_limit / (1024 * 1024 * 1024)).toFixed(2)
+);
+console.log(`▪ Max heap size: ${heapSize}GB`);
 
 onDocumentReady(() => {
   window.rootNode = ReactDOM.render(
@@ -97,3 +113,27 @@ onReadyToBoot(() => {
   logBootInfo('Process units ready');
   initCore();
 });
+
+
+
+
+
+// let count = 0;
+// let parentArrayI = 0;
+// let parentArray = [[]];
+// // let arr = [];
+// let i = 0;
+//
+// while (true) {
+//   parentArray[parentArrayI].push(i);
+//   if (i % 10000000 === 0) {
+//     console.log(`[MAIN] [${count++}] at`, count, 'billion');
+//     parentArray.push([]);
+//     parentArrayI++;
+//     i = 0;
+//   }
+//
+//   i++;
+// }
+
+
