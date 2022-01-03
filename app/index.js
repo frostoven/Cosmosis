@@ -113,27 +113,3 @@ onReadyToBoot(() => {
   logBootInfo('Process units ready');
   initCore();
 });
-
-
-
-
-
-// let count = 0;
-// let parentArrayI = 0;
-// let parentArray = [[]];
-// // let arr = [];
-// let i = 0;
-//
-// while (true) {
-//   parentArray[parentArrayI].push(i);
-//   if (i % 10000000 === 0) {
-//     console.log(`[MAIN] [${count++}] at`, count, 'billion');
-//     parentArray.push([]);
-//     parentArrayI++;
-//     i = 0;
-//   }
-//
-//   i++;
-// }
-
-
