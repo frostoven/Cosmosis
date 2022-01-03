@@ -78,7 +78,7 @@ const userOptions = {
       skyboxAntialias: true,
       enableShadows: true,
       shadowType: enums.graphics.shadowType.softAndFilteredShadows,
-      shadowDistanceMeters: 3,
+      shadowDistanceMeters: 5,
       // Known as 3D Resolution in graphics menu.
       resolutionScale: enums.graphics.resolutionScale.matchNative,
     },

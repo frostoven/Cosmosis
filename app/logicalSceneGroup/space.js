@@ -99,8 +99,6 @@ const space = new LogicalSceneGroup({
       $game.spaceScene = spaceScene;
       $game.levelScene = levelScene;
       // ----------------------------------------------------------------------
-      spaceLighting.applyLighting({ scene: spaceScene });
-      levelLighting.applyLighting({ scene: levelScene });
 
       createSpaceship({
         scene: levelScene,
@@ -114,6 +112,9 @@ const space = new LogicalSceneGroup({
         // modelName: 'devFlyer2', onReady: (mesh, warpBubble, centerPoint) => {
         // modelName: 'devFlyer3', onReady: (mesh, warpBubble, centerPoint) => {
         // modelName: 'tentacleHull', onReady: (mesh, warpBubble, centerPoint) => {
+
+          spaceLighting.applyLighting({ scene: spaceScene });
+          levelLighting.applyLighting({ scene: centerPoint });
 
           cache.playerShip = { mesh, warpBubble, centerPoint };
 
