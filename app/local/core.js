@@ -206,9 +206,6 @@ function init({ defaultScene }) {
   const primaryRenderer = createRenderer({
     initialisation: {
       canvas: primaryCanvas,
-      // This is unfortunately only done during init, so changing at runtime
-      // requires recreating the whole renderer.
-      antialias: graphics.antialias,
     },
     options: {
       width: window.innerWidth,

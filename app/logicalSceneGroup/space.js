@@ -1,8 +1,6 @@
 import * as THREE from 'three';
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader';
 import LogicalSceneGroup from './LogicalSceneGroup';
-import levelLighting from '../lighting/levelLighting';
-import spaceLighting from '../lighting/spaceLighting';
 import localCluster from '../scenes/localCluster';
 import { createSpaceship } from '../levelLogic/spaceshipLoader';
 import physics from '../local/physics';
@@ -27,6 +25,7 @@ const cache = {
 // usually set to true after completely loading.
 let enableStep = false;
 let lastActiveCamData = null;
+/** @type EffectsManager */
 let effectsManager = null;
 
 // TODO:
@@ -113,9 +112,6 @@ const space = new LogicalSceneGroup({
         // modelName: 'devFlyer3', onReady: (mesh, warpBubble, centerPoint) => {
         // modelName: 'tentacleHull', onReady: (mesh, warpBubble, centerPoint) => {
 
-          spaceLighting.applyLighting({ scene: spaceScene });
-          levelLighting.applyLighting({ scene: centerPoint });
-
           cache.playerShip = { mesh, warpBubble, centerPoint };
 
           // $game.playerShip.setValue(mesh);
@@ -173,11 +169,8 @@ const space = new LogicalSceneGroup({
     //   // --
     // }
     // else {
-      effectsManager.composer.render(delta);
+      effectsManager.render({ delta });
     // }
-
-    levelLighting.updateLighting();
-    spaceLighting.updateLighting();
   },
   step: ({ delta, isActive }) => {
     if (!enableStep) {
@@ -185,6 +178,7 @@ const space = new LogicalSceneGroup({
     }
     shipPilot.step({ delta });
     isActive && freeCam.step({ delta });
+    isActive && effectsManager.step({ delta });
   },
   // TODO: maybe add an 'always run' function for cases where it's not
   //  rendered.

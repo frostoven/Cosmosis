@@ -7,6 +7,11 @@ import {
   KernelSize,
 } from 'postprocessing';
 
+/**
+ * Manages fullscreen effects (mostly post-processing). Does not directly deal
+ * with scene-specific effects, although those may be passed in as
+ * EffectsContext objects.
+ */
 export default class EffectsManager {
 
   static defaultFullscreenBloomOptions = {
@@ -16,6 +21,16 @@ export default class EffectsManager {
     luminanceSmoothing: 0.1,
     // 1 means off, 0 means full. 0.3-0.4 are good overall values.
     luminanceThreshold: 1,
+  };
+
+  static defaultMicroDirectionalStarlight = {
+    // Star format as prescribed by https://github.com/frostoven/BSC5P-JSON-XYZ
+    star: { K: { r: 1, g: 0.24, b: 0.067 } }, // Colour temperature, Kelvin.
+    enableShadows: true,
+    shadowDistanceMeters: 5,
+    shadowQuality: 1.5,
+    drawShadowCameraBounds: false,
+    debugLockShadowMidpoint: false,
   };
 
   static defaultGodRaysOptions = {
@@ -35,7 +50,7 @@ export default class EffectsManager {
     this._contexts = effectsContexts;
     this._composer = null;
 
-    for (let i = 0, len = effectsContexts.length; i < len; i++) {
+    for (let i = 0; i < effectsContexts.length; i++) {
       /** @link EffectsContext */
       const context = effectsContexts[i];
       context.addRebuildTrigger(() => {this.rebuildComposer()});
@@ -54,6 +69,29 @@ export default class EffectsManager {
     throw 'EffectsManager.composer is read-only.';
   }
 
+  /**
+   * Should be invoked as an alternative to scene rendering.
+   * @param delta
+   */
+  render({ delta }) {
+    this._composer.render(delta);
+  }
+
+  /**
+   * Animation frame processing not directly related to rendering.
+   * @param delta
+   */
+  step({ delta }) {
+    const effectsContexts = this._contexts;
+    for (let i = 0; i < effectsContexts.length; i++) {
+      const context = effectsContexts[i];
+      context.step({ delta });
+    }
+  }
+
+  /**
+   * Discards existing composer and builds a new one from scratch.
+   */
   rebuildComposer() {
     const renderer = this.renderer;
     const camera = this.camera;

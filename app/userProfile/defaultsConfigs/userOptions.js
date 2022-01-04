@@ -56,6 +56,13 @@ const userOptions = {
       debugSkyboxSides: false,
       debugSkyboxCorners: false,
       logDistanceToInteractables: false,
+      // If true, draws a box which indicates where shadows are actually
+      // calculated.
+      drawShadowCameraBounds: false,
+      // If true, the game engine will lock shadows to the center of the scene
+      // instead of following the camera like it's supposed to. This is useful
+      // for checking how shadows are calculated relative to sun position.
+      debugLockShadowMidpoint: false,
     },
     display: {
       displayMode: enums.display.displayMode.borderlessFullscreen,
@@ -79,6 +86,11 @@ const userOptions = {
       enableShadows: true,
       shadowType: enums.graphics.shadowType.softAndFilteredShadows,
       shadowDistanceMeters: 5,
+      // Controls shadow resolution. Display in user interface as a 0%-1000%
+      // value (maps from 0.0 to 100.0, where 10.0 is 100%). Notify user that
+      // higher shadow quality gets less performant the the higher
+      // shadowDistanceMeters is.
+      shadowQuality: 1.5,
       // Known as 3D Resolution in graphics menu.
       resolutionScale: enums.graphics.resolutionScale.matchNative,
     },
