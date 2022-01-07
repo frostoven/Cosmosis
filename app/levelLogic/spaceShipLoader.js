@@ -6,6 +6,7 @@ import AssetFinder from '../local/AssetFinder';
 import { setup as meshCodeSetup } from './meshCodeProcessor';
 import Level from './level';
 import { startupEvent, getStartupEmitter } from '../emitters';
+import userProfile from '../userProfile';
 
 const startupEmitter = getStartupEmitter();
 
@@ -153,6 +154,30 @@ function modelPostSetup(modelName, gltf, pos, scene, world, onReady) {
         // console.log('got:', node, 'cast:', node.castShadow, 'recv:', node.receiveShadow);
       }
     });
+
+    const { createDebugFloor } = userProfile.getCurrentConfig({
+      identifier: 'userOptions',
+    }).debug;
+    //
+    if (createDebugFloor && createDebugFloor.enabled) {
+      const opts = createDebugFloor;
+      // Creates a platform that follows the player around.
+      const floor = new THREE.Mesh(
+        new THREE.PlaneGeometry(opts.size, opts.size),
+        new THREE.MeshPhongMaterial({ color: opts.floorColor })
+      );
+      // Note: this is relative and needs to happen before rotation.
+      opts.yOffset && floor.translateY(opts.yOffset);
+      floor.rotation.x = THREE.Math.degToRad(-90);
+      floor.receiveShadow = opts.receiveShadow;
+      bubble.add(floor);
+
+      const grid = new THREE.GridHelper(opts.size, opts.divisions, opts.axisColor, opts.gridColor);
+      opts.yOffset && grid.translateY(opts.yOffset);
+      grid.material.opacity = opts.gridOpacity;
+      grid.material.transparent = opts.gridOpacity !== 1;
+      bubble.add(grid);
+    }
 
     onReady(mesh, bubble, centerPoint);
   });

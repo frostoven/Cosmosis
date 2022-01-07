@@ -63,6 +63,18 @@ const userOptions = {
       // instead of following the camera like it's supposed to. This is useful
       // for checking how shadows are calculated relative to sun position.
       debugLockShadowMidpoint: false,
+      // Creates a platform that follows the player ship.
+      createDebugFloor: {
+        enabled: false,
+        receiveShadow: true,
+        size: 15,
+        divisions: 20,
+        yOffset: 0,
+        gridOpacity: 0.5,
+        floorColor: 0xffffff,
+        axisColor: 0x000000,
+        gridColor: 0x000000,
+      },
     },
     display: {
       displayMode: enums.display.displayMode.borderlessFullscreen,
