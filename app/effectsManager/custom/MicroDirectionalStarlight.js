@@ -24,8 +24,16 @@ export default class MicroDirectionalStarlight {
     this.sunWorldPosition = new THREE.Vector3();
     this.camWorldPosition = new THREE.Vector3();
 
-    // const { r, g, b } = star.K;
-    this.light = new THREE.DirectionalLight(new THREE.Color(1, 1, 1), 2);
+    this.intensity = 1;
+    // Directional light cast from nearby star.
+    this.dirLight = new THREE.DirectionalLight(
+      new THREE.Color(1, 1, 1),
+      this.intensity,
+    );
+    // this.dirLight.color.convertLinearToSRGB();
+    // The stuff that makes our shadows not have absolute zero colour.
+    this.ambientLight = new THREE.AmbientLight(0xbbbbbb);
+    // this.ambientLight.color.convertLinearToSRGB();
     this.applyLighting();
   }
 
@@ -36,33 +44,36 @@ export default class MicroDirectionalStarlight {
    * meters worth of lighting / shadow info is actually calculated.
    */
   applyLighting() {
-    const { scene, light, shadowDistanceMeters } = this;
-    light.castShadow = this.enableShadows;
+    const { scene, dirLight, ambientLight, shadowDistanceMeters } = this;
+    dirLight.castShadow = this.enableShadows;
 
     const shadowCamWidth = this.shadowDistanceMeters;
     const shadowCamHeight = this.shadowDistanceMeters;
 
-    light.shadow.camera.top = shadowCamHeight;
-    light.shadow.camera.bottom = -shadowCamHeight;
-    light.shadow.camera.left = -shadowCamWidth;
-    light.shadow.camera.right = shadowCamWidth;
-    light.shadow.camera.near = 0.5;
-    light.shadow.camera.far = this.shadowDistanceMeters;
-    light.shadow.bias = 0.0000125;
+    const shadow = dirLight.shadow;
+    const camShadow = shadow.camera;
+    camShadow.top = shadowCamHeight;
+    camShadow.bottom = -shadowCamHeight;
+    camShadow.left = -shadowCamWidth;
+    camShadow.right = shadowCamWidth;
+    camShadow.near = 0.5;
+    camShadow.far = this.shadowDistanceMeters;
+    shadow.bias = 0.0000125;
 
     const shadowRes = 1024 * this.shadowDistanceMeters * this.shadowQuality;
-    light.shadow.mapSize.width = shadowRes;
-    light.shadow.mapSize.height = shadowRes;
+    shadow.mapSize.width = shadowRes;
+    shadow.mapSize.height = shadowRes;
 
     if (this.drawShadowCameraBounds) {
-      const lightHelper = new THREE.DirectionalLightHelper(light, 5);
+      const lightHelper = new THREE.DirectionalLightHelper(dirLight, 5);
       scene.add(lightHelper);
-      const shadowHelper = new THREE.CameraHelper(light.shadow.camera);
+      const shadowHelper = new THREE.CameraHelper(camShadow);
       scene.add(shadowHelper);
     }
 
-    light.target.updateMatrixWorld();
-    scene.add(light);
+    dirLight.target.updateMatrixWorld();
+    scene.add(dirLight);
+    scene.add(ambientLight);
   }
 
   /**
@@ -70,28 +81,30 @@ export default class MicroDirectionalStarlight {
    star.
    */
   step() {
-    const { light, sunWorldPosition, camWorldPosition } = this;
+    const { mesh, dirLight, sunWorldPosition, camWorldPosition } = this;
 
-    // The rest of this function is not the cleanest code, but it works. Would
-    // be curious to see if there's a more elegant solution with same or better
+    // -- Make shadows follow sun rays -- //
+
+    // The shadow alignment is not the cleanest code, but it works. Would be
+    // curious to see if there's a more elegant solution with same or better
     // performance.
 
     // Align lighting with local star.
-    this.mesh.getWorldPosition(sunWorldPosition);
+    mesh.getWorldPosition(sunWorldPosition);
 
     if (this.debugLockShadowMidpoint) {
-      light.position.set(0, 0, 0);
-      light.target.position.set(0, 0, 0);
+      dirLight.position.set(0, 0, 0);
+      dirLight.target.position.set(0, 0, 0);
     }
     else {
       $game.camera.getWorldPosition(camWorldPosition);
-      light.position.copy(camWorldPosition);
-      light.target.position.copy(camWorldPosition);
+      dirLight.position.copy(camWorldPosition);
+      dirLight.target.position.copy(camWorldPosition);
     }
 
-    light.lookAt(sunWorldPosition);
-    light.target.lookAt(sunWorldPosition);
-    light.translateZ(-this.shadowDistanceMeters / 2);
-    light.target.translateZ(this.shadowDistanceMeters / 2);
+    dirLight.lookAt(sunWorldPosition);
+    dirLight.target.lookAt(sunWorldPosition);
+    dirLight.translateZ(-this.shadowDistanceMeters / 2);
+    dirLight.target.translateZ(this.shadowDistanceMeters / 2);
   }
 }
