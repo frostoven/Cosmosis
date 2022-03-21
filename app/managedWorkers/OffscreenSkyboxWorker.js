@@ -174,6 +174,7 @@ export default class OffscreenSkyboxWorker extends Worker {
 
         // It seems the CubeCamera flips the image. Flip it back.
         texture.flipY = false;
+        texture.encoding = THREE.sRGBEncoding;
 
         const mat = new THREE.MeshBasicMaterial({
           map: texture,

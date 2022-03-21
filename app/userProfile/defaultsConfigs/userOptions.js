@@ -80,8 +80,6 @@ const userOptions = {
       displayMode: enums.display.displayMode.borderlessFullscreen,
       fieldOfView: 55,
       // Descriptions:
-      // Note: postprocessing is currently disabled, so this likely won't have
-      // any effect.
       // * none: nothing weird or special.
       // * filmic: makes the scene more realistic at the expense of colour loss.
       // * colourful: in case you're in short supply of mushrooms.
@@ -102,7 +100,7 @@ const userOptions = {
       // value (maps from 0.0 to 100.0, where 10.0 is 100%). Notify user that
       // higher shadow quality gets less performant the the higher
       // shadowDistanceMeters is.
-      shadowQuality: 1.5,
+      shadowQuality: 0.5,
       // Known as 3D Resolution in graphics menu.
       resolutionScale: enums.graphics.resolutionScale.matchNative,
     },
