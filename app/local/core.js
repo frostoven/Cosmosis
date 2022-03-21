@@ -28,6 +28,7 @@ import AssetFinder from './AssetFinder';
 import OffscreenSkyboxWorker from '../managedWorkers/OffscreenSkyboxWorker';
 import ChangeTracker from '../emitters/ChangeTracker';
 import { getEnums } from '../userProfile/defaultsConfigs';
+import api from './api';
 
 // 1 micrometer to 100 billion light years in one scene, with 1 unit = 1 meter?
 // preposterous!  and yet...
@@ -92,6 +93,7 @@ window.$game = {
     offscreenSkyboxReady: new ChangeTracker(),
     skyboxLoaded: new ChangeTracker(),
   },
+  api,
 };
 window.$options = {
   // 0=off, 1=basic, 2=full
@@ -337,7 +339,7 @@ function animate() {
 
   deltaPrevTime = time;
 
-  const { primaryRenderer, camera, gravityWorld, level } = $game;
+  const { primaryRenderer, camera, level } = $game;
 
   // TODO: move to space LSG?
   if (level) {
