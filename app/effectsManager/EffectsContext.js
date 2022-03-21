@@ -10,6 +10,25 @@ import userProfile from '../userProfile';
  */
 export default class EffectsContext {
   constructor({ scene, camera, meta } = { scene: null, meta: null }) {
+    /**
+     * This class currently focuses on any star near enough to emit light. It
+     * controls the directional as well as the ambient light within a scene. It
+     * has the following todo:
+     *  * Indicate windows and doors within spacecraft. This allows us to
+     *    adjust ambient light based on surroundings (such as a nearby blue
+     *    planet offering a blue sheen) and darken ambient light spontaneously
+     *    (ex. when the doorway leading to the only outside window has shut).
+     *  * Understand when we're on a planet, and take sun position / whether or
+     *    not we're in a building into account.
+     *  * Understand when we're under a full moon night sky, and offer display
+     *    options to activate rods / cones rendering: cones-rendering means we
+     *    can see colours normally. Rods (believe it or not) are colourblind
+     *    and responsible for night vision in humans, which is why roses look
+     *    blue under moonlight; thus, rods-rendering (should the user keep it
+     *    enabled) means colour will gain a silver-blue sheen in low-light
+     *    areas.
+     */
+
     this.scene = scene;
     this.camera = camera;
     this.rebuildTriggers = new ChangeTracker();
@@ -161,7 +180,7 @@ export default class EffectsContext {
     const effect = new GodRaysEffect(this.camera, mesh, {
       ...EffectsManager.defaultGodRaysOptions,
       ...options,
-    })
+    });
 
     // Something to consider: we might want to make this should be 4 when very
     // close, and 1 when far. Probably don't want to go as low as 0 because it

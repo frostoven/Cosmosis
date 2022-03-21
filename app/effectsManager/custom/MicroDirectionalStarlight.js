@@ -30,10 +30,10 @@ export default class MicroDirectionalStarlight {
       new THREE.Color(1, 1, 1),
       this.intensity,
     );
-    // this.dirLight.color.convertLinearToSRGB();
+    this.dirLight.color.convertLinearToSRGB();
     // The stuff that makes our shadows not have absolute zero colour.
     this.ambientLight = new THREE.AmbientLight(0xbbbbbb);
-    // this.ambientLight.color.convertLinearToSRGB();
+    this.ambientLight.color.convertLinearToSRGB();
     this.applyLighting();
   }
 
