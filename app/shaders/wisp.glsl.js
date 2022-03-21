@@ -18,7 +18,18 @@ const vertexShader = `
 attribute vec3 glow;
 varying vec3 vGlow;
 
+// Used by logdepthbuf_pars_vertex below.
+bool isPerspectiveMatrix(mat4) {
+  return true;
+}
+
+// Import functions needed for log-z calculations.
+#include <logdepthbuf_pars_vertex>
+
 void main() {
+  // Fix log-z position.
+  #include <logdepthbuf_vertex>
+  
   vGlow = glow;
   vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
   gl_PointSize = 10.0 * ((1.0 / -mvPosition.z) * 50.0);
@@ -34,7 +45,13 @@ const fragmentShader = `
 
 varying vec3 vGlow;
 
+// Import functions needed for log-z calculations.
+#include <logdepthbuf_pars_fragment>
+
 void main() {
+  // Import functions needed for log-z calculations.
+  #include <logdepthbuf_fragment>
+  
   // 1.5: sharp; 1.75: fuzzy; 2.25: blur.
   float invRadius = 1.75;
   // 1.0: hazy; 1.25: sharp; 1.5: none; 1.75: inverse.

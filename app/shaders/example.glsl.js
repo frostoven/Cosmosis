@@ -36,7 +36,7 @@ const vertexShader = `
   void main(){
     // Fix log-z position. You will probably need this for most shaders.
     #include <logdepthbuf_vertex>
-      
+
     vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
     gl_Position = projectionMatrix * mvPosition;
   }
