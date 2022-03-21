@@ -47,8 +47,8 @@ export default class MicroDirectionalStarlight {
     const { scene, dirLight, ambientLight, shadowDistanceMeters } = this;
     dirLight.castShadow = this.enableShadows;
 
-    const shadowCamWidth = this.shadowDistanceMeters;
-    const shadowCamHeight = this.shadowDistanceMeters;
+    const shadowCamWidth = shadowDistanceMeters;
+    const shadowCamHeight = shadowDistanceMeters;
 
     const shadow = dirLight.shadow;
     const camShadow = shadow.camera;
@@ -57,7 +57,7 @@ export default class MicroDirectionalStarlight {
     camShadow.left = -shadowCamWidth;
     camShadow.right = shadowCamWidth;
     camShadow.near = 0.5;
-    camShadow.far = this.shadowDistanceMeters;
+    camShadow.far = shadowDistanceMeters;
     shadow.bias = 0.0000125;
 
     const shadowRes = 1024 * this.shadowDistanceMeters * this.shadowQuality;
@@ -106,5 +106,40 @@ export default class MicroDirectionalStarlight {
     dirLight.target.lookAt(sunWorldPosition);
     dirLight.translateZ(-this.shadowDistanceMeters / 2);
     dirLight.target.translateZ(this.shadowDistanceMeters / 2);
+
+    // Fucking gamma changes messed this up. Reassess me plz.
+
+    // -- Dim / brighten scene based on star distance -- //
+
+    // Reference table as compared to Earth. This is based on my own guesswork
+    // and may be improved in future if some smart person can provide realistic
+    // values that look good. The 'look good' part is important - I tried actual
+    // physically accurate lighting from the Three.js examples and it looked
+    // horrible (turns out true brightness is far too bright). The below table
+    // assumes it's the middle of a bright summer's day. We'll assume the light
+    // source is always white because anything beyond a certain temperature will
+    // always appear white to us. Custom light colour for really dim stars will
+    // be added later. Note that this applies to unfiltered light only - the user
+    // may (eventually) choose to switch to false-colour, which follows a
+    // hologram lighting style instead.
+    //
+    // legend: < dir int: directional light intensity; amb col: ambient occlusion colour >
+    // dir int: 2, amb col: 0x444444: minimum brightness any sun-affected scene should ever have.
+    // dir int: 2, amb col: 0x555555: little to no sunlight reaches us.
+    // dir int: 2, amb col: 0x777777: inside an unlit building lobby, few windows.
+    // dir int: 2, amb col: 0x888888: under thick bushes, or inside building entrance.
+    // dir int: 2, amb col: 0x999999: under a tree.
+    // BASE REFERENCE: dir int: 2, amb col: 0xbbbbbb: natural self-shadows under direct summer sunlight.
+    // dir int: 4, amb col: 0xbbbbbb: Mercury's atmosphere.
+    // dir int: 8, amb col: 0xbbbbbb: Right outside the Sun's atmosphere.
+    // dir int: 10, amb col: 0xbbbbbb: Sun's atmosphere.
+    // dir int: 0.5, amb col: 0x222222: Pluto's atmosphere.
+    // dir int: 0.25, amb col: 0x111118: Full moon (pending review next lunar cycle).
+    // dir int: 0.02, amb col: 0x222222: Deep in the dead of space. Darkest any scene may be.
+    // Sunrise/sets not yet taken into account.
+
+    // if (count++ % 120 === 0) {
+    //   console.log()
+    // }
   }
 }
