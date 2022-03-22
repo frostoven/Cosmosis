@@ -111,9 +111,11 @@ function modelPostSetup(modelName, gltf, pos, scene, world, onReady) {
     // TODO: improve the way this is decided. The spaceship designer should be
     //  choosing what the standard arrow is.
     const standardArrow = mesh.cameras[0];
+    mesh.name = modelName;
 
     // Spaceship container.
     const bubble = new THREE.Group();
+    bubble.name = 'playerShipBubble';
     bubble.add(mesh.scene);
     scene.add(bubble);
 
@@ -123,6 +125,7 @@ function modelPostSetup(modelName, gltf, pos, scene, world, onReady) {
 
     // Follows the ship, but does not rotate with it.
     const centerPoint = new THREE.Group();
+    centerPoint.name = 'playerShipCenterPoint';
     scene.add(centerPoint);
 
     // Get standard arrow world direction:
@@ -166,6 +169,7 @@ function modelPostSetup(modelName, gltf, pos, scene, world, onReady) {
         new THREE.PlaneGeometry(opts.size, opts.size),
         new THREE.MeshPhongMaterial({ color: opts.floorColor })
       );
+      floor.name = 'debugFloor';
       // Note: this is relative and needs to happen before rotation.
       opts.yOffset && floor.translateY(opts.yOffset);
       floor.rotation.x = THREE.Math.degToRad(-90);
@@ -173,6 +177,7 @@ function modelPostSetup(modelName, gltf, pos, scene, world, onReady) {
       bubble.add(floor);
 
       const grid = new THREE.GridHelper(opts.size, opts.divisions, opts.axisColor, opts.gridColor);
+      grid.name = 'debugGrid';
       opts.yOffset && grid.translateY(opts.yOffset);
       grid.material.opacity = opts.gridOpacity;
       grid.material.transparent = opts.gridOpacity !== 1;

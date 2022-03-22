@@ -212,6 +212,7 @@ function init({ defaultScene }) {
   const camera = new THREE.PerspectiveCamera(
     display.fieldOfView, window.innerWidth / window.innerHeight, NEAR, FAR
   );
+  camera.name = 'primaryCamera';
   const primaryRenderer = createRenderer({
     initialisation: {
       canvas: primaryCanvas,
