@@ -53,6 +53,7 @@ function createMesh({ callback }) {
 
           const { vertexShader, fragmentShader } = shader.starfieldBlackbody;
           const material = new THREE.ShaderMaterial({
+            depthWrite: false,
             uniforms: {
               alphaTest: { value: 0.9 },
               rWidth: (1 / window.innerWidth) / 100,
