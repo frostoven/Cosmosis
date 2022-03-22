@@ -75,6 +75,9 @@ const userOptions = {
         axisColor: 0x000000,
         gridColor: 0x000000,
       },
+      // This absolutely wrecks visuals, and is here for testing purposes only.
+      // If any bloom requirements arise, please use selective bloom instead.
+      debugEnableFullscreenBloom: false,
     },
     display: {
       displayMode: enums.display.displayMode.borderlessFullscreen,

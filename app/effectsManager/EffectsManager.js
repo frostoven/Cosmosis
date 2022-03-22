@@ -7,6 +7,7 @@ import {
   BlendFunction,
   KernelSize,
 } from 'postprocessing';
+import userProfile from '../userProfile';
 
 /**
  * Manages fullscreen effects (mostly post-processing). Does not directly deal
@@ -51,13 +52,19 @@ export default class EffectsManager {
     this._contexts = effectsContexts;
     this._composer = null;
 
+    const { debug } = userProfile.getCurrentConfig({
+      identifier: 'userOptions',
+    });
+
     for (let i = 0; i < effectsContexts.length; i++) {
       /** @link EffectsContext */
       const context = effectsContexts[i];
       context.addRebuildTrigger(() => {this.rebuildComposer()});
     }
 
-    this.setFullscreenBloom();
+    if (debug.debugEnableFullscreenBloom) {
+      this.setFullscreenBloom();
+    }
 
     this.rebuildComposer();
   }
@@ -111,7 +118,7 @@ export default class EffectsManager {
     // https://github.com/vanruesc/postprocessing/issues/123
 
     // Add all scenes. These need to be first in the render order, or else
-    // things things get erased and never render.
+    // things get erased and never render.
     const contexts = this._contexts;
     for (let i = 0, len = contexts.length; i < len; i++) {
       /** @link EffectsContext */
