@@ -23,7 +23,7 @@ Demo:
 <br>
 <img src="demo.gif">
 
-<br>
+<br><br>
 Click <a href="https://github.com/frostoven/frostoven.github.io/blob/main/showcase.md">here</a> to see a showcase of what the engine is currently capable of producing.
     
 </div>
