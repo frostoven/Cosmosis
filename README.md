@@ -24,6 +24,8 @@ Demo:
 <img src="demo.gif">
 </div>
 
+Click [here](https://github.com/frostoven/frostoven.github.io/blob/main/showcase.md) to see a showcase of what the engine is currently capable of producing.
+
 ## What is Cosmosis?
 Cosmosis plans to eventually be a high quality open world space exploration
 game. It has the Milky Way galaxy as its home and currently uses real NASA data
