@@ -11,6 +11,7 @@
 
 import { startupEvent, getStartupEmitter } from '../emitters';
 import contextualInput from './contextualInput';
+import allExamples from '../shaders/examples/allExamples';
 const startupEmitter = getStartupEmitter();
 const ready = startupEvent.ready;
 
@@ -109,10 +110,29 @@ export function triggerAction(action, analogData=null) {
   // TODO: add holdAction and releaseAction functions.
 }
 
+export function createExampleShaderMesh(name) {
+  if (!name) {
+    return console.error(
+      'Please specify a name. Valid examples:\n', Object.keys(allExamples));
+  }
+  $game.playerShip.getOnce(({ warpBubble }) => {
+    allExamples[name].createMesh({
+      callback: ({ mesh }) => {
+        // Add to camera, and move forward. Then change parents. This allows us
+        // to always add the item in front of the user without locking it to
+        // view.
+        $game.camera.add(mesh);
+        warpBubble.attach(mesh);
+      }
+    });
+  });
+}
+
 export default {
   setPlayerShipLocation,
   getPlayerShipLocation,
   setPlayerShipRotation,
   getPlayerShipRotation,
   triggerAction,
+  createExampleShaderMesh,
 }

@@ -56,13 +56,33 @@ const userOptions = {
       debugSkyboxSides: false,
       debugSkyboxCorners: false,
       logDistanceToInteractables: false,
+      // If true, draws a box which indicates where shadows are actually
+      // calculated.
+      drawShadowCameraBounds: false,
+      // If true, the game engine will lock shadows to the center of the scene
+      // instead of following the camera like it's supposed to. This is useful
+      // for checking how shadows are calculated relative to sun position.
+      debugLockShadowMidpoint: false,
+      // Creates a platform that follows the player ship.
+      createDebugFloor: {
+        enabled: false,
+        receiveShadow: true,
+        size: 15,
+        divisions: 20,
+        yOffset: 0,
+        gridOpacity: 0.5,
+        floorColor: 0xffffff,
+        axisColor: 0x000000,
+        gridColor: 0x000000,
+      },
+      // This absolutely wrecks visuals, and is here for testing purposes only.
+      // If any bloom requirements arise, please use selective bloom instead.
+      debugEnableFullscreenBloom: false,
     },
     display: {
       displayMode: enums.display.displayMode.borderlessFullscreen,
       fieldOfView: 55,
       // Descriptions:
-      // Note: postprocessing is currently disabled, so this likely won't have
-      // any effect.
       // * none: nothing weird or special.
       // * filmic: makes the scene more realistic at the expense of colour loss.
       // * colourful: in case you're in short supply of mushrooms.
@@ -78,7 +98,12 @@ const userOptions = {
       skyboxAntialias: true,
       enableShadows: true,
       shadowType: enums.graphics.shadowType.softAndFilteredShadows,
-      shadowDistanceMeters: 3,
+      shadowDistanceMeters: 5,
+      // Controls shadow resolution. Display in user interface as a 0%-1000%
+      // value (maps from 0.0 to 100.0, where 10.0 is 100%). Notify user that
+      // higher shadow quality gets less performant the the higher
+      // shadowDistanceMeters is.
+      shadowQuality: 0.5,
       // Known as 3D Resolution in graphics menu.
       resolutionScale: enums.graphics.resolutionScale.matchNative,
     },

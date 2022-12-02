@@ -12,18 +12,30 @@
  */
 
 import * as THREE from "three";
+import Unit from './Unit';
 
+const au = Unit.au.inMeters;
+const lightSpeed = Unit.lightSpeed.inMeters;
+
+// How often we calculate distance. This is variable, change as needed.
+let freq = 1000;
+// Per second.  (i.e. per 1000 milliseconds). This is constant, don't change.
+const perUnit = 1000;
 // Used to calculate meters per second.
 let prevPosition = new THREE.Vector3( 0, 0, 0 );
-
-// Speed of light in a vacuum. Obviously.
-const C = 299792458;
+// If true, position will be displayed in AU instead of meters.
+let useAu = false;
+let useDegrees = false;
+// If false, tracks spaceship speed and position relative to the local
+// universe. If true, instead tracks camera relative to the ship center.
+let trackCamera = false;
 
 function showStats() {
   const statusDiv = document.getElementById('speed-tracker');
   if (statusDiv && statusDiv.style.display !== 'block') {
     setTimeout(() => {
       statusDiv.style.display = 'block';
+      statusDiv.onclick = () => useDegrees = useAu = !useAu;
     }, 50);
   }
 }
@@ -32,11 +44,6 @@ function showStats() {
  * Used to track camera speed. Gives visual feedback as a status bar.
  */
 function trackCameraSpeed() {
-  // How often we calculate distance. This is variable, change as needed.
-  const freq = 1000;
-  // Per second.  (i.e. per 1000 milliseconds). This is constant, don't change.
-  const perUnit = 1000;
-
   return setInterval(() => {
     $game.playerShip.getOnce(({ warpBubble }) => {
       const statusDiv = document.getElementById('speed-tracker');
@@ -48,18 +55,58 @@ function trackCameraSpeed() {
       }
       showStats();
 
-      const camPs = warpBubble.position;
-      const camRt = warpBubble.rotation;
+      let camPs;
+      let camRt;
+      if (trackCamera) {
+        if (!$game.camera) {
+          return;
+        }
+        camPs = $game.camera.position;
+        camRt = $game.camera.rotation;
+      }
+      else {
+        camPs = warpBubble.position;
+        camRt = warpBubble.rotation;
+      }
 
       let dist = camPs.distanceTo(prevPosition);
       dist = dist / (freq / perUnit);
 
+      // Positions.
+      let psx = Math.floor(camPs.x);
+      let psy = Math.floor(camPs.y);
+      let psz = Math.floor(camPs.z);
+
+      // Convert / make pretty.
+      if (useAu) {
+        psx = formatComma(psx / au) + ' AU';
+        psy = formatComma(psy / au) + ' AU';
+        psz = formatComma(psz / au) + ' AU';
+      }
+      else {
+        psx = formatComma(psx) + ' m';
+        psy = formatComma(psy) + ' m';
+        psz = formatComma(psz) + ' m';
+      }
+
+      let rx, ry, rz;
+      if (useDegrees) {
+        rx = THREE.Math.radToDeg(camRt.x).toFixed(4) + ' °';
+        ry = THREE.Math.radToDeg(camRt.y).toFixed(4) + ' °';
+        rz = THREE.Math.radToDeg(camRt.z).toFixed(4) + ' °';
+      }
+      else {
+        rx = camRt.x.toFixed(4);
+        ry = camRt.y.toFixed(4);
+        rz = camRt.z.toFixed(4);
+      }
+
       statusDiv.innerText =
-        formatSpeed(dist) + ' m/s ' +
-        '[' + formatSpeed(dist * 3.6) + 'km/h' + '] ' +
-        '<' + formatSpeed(dist / C) + 'C>\n' +
-        `{Ps} x:${Math.floor(camPs.x)}, y:${Math.floor(camPs.y)}, z:${Math.floor(camPs.z)}\n` +
-        `{Rt} x:${camRt.x.toFixed(4)}, y:${camRt.y.toFixed(4)}, z:${camRt.z.toFixed(4)}`;
+        formatComma(dist) + ' m/s ' +
+        '[' + formatComma(dist * 3.6) + 'km/h' + '] ' +
+        '<' + formatComma(dist / lightSpeed) + 'C>\n' +
+        `{Ps} x:${psx}, y:${psy}, z:${psz}\n` +
+        `{Rt} x:${rx}, y:${ry}, z:${rz}`;
       prevPosition.copy(camPs);
     });
   }, freq);
@@ -69,7 +116,7 @@ function trackCameraSpeed() {
  * @param {number} number
  * @returns {string}
  */
-function formatSpeed(number) {
+function formatComma(number) {
   return number.toLocaleString(
     undefined,
     { minimumFractionDigits: 1, maximumFractionDigits: 1 }
@@ -90,6 +137,15 @@ function clearSpeedTracker(timer) {
   }
   clearInterval(timer);
 }
+
+window.debug.speedTracker = function(){};
+window.debug.speedTracker.prototype = {
+  get frequency() { return freq; },
+  set frequency(v) { freq = v; },
+  get trackCamera() { return trackCamera; },
+  set trackCamera(v) { trackCamera = v; },
+}
+window.debug.speedTracker = new window.debug.speedTracker();
 
 export default {
   trackCameraSpeed,

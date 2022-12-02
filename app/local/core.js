@@ -28,6 +28,7 @@ import AssetFinder from './AssetFinder';
 import OffscreenSkyboxWorker from '../managedWorkers/OffscreenSkyboxWorker';
 import ChangeTracker from '../emitters/ChangeTracker';
 import { getEnums } from '../userProfile/defaultsConfigs';
+import api from './api';
 
 // 1 micrometer to 100 billion light years in one scene, with 1 unit = 1 meter?
 // preposterous!  and yet...
@@ -35,6 +36,11 @@ const NEAR = 0.001, FAR = 1e27;
 
 // Used to generate delta.
 let deltaPrevTime = 0;
+// Used to look for continual animation loop crashes.
+let animCrashCheck = 0;
+// If the animation loop crashes this amount of frames consecutively, then stop
+// rendering.
+let maxAllowsAnimCrashes = 600;
 
 /*
  * Global vars
@@ -87,6 +93,7 @@ window.$game = {
     offscreenSkyboxReady: new ChangeTracker(),
     skyboxLoaded: new ChangeTracker(),
   },
+  api,
 };
 window.$options = {
   // 0=off, 1=basic, 2=full
@@ -99,6 +106,8 @@ window.$options = {
   repeatRate: 50,
 };
 window.$displayOptions = {
+  // Please do not expose this to users just yet. It utilises setTimeout, which
+  // produces significant stutter. It exists to test for timing issues only.
   limitFps: false,
   // On my machine, the frame limiter itself actually causes a 9% performance
   // drop when enabled, hence the 1.09. May need to actually track this
@@ -203,12 +212,10 @@ function init({ defaultScene }) {
   const camera = new THREE.PerspectiveCamera(
     display.fieldOfView, window.innerWidth / window.innerHeight, NEAR, FAR
   );
+  camera.name = 'primaryCamera';
   const primaryRenderer = createRenderer({
     initialisation: {
       canvas: primaryCanvas,
-      // This is unfortunately only done during init, so changing at runtime
-      // requires recreating the whole renderer.
-      antialias: graphics.antialias,
     },
     options: {
       width: window.innerWidth,
@@ -313,20 +320,27 @@ function animate() {
     return;
   }
 
+  if ($displayOptions.limitFps) {
+    setTimeout(animate, 1000 / $displayOptions.fpsLimit);
+  }
+  else {
+    requestAnimationFrame(animate);
+  }
+
+  if (animCrashCheck++ > maxAllowsAnimCrashes) {
+    const error = 'Renderer animation loop has crashed for 600 consecutive ' +
+      'frames. Renderer will now halt.';
+    console.error(error);
+    $modal.alert({ header: 'Renderer crash', body: error });
+    return $game.halt = true;
+  }
+
   const time = performance.now();
   const delta = (time - deltaPrevTime) / 1000;
 
-  requestAnimationFrame(() => {
-    if ($displayOptions.limitFps) {
-      setTimeout(animate, 1000 / $displayOptions.fpsLimit);
-    }
-    else {
-      animate();
-    }
-  });
   deltaPrevTime = time;
 
-  const { primaryRenderer, camera, gravityWorld, level } = $game;
+  const { primaryRenderer, camera, level } = $game;
 
   // TODO: move to space LSG?
   if (level) {
@@ -356,6 +370,8 @@ function animate() {
   if ($stats) {
     $stats.update();
   }
+
+  animCrashCheck = 0;
 }
 
 function onWindowResize() {

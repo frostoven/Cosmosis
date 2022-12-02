@@ -103,7 +103,7 @@ function init(canvas, width, height, skyboxAntialias, pixelRatio, catalogJson) {
   renderer.autoClear = true;
   /* =========================================================== */
 
-  const gl = renderer.context;
+  const gl = renderer.getContext();
   gl.disable(gl.DEPTH_TEST);
   gl.enable(gl.BLEND);
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_DST_COLOR);

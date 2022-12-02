@@ -1,5 +1,9 @@
 // -- Docs and notes -------------------------------------------- //
 
+// Consider creating a new version based on this:
+// https://webglfundamentals.org/webgl/lessons/webgl-drawing-without-data.html
+// Also get something working with rRGB space.
+
 const license = `
 This model is original work made for the Cosmosis project, and follows the
 same license.
@@ -25,7 +29,18 @@ attribute float luminosity;
 varying vec3 vGlow;
 varying highp float pointSize;
 
+// Used by logdepthbuf_pars_vertex below.
+bool isPerspectiveMatrix(mat4) {
+  return true;
+}
+
+// Import functions needed for log-z calculations.
+#include <logdepthbuf_pars_vertex>
+
 void main() {
+  // Fix log-z position.
+  #include <logdepthbuf_vertex>
+
   vGlow = glow;
   vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
 
@@ -53,7 +68,13 @@ const fragmentShader = `
 varying vec3 vGlow;
 varying highp float pointSize;
 
+// Import functions needed for log-z calculations.
+#include <logdepthbuf_pars_fragment>
+
 void main() {
+  // Import functions needed for log-z calculations.
+  #include <logdepthbuf_fragment>
+
   if (pointSize < MIN_SIZE) {
     gl_FragColor = vec4(vGlow, max(pointSize * MIN_SIZE_FACTOR, 0.05));
     return;
