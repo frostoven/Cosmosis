@@ -92,8 +92,8 @@ For now, you may force Windows to use discrete graphics by setting power
 saving mode to high performance. If your driver configuration does not provide
 the option (or you don't like that idea), you can manually force it as follows:
 * Open your Windows start menu.
-* Within the start menu, go to Settings, the click System.
-* Scroll down to Graphics Settings.
+* Within the start menu, go to Settings, then click System.
+* Click Display, Scroll down to Graphics Settings.
 * Select "Classic app", then click "Browse".
 * Navigate to `Cosmosis.exe` and select it.
 * Once it's been added to the list click "Options" then select "High
