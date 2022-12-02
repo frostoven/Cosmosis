@@ -9,8 +9,7 @@ import core from './local/core';
 import powerOnSelfTest from './test';
 import api from './local/api';
 import packageJson from '../package.json';
-import { onDocumentReady, onReadyToBoot, logBootInfo }
-  from './local/windowLoadListener';
+import { onDocumentReady, onReadyToBoot, logBootInfo } from './local/windowLoadListener';
 
 // Game modules.
 import './local/toast';
