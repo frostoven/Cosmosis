@@ -1,9 +1,12 @@
+import ChangeTracker from 'change-tracker/src';
 import { builtInPluginsEnabled } from '../pluginsEnabled';
 import { PluginEntry } from '../interfaces/PluginEntry';
 import { TypeReplacements } from '../interfaces/TypeReplacements';
 import CosmosisPlugin from './CosmosisPlugin';
 
 export default class PluginLoader {
+  public onLoaded: ChangeTracker;
+
   private _communityManifestPath: string;
   private _runIndex: number;
   private readonly _dependenciesLoaded: { [key: string]: boolean };
@@ -11,7 +14,6 @@ export default class PluginLoader {
   private readonly _shovedPlugins: Array<PluginEntry>;
   // Anything stored in here will have its class replaced with something else.
   private readonly _pluginOverrides: TypeReplacements;
-  private _onLoaded: Function;
 
   constructor() {
     this._communityManifestPath = './pluginCommunity/pluginsEnabled.json';
@@ -19,14 +21,14 @@ export default class PluginLoader {
     this._dependenciesLoaded = {};
     this._shovedPlugins = [];
     this._pluginOverrides = {};
-    this._onLoaded = () => { throw '[PluginLoader] _onLoaded called out of place.' };
+    this.onLoaded = new ChangeTracker();
   }
 
   start(onLoaded: Function) {
     if (!onLoaded) {
       throw '[PluginLoader] start needs a callback.';
     }
-    this._onLoaded = onLoaded;
+    this.onLoaded.getOnce(onLoaded);
     this._doPluginRun(builtInPluginsEnabled, false);
   }
 
@@ -42,7 +44,7 @@ export default class PluginLoader {
       }
       else {
         console.log('[PluginLoader] All plugins loaded.');
-        this._onLoaded();
+        this.onLoaded.setValue(true);
       }
       return;
     }
