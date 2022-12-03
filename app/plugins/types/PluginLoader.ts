@@ -71,8 +71,6 @@ export default class PluginLoader {
     }
 
     if (!disallowRun && !shoved) {
-      const pluginOverrides = this._pluginOverrides[name];
-
       let plugin: CosmosisPlugin;
       if (pluginInstance) {
         plugin = pluginInstance;
@@ -90,11 +88,12 @@ export default class PluginLoader {
         plugin = window.$latePlugin[name];
       }
       else {
-        console.error('[PluginLoader] Error:', name, 'does not appear to have a valid class registered.');
+        console.error('[PluginLoader] Error:', name, 'does not appear to have a valid instance registered.');
         setTimeout(() => this._doPluginRun(array, disableShoving));
         return;
       }
 
+      const pluginOverrides = this._pluginOverrides[name];
       if (pluginOverrides) {
         plugin.TrackedClass = pluginOverrides.replaceClassWith;
       }

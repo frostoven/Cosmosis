@@ -13,7 +13,7 @@ export default class Player {
   public coordsType: CoordType;
 
   constructor() {
-    const { debug, display, graphics } = userProfile.getCurrentConfig({
+    const { display } = userProfile.getCurrentConfig({
       identifier: 'userOptions',
     });
     this.camera = new PerspectiveCamera(display.fieldOfView, window.innerWidth / window.innerHeight, NEAR, FAR);

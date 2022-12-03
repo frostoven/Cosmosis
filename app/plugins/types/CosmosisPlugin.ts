@@ -1,22 +1,22 @@
+import { gameState } from '../gameState';
 import ChangeTracker from 'change-tracker/src';
 import {
   OnDependenciesMetFn,
   PluginInterface,
 } from '../interfaces/PluginInterface';
-import { preparePlugin } from '../index';
 
 export default class CosmosisPlugin extends ChangeTracker implements PluginInterface {
-  public tracker: ChangeTracker;
   public TrackedClass: any;
   private readonly _onDependenciesMet: OnDependenciesMetFn | undefined;
 
   constructor(trackedName: string, TrackedClass: any, overrides?: PluginInterface) {
     super();
     if (trackedName) {
-      this.tracker = preparePlugin(trackedName);
+      /** @type ChangeTracker */
+      gameState.tracked[trackedName] = this;
     }
     else {
-      throw 'CosmosisPlugin requires a name with which to track your plugin.';
+      throw 'CosmosisPlugin requires a name with which to track your plugin in game state.';
     }
 
     if (TrackedClass) {

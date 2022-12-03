@@ -7,22 +7,13 @@
  * project root.
  */
 
-import { gameState } from './earlyLoad';
-import ChangeTracker from 'change-tracker/src';
+import { gameState } from './gameState';
 import CosmosisPlugin from './types/CosmosisPlugin';
 import PluginLoader from './types/PluginLoader';
 
 function loadPlugins(onLoaded: Function) {
   const pluginLoader = new PluginLoader();
   pluginLoader.start(onLoaded);
-}
-
-/**
- * @param trackedName - The JS variable name you want to identify this item
- * with.
- */
-function preparePlugin(trackedName: string) {
-  return gameState.tracked[trackedName] = new ChangeTracker();
 }
 
 // --- Globals exposed to community modders --- //
@@ -41,15 +32,10 @@ window.$latePlugin = {};
 
 // @ts-ignore
 // This is where community plugins store their classes.
-window.$preparePlugin = preparePlugin;
-
-// @ts-ignore
-// This is where community plugins store their classes.
 window.$gameState = gameState;
 
 // --- Globals end --- //
 
 export {
   loadPlugins,
-  preparePlugin,
 }
