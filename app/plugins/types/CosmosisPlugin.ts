@@ -1,4 +1,4 @@
-import ChangeTracker from '../../emitters/ChangeTracker';
+import ChangeTracker from 'change-tracker/src';
 import {
   OnDependenciesMetFn,
   PluginInterface,

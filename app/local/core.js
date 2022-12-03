@@ -6,6 +6,7 @@
 
 import * as THREE from 'three';
 // import * as CANNON from 'cannon';
+import ChangeTracker from 'change-tracker/src';
 import Stats from '../../hackedlibs/stats/stats.module.js';
 
 import { forEachFn } from './utils';
@@ -25,7 +26,6 @@ import {
 import { createRenderer } from './renderer';
 import AssetFinder from './AssetFinder';
 import OffscreenSkyboxWorker from '../managedWorkers/OffscreenSkyboxWorker';
-import ChangeTracker from '../emitters/ChangeTracker';
 import { getEnums } from '../userProfile/defaultsConfigs';
 import api from './api';
 

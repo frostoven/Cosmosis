@@ -8,7 +8,7 @@
  */
 
 import { gameState } from './earlyLoad';
-import ChangeTracker from '../emitters/ChangeTracker';
+import ChangeTracker from 'change-tracker/src';
 import CosmosisPlugin from './types/CosmosisPlugin';
 import PluginLoader from './types/PluginLoader';
 

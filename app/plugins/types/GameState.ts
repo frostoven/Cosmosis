@@ -1,4 +1,4 @@
-import ChangeTracker from '../../emitters/ChangeTracker';
+import ChangeTracker from 'change-tracker/src';
 
 export default class GameState {
   private readonly _tracked: { [key: string]: ChangeTracker };

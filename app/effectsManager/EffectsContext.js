@@ -1,6 +1,6 @@
 import { GodRaysEffect, SelectiveBloomEffect } from 'postprocessing';
+import ChangeTracker from 'change-tracker/src';
 import EffectsManager from './EffectsManager';
-import ChangeTracker from '../emitters/ChangeTracker';
 import MicroDirectionalStarlight from './custom/MicroDirectionalStarlight';
 import userProfile from '../userProfile';
 
