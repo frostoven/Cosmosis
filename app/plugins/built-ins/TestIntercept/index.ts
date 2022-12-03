@@ -3,7 +3,7 @@ import {
   PluginInterface
 } from '../../interfaces/PluginInterface';
 
-export default class TestIntercept implements PluginInterface {
+class TestIntercept implements PluginInterface {
   constructor() {
     console.log('-> constructing TestIntercept');
   }
@@ -24,4 +24,10 @@ class DuckType implements PluginInterface {
     console.log('-> Type TestLate has been replaced with DuckType.');
     next();
   }
+}
+
+const testInterceptPlugin = new TestIntercept();
+
+export {
+  testInterceptPlugin,
 }

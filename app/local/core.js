@@ -7,7 +7,6 @@
 import * as THREE from 'three';
 // import * as CANNON from 'cannon';
 import Stats from '../../hackedlibs/stats/stats.module.js';
-import packageJson from '../../package.json';
 
 import { forEachFn } from './utils';
 // import physics from './physics';
@@ -30,10 +29,6 @@ import ChangeTracker from '../emitters/ChangeTracker';
 import { getEnums } from '../userProfile/defaultsConfigs';
 import api from './api';
 
-// 1 micrometer to 100 billion light years in one scene, with 1 unit = 1 meter?
-// preposterous!  and yet...
-const NEAR = 0.001, FAR = 1e27;
-
 // Used to generate delta.
 let deltaPrevTime = 0;
 // Used to look for continual animation loop crashes.
@@ -46,15 +41,18 @@ let maxAllowsAnimCrashes = 600;
  * Global vars
  * ================================= */
 
+// Used to stop all main thread graphics processing in an emergency. Game can
+// be halted from the dev console by typing "$game.halt = true".
+let halt = false;
+// Note: versions below 0.73.0-beta.4 will not have this value defined.
+// Set to true once the world is fully initialised.
+let ready = false;
+
 window.$stats = null;
-window.$game = {
-  // Used to stop all main thread graphics processing in an emergency. Game can
-  // be halted from the dev console by typing "$game.halt = true".
-  halt: false,
-  // Note: versions below 0.73.0-beta.4 will not have this value defined.
-  version: packageJson.version,
-  // Set to true once the world is fully initialised.
-  ready: false,
+/**
+ * Contains tracked game objects.
+ */
+const $game = {
   // Contains the all scenes. Mainly used for movement optimisation. It's
   // possible this has become redundant. TODO: investigate removal.
   // group: null,
@@ -64,7 +62,9 @@ window.$game = {
   // spaceScene: null,
   // Contains everything small.
   // levelScene: null,
+  /** @deprecated */
   camera: null,
+  player: new ChangeTracker(),
   // The primary graphics renderer.
   primaryRenderer: null,
   // Offscreen renderer used for skybox generation.
@@ -95,6 +95,8 @@ window.$game = {
   },
   api,
 };
+window.$game = $game;
+
 window.$options = {
   // 0=off, 1=basic, 2=full
   hudDetailLevel: 0,
@@ -105,6 +107,7 @@ window.$options = {
   // Rate at which arrow actions repeat once repeatDelay is met.
   repeatRate: 50,
 };
+
 window.$displayOptions = {
   // Please do not expose this to users just yet. It utilises setTimeout, which
   // produces significant stutter. It exists to test for timing issues only.
@@ -115,18 +118,22 @@ window.$displayOptions = {
   // a known ~9% drop.
   fpsLimit: 30 * 1.09,
 };
+
 window.$webWorkers = {
   offscreenSkybox: new OffscreenSkyboxWorker(),
 };
+
 window.$gfx = {
   fullscreenEffects: new ChangeTracker(),
   spaceEffects: new ChangeTracker(),
   levelEffects: new ChangeTracker(),
 };
+
 // The preBootPlaceholder stores functions that match the actual model object.
 // Calling those functions queue them as requests. Once the menu system has
 // booted, all requests are then honored as the actual modal functions.
 window.$modal = preBootPlaceholder;
+
 
 /* =================================
  * End global vars
@@ -193,6 +200,9 @@ function init({ defaultScene }) {
   console.log('Initialising core.');
   logBootInfo('Core init start');
 
+  setTimeout(() => logBootInfo('[PLUGIN DEV] Blocking boot'), 100);
+  return;
+
   // User configurations.
   const { debug, display, graphics } = userProfile.getCurrentConfig({
     identifier: 'userOptions'
@@ -208,6 +218,8 @@ function init({ defaultScene }) {
   if (!primaryCanvas) {
     $modal.alert('Error: canvas not available; no rendering will work.');
   }
+
+  $game
 
   const camera = new THREE.PerspectiveCamera(
     display.fieldOfView, window.innerWidth / window.innerHeight, NEAR, FAR
@@ -281,7 +293,7 @@ function initView({ primaryRenderer, camera }) {
   $game.primaryRenderer = primaryRenderer;
   $game.camera = camera;
   $game.ptrLockControls = ptrLockControls;
-  $game.ready = true;
+  ready = true;
 }
 
 function initPlayer() {
@@ -316,7 +328,7 @@ function updatePrimaryRendererSizes() {
  * Invokes all registered render functions.
  */
 function animate() {
-  if ($game.halt) {
+  if (halt) {
     return;
   }
 
@@ -332,7 +344,7 @@ function animate() {
       'frames. Renderer will now halt.';
     console.error(error);
     $modal.alert({ header: 'Renderer crash', body: error });
-    return $game.halt = true;
+    return halt = true;
   }
 
   const time = performance.now();
@@ -477,6 +489,10 @@ function userMouseSpeed(x, y) {
     x: $options.mouseSpeed[0] * x,
     y: $options.mouseSpeed[1] * y,
   };
+}
+
+export {
+  $game,
 }
 
 export default {

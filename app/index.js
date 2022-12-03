@@ -19,6 +19,7 @@ import { startupEvent, getStartupEmitter } from './emitters';
 import './modeControl';
 import userProfile from './userProfile';
 import { logicalSceneGroup } from './logicalSceneGroup';
+import { loadPlugins } from './plugins';
 
 const startupEmitter = getStartupEmitter();
 
@@ -65,7 +66,7 @@ onDocumentReady(() => {
   );
 });
 
-function initCore() {
+function init() {
   // Glue it together, and start the rendering process.
   core.init({ defaultScene });
 
@@ -110,5 +111,5 @@ function initCore() {
 
 onReadyToBoot(() => {
   logBootInfo('Process units ready');
-  initCore();
+  loadPlugins(init);
 });

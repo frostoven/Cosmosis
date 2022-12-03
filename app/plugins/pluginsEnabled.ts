@@ -1,18 +1,11 @@
 import { PluginEntry } from './interfaces/PluginEntry';
-import TestEarly from './built-ins/TestEarly';
-import TestIntercept from './built-ins/TestIntercept';
-import TestLate from './built-ins/TestLate';
+import { playerPlugin } from './built-ins/Player';
 
 const builtInPluginsEnabled: PluginEntry[] = [
   {
-    name: 'TestEarly',
-    type: TestEarly,
-  },
-  {
-    name: 'TestIntercept',
-    dependencies: [ 'TestEarly' ],
-    type: TestIntercept,
-  },
+    name: 'player',
+    pluginInstance: playerPlugin,
+  }
   // {
   //   name: 'levelScene',
   // },
@@ -22,10 +15,6 @@ const builtInPluginsEnabled: PluginEntry[] = [
   // {
   //   name: 'playerShip',
   // },
-  {
-    name: 'TestLate',
-    type: TestLate,
-  },
 ];
 
 export {

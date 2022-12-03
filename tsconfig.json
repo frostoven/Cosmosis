@@ -1,10 +1,16 @@
 {
   "compilerOptions": {
     "strict": true,
+    "target": "es2019",
     "noImplicitAny": false,
     "moduleResolution": "node",
+    "esModuleInterop": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
     "allowJs": true,
-    "checkJs": false
+    "checkJs": false,
+    "inlineSourceMap": true,
+    "incremental": true
   },
   "include": ["app/**/*"]
 }

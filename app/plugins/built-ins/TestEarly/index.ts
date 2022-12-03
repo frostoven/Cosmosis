@@ -3,7 +3,7 @@ import {
   PluginInterface
 } from '../../interfaces/PluginInterface';
 
-export default class TestEarly implements PluginInterface {
+class TestEarly implements PluginInterface {
   constructor() {
     console.log('-> constructing TestEarly');
   }
@@ -12,4 +12,10 @@ export default class TestEarly implements PluginInterface {
     console.log('-> running TestEarly');
     next();
   };
+}
+
+const testEarlyPlugin = new TestEarly();
+
+export {
+  testEarlyPlugin,
 }

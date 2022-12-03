@@ -3,7 +3,7 @@ import {
   PluginInterface
 } from '../../interfaces/PluginInterface';
 
-export default class TestLate implements PluginInterface {
+class TestLate implements PluginInterface {
   constructor() {
     console.log('-> constructing TestLate');
   }
@@ -11,4 +11,10 @@ export default class TestLate implements PluginInterface {
   onDependenciesMet: OnDependenciesMetFn = ({ next, replaceClass }) => {
     console.log('-> running TestLate');
   }
+}
+
+const testLatePlugin = new TestLate();
+
+export {
+  testLatePlugin,
 }

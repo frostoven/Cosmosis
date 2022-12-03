@@ -1,7 +1,7 @@
 import { builtInPluginsEnabled } from '../pluginsEnabled';
 import { PluginEntry } from '../interfaces/PluginEntry';
-import { PluginInterface } from '../interfaces/PluginInterface';
 import { TypeReplacements } from '../interfaces/TypeReplacements';
+import CosmosisPlugin from './CosmosisPlugin';
 
 export default class PluginLoader {
   private _communityManifestPath: string;
@@ -10,21 +10,27 @@ export default class PluginLoader {
   // Plugins that reached loading stage but had unmet dependencies.
   private readonly _shovedPlugins: Array<PluginEntry>;
   // Anything stored in here will have its class replaced with something else.
-  private readonly _typeReplacements: TypeReplacements;
+  private readonly _pluginOverrides: TypeReplacements;
+  private _onLoaded: Function;
 
   constructor() {
     this._communityManifestPath = './pluginCommunity/pluginsEnabled.json';
     this._runIndex = -1;
     this._dependenciesLoaded = {};
     this._shovedPlugins = [];
-    this._typeReplacements = {};
+    this._pluginOverrides = {};
+    this._onLoaded = () => { throw '[PluginLoader] _onLoaded called out of place.' };
   }
 
-  start() {
-    this.doPluginRun(builtInPluginsEnabled, false);
+  start(onLoaded: Function) {
+    if (!onLoaded) {
+      throw '[PluginLoader] start needs a callback.';
+    }
+    this._onLoaded = onLoaded;
+    this._doPluginRun(builtInPluginsEnabled, false);
   }
 
-  doPluginRun(array: Array<PluginEntry>, disableShoving: boolean) {
+  _doPluginRun(array: Array<PluginEntry>, disableShoving: boolean) {
     const index = ++this._runIndex;
     console.log('[PluginLoader] index:', index, ' array len:', array.length);
     if (index >= array.length) {
@@ -32,15 +38,18 @@ export default class PluginLoader {
       if (!disableShoving) {
         disableShoving = true;
         this._runIndex = -1;
-        this.doPluginRun(this._shovedPlugins, true);
+        this._doPluginRun(this._shovedPlugins, true);
       }
       else {
-        console.log('[PluginLoader] All plugins loaded.')
+        console.log('[PluginLoader] All plugins loaded.');
+        this._onLoaded();
       }
       return;
     }
 
-    const { name, dependencies, type, timeoutWarn = 3000 } = array[index];
+    // -----------------------------------------------------------------------------
+    const { name, dependencies, pluginInstance, timeoutWarn = 3000 } = array[index];
+    // -----------------------------------------------------------------------------
     let disallowRun = false;
     let shoved = false;
     if (dependencies) {
@@ -62,39 +71,46 @@ export default class PluginLoader {
     }
 
     if (!disallowRun && !shoved) {
-      let Type;
-      if (this._typeReplacements[name]) {
-        Type = this._typeReplacements[name].replaceClassWith;
+      const pluginOverrides = this._pluginOverrides[name];
+
+      let plugin: CosmosisPlugin;
+      if (pluginInstance) {
+        plugin = pluginInstance;
       }
-      else if (type) {
-        // Plugin is a built-in.
-        Type = type;
-      }
-      else {
+      // @ts-ignore
+      else if (window.$earlyPlugin[name]) {
         // Plugin is community-offered.
         // @ts-ignore
-        Type = window.$plugin[name];
+        plugin = window.$earlyPlugin[name];
+      }
+      // @ts-ignore
+      else if (window.$latePlugin[name]) {
+        // Plugin is community-offered.
+        // @ts-ignore
+        plugin = window.$latePlugin[name];
+      }
+      else {
+        console.error('[PluginLoader] Error:', name, 'does not appear to have a valid class registered.');
+        setTimeout(() => this._doPluginRun(array, disableShoving));
+        return;
       }
 
-      if (!Type) {
-        console.error('[PluginLoader] Error:', name, 'does not appear to have a valid class registered.');
-        setTimeout(() => this.doPluginRun(array, disableShoving));
-        return;
+      if (pluginOverrides) {
+        plugin.TrackedClass = pluginOverrides.replaceClassWith;
       }
 
       const warnTimer = setTimeout(() => {
         console.warn(`[PluginLoader] Warning: plugin '${name}' has not finished loading after ${timeoutWarn}ms`);
       }, timeoutWarn);
 
-      const plugin: PluginInterface = new Type();
       plugin.onDependenciesMet({
         next: () => {
           clearTimeout(warnTimer);
           this._dependenciesLoaded[name] = true;
-          setTimeout(() => this.doPluginRun(array, disableShoving));
+          setTimeout(() => this._doPluginRun(array, disableShoving));
         },
         replaceClass: ({ pluginName, replaceClassWith }) => {
-          this._typeReplacements[pluginName] = {
+          this._pluginOverrides[pluginName] = {
             name: pluginName,
             replaceClassWith,
           }
