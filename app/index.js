@@ -5,6 +5,7 @@ import * as ReactDOM from 'react-dom';
 import RootNode from './reactComponents/RootNode';
 import v8 from 'v8';
 
+import { loadPlugins } from './plugins';
 import core from './local/core';
 import powerOnSelfTest from './test';
 import api from './local/api';
@@ -19,7 +20,7 @@ import { startupEvent, getStartupEmitter } from './emitters';
 import './modeControl';
 import userProfile from './userProfile';
 import { logicalSceneGroup } from './logicalSceneGroup';
-import { loadPlugins } from './plugins';
+import { gameState } from './plugins/gameState';
 
 const startupEmitter = getStartupEmitter();
 
@@ -66,9 +67,9 @@ onDocumentReady(() => {
   );
 });
 
-function init() {
+function init({ camera }) {
   // Glue it together, and start the rendering process.
-  core.init({ defaultScene });
+  core.init({ defaultScene, camera });
 
   startupEmitter.on(startupEvent.gameViewReady, () => {
     // For some god-awful reason or another the browser doesn't always detect
@@ -111,5 +112,9 @@ function init() {
 
 onReadyToBoot(() => {
   logBootInfo('Process units ready');
-  loadPlugins(init);
+  loadPlugins(() => {
+    gameState.tracked.player.getOnce(({ camera }) => {
+      init({ camera });
+    });
+  });
 });

@@ -17,6 +17,7 @@ export default class Player {
       identifier: 'userOptions',
     });
     this.camera = new PerspectiveCamera(display.fieldOfView, window.innerWidth / window.innerHeight, NEAR, FAR);
+    this.camera.name = 'primaryCamera';
     this.worldCoords = new Vector3();
     this.coordsType = CoordType.galaxyCentric;
   }

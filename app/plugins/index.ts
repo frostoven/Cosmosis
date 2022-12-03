@@ -11,8 +11,9 @@ import { gameState } from './gameState';
 import CosmosisPlugin from './types/CosmosisPlugin';
 import PluginLoader from './types/PluginLoader';
 
+const pluginLoader = new PluginLoader();
+
 function loadPlugins(onLoaded: Function) {
-  const pluginLoader = new PluginLoader();
   pluginLoader.start(onLoaded);
 }
 
@@ -37,5 +38,6 @@ window.$gameState = gameState;
 // --- Globals end --- //
 
 export {
+  pluginLoader,
   loadPlugins,
 }

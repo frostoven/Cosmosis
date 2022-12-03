@@ -196,12 +196,9 @@ function closeLoadingScreen() {
   }
 }
 
-function init({ defaultScene }) {
+function init({ defaultScene, camera }) {
   console.log('Initialising core.');
   logBootInfo('Core init start');
-
-  setTimeout(() => logBootInfo('[PLUGIN DEV] Blocking boot'), 100);
-  return;
 
   // User configurations.
   const { debug, display, graphics } = userProfile.getCurrentConfig({
@@ -219,12 +216,6 @@ function init({ defaultScene }) {
     $modal.alert('Error: canvas not available; no rendering will work.');
   }
 
-  $game
-
-  const camera = new THREE.PerspectiveCamera(
-    display.fieldOfView, window.innerWidth / window.innerHeight, NEAR, FAR
-  );
-  camera.name = 'primaryCamera';
   const primaryRenderer = createRenderer({
     initialisation: {
       canvas: primaryCanvas,
