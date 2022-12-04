@@ -16,7 +16,7 @@ class Location {
   private _cachedSpaceScene: Scene;
 
   constructor() {
-    this.setupWatchers();
+    this._setupWatchers();
     this.effectiveCoords = new Vector3();
     this.coordMode = CoordType.playerCentric;
 
@@ -25,7 +25,7 @@ class Location {
     this._cachedSpaceScene = new Scene();
   }
 
-  setupWatchers() {
+  _setupWatchers() {
     gameState.tracked.player.getEveryChange((camera) => {
       this._cachedCamera = camera;
     });

@@ -10,12 +10,14 @@ export default class Core {
   public _frameLimitCount: number;
   private _clock: Clock;
   private readonly _stats: any;
+  private _rendererHooks: Function[];
 
   constructor() {
     this.onAnimate = new ChangeTracker();
     this.onAnimateDone = new ChangeTracker();
     this._maxFrameDelta = 0;
     this._frameLimitCount = 0;
+    this._rendererHooks = [];
 
     // @ts-ignore
     this._stats = new Stats();
@@ -39,7 +41,7 @@ export default class Core {
   }
 
   _animate() {
-    requestAnimationFrame(() => this._animate());
+    requestAnimationFrame(this._animate.bind(this));
     let delta = this._clock.getDelta();
 
     // Used for custom framerate control.
@@ -56,24 +58,32 @@ export default class Core {
 
     // Always place this as early in the animation function as possible. No
     // game logic should happen before this point.
-    this.onAnimate.setValue(this._clock.getDelta());
+    this.onAnimate.setValue(delta);
+
+    // Call all renderers.
+    const renderers = this._rendererHooks;
+    for (let i = 0, len = renderers.length; i < len; i++) {
+      renderers[i]();
+    }
 
     // Always place this dead last in this function.
-    this.onAnimateDone.setValue(this._clock.getDelta());
+    this.onAnimateDone.setValue(delta);
     this._stats.update();
   }
 
-  appendRenderer() {
-    //
+  prependRendererHook(callback: Function) {
+    this._rendererHooks.unshift(callback);
   }
 
-  prependRenderer() {
-    //
+  appendRenderHook(callback: Function) {
+    this._rendererHooks.push(callback);
   }
 }
 
 const corePlugin = new CosmosisPlugin('core', Core);
+interface CoreType extends Core{}
 
 export {
   corePlugin,
+  CoreType,
 }
