@@ -3,15 +3,18 @@ import { metadataPlugin } from './built-ins/Metadata';
 import { playerPlugin } from './built-ins/Player';
 import { locationPlugin } from './built-ins/Location';
 import { navigationPlugin } from './built-ins/Navigation';
+import { levelScenePlugin } from './built-ins/LevelScene';
+import { spaceScenePlugin } from './built-ins/SpaceScene';
+import { corePlugin } from './built-ins/Core';
 
 const builtInPluginsEnabled: PluginEntry[] = [
   { name: 'metadata', pluginInstance: metadataPlugin },
-  { name: 'player', pluginInstance: playerPlugin },
-  { name: 'location', pluginInstance: locationPlugin, dependencies: [ 'player' ] },
-  { name: 'navigation', pluginInstance: navigationPlugin, dependencies: [ 'location' ] },
-  // { name: 'levelScene' },
-  // { name: 'spaceScene' },
-  // { name: 'playerShip' },
+  { name: 'core', pluginInstance: corePlugin },
+  { name: 'player', pluginInstance: playerPlugin, dependencies: [ 'core' ] },
+  { name: 'levelScene', pluginInstance: levelScenePlugin, dependencies: [ 'core' ] },
+  { name: 'spaceScene', pluginInstance: spaceScenePlugin, dependencies: [ 'core' ] },
+  { name: 'location', pluginInstance: locationPlugin, dependencies: [ 'core', 'player', 'levelScene', 'spaceScene' ] },
+  { name: 'navigation', pluginInstance: navigationPlugin, dependencies: [ 'core', 'location' ] },
 ];
 
 export {
