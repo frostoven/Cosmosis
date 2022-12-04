@@ -5,6 +5,7 @@ import Stats from '../../../../hackedlibs/stats/stats.module';
 
 export default class Core {
   public onAnimate: ChangeTracker;
+  public onAnimateDone: ChangeTracker;
   public _maxFrameDelta: number;
   public _frameLimitCount: number;
   private _clock: Clock;
@@ -12,6 +13,7 @@ export default class Core {
 
   constructor() {
     this.onAnimate = new ChangeTracker();
+    this.onAnimateDone = new ChangeTracker();
     this._maxFrameDelta = 0;
     this._frameLimitCount = 0;
 
@@ -39,9 +41,6 @@ export default class Core {
   _animate() {
     requestAnimationFrame(() => this._animate());
     let delta = this._clock.getDelta();
-    this.onAnimate.setValue(this._clock.getDelta());
-
-    // console.log(this._clock.getElapsedTime());
 
     // Used for custom framerate control.
     if (this._maxFrameDelta) {
@@ -55,6 +54,12 @@ export default class Core {
       }
     }
 
+    // Always place this as early in the animation function as possible. No
+    // game logic should happen before this point.
+    this.onAnimate.setValue(this._clock.getDelta());
+
+    // Always place this dead last in this function.
+    this.onAnimateDone.setValue(this._clock.getDelta());
     this._stats.update();
   }
 

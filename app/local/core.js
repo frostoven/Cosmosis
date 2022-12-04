@@ -181,20 +181,20 @@ function updateHyperdriveDebugText() {
   div.innerText = `Hyperdrive: (unknown...)`;
 }
 
-// TODO: remove me once the game is more stable.
-function closeLoadingScreen() {
-  const loaders = document.getElementsByClassName('loading-indicator');
-  if (loaders) {
-    for(let i = 0, len = loaders.length; i < len; i++){
-      loaders[i].classList.add('splash-fade-out');
-    }
-  }
-
-  const bootLog = document.getElementById('boot-log');
-  if (bootLog) {
-    bootLog.classList.add('splash-fade-out');
-  }
-}
+// // TODO: remove me once the game is more stable.
+// function closeLoadingScreen() {
+//   const loaders = document.getElementsByClassName('loading-indicator');
+//   if (loaders) {
+//     for(let i = 0, len = loaders.length; i < len; i++){
+//       loaders[i].classList.add('splash-fade-out');
+//     }
+//   }
+//
+//   const bootLog = document.getElementById('boot-log');
+//   if (bootLog) {
+//     bootLog.classList.add('splash-fade-out');
+//   }
+// }
 
 function init({ defaultScene, camera }) {
   console.log('Initialising core.');
@@ -388,7 +388,7 @@ $game.playerShip.getOnce(() => {
 
 // TODO: remove me once the game is more stable.
 startupEmitter.on(startupEvent.ready, () => {
-  closeLoadingScreen();
+  // closeLoadingScreen();
 
   // For some reason the game takes nearly 5x longer to boot in fullscreen...
   // slower boot happens even if the res scale is at 0.1 (less than 200x200

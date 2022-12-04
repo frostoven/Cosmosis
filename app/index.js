@@ -110,11 +110,26 @@ function init() {
   });
 }
 
+function closeLoadingScreen() {
+  const loaders = document.getElementsByClassName('loading-indicator');
+  if (loaders) {
+    for(let i = 0, len = loaders.length; i < len; i++){
+      loaders[i].classList.add('splash-fade-out');
+    }
+  }
+
+  const bootLog = document.getElementById('boot-log');
+  if (bootLog) {
+    bootLog.classList.add('splash-fade-out');
+  }
+}
+
 onReadyToBoot(() => {
   logBootInfo('Process units ready');
   loadPlugins(() => {
     // gameState.tracked.player.getOnce(({ camera }) => {
     //   init({ camera });
     // });
+    closeLoadingScreen();
   });
 });

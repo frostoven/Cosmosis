@@ -1,3 +1,6 @@
+Add externalPluginLoaderEarly before metadata, and externalPluginLoaderLate
+at the very end.
+
 Consider renaming startupEmitter to startupChecklist.
 
 Create issue for controller support.
