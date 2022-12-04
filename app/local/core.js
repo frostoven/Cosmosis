@@ -210,15 +210,15 @@ function init({ defaultScene, camera }) {
 
   // Default graphics font.
   // const fontLoader = new THREE.FontLoader();
-  const primaryCanvas = document.getElementById('primary-canvas');
+  const nearObjectCanvas = document.getElementById('near-object-canvas');
   const starfieldCanvas = document.getElementById('starfield-canvas');
-  if (!primaryCanvas) {
+  if (!nearObjectCanvas) {
     $modal.alert('Error: canvas not available; no rendering will work.');
   }
 
   const primaryRenderer = createRenderer({
     initialisation: {
-      canvas: primaryCanvas,
+      canvas: nearObjectCanvas,
     },
     options: {
       width: window.innerWidth,

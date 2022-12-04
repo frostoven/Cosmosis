@@ -45,8 +45,9 @@ is smoothed out. A physics system is being implemented.
 Planets and their (hostile Lovecraftian) inhabitants will be procedurally
 generated, and ground-based combat will be souls-like.
 
-The source is made available to all users for backup and modding purposes, but
-this project is not free (see [Why we provide source code](README.md#why-we-provide-source-code) below).
+The source is made available to all users for backup and modding purposes,
+**but this project is not free**
+(see [Why we provide source code](README.md#why-we-provide-source-code) below).
 
 ## Testing the game
 This game is currently still in pre-alpha, meaning you won't have much to do.

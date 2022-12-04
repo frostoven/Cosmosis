@@ -20,8 +20,17 @@ html, body {
     cursor: url(/potatoLqAssets/icons/cursor1_sharp_32.png) 3 3, auto !important;
 }
 
-#primary-canvas {
+#near-object-canvas {
     z-index: 10;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+#far-object-canvas {
+    z-index: 11;
     position: fixed;
     top: 0;
     bottom: 0;
