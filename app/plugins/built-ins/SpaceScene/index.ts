@@ -54,12 +54,31 @@ class SpaceScene extends Scene {
     const cube = new Mesh(geometry, material);
     this.add(cube);
     cube.position.copy(new Vector3(1.5, 0.25, -6));
+
+    window.addEventListener('resize', this.onWindowResize.bind(this));
+    this.onWindowResize();
   }
 
   _setupWatchers() {
     gameState.tracked.player.getEveryChange((camera) => {
       this._cachedCamera = camera;
     });
+  }
+
+  onWindowResize() {
+    const { graphics } = userProfile.getCurrentConfig({
+      identifier: 'userOptions',
+    });
+
+    let screenWidth = window.innerWidth;
+    let screenHeight = window.innerHeight;
+
+    const scale = graphics.resolutionScale;
+    this._renderer.setSize(screenWidth * scale, screenHeight * scale);
+    this._renderer.domElement.style.width = '100%';
+    this._renderer.domElement.style.height = '100%';
+    this._cachedCamera.aspect = screenWidth / screenHeight;
+    this._cachedCamera.updateProjectionMatrix();
   }
 
   render() {
