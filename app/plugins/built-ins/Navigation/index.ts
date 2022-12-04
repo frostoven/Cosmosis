@@ -40,3 +40,7 @@ class Navigation {
 }
 
 const navigationPlugin = new CosmosisPlugin('navigation', Navigation);
+
+export {
+  navigationPlugin,
+}

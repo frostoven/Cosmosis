@@ -1,5 +1,5 @@
-import { PerspectiveCamera, Vector3 } from 'three';
-import { CoordType } from './types/CoordType';
+import { PerspectiveCamera } from 'three';
+// import { CoordType } from './types/CoordType';
 import userProfile from '../../../userProfile';
 import CosmosisPlugin from '../../types/CosmosisPlugin';
 
@@ -9,8 +9,8 @@ const NEAR = 0.001, FAR = 1e27;
 
 export default class Player {
   public camera: PerspectiveCamera;
-  public worldCoords: Vector3;
-  public coordsType: CoordType;
+  // public worldCoords: Vector3;
+  // public coordsType: CoordType;
 
   constructor() {
     const { display } = userProfile.getCurrentConfig({
@@ -18,8 +18,8 @@ export default class Player {
     });
     this.camera = new PerspectiveCamera(display.fieldOfView, window.innerWidth / window.innerHeight, NEAR, FAR);
     this.camera.name = 'primaryCamera';
-    this.worldCoords = new Vector3();
-    this.coordsType = CoordType.galaxyCentric;
+    // this.worldCoords = new Vector3();
+    // this.coordsType = CoordType.galaxyCentric;
   }
 }
 
