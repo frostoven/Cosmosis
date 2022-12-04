@@ -1,6 +1,6 @@
 import ChangeTracker from 'change-tracker/src';
 
-export default class GameState {
+export default class GameRuntime {
   private readonly _tracked: { [key: string]: ChangeTracker };
   private readonly _untracked: { [key: string]: any };
   private readonly _types: { [key: string]: any };

@@ -1,5 +1,5 @@
 import { PerspectiveCamera, Scene, Vector3 } from 'three';
-import { gameState } from '../../gameState';
+import { gameRuntime } from '../../gameRuntime';
 import CosmosisPlugin from '../../types/CosmosisPlugin';
 import { CoordType } from './types/CoordType';
 
@@ -26,13 +26,13 @@ class Location {
   }
 
   _setupWatchers() {
-    gameState.tracked.player.getEveryChange((camera) => {
+    gameRuntime.tracked.player.getEveryChange((camera) => {
       this._cachedCamera = camera;
     });
-    gameState.tracked.levelScene.getEveryChange((scene) => {
+    gameRuntime.tracked.levelScene.getEveryChange((scene) => {
       this._cachedLevelScene = scene;
     });
-    gameState.tracked.spaceScene.getEveryChange((scene) => {
+    gameRuntime.tracked.spaceScene.getEveryChange((scene) => {
       this._cachedSpaceScene = scene;
     });
   }

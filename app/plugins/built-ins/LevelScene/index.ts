@@ -8,11 +8,29 @@ import {
   Vector3,
 } from 'three';
 import CosmosisPlugin from '../../types/CosmosisPlugin';
-import { gameState } from '../../gameState';
+import { gameRuntime } from '../../gameRuntime';
 import { CoreType } from '../Core';
 import userProfile from '../../../userProfile';
 
+
+// TODO:
+//  The space scene can load a vehicle. The player can be attached to the
+//  vehicle, which effectively means that the camera is a child of the vehicle.
+//  The vehicle can be attached to a point of interest. That simply means the
+//  vehicle is now a child of that POI. While the vehicle is a child of a POI,
+//  warp is not allowed (or, it is, but causes obvious problem like slamming
+//  into a space station interior at light speed - seriously, allow this for
+//  lolz). All this means we have full context of what's going on, allowing for
+//  easy if..then logic that looks like fancy features. Note that this also
+//  allows player to then dock ships into other larger ships. When the player
+//  gets out, their vehicle is no longer programmatically their vehicle. And
+//  interactable however can allow reentry. This means that docking into
+//  another larger ship means you can use an interactable to pilot the larger
+//  ship while the player's original ship is now just a prop in the hangar,
+//  which they may later interact with to reenter.
+
 class LevelScene extends Scene {
+  // @ts-ignore
   private _renderer: WebGLRenderer;
   private _cachedCamera: PerspectiveCamera;
 
@@ -20,8 +38,26 @@ class LevelScene extends Scene {
     super();
     this._cachedCamera = new PerspectiveCamera();
     this._setupWatchers();
+    this._configureRenderer();
 
-    const { debug, display, graphics } = userProfile.getCurrentConfig({
+    gameRuntime.tracked.core.getOnce((core: CoreType) => {
+      core.appendRenderHook(this.render.bind(this));
+    });
+
+    // --------------------------------------------------------------------- //
+    const geometry = new BoxGeometry(1, 1, 1);
+    const material = new MeshBasicMaterial({ color: 0x00ff00 });
+    const cube = new Mesh(geometry, material);
+    this.add(cube);
+    cube.position.copy(new Vector3(-1.5, 0.25, -6));
+    // --------------------------------------------------------------------- //
+
+    window.addEventListener('resize', this.onWindowResize.bind(this));
+    this.onWindowResize();
+  }
+
+  _configureRenderer() {
+    const { display, graphics } = userProfile.getCurrentConfig({
       identifier: 'userOptions'
     });
 
@@ -41,23 +77,10 @@ class LevelScene extends Scene {
     renderer.toneMapping = display.toneMapping;
 
     this._renderer = renderer;
-
-    gameState.tracked.core.getOnce((core: CoreType) => {
-      core.appendRenderHook(this.render.bind(this));
-    });
-
-    const geometry = new BoxGeometry(1, 1, 1);
-    const material = new MeshBasicMaterial({ color: 0x00ff00 });
-    const cube = new Mesh(geometry, material);
-    this.add(cube);
-    cube.position.copy(new Vector3(-1.5, 0.25, -6));
-
-    window.addEventListener('resize', this.onWindowResize.bind(this));
-    this.onWindowResize();
   }
 
   _setupWatchers() {
-    gameState.tracked.player.getEveryChange((player) => {
+    gameRuntime.tracked.player.getEveryChange((player) => {
       this._cachedCamera = player.camera;
     });
   }

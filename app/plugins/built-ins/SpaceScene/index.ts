@@ -8,10 +8,9 @@ import {
   Vector3,
 } from 'three';
 import CosmosisPlugin from '../../types/CosmosisPlugin';
-import { gameState } from '../../gameState';
+import { gameRuntime } from '../../gameRuntime';
 import { CoreType } from '../Core';
 import userProfile from '../../../userProfile';
-
 class SpaceScene extends Scene {
   private _renderer: WebGLRenderer;
   private _cachedCamera: PerspectiveCamera;
@@ -45,22 +44,24 @@ class SpaceScene extends Scene {
 
     this._renderer = renderer;
 
-    gameState.tracked.core.getOnce((core: CoreType) => {
+    gameRuntime.tracked.core.getOnce((core: CoreType) => {
       core.appendRenderHook(this.render.bind(this));
     });
 
+    // --------------------------------------------------------------------- //
     const geometry = new BoxGeometry(1, 1, 1);
     const material = new MeshBasicMaterial({ color: 0xff0000 });
     const cube = new Mesh(geometry, material);
     this.add(cube);
     cube.position.copy(new Vector3(1.5, 0.25, -6));
+    // --------------------------------------------------------------------- //
 
     window.addEventListener('resize', this.onWindowResize.bind(this));
     this.onWindowResize();
   }
 
   _setupWatchers() {
-    gameState.tracked.player.getEveryChange((player) => {
+    gameRuntime.tracked.player.getEveryChange((player) => {
       this._cachedCamera = player.camera;
     });
   }

@@ -1,4 +1,4 @@
-import { gameState } from '../gameState';
+import { gameRuntime } from '../gameRuntime';
 import ChangeTracker from 'change-tracker/src';
 import {
   OnDependenciesMetFn,
@@ -13,7 +13,7 @@ export default class CosmosisPlugin extends ChangeTracker implements PluginInter
     super();
     if (trackedName) {
       /** @type ChangeTracker */
-      gameState.tracked[trackedName] = this;
+      gameRuntime.tracked[trackedName] = this;
     }
     else {
       throw 'CosmosisPlugin requires a name with which to track your plugin in game state.';

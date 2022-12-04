@@ -7,7 +7,7 @@
  * project root.
  */
 
-import { gameState } from './gameState';
+import { gameRuntime } from './gameRuntime';
 import CosmosisPlugin from './types/CosmosisPlugin';
 import PluginLoader from './types/PluginLoader';
 
@@ -33,7 +33,7 @@ window.$latePlugin = {};
 
 // @ts-ignore
 // This is where community plugins store their classes.
-window.$gameState = gameState;
+window.$gameState = gameRuntime;
 
 // --- Globals end --- //
 
