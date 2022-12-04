@@ -12,5 +12,8 @@
     "inlineSourceMap": true,
     "incremental": true
   },
-  "include": ["app/**/*"]
+  "include": ["app/**/*"],
+  "files": [
+    "typings/index.d.ts"
+  ]
 }
