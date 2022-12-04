@@ -19,6 +19,7 @@ class LevelScene extends Scene {
   constructor() {
     super();
     this._cachedCamera = new PerspectiveCamera();
+    this._setupWatchers();
 
     const { debug, display, graphics } = userProfile.getCurrentConfig({
       identifier: 'userOptions'
@@ -56,8 +57,8 @@ class LevelScene extends Scene {
   }
 
   _setupWatchers() {
-    gameState.tracked.player.getEveryChange((camera) => {
-      this._cachedCamera = camera;
+    gameState.tracked.player.getEveryChange((player) => {
+      this._cachedCamera = player.camera;
     });
   }
 
