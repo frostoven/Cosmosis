@@ -1,5 +1,4 @@
-import { PerspectiveCamera } from 'three';
-// import { CoordType } from './types/CoordType';
+import { AmbientLight, PerspectiveCamera } from 'three';
 import userProfile from '../../../userProfile';
 import CosmosisPlugin from '../../types/CosmosisPlugin';
 
@@ -20,6 +19,12 @@ export default class Player {
     this.camera.name = 'primaryCamera';
     // this.worldCoords = new Vector3();
     // this.coordsType = CoordType.galaxyCentric;
+
+    // Ensure the player always has a tiny point-light emanating from their
+    // head so that the scene is never pitch black.
+    // const light = new PointLight(0x222222, 0.75, 1.5);
+    const light = new AmbientLight(0x111111);
+    this.camera.add(light);
   }
 }
 
