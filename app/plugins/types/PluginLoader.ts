@@ -34,7 +34,6 @@ export default class PluginLoader {
 
   _doPluginRun(array: Array<PluginEntry>, disableShoving: boolean) {
     const index = ++this._runIndex;
-    console.log('[PluginLoader] index:', index, ' array len:', array.length);
     if (index >= array.length) {
       // Restart the loop, but process shoved plugins (if any).
       if (!disableShoving) {

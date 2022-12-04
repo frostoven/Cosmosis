@@ -12,6 +12,8 @@ import CosmosisPlugin from '../../types/CosmosisPlugin';
 import { gameRuntime } from '../../gameRuntime';
 import { CoreType } from '../Core';
 import userProfile from '../../../userProfile';
+import SpaceshipLoader from './types/SpaceshipLoader';
+import { GLTFInterface } from '../../interfaces/GLTFInterface';
 
 
 // TODO:
@@ -34,10 +36,16 @@ class LevelScene extends Scene {
   // @ts-ignore
   private _renderer: WebGLRenderer;
   private _cachedCamera: PerspectiveCamera;
+  private _vehicle: GLTFInterface;
 
   constructor() {
     super();
     this._cachedCamera = new PerspectiveCamera();
+
+    // @ts-ignore
+    this._vehicle = null;
+    this.loadAndEnterLastVehicle();
+
     this._setupWatchers();
     this._configureRenderer();
 
@@ -102,6 +110,33 @@ class LevelScene extends Scene {
     this._renderer.domElement.style.height = '100%';
     this._cachedCamera.aspect = screenWidth / screenHeight;
     this._cachedCamera.updateProjectionMatrix();
+  }
+
+  // Load last vehicle the player was piloting previous sessions, and enter it.
+  loadAndEnterLastVehicle() {
+    const { playerInfo } = userProfile.getCurrentConfig({
+      identifier: 'gameState'
+    });
+    const ship = playerInfo.vehicleInfo.piloting;
+    this.loadVehicle(ship, this.enterVehicle);
+  }
+
+  loadVehicle(ship, onDone) {
+    const shipLoader = new SpaceshipLoader(ship);
+    shipLoader.trackedMesh.getOnce(onDone.bind(this));
+  }
+
+  enterVehicle(gltf: GLTFInterface) {
+    this._vehicle = gltf;
+    console.log('-> gltf:', gltf);
+    const scene = this._vehicle.scene;
+    this.add(scene);
+    scene.add(this._cachedCamera);
+    this._cachedCamera.position.copy(gltf.cameras[0].parent.position);
+    this._cachedCamera.rotation.copy(gltf.cameras[0].parent.rotation);
+    // Blender direction is 90 degrees off from what three.js considers to be
+    // 'stright-ahead'.
+    this._cachedCamera.rotateX(-Math.PI / 2);
   }
 
   render() {

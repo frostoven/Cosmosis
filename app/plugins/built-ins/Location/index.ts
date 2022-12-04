@@ -4,6 +4,8 @@ import CosmosisPlugin from '../../types/CosmosisPlugin';
 import { CoordType } from './types/CoordType';
 
 class Location {
+  // TODO: shift world based on last known position during boot.
+
   // The coordinates we are supposedly at. We say supposedly, because exact
   // location depends on the kind of coordinate system we're currently chasing,
   // and the scene's own distance units. This variable's units are in meters.

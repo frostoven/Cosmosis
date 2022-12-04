@@ -467,7 +467,7 @@ function waitForAllLoaded() {
     }
   }, warnTime);
 }
-waitForAllLoaded();
+// waitForAllLoaded();
 
 /**
  * Adjusts x and y according to user-chosen mouse sensitivity.

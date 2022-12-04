@@ -33,7 +33,7 @@ window.$latePlugin = {};
 
 // @ts-ignore
 // This is where community plugins store their classes.
-window.$gameState = gameRuntime;
+window.$gameRuntime = gameRuntime;
 
 // --- Globals end --- //
 
