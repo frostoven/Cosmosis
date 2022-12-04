@@ -1,17 +1,23 @@
 import CosmosisPlugin from '../../types/CosmosisPlugin';
 import ChangeTracker from 'change-tracker/src';
 import { Clock } from 'three';
+import Stats from '../../../../hackedlibs/stats/stats.module';
 
 export default class Core {
   public onAnimate: ChangeTracker;
   public _maxFrameDelta: number;
   public _frameLimitCount: number;
   private _clock: Clock;
+  private readonly _stats: any;
 
   constructor() {
     this.onAnimate = new ChangeTracker();
     this._maxFrameDelta = 0;
     this._frameLimitCount = 0;
+
+    // @ts-ignore
+    this._stats = new Stats();
+    document.body.append(this._stats.dom);
 
     this._clock = new Clock(true);
     this._animate();
@@ -48,6 +54,8 @@ export default class Core {
         this._frameLimitCount -= this._maxFrameDelta;
       }
     }
+
+    this._stats.update();
   }
 
   appendRenderer() {
