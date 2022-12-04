@@ -1,7 +1,7 @@
 import fs from 'fs';
 import CosmosisPlugin from '../../types/CosmosisPlugin';
 
-class MetaData {
+class Metadata {
   public gameVersion: string | null;
   public gameDataDirName: string | null;
 
@@ -25,8 +25,8 @@ class MetaData {
   }
 }
 
-const metaDataPlugin = new CosmosisPlugin('metaData', MetaData);
+const metadataPlugin = new CosmosisPlugin('metaData', Metadata);
 
 export {
-  metaDataPlugin,
+  metadataPlugin,
 }

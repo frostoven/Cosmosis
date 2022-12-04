@@ -1,9 +1,9 @@
 import { PluginEntry } from './interfaces/PluginEntry';
-import { metaDataPlugin } from './built-ins/MetaData';
+import { metadataPlugin } from './built-ins/Metadata';
 import { playerPlugin } from './built-ins/Player';
 
 const builtInPluginsEnabled: PluginEntry[] = [
-  { name: 'metaData', pluginInstance: metaDataPlugin },
+  { name: 'metadata', pluginInstance: metadataPlugin },
   { name: 'player', pluginInstance: playerPlugin },
   // { name: 'levelScene' },
   // { name: 'spaceScene' },
