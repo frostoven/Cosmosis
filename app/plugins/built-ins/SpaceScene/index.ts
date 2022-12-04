@@ -5,6 +5,7 @@ import {
   PerspectiveCamera,
   Scene,
   WebGLRenderer,
+  sRGBEncoding,
   Vector3,
 } from 'three';
 import CosmosisPlugin from '../../types/CosmosisPlugin';
@@ -42,10 +43,12 @@ class SpaceScene extends Scene {
     renderer.shadowMap.type = graphics.shadowType;
     renderer.toneMapping = display.toneMapping;
 
+    renderer.outputEncoding = sRGBEncoding;
+
     this._renderer = renderer;
 
     gameRuntime.tracked.core.getOnce((core: CoreType) => {
-      core.appendRenderHook(this.render.bind(this));
+      core.prependRendererHook(this.render.bind(this));
     });
 
     // --------------------------------------------------------------------- //

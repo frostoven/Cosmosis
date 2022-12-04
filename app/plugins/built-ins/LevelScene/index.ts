@@ -6,6 +6,7 @@ import {
   Scene,
   WebGLRenderer,
   Vector3,
+  sRGBEncoding,
 } from 'three';
 import CosmosisPlugin from '../../types/CosmosisPlugin';
 import { gameRuntime } from '../../gameRuntime';
@@ -75,6 +76,8 @@ class LevelScene extends Scene {
     renderer.shadowMap.enabled = !!graphics.enableShadows;
     renderer.shadowMap.type = graphics.shadowType;
     renderer.toneMapping = display.toneMapping;
+
+    renderer.outputEncoding = sRGBEncoding;
 
     this._renderer = renderer;
   }
