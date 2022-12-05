@@ -6,11 +6,13 @@ import { navigationPlugin } from './built-ins/Navigation';
 import { levelScenePlugin } from './built-ins/LevelScene';
 import { spaceScenePlugin } from './built-ins/SpaceScene';
 import { corePlugin } from './built-ins/Core';
+import { mouseDriverPlugin } from './built-ins/MouseDriver';
 
 const builtInPluginsEnabled: PluginEntry[] = [
   { name: 'metadata', pluginInstance: metadataPlugin },
   { name: 'core', pluginInstance: corePlugin },
   { name: 'player', pluginInstance: playerPlugin, dependencies: [ 'core' ] },
+  { name: 'mouseDriver', pluginInstance: mouseDriverPlugin, dependencies: [ 'core', 'player' ] },
   { name: 'levelScene', pluginInstance: levelScenePlugin, dependencies: [ 'core' ] },
   { name: 'spaceScene', pluginInstance: spaceScenePlugin, dependencies: [ 'core' ] },
   { name: 'location', pluginInstance: locationPlugin, dependencies: [ 'core', 'player', 'levelScene', 'spaceScene' ] },

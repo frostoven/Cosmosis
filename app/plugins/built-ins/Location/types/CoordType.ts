@@ -3,6 +3,8 @@ enum CoordType {
   playerCentric = 1,
   // When moving, player moves within the galaxy.
   galaxyCentric = 2,
+  // Players get to float around freely in whatever they're parented to.
+  ghost = 3,
 }
 
 export {

@@ -1,25 +1,14 @@
-
 /**
  * Fork of the default three.js PointerLockControls. This fork differs in that
  * it allows using the mouse as an analog device (for example, to control
- * things like thrust) without dictating it be used only as a camera mover.
+ * things like thrust) without dictating that it should only be used to move
+ * the camera.
  */
 
 import { Euler, EventDispatcher } from 'three';
 
-import contextualInput from './contextualInput';
-import { getStartupEmitter, startupEvent } from '../emitters';
-
-const startupEmitter = getStartupEmitter();
-
-const lockModes = {
-  // Mouse does not cause the camera to move in this mode.
-  frozen: 2,
-  // Can look freely in all directions without restriction.
-  freeLook: 4,
-  // Can look 110 degrees from origin before mouse stops moving.
-  headLook: 8,
-};
+import contextualInput from '../../../../local/contextualInput';
+import { LockModes } from './LockModes';
 
 const PointerLockControls = function (camera, domElement) {
   if (domElement === undefined) {
@@ -32,7 +21,7 @@ const PointerLockControls = function (camera, domElement) {
   this.domElement = domElement;
   // If true, the browser will hide the cursor.
   this.isPointerLocked = false;
-  this.lockMode = lockModes.freeLook;
+  this.lockMode = LockModes.freeLook;
 
   // Set to constrain the pitch of the camera
   // Range is 0 to Math.PI radians
@@ -76,7 +65,7 @@ const PointerLockControls = function (camera, domElement) {
     // const mx = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
     // const my = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
 
-    if (scope.lockMode === lockModes.headLook) {
+    if (scope.lockMode === LockModes.headLook) {
       // Limit how far the player can turn their necks.
       if (Math.abs(scope.mouseX + mx) < scope.headXMax) {
         scope.mouseX += mx;
@@ -130,16 +119,14 @@ const PointerLockControls = function (camera, domElement) {
 
   function onPointerlockError() {
     // Only throw error if game is fully loaded and we have focus.
-    startupEmitter.on(startupEvent.ready, () => {
-      if (document.hasFocus()) {
-        console.error(
-          'THREE.PointerLockControls: Unable to use Pointer Lock API. This ' +
-          'could be because the window doesn\'t have focus, or because ' +
-          'we\'re attempting a re-lock too soon after the browser forcibly ' +
-          'exited lock.'
-        );
-      }
-    });
+    if (document.hasFocus()) {
+      console.error(
+        'THREE.PointerLockControls: Unable to use Pointer Lock API. This ' +
+        'could be because the window doesn\'t have focus, or because ' +
+        'we\'re attempting a re-lock too soon after the browser forcibly ' +
+        'exited lock.'
+      );
+    }
   }
 
   // Expose event function to outside. This allows us to centralise even
@@ -210,7 +197,7 @@ const PointerLockControls = function (camera, domElement) {
   this.updateOrientation = function () {
     let x = scope.mouseX;
     let y = scope.mouseY;
-    if (scope.lockMode === lockModes.frozen) {
+    if (scope.lockMode === LockModes.frozen) {
       // This is intentional - only want mouse to fire if ptr lock isn't using
       // it (i.e. frozen).
       x = y = 0;
@@ -236,5 +223,4 @@ PointerLockControls.prototype.constructor = PointerLockControls;
 
 export {
   PointerLockControls,
-  lockModes,
 };
