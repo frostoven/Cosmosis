@@ -10,7 +10,7 @@
  */
 
 import { startupEvent, getStartupEmitter } from '../emitters';
-import contextualInput from './contextualInput';
+// import contextualInput from './contextualInput';
 import allExamples from '../shaders/examples/allExamples';
 const startupEmitter = getStartupEmitter();
 const ready = startupEvent.ready;
@@ -101,13 +101,14 @@ export function getPlayerShipRotation(cb=()=>{}){
  * @param {object} analogData [analogData] - optional analog data, such as x,y coords.
  */
 export function triggerAction(action, analogData=null) {
-  startupEmitter.on(ready, () => {
-    // TODO: make this trigger a keyDown too.
-    contextualInput.ContextualInput.triggerAction({
-      action, analogData,
-    });
-  });
-  // TODO: add holdAction and releaseAction functions.
+  console.warn('[api] triggerAction temporarily disabled for refactor.');
+  // startupEmitter.on(ready, () => {
+  //   // TODO: make this trigger a keyDown too.
+  //   contextualInput.ContextualInput.triggerAction({
+  //     action, analogData,
+  //   });
+  // });
+  // // TODO: add holdAction and releaseAction functions.
 }
 
 export function createExampleShaderMesh(name) {

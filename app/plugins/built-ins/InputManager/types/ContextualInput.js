@@ -149,7 +149,7 @@ function keyFromWheelDelta(deltaY) {
  * modes (such as a cam controller and a menu) should use separate instances.
  * @constructor
  */
-function ContextualInput(stringName) {
+export default function ContextualInput(stringName) {
   if (!stringName) {
     throw 'ContextualInput() needs a string name for identification purposes.';
   }
@@ -191,10 +191,6 @@ ContextualInput.initListeners = function() {
   window.addEventListener('wheel', listener, false);
   window.addEventListener('mousemove', listener, false);
   window.addEventListener('pointerlockchange', listener, false);
-};
-
-ContextualInput.activateInstance = function(addition) {
-  ContextualInput.activateInstances(addition);
 };
 
 ContextualInput.activateInstances = function(additions) {
@@ -561,10 +557,15 @@ ContextualInput.universalEventListener = function(event) {
       // https://developer.mozilla.org/en-US/docs/Web/API/Document/keydown_event
       // Luckily, manually dealing with keypresses are easy anyway.
     case 'mousemove':
-      if (!$game.ptrLockControls || !$game.ptrLockControls.isPointerLocked) {
-        // Ignore mouse if pointer is being used by menu.
-        return;
+      // TODO: implement me as plugin
+      if (!window.warnedAboutPtrMissing563) {
+        window.warnedAboutPtrMissing563 = true;
+        console.warn('[ContextualInput] pointer lock controls are not currently set up correctly.');
       }
+      // if (!$game.ptrLockControls || !$game.ptrLockControls.isPointerLocked) {
+      //   // Ignore mouse if pointer is being used by menu.
+      //   return;
+      // }
       analogData = calculateAnalogData(
         event.movementX, event.movementY, AnalogSource.mouse
       );
@@ -745,7 +746,3 @@ ContextualInput.takeActionExclusivity = function takeActionExclusivity({ mode, a
 //   camController,
 //   menuController,
 // }
-
-export {
-  ContextualInput,
-}

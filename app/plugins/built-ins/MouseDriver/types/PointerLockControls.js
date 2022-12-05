@@ -7,7 +7,7 @@
 
 import { Euler, EventDispatcher } from 'three';
 
-import contextualInput from '../../../../local/contextualInput';
+// import contextualInput from '../../../../local/contextualInput';
 import { LockModes } from './LockModes';
 
 const PointerLockControls = function (camera, domElement) {
@@ -102,16 +102,17 @@ const PointerLockControls = function (camera, domElement) {
       //  as allowed by having the system try a lock() every few milliseconds
       //  if that's the current expected state (i.e. a Ctrl press should abort
       //  that attempt).
-      if (document.hasFocus() && scope.simulateNextEscape) {
-        contextualInput.ContextualInput.universalEventListener({
-          // TODO: we probably want to name this a difference action, like
-          //  spSystemEscape of whatever.
-          code: 'Escape', type: 'keydown',
-        });
-        contextualInput.ContextualInput.universalEventListener({
-          code: 'Escape', type: 'keyup',
-        });
-      }
+      // TODO: reimplement this using plugin mechanisms.
+      // if (document.hasFocus() && scope.simulateNextEscape) {
+      //   contextualInput.ContextualInput.universalEventListener({
+      //     // TODO: we probably want to name this a difference action, like
+      //     //  spSystemEscape of whatever.
+      //     code: 'Escape', type: 'keydown',
+      //   });
+      //   contextualInput.ContextualInput.universalEventListener({
+      //     code: 'Escape', type: 'keyup',
+      //   });
+      // }
       scope.simulateNextEscape = true;
     }
     // console.log('isPointerLocked:', scope.isPointerLocked);
