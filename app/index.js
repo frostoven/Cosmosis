@@ -2,7 +2,7 @@ import './polyfills';
 import './earlyLoad';
 import React from 'react';
 import * as ReactDOM from 'react-dom';
-import RootNode from './reactComponents/RootNode';
+// import RootNode from './reactComponents/RootNode';
 import v8 from 'v8';
 
 import { loadPlugins } from './plugins';
@@ -20,7 +20,7 @@ import { startupEvent, getStartupEmitter } from './emitters';
 // import './modeControl';
 import userProfile from './userProfile';
 // import { logicalSceneGroup } from './logicalSceneGroup';
-import { gameState } from './plugins/gameState';
+// import { gameState } from './plugins/gameState';
 
 const startupEmitter = getStartupEmitter();
 
@@ -61,10 +61,10 @@ const heapSize = (
 console.log(`▪ Max heap size: ${heapSize}GB`);
 
 onDocumentReady(() => {
-  window.rootNode = ReactDOM.render(
-    <RootNode />,
-    document.getElementById('reactRoot'),
-  );
+  // window.rootNode = ReactDOM.render(
+  //   <RootNode />,
+  //   document.getElementById('reactRoot'),
+  // );
 });
 
 function init() {
