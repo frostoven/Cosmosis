@@ -128,6 +128,55 @@ Anyone who can donate their voice probably should :). Submission details TBA.
 
 ## Programming
 
+<!-- TODO: Decide if we're open to advertising this way:
+
+### We might pay for your IDE and other tools
+
+_Note: we don't receive sponsorship from any of the companies listed below
+(though we're open to it, if anyone at those companies see this document :p)._
+
+#### Code
+As thanks for writing us code, we may buy you a full year IntelliJ WebStorm
+license (or a different package such as CLion for low level work [or both]) to
+encourage further development, which we may renew the next year. IntelliJ IDEs
+come with a 30-day evaluation which should give you enough time to write
+something useful.
+
+The requirement is that you write a bunch of code that's actually useful to the
+project. 10,000 lines of code means nothing if it doesn't add real value. The
+requirements are therefore subjective, so raise an issue asking about this if
+in doubt. We'll reject phenomenally good code if we're about to discontinue the
+mechanisms it's built on. We may buy you a license in good faith even if your
+first code is rejected, if it has potential, but don't rely on that. We might
+recall licenses purchased in good faith if awardees vanish off the internet.
+
+Areas of interest:
+* We're particularly interested in shader design. Note that your shaders need
+  to support our engine. Shadertoy language, for example, won't work. Your
+  shaders should also needs to have an option that looks reasonable on weaker
+  cards. For example, if you've created the
+  most beautiful procedural gas giant clouds ever beheld, but they only run on
+  GeForce RTX 4090 cards, then you need to accompany your code with a
+  low-graphics alternative that runs on slower hardware but doesn't offer a
+  combat advantage when lowering graphics.
+* Astronomical optimisation and visualisation.
+* We're also interested people capable of modifying and maintaining
+[NW.js](https://nwjs.io/), either in a way that can find its way to the main
+NW.js repo, or in a way that allows future updates to easily integrate with
+your changes.
+
+#### Graphics design and modelling
+Similar rules may be applied to other tools. For example, we may purchase
+artists a substance painter subscription (or a Steam perpetual license if they
+prefer), but the requirements on these are far stricter.
+
+#### Can't you just hire me instead?
+We can, but we're a small indie company, so our salaries aren't competitive at
+the moment. If you're planning on contributing a lot and hoping for a side-job
+to supplement your main job, we may be happy to work out something more formal. 
+
+-->
+
 ### Development
 * Please use [official Node.js sources](https://nodejs.org/en/download/) to
 install Node 10 or higher, LTS. On Windows the installer should ask if you'd
@@ -170,12 +219,59 @@ stable.
 If the current `master` branch is considered stable, it will be merged into
 `stable`, at which point your changes will make it into the latest release.
 
-### Conventions
-When creating an object that [] please try to define it somewhere with null
-values. `core.js -> $game` and `[cam] -> ctrl` are examples of this.
-This has 2 advantages:
-* Any semi-decent IDE will produce full auto-completion and documentation.
-* Other coders know what kind of structure to expect.
+### Is this project JavaScript or TypeScript?
+Either / both. Don't let that scare you off. Consider the following:
+
+This is JavaScript:
+```js
+// script.js
+let x = 5;
+
+function fn(y) {
+  return 9 + y;
+}
+```
+
+This is TypeScript:
+```js
+// script.ts
+let x = 5;
+
+function fn(y) {
+  return 9 + y;
+}
+```
+
+Nothing's changed because JS is perfectly valid TS. What TypeScript gives us is
+the ability to *optionally* ask for typing assistance. For example, consider
+this code:
+```js
+// This is both JavaScript and TypeScript
+const spaceShip = loadGenericObject('my_spaceship.gltf');
+```
+
+Being generic, our IDE cannot tell us what methods or properties that spaceship
+has. This means that in order to use the object, we need to go hunting down
+source code, read it, learn it. If however we can figure out what
+`loadGenericObject()` returns in this specific case, we can write the following
+TypeScript that will allow the IDE to give us auto-completion, and do some
+automatic error checking for us:
+```typescript
+// This is TypeScript only
+const spaceShip: SpaceShip = loadGenericObject('my_spaceship.gltf');
+```
+
+Now we don't need to memorize any source. We can just use the object intuitively.
+This project's configuration makes TS opt-in, not mandatory.
+
+**You may write any new code as either JS or TS.** We do not discriminate. This
+project is configured to allow importing JS into TS, and TS into JS, so your
+choice won't impact code usability.
+
+The only requirement we have is that you don't write TypeScript code in `.js`
+files. Any file ending in `.js` may only contain JavaScript. If TypeScript will
+be used, the file must end with `.ts`. Note that we may end up converting your
+JS files into TS if it's more appropriate for us.
 
 ### Gotchas and problems
 
