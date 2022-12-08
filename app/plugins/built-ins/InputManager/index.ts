@@ -1,12 +1,22 @@
 import CosmosisPlugin from '../../types/CosmosisPlugin';
 import ContextualInput from './types/ContextualInput';
+import { gameRuntime } from '../../gameRuntime';
 
 class InputManager {
   private readonly _registeredControllers: {};
 
   constructor() {
     this._registeredControllers = {};
-    ContextualInput.initListeners();
+      ContextualInput.registerMouseDriver(gameRuntime.tracked.mouseDriver.cachedValue);
+      ContextualInput.initListeners();
+
+      this._setupWatchers();
+  }
+
+  _setupWatchers() {
+    gameRuntime.tracked.mouseDriver.getEveryChange((mouseDriver) => {
+      ContextualInput.registerMouseDriver(mouseDriver);
+    });
   }
 
   registerController(name) {
@@ -19,5 +29,6 @@ class InputManager {
 const inputManagerPlugin = new CosmosisPlugin('inputManager', InputManager);
 
 export {
+  InputManager,
   inputManagerPlugin,
 }

@@ -150,11 +150,11 @@ const metadata = {
  * For use in the keybinding menu. Meant to explain to the player what
  * everything does.
  */
-const keyManual = {
-  shipPilot: {
-    toggleMouseSteering: 'Switches between using the mouse for steering and looking around.',
-  }
-};
+// const keyManual = {
+//   shipPilot: {
+//     toggleMouseSteering: 'Switches between using the mouse for steering and looking around.',
+//   }
+// };
 
 /**
  * Used to convert literal names like 'Right' to something a bit more

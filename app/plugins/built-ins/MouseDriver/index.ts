@@ -39,5 +39,6 @@ class MouseDriver extends PointerLockControls {
 const mouseDriverPlugin = new CosmosisPlugin('mouseDriver', MouseDriver);
 
 export {
+  MouseDriver,
   mouseDriverPlugin,
 }

@@ -12,6 +12,9 @@
     "inlineSourceMap": true,
     "incremental": true
   },
+  "rules": {
+    "semicolon": [ true, "always" ]
+  },
   "include": ["app/**/*"],
   "files": [
     "typings/index.d.ts"

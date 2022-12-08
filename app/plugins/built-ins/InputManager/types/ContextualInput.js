@@ -206,6 +206,11 @@ ContextualInput.activateInstances = function(additions) {
 // Redirects all input to this listener.
 ContextualInput.rawInputListener = null;
 
+// Used for mouse control. This variable should be an instance of
+// PointerLockControls.
+// @type {PointerLockControls}
+ContextualInput.mouseDriver = null;
+
 /**
  * Sets a raw input listener. Only one raw input listener can be active at a
  * time. This used should be used for most things; it's currently used
@@ -221,6 +226,10 @@ ContextualInput.setRawInputListener = function(callback) {
  */
 ContextualInput.clearRawInputListener = function() {
   ContextualInput.rawInputListener = null;
+};
+
+ContextualInput.registerMouseDriver = function(driver) {
+  ContextualInput.mouseDriver = driver;
 };
 
 /**
@@ -558,14 +567,14 @@ ContextualInput.universalEventListener = function(event) {
       // Luckily, manually dealing with keypresses are easy anyway.
     case 'mousemove':
       // TODO: implement me as plugin
-      if (!window.warnedAboutPtrMissing563) {
-        window.warnedAboutPtrMissing563 = true;
-        console.warn('[ContextualInput] pointer lock controls are not currently set up correctly.');
-      }
-      // if (!$game.ptrLockControls || !$game.ptrLockControls.isPointerLocked) {
-      //   // Ignore mouse if pointer is being used by menu.
-      //   return;
+      // if (!window.warnedAboutPtrMissing563) {
+      //   window.warnedAboutPtrMissing563 = true;
+      //   console.warn('[ContextualInput] pointer lock controls are not currently set up correctly.');
       // }
+      if (ContextualInput.mouseDriver.isPointerLocked) {
+        // Ignore mouse if pointer is being used by menu.
+        return;
+      }
       analogData = calculateAnalogData(
         event.movementX, event.movementY, AnalogSource.mouse
       );
