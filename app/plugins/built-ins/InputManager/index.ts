@@ -305,6 +305,7 @@ class InputManager {
       const action = controller.controlsByKey[key];
       if (action) {
         controller.onAction({ action, isDown, analogData });
+        return;
       }
     }
   }
