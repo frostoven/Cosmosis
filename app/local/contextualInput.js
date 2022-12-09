@@ -353,7 +353,7 @@ ContextualInput.prototype.replaceAction = function onModeAction(
 };
 
 /**
- * Registers listeners for the specified actions. Please not that every
+ * Registers listeners for the specified actions. Please note that every
  * enrolled child is allowed only one callback per action. That is, registering
  * the same name again replaces the previous.
  * @param {string[]} actionNames
