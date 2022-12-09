@@ -41,6 +41,7 @@
     "@babel/preset-typescript": "7.18.6",
     "@babel/register": "7.16.0",
     "@types/node": "18.11.10",
+    "@types/nw.gui": "^0.0.21",
     "babel-loader": "8.2.3",
     "cannon": "0.6.2",
     "change-tracker": "^1.0.6",

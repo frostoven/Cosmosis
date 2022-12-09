@@ -9,13 +9,15 @@ import { ControlSchema } from '../interfaces/ControlSchema';
 
 export default class ModeController {
   public name: string;
+  public modeId: ModeId;
   public controlSchema: ControlSchema;
   public controlsByKey: {};
   public state: {};
   public pulse: { [actionName: string]: ChangeTracker };
 
-  constructor(name: string, controlSchema: ControlSchema) {
+  constructor(name: string, modeId: ModeId, controlSchema: ControlSchema) {
     this.name = name;
+    this.modeId = modeId;
     this.controlSchema = controlSchema;
     this.controlsByKey = {};
 
@@ -57,13 +59,10 @@ export default class ModeController {
     const inputManager: InputManager = gameRuntime.tracked.inputManager.cachedValue;
     inputManager.registerController(
       name,
-      ModeId.playerControl,
+      modeId,
       this.controlsByKey,
       this.receiveAction.bind(this),
     );
-
-    // This specific controller activates itself by default:
-    inputManager.activateController(ModeId.playerControl, name);
   }
 
   receiveAction({ action, isDown, analogData }) {

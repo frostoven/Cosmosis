@@ -288,7 +288,7 @@ class InputManager {
   activateController(modeId: ModeId, controllerName: string) {
     const controller = this._modes[modeId][controllerName];
     if (!controller) {
-      console.error(`[InputManager] Controller ${ModeId[modeId]}.${controllerName} is not defined.`);
+      console.error(`[InputManager] Controller ${ModeId[modeId]}.${controllerName} is not defined (using this._modes[${modeId}][${controllerName}]).`);
       return;
     }
     this._activeControllers[modeId] = controllerName;

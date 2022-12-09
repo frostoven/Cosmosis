@@ -9,6 +9,7 @@ import { corePlugin } from './built-ins/Core';
 import { mouseDriverPlugin } from './built-ins/MouseDriver';
 import { inputManagerPlugin } from './built-ins/InputManager';
 import { freeCamPlugin } from './built-ins/modes/playerControllers/FreeCam';
+import { generalControlPlugin } from './built-ins/modes/appControllers/GeneralControl';
 
 const builtInPluginsEnabled: PluginEntry[] = [
   { name: 'metadata', pluginInstance: metadataPlugin },
@@ -17,6 +18,7 @@ const builtInPluginsEnabled: PluginEntry[] = [
 
   { name: 'mouseDriver', pluginInstance: mouseDriverPlugin, dependencies: [ 'core', 'player' ] },
   { name: 'inputManager', pluginInstance: inputManagerPlugin, dependencies: [ 'mouseDriver' ] },
+  { name: 'generalControl', pluginInstance: generalControlPlugin, dependencies: [ 'inputManager' ] },
   { name: 'freeCam', pluginInstance: freeCamPlugin, dependencies: [ 'inputManager' ] },
 
   { name: 'levelScene', pluginInstance: levelScenePlugin, dependencies: [ 'core' ] },
