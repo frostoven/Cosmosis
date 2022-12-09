@@ -33,6 +33,8 @@ const mouseFriendly = [
 // Controller: something capable of responding to key input.
 class InputManager {
   private readonly _modes: Array<{ [key: string]: ModeStructure }>;
+  private readonly _activeControllers: Array<string>;
+  private readonly _allControllers: {};
   private readonly _modePriority: Array<any>;
   private _mouseDriver: MouseDriver;
   public allowBubbling: boolean;
@@ -53,11 +55,22 @@ class InputManager {
     }
 
     this._modePriority = [
-      this._modes[ModeId.appControl],
-      this._modes[ModeId.playerControl],
-      this._modes[ModeId.menuControl],
-      this._modes[ModeId.virtualMenuControl],
+      ModeId.appControl,
+      ModeId.playerControl,
+      ModeId.menuControl,
+      ModeId.virtualMenuControl,
     ];
+
+    this._activeControllers = [
+      // Indices 0-4 indicates the mode ID. Each string at that index indicates
+      // the active controller.
+      // E.g.: playerControl === 1; _activeControllers[1] === 'freeCam';
+      'default', 'default', 'default', 'default',
+    ];
+
+    // Contains literally all controllers, both inclusive and mutually
+    // exclusive.
+    this._allControllers = {};
 
     this._mouseDriver = gameRuntime.tracked.mouseDriver.cachedValue;
     this.allowBubbling = false;
@@ -91,6 +104,8 @@ class InputManager {
     window.addEventListener('pointerlockchange', listener, false);
   }
 
+  // TODO: this method (and several others) were copy-pasted from previous
+  //  very quick-and-dirty code that became important. It needs cleanup.
   _universalEventListener(event) {
     // Note: code is retained for keyboard events, but modified for other event
     // types. For example, mouse click left will be stored as code=spMouseLeft
@@ -99,11 +114,11 @@ class InputManager {
 
     const type = event.type;
 
-    // Stop the browser messing with anything game related. This prevent bugs
-    // like arrows unintentionally scrolling the page. Bubbling is generally only
-    // enabled when a dialog with an input field takes priority. Wheel throws
-    // error unless passive is set (which currently is unhelpful) so we skip
-    // wheel.
+    // Stop the browser messing with anything game related. This prevents bugs
+    // like arrows unintentionally scrolling the page. Bubbling is generally
+    // only enabled when a dialog with an input field takes priority. Wheel
+    // throws error unless passive is set (which currently is unhelpful) so we
+    // skip wheel.
     if (!this.allowBubbling && type !== 'wheel') {
       // We need to check if truthy because pointerLock doesn't implement
       // preventDefault.
@@ -130,8 +145,8 @@ class InputManager {
       // https://developer.mozilla.org/en-US/docs/Web/API/Document/keydown_event
       // Luckily, manually dealing with keypresses are easy anyway.
       case 'mousemove':
-        if (this._mouseDriver.isPointerLocked) {
-          // Ignore mouse if pointer is being used by menu.
+        if (!this._mouseDriver.isPointerLocked) {
+          // Ignore mouse if pointer is being used by menu or HUD.
           return;
         }
         analogData = this.calculateAnalogData(
@@ -161,15 +176,17 @@ class InputManager {
     if (analogData) {
       // Analog events very little bureaucracy involved. Simply trigger for each
       // axis and call it a day.
+      const xData = analogData.x;
+      const yData = analogData.y;
       this.propagateInput({
         key: analogData.x.key,
         isDown,
-        analogData,
+        analogData: { delta: xData.delta, gravDelta: xData.gravDelta },
       });
       this.propagateInput({
         key: analogData.y.key,
         isDown,
-        analogData,
+        analogData: { delta: yData.delta, gravDelta: yData.gravDelta },
       });
     }
     else {
@@ -197,10 +214,6 @@ class InputManager {
         this.propagateInput({ key: key, isDown: false });
       }
     }
-  }
-
-  propagateInput({ key, isDown, analogData } : { key: string, isDown: boolean, analogData?: {} }) {
-    console.log({ key, isDown, analogData });
   }
 
   /**
@@ -232,38 +245,21 @@ class InputManager {
     let deltaX = x - prevX;
     let deltaY = y - prevY;
 
-    let results = {
-      x: {
-        // key: set below.
-        delta: x, invDelta: y,
-        gravDelta: deltaX, gravInvDelta: deltaY,
-      },
-      y: {
-        // key: set below.
-        delta: y, invDelta: x,
-        gravDelta: deltaY, gravInvDelta: deltaX,
-      },
-    };
+    let xKey = x > prevX ? 'spEast' : 'spWest';
+    let yKey = y > prevY ? 'spSouth' : 'spNorth';
 
     // Below: sp means 'special'. Or 'somewhat promiscuous'. Whatever. Used to
     // indicate the 'key' is non-standard.
-    if (x > prevX) {
-      // @ts-ignore
-      results.x.key = 'spEast';
-    }
-    else if (x < prevX) {
-      // @ts-ignore
-      results.x.key = 'spWest';
-    }
-
-    if (y > prevY) {
-      // @ts-ignore
-      results.y.key = 'spSouth';
-    }
-    else if (y < prevY) {
-      // @ts-ignore
-      results.y.key = 'spNorth';
-    }
+    let results = {
+      x: {
+        key: xKey, // complement: yKey,
+        delta: x, gravDelta: deltaX,
+      },
+      y: {
+        key: yKey, // complement: xKey,
+        delta: y, gravDelta: deltaY,
+      },
+    };
 
     if (source === AnalogSource.mouse) {
       this._prevMouseX = x;
@@ -297,23 +293,10 @@ class InputManager {
     return this._modes[ModeId.virtualMenuControl];
   }
 
-  registerController(name: string, modeId: ModeId, controls: ControlSchema, handler: Function) {
-    const controlsByKey = {};
-    _.each(controls, (control, actionName) => {
-      const keys = control.current;
-      // The user can assign multiple keys to each action; store them all
-      // individually.
-      _.each(keys, (key) => {
-        controlsByKey[key] = actionName;
-      });
-    });
-
-    this._modes[modeId][name] = {
-      name, modeId, controls, controlsByKey, handler,
-    };
-
-    // console.log('=====> modes:', this._modes);
-    console.log('=====> mode priority:', this._modePriority);
+  registerController(name: string, modeId: ModeId, controlsByKey, onAction: Function) {
+    const controller = { name, modeId, controlsByKey, onAction };
+    this._modes[modeId][name] = controller;
+    this._allControllers[name] = controller;
   }
 
   activateController(modeId: ModeId, controllerName: string) {
@@ -321,6 +304,22 @@ class InputManager {
     if (!controller) {
       console.error(`[InputManager] Controller ${ModeId[modeId]}.${controllerName} is not defined.`);
       return;
+    }
+    this._activeControllers[modeId] = controllerName;
+  }
+
+  propagateInput({ key, isDown, analogData } : { key: string, isDown: boolean, analogData?: {} }) {
+    const active = this._activeControllers;
+    for (let i = 0, len = active.length; i < len; i++) {
+      const controller: ModeStructure = this._allControllers[active[i]];
+      if (!controller) {
+        continue;
+      }
+
+      const action = controller.controlsByKey[key];
+      if (action) {
+        controller.onAction({ action, isDown, analogData });
+      }
     }
   }
 }

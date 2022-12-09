@@ -5,8 +5,7 @@ interface ModeStructure {
   name: string,
   modeId: ModeId,
   controlsByKey: { [key: string]: string },
-  controls: ControlSchema,
-  handler: Function,
+  onAction: Function,
 }
 
 export {
