@@ -1,27 +1,21 @@
-import _ from 'lodash';
 import CosmosisPlugin from '../../types/CosmosisPlugin';
 import { ModeId } from './types/ModeId';
-import { ControlSchema } from './interfaces/ControlSchema';
 import { ModeStructure } from './interfaces/ModeStructure';
 import { MouseDriver } from '../MouseDriver';
 import { gameRuntime } from '../../gameRuntime';
 import { AnalogSource } from './types/AnalogSource';
 
 /*
- * TODO: implement me as follows when more awake:
- *  Controllers register themselves. The registration puts them inside a mode.
- *  --
- *  Note that freeCam and shipPilot are a single mode. Menu and app are
- *  different modes running at the same time.
- *  --
- *  Anyway, the new controller is placed inside the requested mode. That mode may be
- *  activated by enum ID. Activated modes get unshifted into the _activeModes
- *  queue. Whenever a new key is propagated out, the _activeModes array is
- *  traversed top-to-bottom looking for a willing candidate to issue an action.
- *  We need an easy way of deactivating modes - I was at first thinking something
- *  fancy is needed, but seriously, we're traversing an array of 4 items or less.
- *  Just check each entry's name, and create a new array with the item missing
- *  (don't splice; that causes traversal issues in async).
+ * Mechanism:
+ * Controllers register themselves. The registration puts them inside a mode.
+ * (Note that freeCam and shipPilot are two controllers in a single mode:
+ * playerControl. Menu and app are different modes running at the same time as
+ * playerControl).
+ * The new controller is placed inside the requested mode. That mode may be
+ * activated by enum ID. Whenever a new key is propagated out, modes are
+ * iterated in ModeID enum key order (which may be also thought of as
+ * explicitly defining priority). In order of priority, the first mode to want
+ * a key, gets that key.
  */
 
 const mouseFriendly = [
@@ -35,7 +29,6 @@ class InputManager {
   private readonly _modes: Array<{ [key: string]: ModeStructure }>;
   private readonly _activeControllers: Array<string>;
   private readonly _allControllers: {};
-  private readonly _modePriority: Array<any>;
   private _mouseDriver: MouseDriver;
   public allowBubbling: boolean;
 
@@ -53,13 +46,6 @@ class InputManager {
     for (let i = 0; i < modeCount; i++) {
       this._modes.push({});
     }
-
-    this._modePriority = [
-      ModeId.appControl,
-      ModeId.playerControl,
-      ModeId.menuControl,
-      ModeId.virtualMenuControl,
-    ];
 
     this._activeControllers = [
       // Indices 0-4 indicates the mode ID. Each string at that index indicates

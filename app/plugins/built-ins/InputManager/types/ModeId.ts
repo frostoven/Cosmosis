@@ -1,3 +1,8 @@
+/**
+ * This contains all possible game control modes. The order of this enum is
+ * used to determine priority. The first mode to grab a key, gets to decide
+ * what to do with it (and whether or not to end propagation).
+ */
 enum ModeId {
   // Used for things like full-screen, dev tools, and any other controls that
   // don't work with game logic.
