@@ -1,6 +1,6 @@
 import _ from 'lodash';
-import { controls } from '../../../../local/controls';
-import CbQueue from '../../../../local/CbQueue';
+import { controls } from './controls';
+import CbQueue from './CbQueue';
 
 // Used to prevent spamming key events by keeping track of what's currently
 // pressed.
@@ -701,57 +701,57 @@ ContextualInput.takeActionExclusivity = function takeActionExclusivity({ mode, a
 
 // --------------------------------------------------------------------------
 
-// // Player cam controller.
-// const camController = new ContextualInput('camController');
-//
-// // Used where a full-blown category is too much.
-// const misc = new ContextualInput('misc');
-//
-// // The main menu, the pause menu, and inventory screen are primary menus.
-// const menuController = new ContextualInput('menuController');
-//
-// // Interactive in-game menu (such as menus of spaceships and computers).
-// const virtualMenu = new ContextualInput('virtualMenu');
-//
-// // Note: you'll notice we have an allModes mode in controls, yet it's not
-// // specified here. That's because allModes is an internal mode that literally
-// // means 'all modes', and is handled specially. allModes actually represents
-// // all the modes in this array.
-// ContextualInput.activateInstances([
-//   misc,
-//   camController,
-//   menuController,
-//   virtualMenu,
-// ]);
-//
-// // Used for F12 debugging. Do not use in code.
-// window.debug.mode = {
-//   initListeners: ContextualInput.initListeners,
-//   misc,
-//   camController,
-//   menuController,
-// };
-//
-// const init = ContextualInput.initListeners;
-//
-// export default {
-//   ContextualInput,
-//   init,
-//   ActionType,
-//   misc,
-//   camController,
-//   menuController,
-// }
-//
-// // Why must we live just to suffer.
-// // This thing of having to export twice for import convenience is bullshit.
-// // TODO: do research on possible ways around the copy-paste. Then apply
-// //  project-wide.
-// export {
-//   ContextualInput,
-//   init,
-//   ActionType,
-//   misc,
-//   camController,
-//   menuController,
-// }
+// Player cam controller.
+const camController = new ContextualInput('camController');
+
+// Used where a full-blown category is too much.
+const misc = new ContextualInput('misc');
+
+// The main menu, the pause menu, and inventory screen are primary menus.
+const menuController = new ContextualInput('menuController');
+
+// Interactive in-game menu (such as menus of spaceships and computers).
+const virtualMenu = new ContextualInput('virtualMenu');
+
+// Note: you'll notice we have an allModes mode in controls, yet it's not
+// specified here. That's because allModes is an internal mode that literally
+// means 'all modes', and is handled specially. allModes actually represents
+// all the modes in this array.
+ContextualInput.activateInstances([
+  misc,
+  camController,
+  menuController,
+  virtualMenu,
+]);
+
+// Used for F12 debugging. Do not use in code.
+window.debug.mode = {
+  initListeners: ContextualInput.initListeners,
+  misc,
+  camController,
+  menuController,
+};
+
+const init = ContextualInput.initListeners;
+
+export default {
+  ContextualInput,
+  init,
+  ActionType,
+  misc,
+  camController,
+  menuController,
+}
+
+// Why must we live just to suffer.
+// This thing of having to export twice for import convenience is bullshit.
+// TODO: do research on possible ways around the copy-paste. Then apply
+//  project-wide.
+export {
+  ContextualInput,
+  init,
+  ActionType,
+  misc,
+  camController,
+  menuController,
+}

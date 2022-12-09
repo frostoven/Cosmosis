@@ -8,15 +8,17 @@ import { spaceScenePlugin } from './built-ins/SpaceScene';
 import { corePlugin } from './built-ins/Core';
 import { mouseDriverPlugin } from './built-ins/MouseDriver';
 import { inputManagerPlugin } from './built-ins/InputManager';
-import { freeCamPlugin } from './built-ins/modes/FreeCam';
+import { freeCamPlugin } from './built-ins/modes/playerControllers/FreeCam';
 
 const builtInPluginsEnabled: PluginEntry[] = [
   { name: 'metadata', pluginInstance: metadataPlugin },
   { name: 'core', pluginInstance: corePlugin },
   { name: 'player', pluginInstance: playerPlugin, dependencies: [ 'core' ] },
+
   { name: 'mouseDriver', pluginInstance: mouseDriverPlugin, dependencies: [ 'core', 'player' ] },
   { name: 'inputManager', pluginInstance: inputManagerPlugin, dependencies: [ 'mouseDriver' ] },
-  { name: 'freeCamPlugin', pluginInstance: freeCamPlugin, dependencies: [ 'inputManager' ] },
+  { name: 'freeCam', pluginInstance: freeCamPlugin, dependencies: [ 'inputManager' ] },
+
   { name: 'levelScene', pluginInstance: levelScenePlugin, dependencies: [ 'core' ] },
   { name: 'spaceScene', pluginInstance: spaceScenePlugin, dependencies: [ 'core' ] },
   { name: 'location', pluginInstance: locationPlugin, dependencies: [ 'core', 'player', 'levelScene', 'spaceScene' ] },
