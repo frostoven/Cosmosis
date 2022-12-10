@@ -30,6 +30,12 @@ class MouseDriver extends PointerLockControls {
     this.lock();
   }
 
+  // _setupWatchers() {
+  //   gameRuntime.tracked.player.getEveryChange((player) => {
+  //     this.camera = player.camera;
+  //   });
+  // }
+
   _lockOverride() {
     // @ts-ignore TS2304 - it really is real, TS, I promise.
     const sasquatch = nw.Window.get();
@@ -41,7 +47,7 @@ class MouseDriver extends PointerLockControls {
   };
 
   step() {
-    this.updateOrientation();
+    // this.updateOrientation();
   }
 }
 

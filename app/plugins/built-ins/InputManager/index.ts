@@ -164,14 +164,14 @@ class InputManager {
       const xData = analogData.x;
       const yData = analogData.y;
       this.propagateInput({
-        key: analogData.x.key,
+        key: xData.key,
         isDown,
-        analogData: { delta: xData.delta, gravDelta: xData.gravDelta },
+        analogData: { delta: xData.delta, gravDelta: xData.gravDelta, complement: xData.complement },
       });
       this.propagateInput({
-        key: analogData.y.key,
+        key: yData.key,
         isDown,
-        analogData: { delta: yData.delta, gravDelta: yData.gravDelta },
+        analogData: { delta: yData.delta, gravDelta: yData.gravDelta, complement: yData.complement },
       });
     }
     else {
@@ -232,6 +232,18 @@ class InputManager {
 
     let xKey = x > prevX ? 'spEast' : 'spWest';
     let yKey = y > prevY ? 'spSouth' : 'spNorth';
+
+    // let xKey, yKey;
+    //
+    // // Check x changes.
+    // if (x > prevX) {xKey = 'spEast';}
+    // else if (x < prevX) {xKey = 'spWest';}
+    // else {xKey = null;}
+    //
+    // // Check y changes.
+    // if (y > prevY) {yKey = 'spSouth';}
+    // else if (y < prevY) {yKey = 'spNorth';}
+    // else {yKey = null;}
 
     // Below: sp means 'special'. Or 'somewhat promiscuous'. Whatever. Used to
     // indicate the 'key' is non-standard.

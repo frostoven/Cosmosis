@@ -2,26 +2,28 @@ import { ActionType } from '../../../InputManager/types/ActionType';
 import { ControlSchema } from '../../../InputManager/interfaces/ControlSchema';
 
 const freeCamControls: ControlSchema = {
+  // Literal values
   moveForward:  { actionType: ActionType.analogLiteral, current: null, default: [ 'KeyW', 'ArrowUp' ] },
   moveBackward: { actionType: ActionType.analogLiteral, current: null, default: [ 'KeyS', 'ArrowDown' ] },
   moveLeft:     { actionType: ActionType.analogLiteral, current: null, default: [ 'ArrowLeft', 'KeyA' ] },
   moveRight:    { actionType: ActionType.analogLiteral, current: null, default: [ 'ArrowRight', 'KeyD' ] },
   moveUp:       { actionType: ActionType.analogLiteral, current: null, default: [ 'KeyR', 'Space' ] },
   moveDown:     { actionType: ActionType.analogLiteral, current: null, default: [ 'KeyF' ] },
-  turnLeft:     { actionType: ActionType.analogLiteral, current: null, default: [ 'Numpad4' ] },
-  turnRight:    { actionType: ActionType.analogLiteral, current: null, default: [ 'Numpad6' ] },
-  lookUp:       { actionType: ActionType.analogLiteral, current: null, default: [ 'Numpad8' ] },
-  lookDown:     { actionType: ActionType.analogLiteral, current: null, default: [ 'Numpad2' ] },
-  rollLeft:     { actionType: ActionType.analogLiteral, current: null, default: [ 'Numpad7' ] },
-  rollRight:    { actionType: ActionType.analogLiteral, current: null, default: [ 'Numpad9' ] },
   speedUp:      { actionType: ActionType.analogLiteral, current: null, default: [ 'NumpadAdd' ] },
   speedDown:    { actionType: ActionType.analogLiteral, current: null, default: [ 'NumpadSubtract' ] },
   doubleSpeed:  { actionType: ActionType.analogLiteral, current: null, default: [ 'ShiftLeft', 'ShiftRight' ] },
-  pitchUp:      { actionType: ActionType.analogLiteral, current: null, default: [ 'spNorth' ] },
-  pitchDown:    { actionType: ActionType.analogLiteral, current: null, default: [ 'spSouth' ] },
-  yawLeft:      { actionType: ActionType.analogLiteral, current: null, default: [ 'spWest' ] },
-  yawRight:     { actionType: ActionType.analogLiteral, current: null, default: [ 'spEast' ] },
+
+  // Additive values
+  pitchUp:      { actionType: ActionType.analogAdditive, current: null, default: [ 'spNorth', 'Numpad8' ] },
+  pitchDown:    { actionType: ActionType.analogAdditive, current: null, default: [ 'spSouth', 'Numpad2' ] },
+  rollLeft:     { actionType: ActionType.analogAdditive, current: null, default: [ 'Numpad7' ] },
+  rollRight:    { actionType: ActionType.analogAdditive, current: null, default: [ 'Numpad9' ] },
+  yawLeft:      { actionType: ActionType.analogAdditive, current: null, default: [ 'spWest', 'Numpad4' ] },
+  yawRight:     { actionType: ActionType.analogAdditive, current: null, default: [ 'spEast', 'Numpad6' ] },
+
+  // Pulsed values
   interact:     { actionType: ActionType.pulse,         current: null, default: [ 'KeyE' ] },
+
   // Dev controls.
   _devChangeCamMode:   { actionType: ActionType.pulse, current: null, default: [ 'F7', 'F8' ] },
 };

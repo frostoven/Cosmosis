@@ -11,6 +11,7 @@ import { Euler, EventDispatcher } from 'three';
 import { LockModes } from './LockModes';
 
 const PointerLockControls = function (camera, domElement) {
+  this.camera = camera;
   if (domElement === undefined) {
     console.warn(
       'PointerLockControls: The second parameter "domElement" is now mandatory.'
@@ -65,20 +66,20 @@ const PointerLockControls = function (camera, domElement) {
     // const mx = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
     // const my = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
 
-    if (scope.lockMode === LockModes.headLook) {
-      // Limit how far the player can turn their necks.
-      if (Math.abs(scope.mouseX + mx) < scope.headXMax) {
-        scope.mouseX += mx;
-      }
-      if (Math.abs(scope.mouseY + my) < scope.headYMax) {
-        scope.mouseY += my;
-      }
-    }
-    else {
+    // if (scope.lockMode === LockModes.headLook) {
+    //   // Limit how far the player can turn their necks.
+    //   if (Math.abs(scope.mouseX + mx) < scope.headXMax) {
+    //     scope.mouseX += mx;
+    //   }
+    //   if (Math.abs(scope.mouseY + my) < scope.headYMax) {
+    //     scope.mouseY += my;
+    //   }
+    // }
+    // else {
       // Allow fracturing of vertebrae.
       scope.mouseX += mx;
       scope.mouseY += my;
-    }
+    // }
 
     scope.dispatchEvent(changeEvent);
   }
@@ -161,10 +162,6 @@ const PointerLockControls = function (camera, domElement) {
     );
   };
 
-  this.getObject = function () { // retaining this method for backward compatibility
-    return camera;
-  };
-
   // Locks the mouse pointer.
   this.lock = function () {
     this.domElement.requestPointerLock();
@@ -195,20 +192,20 @@ const PointerLockControls = function (camera, domElement) {
   };
 
   // Updates camera angle relative to parent.
-  this.updateOrientation = function () {
-    let x = scope.mouseX;
-    let y = scope.mouseY;
-    if (scope.lockMode === LockModes.frozen) {
-      // This is intentional - only want mouse to fire if ptr lock isn't using
-      // it (i.e. frozen).
-      x = y = 0;
-    }
-    euler.setFromQuaternion(camera.quaternion);
-    euler.y = x * -0.002;
-    euler.x = y * -0.002;
-    euler.x = Math.max(PI_2 - scope.maxPolarAngle, Math.min(PI_2 - scope.minPolarAngle, euler.x));
-    camera.quaternion.setFromEuler(euler);
-  };
+  // this.updateOrientation = function () {
+  //   let x = scope.mouseX;
+  //   let y = scope.mouseY;
+  //   if (scope.lockMode === LockModes.frozen) {
+  //     // This is intentional - only want mouse to fire if ptr lock isn't using
+  //     // it (i.e. frozen).
+  //     x = y = 0;
+  //   }
+  //   euler.setFromQuaternion(scope.camera.quaternion);
+  //   euler.y = x * -0.002;
+  //   euler.x = y * -0.002;
+  //   euler.x = Math.max(PI_2 - scope.maxPolarAngle, Math.min(PI_2 - scope.minPolarAngle, euler.x));
+  //   scope.camera.quaternion.setFromEuler(euler);
+  // };
 
   // Sets mouse to center of screen.
   this.resetMouse = function() {

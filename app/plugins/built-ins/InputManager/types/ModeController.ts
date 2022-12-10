@@ -12,8 +12,9 @@ export default class ModeController {
   public modeId: ModeId;
   public controlSchema: ControlSchema;
   public controlsByKey: {};
-  public state: {};
+  public state: { [action: string]: number };
   public pulse: { [actionName: string]: ChangeTracker };
+  private readonly continualAdders: { [action: string]: Function };
 
   constructor(name: string, modeId: ModeId, controlSchema: ControlSchema) {
     this.name = name;
@@ -38,6 +39,8 @@ export default class ModeController {
 
     // Designed for instant actions and toggleables. Contains change trackers.
     this.pulse = {};
+
+    this.continualAdders = {};
 
     // Set up controlsByKey, state, and pulse.
     _.each(controlSchema, (control: ControlSchema['key'], actionName: string) => {
@@ -81,6 +84,9 @@ export default class ModeController {
     else if (actionType === ActionType.analogAdditive) {
       this.handleReceiveAdditive({ action, isDown, analogData });
     }
+    // else if (actionType === ActionType.analogHybrid) {
+    //   this.handleReceiveHybrid({ action, isDown, analogData });
+    // }
   }
 
   handleReceiveLiteral({ action, isDown, analogData }) {
@@ -109,6 +115,25 @@ export default class ModeController {
       this.state[action] = isDown === true ? 1 : 0;
     }
   }
+
+  // handleReceiveHybrid({ action, isDown, analogData }) {
+  //   if (analogData) {
+  //     // let delta = Math.abs(analogData.delta);
+  //     // const sign = analogData.gravDelta < 0 ? -1 : 0;
+  //     this.state[action] += analogData.delta;
+  //     // console.log(this.state['pitchDown'])
+  //     (action === 'pitchUp' || action === 'pitchDown') && console.log({action});
+  //   }
+  //   else if (isDown) {
+  //     this.continualAdders[action] = () => {
+  //       this.state[action]++;
+  //     };
+  //     gameRuntime.tracked.core.cachedValue.onAnimate.getEveryChange(this.continualAdders[action]);
+  //   }
+  //   else {
+  //     gameRuntime.tracked.core.cachedValue.onAnimate.removeGetEveryChangeListener(this.continualAdders[action]);
+  //   }
+  // }
 
   handlePulse({ action, isDown }) {
     // Pulse once if the button is down. We don't pulse on release.
