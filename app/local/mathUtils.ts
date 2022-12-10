@@ -1,8 +1,7 @@
-import { Euler } from 'three';
+import { Euler, Quaternion } from 'three';
 
 const _aprEuler = new Euler(0, 0, 0, 'YXZ');
 function applyPolarRotation(x, y, observerQuaternion, minPolarAngle = 0, maxPolarAngle = Math.PI) {
-  _aprEuler.set(0, 0, 0);
   const PI_2 = Math.PI / 2;
 
   _aprEuler.setFromQuaternion(observerQuaternion);
@@ -15,3 +14,5 @@ function applyPolarRotation(x, y, observerQuaternion, minPolarAngle = 0, maxPola
 export {
   applyPolarRotation,
 }
+
+

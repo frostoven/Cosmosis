@@ -67,13 +67,6 @@ class FreeCam extends ModeController {
     // Backwards and forwards movement:
     this._cachedCamera.translateZ((this.state.moveBackward - this.state.moveForward) * delta);
 
-    // Receive-hybrid implementation:
-    // applyPolarRotation(
-    //   this.state.yawRight - this.state.yawLeft,
-    //   this.state.pitchDown - this.state.pitchUp,
-    //   this._cachedCamera.quaternion,
-    // );
-
     // Note: don't use delta here. We don't want mouse speed to be dependent on
     // framerate.
     applyPolarRotation(
@@ -81,6 +74,9 @@ class FreeCam extends ModeController {
       (this.state.pitchUp + this.state.pitchDown) * MOUSE_SPEED,
       this._cachedCamera.quaternion,
     );
+
+    // Camera rolling.
+    this._cachedCamera.rotateZ(this.state.rollLeft + this.state.rollRight);
   }
 }
 

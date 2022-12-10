@@ -1,7 +1,6 @@
 import CosmosisPlugin from '../../types/CosmosisPlugin';
 import { PointerLockControls } from './types/PointerLockControls';
 import { gameRuntime } from '../../gameRuntime';
-import { LockModes } from './types/LockModes';
 
 // Note: this relates to how the mouse works with the game window. It has
 // nothing to do with mounting rodents, though we may or may not have such
@@ -20,8 +19,6 @@ class MouseDriver extends PointerLockControls {
     //  hopefully allows us to control unintentional ctrl lockouts better.
     //  See issue #91
 
-    this.setLockMode(LockModes.freeLook);
-
     // Because our base class uses an incompatible methodology, we need to
     // duck-punch our overrides in, 90's style.
     this._superLock = this.lock;
@@ -29,12 +26,6 @@ class MouseDriver extends PointerLockControls {
 
     this.lock();
   }
-
-  // _setupWatchers() {
-  //   gameRuntime.tracked.player.getEveryChange((player) => {
-  //     this.camera = player.camera;
-  //   });
-  // }
 
   _lockOverride() {
     // @ts-ignore TS2304 - it really is real, TS, I promise.

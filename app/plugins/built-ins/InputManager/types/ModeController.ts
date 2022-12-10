@@ -32,6 +32,10 @@ export default class ModeController {
         // User profile does not have this control stored. Use default.
         controlSchema[actionName].current = controlSchema[actionName].default;
       }
+
+      if (!controlSchema[actionName].kbAmount) {
+        controlSchema[actionName].kbAmount = 1;
+      }
     });
 
     // Stores analog values, usually "key was pressed" kinda-stuff.
@@ -71,69 +75,55 @@ export default class ModeController {
   receiveAction({ action, isDown, analogData }) {
     const control = this.controlSchema[action];
     const actionType = control.actionType;
+    const kbAmount = control.kbAmount;
 
     if (actionType === ActionType.analogLiteral) {
-      this.handleReceiveLiteral({ action, isDown, analogData });
+      this.handleReceiveLiteral({ action, isDown, analogData, kbAmount });
     }
     else if (actionType === ActionType.analogGravity) {
-      this.handleReceiveGravity({ action, isDown, analogData });
+      this.handleReceiveGravity({ action, isDown, analogData, kbAmount });
     }
     else if (actionType === ActionType.pulse) {
       this.handlePulse({ action, isDown });
     }
     else if (actionType === ActionType.analogAdditive) {
-      this.handleReceiveAdditive({ action, isDown, analogData });
+      this.handleReceiveAdditive({ action, isDown, analogData, kbAmount });
     }
-    // else if (actionType === ActionType.analogHybrid) {
-    //   this.handleReceiveHybrid({ action, isDown, analogData });
-    // }
   }
 
-  handleReceiveLiteral({ action, isDown, analogData }) {
+  handleReceiveLiteral({ action, isDown, analogData, kbAmount }) {
     if (analogData) {
       this.state[action] = analogData.delta;
     }
     else {
-      this.state[action] = isDown === true ? 1 : 0;
+      this.state[action] = isDown === true ? kbAmount : 0;
     }
   }
 
-  handleReceiveGravity({ action, isDown, analogData }) {
+  handleReceiveGravity({ action, isDown, analogData, kbAmount }) {
     if (analogData) {
       this.state[action] = analogData.gravDelta;
     }
     else {
-      this.state[action] = isDown === true ? 1 : 0;
+      this.state[action] = isDown === true ? kbAmount : 0;
     }
   }
 
-  handleReceiveAdditive({ action, isDown, analogData }) {
+  handleReceiveAdditive({ action, isDown, analogData, kbAmount }) {
     if (analogData) {
       this.state[action] += analogData.delta;
     }
+    else if (isDown) {
+      this.continualAdders[action] = (delta) => {
+        // @ts-ignore
+        this.state[action] += delta * kbAmount;
+      };
+      gameRuntime.tracked.core.cachedValue.onAnimate.getEveryChange(this.continualAdders[action]);
+    }
     else {
-      this.state[action] = isDown === true ? 1 : 0;
+      gameRuntime.tracked.core.cachedValue.onAnimate.removeGetEveryChangeListener(this.continualAdders[action]);
     }
   }
-
-  // handleReceiveHybrid({ action, isDown, analogData }) {
-  //   if (analogData) {
-  //     // let delta = Math.abs(analogData.delta);
-  //     // const sign = analogData.gravDelta < 0 ? -1 : 0;
-  //     this.state[action] += analogData.delta;
-  //     // console.log(this.state['pitchDown'])
-  //     (action === 'pitchUp' || action === 'pitchDown') && console.log({action});
-  //   }
-  //   else if (isDown) {
-  //     this.continualAdders[action] = () => {
-  //       this.state[action]++;
-  //     };
-  //     gameRuntime.tracked.core.cachedValue.onAnimate.getEveryChange(this.continualAdders[action]);
-  //   }
-  //   else {
-  //     gameRuntime.tracked.core.cachedValue.onAnimate.removeGetEveryChangeListener(this.continualAdders[action]);
-  //   }
-  // }
 
   handlePulse({ action, isDown }) {
     // Pulse once if the button is down. We don't pulse on release.

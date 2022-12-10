@@ -2,7 +2,7 @@ import { ActionType } from '../../../InputManager/types/ActionType';
 import { ControlSchema } from '../../../InputManager/interfaces/ControlSchema';
 
 const freeCamControls: ControlSchema = {
-  // Literal values
+  // Basic controls
   moveForward:  { actionType: ActionType.analogLiteral, current: null, default: [ 'KeyW', 'ArrowUp' ] },
   moveBackward: { actionType: ActionType.analogLiteral, current: null, default: [ 'KeyS', 'ArrowDown' ] },
   moveLeft:     { actionType: ActionType.analogLiteral, current: null, default: [ 'ArrowLeft', 'KeyA' ] },
@@ -13,13 +13,13 @@ const freeCamControls: ControlSchema = {
   speedDown:    { actionType: ActionType.analogLiteral, current: null, default: [ 'NumpadSubtract' ] },
   doubleSpeed:  { actionType: ActionType.analogLiteral, current: null, default: [ 'ShiftLeft', 'ShiftRight' ] },
 
-  // Additive values
-  pitchUp:      { actionType: ActionType.analogAdditive, current: null, default: [ 'spNorth', 'Numpad8' ] },
-  pitchDown:    { actionType: ActionType.analogAdditive, current: null, default: [ 'spSouth', 'Numpad2' ] },
-  rollLeft:     { actionType: ActionType.analogAdditive, current: null, default: [ 'Numpad7' ] },
-  rollRight:    { actionType: ActionType.analogAdditive, current: null, default: [ 'Numpad9' ] },
-  yawLeft:      { actionType: ActionType.analogAdditive, current: null, default: [ 'spWest', 'Numpad4' ] },
-  yawRight:     { actionType: ActionType.analogAdditive, current: null, default: [ 'spEast', 'Numpad6' ] },
+  // Analog and look-around
+  pitchUp:      { actionType: ActionType.analogAdditive, kbAmount: -1000, current: null, default: [ 'spNorth', 'Numpad8' ] },
+  pitchDown:    { actionType: ActionType.analogAdditive, kbAmount:  1000, current: null, default: [ 'spSouth', 'Numpad2' ] },
+  rollLeft:     { actionType: ActionType.analogLiteral,  kbAmount:  0.01, current: null, default: [ 'Numpad7' ] },
+  rollRight:    { actionType: ActionType.analogLiteral,  kbAmount: -0.01, current: null, default: [ 'Numpad9' ] },
+  yawLeft:      { actionType: ActionType.analogAdditive, kbAmount: -1000, current: null, default: [ 'spWest', 'Numpad4' ] },
+  yawRight:     { actionType: ActionType.analogAdditive, kbAmount:  1000, current: null, default: [ 'spEast', 'Numpad6' ] },
 
   // Pulsed values
   interact:     { actionType: ActionType.pulse,         current: null, default: [ 'KeyE' ] },

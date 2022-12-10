@@ -13,13 +13,6 @@ enum ActionType {
   // If a keyboard button, the value either 0% or 100% (0-1).
   analogGravity = 64,
 
-
-  // // Add the latest mouse or game stick value in a way that looks as though a
-  // // keyboard set the value, and make keyboard-down events act as though
-  // // they're being re-pressed every frame.
-  // // If a keyboard button, the value either 0% or 100% (0-1).
-  // analogHybrid = 32,
-
   // Indicates that the control action should be boolean: true means the key is
   // being help down, false means the key is not being held down.
   // binary = 2,
