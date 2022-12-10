@@ -20,10 +20,6 @@ const PointerLockControls = function(camera, domElement) {
   // If true, the browser will hide the cursor.
   this.isPointerLocked = false;
 
-  // // Constrain pitch in headlook mode.
-  // this.headXMax = 1565;
-  // this.headYMax = 1110;
-
   // When true, the pressing of the Escape button is simulated when pointerlock
   // is lost. This is needed because we cannot intercept (or even detect) if
   // the user presses escape to exit pointer lock. This is a problem because we

@@ -17,6 +17,11 @@ import { applyPolarRotation } from '../../../../../local/mathUtils';
 // TODO: move me into user profile.
 const MOUSE_SPEED = 0.7;
 
+// Maximum number x-look can be at.
+const headXMax = 2200;
+// Maximum number y-look can be at.
+const headYMax = 1150;
+
 class ShipPilot extends ModeController {
   private _cachedCore: CoreType;
   // @ts-ignore
@@ -64,12 +69,45 @@ class ShipPilot extends ModeController {
     state.lookLeft = state.lookRight = state.lookUp = state.lookDown = 0;
   }
 
-  stepFreeLook(delta) {
+  // Disallows a 360 degree neck, but also prevent the player's head from
+  // getting 'glued' to the ceiling if they look up aggressively.
+  constrainNeck(axis, max, outParent, child1Key, child2Key) {
+    // This function basically looks like the following, but is used for any
+    // axis:
+    // if (x > headYMax) {
+    //   const diff = x - headYMax;
+    //   x = headYMax;
+    //   this.state.lookLeft -= diff;
+    //   this.state.lookRight -= diff;
+    // }
+    if (axis > 0) {
+      if (axis > max) {
+        let diff = axis - max;
+        outParent[child1Key] += -diff;
+        outParent[child2Key] += -diff;
+      }
+    }
+    else {
+      if (axis < -max) {
+        let diff = axis + max;
+        outParent[child1Key] += -diff;
+        outParent[child2Key] += -diff;
+      }
+    }
+  }
+
+  stepFreeLook() {
+    let x = this.state.lookLeft + this.state.lookRight;
+    let y = this.state.lookUp + this.state.lookDown;
+
+    this.constrainNeck(x, headXMax, this.state, 'lookLeft', 'lookRight');
+    this.constrainNeck(y, headYMax, this.state, 'lookUp', 'lookDown');
+
     // Note: don't use delta here. We don't want mouse speed to be dependent on
     // framerate.
     applyPolarRotation(
-      (this.state.lookLeft + this.state.lookRight) * MOUSE_SPEED,
-      (this.state.lookUp + this.state.lookDown) * MOUSE_SPEED,
+      x * MOUSE_SPEED,
+      y * MOUSE_SPEED,
       this._cachedCamera.quaternion,
     );
   }
@@ -80,7 +118,7 @@ class ShipPilot extends ModeController {
       return;
     }
 
-    this.stepFreeLook(delta);
+    this.stepFreeLook();
   }
 }
 
