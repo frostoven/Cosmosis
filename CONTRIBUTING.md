@@ -22,13 +22,16 @@ The rules on file formats are somewhat relaxed as some assets may be free
 resources obtained online,  and aren't always easily modifiable. However, if
 making assets yourself, the following structure is recommended and compatible
 with stock Blender:
-* Use gltf format (orientation: Y is up).
+* Use GLTF format (orientation: Y is up).
+* When loading meshes, the game treats Z as forward and Y as up. **Note:** for
+  Blender that means designing your mesh such that Y is forward and Z is up 
+  (and then exporting with Y as up). See Blender screenshot below.
 * Do not embed media (i.e. include as separate files in same folder).
 * Use DRACO compression.
 
-The above allows easy community modding with little required technical
-expertise. Having said that, any contributions are highly appreciated, so use
-whatever you're comfortable with.
+Blender orientation example:
+
+![alt text](docs/images/orientation_example.png)
 
 ### Common issues
 ##### GLTF export crash
