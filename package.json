@@ -10,6 +10,7 @@
     "height": 621,
     "icon": "icon.png"
   },
+  "js-flags": "--focus=true",
   "chromium-args": "--enable-logging=stderr --disable-raf-throttling",
   "description": "Drugs. Control. Concubines.",
   "scripts": {

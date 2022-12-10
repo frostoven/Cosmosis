@@ -12,10 +12,6 @@ class GeneralControl extends ModeController {
     super('general', ModeId.appControl, generalControls);
     this._mouseDriver = gameRuntime.tracked.mouseDriver.cachedValue;
 
-    this.pulse.devChangeCamMode.getEveryChange(() => {
-      console.log('under construction');
-    });
-
     this.pulse.toggleMousePointer.getEveryChange(() => {
       this._mouseDriver.toggle();
     });

@@ -97,7 +97,6 @@ class InputManager {
     // types. For example, mouse click left will be stored as code=spMouseLeft
     // (sp is short for 'special').
     let key = event.code;
-
     const type = event.type;
 
     // Stop the browser messing with anything game related. This prevents bugs

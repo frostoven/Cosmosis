@@ -19,7 +19,7 @@ const builtInPluginsEnabled: PluginEntry[] = [
   { name: 'mouseDriver', pluginInstance: mouseDriverPlugin, dependencies: [ 'core', 'player' ] },
   { name: 'inputManager', pluginInstance: inputManagerPlugin, dependencies: [ 'mouseDriver' ] },
   { name: 'generalControl', pluginInstance: generalControlPlugin, dependencies: [ 'inputManager' ] },
-  { name: 'freeCam', pluginInstance: freeCamPlugin, dependencies: [ 'inputManager' ] },
+  { name: 'freeCam', pluginInstance: freeCamPlugin, dependencies: [ 'core', 'inputManager' ] },
 
   { name: 'levelScene', pluginInstance: levelScenePlugin, dependencies: [ 'core' ] },
   { name: 'spaceScene', pluginInstance: spaceScenePlugin, dependencies: [ 'core' ] },

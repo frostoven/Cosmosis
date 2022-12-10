@@ -22,6 +22,8 @@ const freeCamControls: ControlSchema = {
   yawLeft:      { actionType: ActionType.analogLiteral, current: null, default: [ 'spWest' ] },
   yawRight:     { actionType: ActionType.analogLiteral, current: null, default: [ 'spEast' ] },
   interact:     { actionType: ActionType.pulse,         current: null, default: [ 'KeyE' ] },
+  // Dev controls.
+  _devChangeCamMode:   { actionType: ActionType.pulse, current: null, default: [ 'F7', 'F8' ] },
 };
 
 export {

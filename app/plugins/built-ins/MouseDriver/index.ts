@@ -16,7 +16,11 @@ class MouseDriver extends PointerLockControls {
     const core = gameRuntime.tracked.core.cachedValue;
     core.onAnimateDone.getEveryChange(this.step.bind(this));
 
-    // this.setLockMode(LockModes.freeLook);
+    // TODO: on app gain focus, steal escape. On blur, discard escape. This
+    //  hopefully allows us to control unintentional ctrl lockouts better.
+    //  See issue #91
+
+    this.setLockMode(LockModes.freeLook);
 
     // Because our base class uses an incompatible methodology, we need to
     // duck-punch our overrides in, 90's style.
@@ -31,9 +35,8 @@ class MouseDriver extends PointerLockControls {
     const sasquatch = nw.Window.get();
     // This acts like a click without actually sending a click event. Allows
     // 'lock' to work in far more cases where the beast would otherwise escape.
-    // if (sasquatch.hasFocus())
-    sasquatch.blur();
-    sasquatch.focus();
+    // sasquatch.blur();
+    // sasquatch.focus();
     this._superLock();
   };
 

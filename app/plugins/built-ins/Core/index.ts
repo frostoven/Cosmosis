@@ -10,7 +10,7 @@ export default class Core {
   public _frameLimitCount: number;
   private _clock: Clock;
   private readonly _stats: any;
-  private _rendererHooks: Function[];
+  private readonly _rendererHooks: Function[];
 
   constructor() {
     this.onAnimate = new ChangeTracker();
@@ -56,9 +56,8 @@ export default class Core {
       }
     }
 
-    // Always place this as early in the animation function as possible. No
-    // game logic should happen before this point.
-    this.onAnimate.setValue(delta);
+    // TODO: check if level logic needs to go before rendering, or if it's ok
+    // to place in onAnimate.
 
     // Call all renderers.
     const renderers = this._rendererHooks;
@@ -66,8 +65,15 @@ export default class Core {
       renderers[i]();
     }
 
-    // Always place this dead last in this function.
+    // Always place this as early in the animation function as possible,
+    // preferably right after the rendering. No game logic should happen before
+    // this point.
+    this.onAnimate.setValue(delta);
+
+    // No game logic should happen after this point.
     this.onAnimateDone.setValue(delta);
+
+    // Update the FPS and latency meter.
     this._stats.update();
   }
 
