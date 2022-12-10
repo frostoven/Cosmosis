@@ -14,6 +14,7 @@ import { CoreType } from '../Core';
 import userProfile from '../../../userProfile';
 import SpaceshipLoader from './types/SpaceshipLoader';
 import { GLTFInterface } from '../../interfaces/GLTFInterface';
+import ChangeTracker from 'change-tracker/src';
 
 
 // TODO:
@@ -38,6 +39,8 @@ class LevelScene extends Scene {
   private _cachedCamera: PerspectiveCamera;
   private _vehicle: GLTFInterface;
 
+  public onVehicleEntered: ChangeTracker;
+
   constructor() {
     super();
     this._cachedCamera = new PerspectiveCamera();
@@ -60,6 +63,8 @@ class LevelScene extends Scene {
     this.add(cube);
     cube.position.copy(new Vector3(-1.5, 0.25, -6));
     // --------------------------------------------------------------------- //
+
+    this.onVehicleEntered = new ChangeTracker();
 
     window.addEventListener('resize', this.onWindowResize.bind(this));
     this.onWindowResize();
@@ -132,15 +137,20 @@ class LevelScene extends Scene {
     const scene = this._vehicle.scene;
     this.add(scene);
     scene.add(this._cachedCamera);
-    this.resetCameraSeatPosition();
     // Blender direction is 90 degrees off from what three.js considers to be
     // 'stright-ahead'.
     this._cachedCamera.rotateX(-Math.PI / 2);
+    this.onVehicleEntered.setValue(gltf);
+    this.resetCameraSeatPosition();
   }
 
   resetCameraSeatPosition() {
-    this._cachedCamera.position.copy(this._vehicle.cameras[0].parent.position);
-    this._cachedCamera.rotation.copy(this._vehicle.cameras[0].parent.rotation);
+    gameRuntime.tracked.player.getOnce((player) => {
+      this.onVehicleEntered.getOnce((vehicle) => {
+        player.camera.position.copy(vehicle.cameras[0].parent.position);
+        player.camera.rotation.copy(vehicle.cameras[0].parent.rotation);
+      });
+    });
   }
 
   render() {

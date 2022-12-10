@@ -26,6 +26,10 @@ class ShipPilot extends ModeController {
   constructor() {
     super('shipPilot', ModeId.playerControl, shipPilotControls);
     this._cachedCore = gameRuntime.tracked.core.cachedValue;
+    this._cachedInputManager = gameRuntime.tracked.inputManager.cachedValue;
+
+    // This controller activates itself by default:
+    this._cachedInputManager.activateController(ModeId.playerControl, this.name);
 
     // This controller activates itself by default:
     this._cachedInputManager = gameRuntime.tracked.inputManager.cachedValue;
@@ -72,6 +76,10 @@ class ShipPilot extends ModeController {
 
   // noinspection JSSuspiciousNameCombination
   step(delta) {
+    if (!this._cachedCamera) {
+      return;
+    }
+
     this.stepFreeLook(delta);
   }
 }

@@ -17,10 +17,7 @@ class FreeCam extends ModeController {
 
   constructor() {
     super('freeCam', ModeId.playerControl, freeCamControls);
-
-    // This controller activates itself by default:
     this._cachedInputManager = gameRuntime.tracked.inputManager.cachedValue;
-    this._cachedInputManager.activateController(ModeId.playerControl, this.name);
 
     this._setupWatchers();
     this._setupPulseListeners();
