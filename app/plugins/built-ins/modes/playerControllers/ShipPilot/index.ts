@@ -1,0 +1,84 @@
+// Note:
+// shipPilot mode does not do anything to the spaceship, or to space. It
+// tells Navigation (or Location?) that space is being warped, or that bubbles
+// are being entered/exited. It's Nav's (or Location's) job to figure out what
+// that means.
+
+import { Camera } from 'three';
+import CosmosisPlugin from '../../../../types/CosmosisPlugin';
+import ModeController from '../../../InputManager/types/ModeController';
+import { shipPilotControls } from './controls';
+import { ModeId } from '../../../InputManager/types/ModeId';
+import { gameRuntime } from '../../../../gameRuntime';
+import { CoreType } from '../../../Core';
+import { InputManager } from '../../../InputManager';
+import { applyPolarRotation } from '../../../../../local/mathUtils';
+
+// TODO: move me into user profile.
+const MOUSE_SPEED = 0.7;
+
+class ShipPilot extends ModeController {
+  private _cachedCore: CoreType;
+  // @ts-ignore
+  private _cachedCamera: Camera;
+  private _cachedInputManager: InputManager;
+
+  constructor() {
+    super('shipPilot', ModeId.playerControl, shipPilotControls);
+    this._cachedCore = gameRuntime.tracked.core.cachedValue;
+
+    // This controller activates itself by default:
+    this._cachedInputManager = gameRuntime.tracked.inputManager.cachedValue;
+    // this._cachedInputManager.activateController(ModeId.playerControl, this.name);
+
+    gameRuntime.tracked.player.getOnce((player) => {
+      this._cachedCamera = player.camera;
+    });
+
+    this._setupWatchers();
+    this._setupPulseListeners();
+  }
+
+  _setupWatchers() {
+    gameRuntime.tracked.player.getEveryChange((player) => {
+      this._cachedCamera = player.camera;
+    });
+  }
+
+  _setupPulseListeners() {
+    this.pulse._devChangeCamMode.getEveryChange(() => {
+      this._cachedInputManager.activateController(ModeId.playerControl, 'freeCam');
+    });
+  }
+
+  onActivateController() {
+    gameRuntime.tracked.levelScene.getOnce((levelScene) => {
+      levelScene.resetCameraSeatPosition();
+    });
+
+    const state = this.state;
+    state.lookLeft = state.lookRight = state.lookUp = state.lookDown = 0;
+  }
+
+  stepFreeLook(delta) {
+    // Note: don't use delta here. We don't want mouse speed to be dependent on
+    // framerate.
+    applyPolarRotation(
+      (this.state.lookLeft + this.state.lookRight) * MOUSE_SPEED,
+      (this.state.lookUp + this.state.lookDown) * MOUSE_SPEED,
+      this._cachedCamera.quaternion,
+    );
+  }
+
+  // noinspection JSSuspiciousNameCombination
+  step(delta) {
+    this.stepFreeLook(delta);
+  }
+}
+
+const shipPilotPlugin = new CosmosisPlugin('shipPilotPlugin', ShipPilot);
+
+export {
+  ShipPilot,
+  shipPilotPlugin,
+}
