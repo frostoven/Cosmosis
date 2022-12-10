@@ -1,9 +1,10 @@
 import CosmosisPlugin from '../../types/CosmosisPlugin';
 import { ModeId } from './types/ModeId';
-import { ModeStructure } from './interfaces/ModeStructure';
 import { MouseDriver } from '../MouseDriver';
 import { gameRuntime } from '../../gameRuntime';
 import { AnalogSource } from './types/AnalogSource';
+import ModeController from './types/ModeController';
+import { CoreType } from '../Core';
 
 /*
  * Mechanism:
@@ -26,11 +27,13 @@ const mouseFriendly = [
 // Mode: a logical group of controllers.
 // Controller: something capable of responding to key input.
 class InputManager {
-  private readonly _modes: Array<{ [key: string]: ModeStructure }>;
+  private readonly _modes: Array<{ [key: string]: ModeController }>;
   private readonly _activeControllers: Array<string>;
   private readonly _allControllers: {};
   private _mouseDriver: MouseDriver;
   public allowBubbling: boolean;
+
+  private _cachedCore: CoreType;
 
   private readonly _heldButtons: { [key: string]: boolean };
   private _prevMouseX: number;
@@ -67,11 +70,17 @@ class InputManager {
     this._prevControllerX = 0;
     this._prevControllerY = 0;
 
+    this._cachedCore = gameRuntime.tracked.core.cachedValue;
+    this._cachedCore.onAnimate.getEveryChange(this.stepActiveControllers.bind(this));
+
     this._setupWatchers();
     this._setupInputListeners();
   }
 
   _setupWatchers() {
+    gameRuntime.tracked.core.getEveryChange((core) => {
+      this._cachedCore = core;
+    });
     gameRuntime.tracked.mouseDriver.getEveryChange((mouseDriver) => {
       this._mouseDriver = mouseDriver;
     });
@@ -290,33 +299,44 @@ class InputManager {
     return this._modes[ModeId.virtualMenuControl];
   }
 
-  registerController(name: string, modeId: ModeId, controlsByKey, onAction: Function) {
-    const controller = { name, modeId, controlsByKey, onAction };
-    this._modes[modeId][name] = controller;
-    this._allControllers[name] = controller;
+  registerController(controller: ModeController) {
+    this._modes[controller.modeId][controller.name] = controller;
+    this._allControllers[controller.name] = controller;
   }
 
   activateController(modeId: ModeId, controllerName: string) {
+    console.log(`Activating controller ${controllerName} (in mode ${ModeId[modeId]})`);
     const controller = this._modes[modeId][controllerName];
     if (!controller) {
       console.error(`[InputManager] Controller ${ModeId[modeId]}.${controllerName} is not defined (using this._modes[${modeId}][${controllerName}]).`);
       return;
     }
     this._activeControllers[modeId] = controllerName;
+    controller.onActivateController();
   }
 
   propagateInput({ key, isDown, analogData } : { key: string, isDown: boolean, analogData?: {} }) {
     const active = this._activeControllers;
     for (let i = 0, len = active.length; i < len; i++) {
-      const controller: ModeStructure = this._allControllers[active[i]];
+      const controller: ModeController = this._allControllers[active[i]];
       if (!controller) {
         continue;
       }
 
       const action = controller.controlsByKey[key];
       if (action) {
-        controller.onAction({ action, isDown, analogData });
+        controller.receiveAction({ action, isDown, analogData });
         return;
+      }
+    }
+  }
+
+  stepActiveControllers(delta) {
+    const active = this._activeControllers;
+    for (let i = 0, len = active.length; i < len; i++) {
+      const controller: ModeController = this._allControllers[active[i]];
+      if (controller?.step) {
+        controller.step(delta);
       }
     }
   }

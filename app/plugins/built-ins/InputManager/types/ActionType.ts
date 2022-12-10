@@ -12,10 +12,6 @@ enum ActionType {
   // Sets the value to the device's change in momentum.
   // If a keyboard button, the value either 0% or 100% (0-1).
   analogGravity = 64,
-
-  // Indicates that the control action should be boolean: true means the key is
-  // being help down, false means the key is not being held down.
-  // binary = 2,
 }
 
 export {

@@ -14,5 +14,3 @@ function applyPolarRotation(x, y, observerQuaternion, minPolarAngle = 0, maxPola
 export {
   applyPolarRotation,
 }
-
-

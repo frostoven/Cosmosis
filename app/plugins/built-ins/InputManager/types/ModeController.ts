@@ -64,12 +64,7 @@ export default class ModeController {
     });
 
     const inputManager: InputManager = gameRuntime.tracked.inputManager.cachedValue;
-    inputManager.registerController(
-      name,
-      modeId,
-      this.controlsByKey,
-      this.receiveAction.bind(this),
-    );
+    inputManager.registerController(this);
   }
 
   receiveAction({ action, isDown, analogData }) {
@@ -130,5 +125,13 @@ export default class ModeController {
     if (isDown) {
       this.pulse[action].setValue(1);
     }
+  }
+
+  onActivateController() {
+    // The ModeController base class does not use activation itself.
+  }
+
+  step(delta) {
+    // The ModeController base class does not use stepping itself.
   }
 }

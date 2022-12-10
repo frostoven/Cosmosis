@@ -4,42 +4,29 @@ import ModeController from '../../../InputManager/types/ModeController';
 import { freeCamControls } from './controls';
 import { ModeId } from '../../../InputManager/types/ModeId';
 import { gameRuntime } from '../../../../gameRuntime';
-import { CoreType } from '../../../Core';
 import { InputManager } from '../../../InputManager';
 import { applyPolarRotation } from '../../../../../local/mathUtils';
 
+// TODO: move me into user profile.
 const MOUSE_SPEED = 0.7;
 
 class FreeCam extends ModeController {
-  private _cachedCore: CoreType;
   // @ts-ignore
   private _cachedCamera: Camera;
   private _cachedInputManager: InputManager;
 
   constructor() {
     super('freeCam', ModeId.playerControl, freeCamControls);
-    this._cachedCore = gameRuntime.tracked.core.cachedValue;
-    console.log('player.cachedValue ---->', gameRuntime.tracked.player.cachedValue);
 
     // This controller activates itself by default:
     this._cachedInputManager = gameRuntime.tracked.inputManager.cachedValue;
     this._cachedInputManager.activateController(ModeId.playerControl, this.name);
-
-
-    gameRuntime.tracked.player.getOnce((player) => {
-      this._cachedCamera = player.camera;
-      // Set up animation.
-      this._cachedCore.onAnimate.getEveryChange(this.step.bind(this));
-    });
 
     this._setupWatchers();
     this._setupPulseListeners();
   }
 
   _setupWatchers() {
-    gameRuntime.tracked.core.getEveryChange((core) => {
-      this._cachedCore = core;
-    });
     gameRuntime.tracked.player.getEveryChange((player) => {
       this._cachedCamera = player.camera;
     });
@@ -58,8 +45,17 @@ class FreeCam extends ModeController {
     });
   }
 
+  onActivateController() {
+    const state = this.state;
+    state.yawLeft = state.yawRight = state.pitchUp = state.pitchDown = 0;
+  }
+
   // noinspection JSSuspiciousNameCombination
   step(delta) {
+    if (!this._cachedCamera) {
+      return;
+    }
+
     // Left and right movement:
     this._cachedCamera.translateX((this.state.moveRight - this.state.moveLeft) * delta);
     // Up and down movement:
