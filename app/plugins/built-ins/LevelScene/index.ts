@@ -132,11 +132,15 @@ class LevelScene extends Scene {
     const scene = this._vehicle.scene;
     this.add(scene);
     scene.add(this._cachedCamera);
-    this._cachedCamera.position.copy(gltf.cameras[0].parent.position);
-    this._cachedCamera.rotation.copy(gltf.cameras[0].parent.rotation);
+    this.resetCameraSeatPosition();
     // Blender direction is 90 degrees off from what three.js considers to be
     // 'stright-ahead'.
     this._cachedCamera.rotateX(-Math.PI / 2);
+  }
+
+  resetCameraSeatPosition() {
+    this._cachedCamera.position.copy(this._vehicle.cameras[0].parent.position);
+    this._cachedCamera.rotation.copy(this._vehicle.cameras[0].parent.rotation);
   }
 
   render() {
