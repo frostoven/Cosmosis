@@ -14,12 +14,14 @@ export default class Generator {
   private readonly _supplyStateCache: {
     have: number, demand: number, effectiveOutput: number, outputRatio: number,
   };
+  private _poweredOn: boolean;
 
   constructor() {
     this.friendlyName = 'generator';
     // Note: this is the power this unit needs to receive for it to function.
     // It obviously won't need any, as it generates energy.
     this.powerNeeded = 0;
+    this._poweredOn = false;
 
     this.maxOutput = 15; // 124;
 
@@ -32,7 +34,19 @@ export default class Generator {
     };
   }
 
+  powerOn() {
+    this._poweredOn = true;
+  }
+
+  powerOff() {
+    this._poweredOn = false;
+  }
+
   drain(amount) {
+    if (!this._poweredOn) {
+      return 0;
+    }
+
     if (this._outputRatio === 1) {
       return amount;
     }
@@ -84,10 +98,6 @@ export default class Generator {
   }
 
   step() {
-    // const devices = this._allConnectedDrains;
-    // for (let i = 0, len = devices.length; i < len; i++) {
-    //   const device = this._allConnectedDrains[i];
-    //
-    // }
+    // TODO: handle damage and load changes here.
   }
 }

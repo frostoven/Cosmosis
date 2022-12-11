@@ -1,7 +1,7 @@
 import CosmosisPlugin from '../../types/CosmosisPlugin';
 import Pluggable from './types/Pluggable';
-import Multimeter from '../shipModules/Multimeter/types/Multimeter';
-import Generator from '../shipModules/Generator/types/Generator';
+import { gameRuntime } from '../../gameRuntime';
+import ModuleSpawner from '../shipModules/types/ModuleSpawner';
 
 class ShipModuleHub {
   constructor() {
@@ -9,6 +9,16 @@ class ShipModuleHub {
 
   plug(device) {
     return new Pluggable(device);
+  }
+
+  // TODO: Decide on naming here. spawnPart might be more appropriate if we
+  //  continue to use this function for unconditional part spawning.
+  acquirePart(partName: string) {
+    const deviceSpawner: ModuleSpawner = gameRuntime.tracked[`${partName}Module`]?.cachedValue;
+    if (!deviceSpawner) {
+      throw `Part type '${partName}' (aka ${partName}Module) does not seem to exist in this reality.`;
+    }
+    return deviceSpawner.createPart();
   }
 }
 

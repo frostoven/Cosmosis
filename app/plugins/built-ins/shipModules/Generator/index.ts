@@ -1,18 +1,16 @@
 import CosmosisPlugin from '../../../types/CosmosisPlugin';
 import Generator from './types/Generator';
+import ModuleSpawner from '../types/ModuleSpawner';
 
-class GeneratorModule {
-  constructor() {
-  }
-
+class GeneratorModule extends ModuleSpawner {
   createPart() {
     return new Generator();
   }
 }
 
-const generatorPluginModule = new CosmosisPlugin('generator', GeneratorModule);
+const generatorModulePlugin = new CosmosisPlugin('generatorModule', GeneratorModule);
 
 export {
   GeneratorModule,
-  generatorPluginModule,
+  generatorModulePlugin,
 }

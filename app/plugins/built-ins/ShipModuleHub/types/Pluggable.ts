@@ -8,5 +8,7 @@ export default class Pluggable {
   intoPowerOutletOf(otherDevice) {
     console.log(`connecting ${this.device.friendlyName}'s power receiver into ${otherDevice.friendlyName}'s drain-out.`);
     otherDevice.connectDrain(this.device);
+    this.device.connectPowerSource(otherDevice);
+    return otherDevice;
   }
 }

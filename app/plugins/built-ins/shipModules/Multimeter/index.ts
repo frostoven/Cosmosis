@@ -1,18 +1,16 @@
 import CosmosisPlugin from '../../../types/CosmosisPlugin';
 import Multimeter from './types/Multimeter';
+import ModuleSpawner from '../types/ModuleSpawner';
 
-class MultimeterModule {
-  constructor() {
-  }
-
+class MultimeterModule extends ModuleSpawner {
   createPart() {
     return new Multimeter();
   }
 }
 
-const multimeterPluginModule = new CosmosisPlugin('multimeterModule', MultimeterModule);
+const multimeterModulePlugin = new CosmosisPlugin('multimeterModule', MultimeterModule);
 
 export {
   MultimeterModule,
-  multimeterPluginModule,
+  multimeterModulePlugin,
 }
