@@ -3,6 +3,15 @@ import ChangeTracker from 'change-tracker/src';
 import { Clock } from 'three';
 import Stats from '../../../../hackedlibs/stats/stats.module';
 
+// Note to modders: this object is never recreated, meaning you can use it as
+// a quick-n-dirty way to patch data into any per-frame function. An example of
+// how you may patch the object is as follows:
+// core.onAnimate.getOnce(animationData => { animationData.__myField = 'Yo'; });
+// Please always put 2 underscores in front of your variable to prevent
+// clashing with built-in functions (built-ins never place 2 underscored in
+// front of any var names, making your patch somewhat safe).
+const animationData = { delta: 0, bigDelta: 0 };
+
 export default class Core {
   public onAnimate: ChangeTracker;
   public onAnimateDone: ChangeTracker;
@@ -56,6 +65,15 @@ export default class Core {
       }
     }
 
+    // For situations where we want numbers to remain intuitive instead of
+    // varying wildly (i.e. close to non-delta'd) if we forgot to apply delta
+    // during initial design. bigDelta is 1 at 120Hz, 2 at 60Hz, and 4 at 30Hz.
+    const bigDelta = delta * 120;
+
+    // The animationData object is sent to all per-frame functions each frame.
+    animationData.delta = delta;
+    animationData.bigDelta = bigDelta;
+
     // TODO: check if level logic needs to go before rendering, or if it's ok
     // to place in onAnimate.
 
@@ -68,10 +86,10 @@ export default class Core {
     // Always place this as early in the animation function as possible,
     // preferably right after the rendering. No game logic should happen before
     // this point.
-    this.onAnimate.setValue(delta);
+    this.onAnimate.setValue(animationData);
 
     // No game logic should happen after this point.
-    this.onAnimateDone.setValue(delta);
+    this.onAnimateDone.setValue(animationData);
 
     // Update the FPS and latency meter.
     this._stats.update();

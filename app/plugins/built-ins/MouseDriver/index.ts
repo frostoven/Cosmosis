@@ -24,7 +24,8 @@ class MouseDriver extends PointerLockControls {
     this._superLock = this.lock;
     this.lock = this._lockOverride;
 
-    this.lock();
+    // TODO: auto-lock if the window has focus, else skip.
+    // this.lock();
   }
 
   _lockOverride() {

@@ -109,7 +109,7 @@ export default class ModeController {
       this.state[action] += analogData.delta;
     }
     else if (isDown) {
-      this.continualAdders[action] = (delta) => {
+      this.continualAdders[action] = ({ delta }) => {
         // @ts-ignore
         this.state[action] += delta * kbAmount;
       };

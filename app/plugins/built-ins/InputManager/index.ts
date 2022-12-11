@@ -331,7 +331,7 @@ class InputManager {
     }
   }
 
-  stepActiveControllers(delta) {
+  stepActiveControllers({ delta }) {
     const active = this._activeControllers;
     for (let i = 0, len = active.length; i < len; i++) {
       const controller: ModeController = this._allControllers[active[i]];
