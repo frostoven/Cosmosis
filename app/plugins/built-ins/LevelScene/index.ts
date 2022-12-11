@@ -15,6 +15,7 @@ import userProfile from '../../../userProfile';
 import SpaceshipLoader from './types/SpaceshipLoader';
 import { GLTFInterface } from '../../interfaces/GLTFInterface';
 import ChangeTracker from 'change-tracker/src';
+import { ShipModuleHub } from '../ShipModuleHub';
 
 
 // TODO:
@@ -34,6 +35,8 @@ import ChangeTracker from 'change-tracker/src';
 //  which they may later interact with to reenter.
 
 class LevelScene extends Scene {
+  moduleHub: ShipModuleHub | undefined;
+
   // @ts-ignore
   private _renderer: WebGLRenderer;
   private _cachedCamera: PerspectiveCamera;
@@ -133,7 +136,7 @@ class LevelScene extends Scene {
 
   enterVehicle(gltf: GLTFInterface) {
     this._vehicle = gltf;
-    console.log('-> gltf:', gltf);
+    // console.log('-> gltf:', gltf);
     const scene = this._vehicle.scene;
     this.add(scene);
     scene.add(this._cachedCamera);
@@ -142,6 +145,16 @@ class LevelScene extends Scene {
     this._cachedCamera.rotateX(-Math.PI / 2);
     this.onVehicleEntered.setValue(gltf);
     this.resetCameraSeatPosition();
+    this.bootShip();
+  }
+
+  bootShip() {
+    // TODO: formalise the hardcoded ship modules here into a proper system.
+    gameRuntime.tracked.shipModuleHub.getOnce((hub: ShipModuleHub) => {
+      this.moduleHub = hub;
+
+      //
+    });
   }
 
   resetCameraSeatPosition() {

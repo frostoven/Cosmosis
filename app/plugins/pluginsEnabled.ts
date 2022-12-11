@@ -11,13 +11,14 @@ import { inputManagerPlugin } from './built-ins/InputManager';
 import { freeCamPlugin } from './built-ins/modes/playerControllers/FreeCam';
 import { generalControlPlugin } from './built-ins/modes/appControllers/GeneralControl';
 import { shipPilotPlugin } from './built-ins/modes/playerControllers/ShipPilot';
+import { shipModuleHubPlugin } from './built-ins/ShipModuleHub';
 
 const builtInPluginsEnabled: PluginEntry[] = [
   { name: 'metadata', pluginInstance: metadataPlugin },
   { name: 'core', pluginInstance: corePlugin },
   { name: 'player', pluginInstance: playerPlugin, dependencies: [ 'core' ] },
 
-  { name: 'levelScene', pluginInstance: levelScenePlugin, dependencies: [ 'core' ] },
+  { name: 'levelScene', pluginInstance: levelScenePlugin, dependencies: [ 'core' ], optional: [ 'shipModuleHub' ] },
   { name: 'spaceScene', pluginInstance: spaceScenePlugin, dependencies: [ 'core' ] },
   { name: 'location', pluginInstance: locationPlugin, dependencies: [ 'core', 'player', 'levelScene', 'spaceScene' ] },
   { name: 'navigation', pluginInstance: navigationPlugin, dependencies: [ 'core', 'location' ] },
@@ -27,6 +28,12 @@ const builtInPluginsEnabled: PluginEntry[] = [
   { name: 'generalControl', pluginInstance: generalControlPlugin, dependencies: [ 'inputManager' ] },
   { name: 'freeCam', pluginInstance: freeCamPlugin, dependencies: [ 'player', 'inputManager' ] },
   { name: 'shipPilot', pluginInstance: shipPilotPlugin, dependencies: [ 'player', 'inputManager', 'levelScene' ] },
+
+  //
+
+  // Always place this last. The module hub should have programmatic access to
+  // all ship modules.
+  { name: 'shipModuleHub', pluginInstance: shipModuleHubPlugin, dependencies: [ '*' ] },
 ];
 
 export {
