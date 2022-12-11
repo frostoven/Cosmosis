@@ -32,12 +32,12 @@ export default class PluginLoader {
     this._doPluginRun(builtInPluginsEnabled, false);
   }
 
-  _doPluginRun(array: Array<PluginEntry>, disableShoving: boolean) {
+  _doPluginRun(array: Array<PluginEntry>, disallowShoving: boolean) {
     const index = ++this._runIndex;
     if (index >= array.length) {
       // Restart the loop, but process shoved plugins (if any).
-      if (!disableShoving) {
-        disableShoving = true;
+      if (!disallowShoving) {
+        disallowShoving = true;
         this._runIndex = -1;
         this._doPluginRun(this._shovedPlugins, true);
       }
@@ -51,19 +51,30 @@ export default class PluginLoader {
     // -----------------------------------------------------------------------------
     const { name, dependencies, pluginInstance, timeoutWarn = 3000 } = array[index];
     // -----------------------------------------------------------------------------
-    let disallowRun = false;
+    let dependencyMissing = false;
     let shoved = false;
-    if (dependencies) {
+    if (dependencies?.includes('*')) {
+      // This plugin is a wildcard match, meaning it wants to be loaded last.
+      if (!disallowShoving) {
+        shoved = true;
+        this._shovedPlugins.push(array[index]);
+        // console.log(`-> ${name} wants to be loaded last; shoving.`);
+      }
+    }
+    else if (dependencies?.length) {
       for (let di = 0, len = dependencies.length; di < len; di++) {
         const dependency = dependencies[di];
-        const dependencyMissing = !this._dependenciesLoaded[dependency];
+        dependencyMissing = !this._dependenciesLoaded[dependency];
         if (dependencyMissing) {
-          console.log('----> Missing dependency', dependency);
-          disallowRun = true;
-          if (disableShoving) {
-            console.error('[PluginLoader] Error:', name, 'is missing dependency', dependency);
+          if (disallowShoving) {
+            console.error(
+              '[PluginLoader] Error:', name, 'is could not resolve ' +
+              'dependency', dependency, '- either it\'s missing, or you ' +
+              'have a circular dependency.'
+            );
           }
           else if (!shoved) {
+            console.log(`[${name}] Dependency ${dependency} not ready; shoving ${name}.`);
             shoved = true;
             this._shovedPlugins.push(array[index]);
           }
@@ -71,7 +82,9 @@ export default class PluginLoader {
       }
     }
 
-    if (!disallowRun && !shoved) {
+    // console.log(`---> name=${name}, dependencyMissing=${dependencyMissing}, disallowShoving=${disallowShoving}, shoved=${shoved}`);
+
+    if (!dependencyMissing && !shoved) {
       let plugin: CosmosisPlugin;
       if (pluginInstance) {
         plugin = pluginInstance;
@@ -90,7 +103,7 @@ export default class PluginLoader {
       }
       else {
         console.error('[PluginLoader] Error:', name, 'does not appear to have a valid instance registered.');
-        setTimeout(() => this._doPluginRun(array, disableShoving));
+        setTimeout(() => this._doPluginRun(array, disallowShoving));
         return;
       }
 
@@ -107,7 +120,7 @@ export default class PluginLoader {
         next: () => {
           clearTimeout(warnTimer);
           this._dependenciesLoaded[name] = true;
-          setTimeout(() => this._doPluginRun(array, disableShoving));
+          setTimeout(() => this._doPluginRun(array, disallowShoving));
         },
         replaceClass: ({ pluginName, replaceClassWith }) => {
           this._pluginOverrides[pluginName] = {
@@ -116,6 +129,12 @@ export default class PluginLoader {
           }
         }
       });
+    }
+    else if (shoved && !disallowShoving) {
+      setTimeout(() => this._doPluginRun(array, disallowShoving));
+    }
+    else {
+      console.error('[PluginLoader] Unhandled plugin', name, '- this is a Cosmosis bug, please report it.');
     }
   }
 }
