@@ -1506,7 +1506,7 @@
             "count" : 335,
             "max" : [
                 0.3796234130859375,
-                0.1873791217803955,
+                0.18373490869998932,
                 1.2008861303329468
             ],
             "min" : [
@@ -1723,58 +1723,58 @@
         },
         {
             "buffer" : 0,
-            "byteLength" : 44731,
+            "byteLength" : 44786,
             "byteOffset" : 96528
         },
         {
             "buffer" : 0,
             "byteLength" : 813,
-            "byteOffset" : 141260
+            "byteOffset" : 141316
         },
         {
             "buffer" : 0,
             "byteLength" : 648,
-            "byteOffset" : 142076
+            "byteOffset" : 142132
         },
         {
             "buffer" : 0,
-            "byteLength" : 2033,
-            "byteOffset" : 142724
+            "byteLength" : 2052,
+            "byteOffset" : 142780
         },
         {
             "buffer" : 0,
             "byteLength" : 6441,
-            "byteOffset" : 144760
+            "byteOffset" : 144832
         },
         {
             "buffer" : 0,
             "byteLength" : 121348,
-            "byteOffset" : 151204
+            "byteOffset" : 151276
         },
         {
             "buffer" : 0,
             "byteLength" : 1156,
-            "byteOffset" : 272552
+            "byteOffset" : 272624
         },
         {
             "buffer" : 0,
             "byteLength" : 1311,
-            "byteOffset" : 273708
+            "byteOffset" : 273780
         },
         {
             "buffer" : 0,
             "byteLength" : 240,
-            "byteOffset" : 275020
+            "byteOffset" : 275092
         },
         {
             "buffer" : 0,
             "byteLength" : 960,
-            "byteOffset" : 275260
+            "byteOffset" : 275332
         }
     ],
     "buffers" : [
         {
-            "byteLength" : 276220,
+            "byteLength" : 276292,
             "uri" : "DS69F.bin"
         }
     ]
