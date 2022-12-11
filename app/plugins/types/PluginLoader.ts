@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import ChangeTracker from 'change-tracker/src';
 import { builtInPluginsEnabled } from '../pluginsEnabled';
 import { PluginEntry } from '../interfaces/PluginEntry';
@@ -42,6 +43,16 @@ export default class PluginLoader {
         this._doPluginRun(this._shovedPlugins, true);
       }
       else {
+        _.each(builtInPluginsEnabled, (plugin: PluginEntry) => {
+          _.each(plugin?.optional, (optionalDependency: string) => {
+            if (!this._dependenciesLoaded[optionalDependency]) {
+              console.warn(`[PluginLoader] Plugin '${plugin.name}' has ` +
+                `optional dependency '${optionalDependency}', but it has ` +
+                `not been satisfied.`
+              );
+            }
+          });
+        });
         console.log('[PluginLoader] All plugins loaded.');
         this.onLoaded.setValue(true);
       }
