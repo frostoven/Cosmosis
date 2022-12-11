@@ -16,6 +16,10 @@ import SpaceshipLoader from './types/SpaceshipLoader';
 import { GLTFInterface } from '../../interfaces/GLTFInterface';
 import ChangeTracker from 'change-tracker/src';
 import { ShipModuleHub } from '../ShipModuleHub';
+import Generator from '../shipModules/Generator/types/Generator';
+import Multimeter from '../shipModules/Multimeter/types/Multimeter';
+import ElectricalHousing
+  from '../shipModules/ElectricalHousing/types/ElectricalHousing';
 
 
 // TODO:
@@ -148,12 +152,29 @@ class LevelScene extends Scene {
     this.bootShip();
   }
 
+  installVehicleElectronics() {
+    //
+  }
+
   bootShip() {
     // TODO: formalise the hardcoded ship modules here into a proper system.
     gameRuntime.tracked.shipModuleHub.getOnce((hub: ShipModuleHub) => {
       this.moduleHub = hub;
 
-      //
+      const electricalHousing: ElectricalHousing = hub.acquirePart('electricalHousing');
+      const generator: Generator = hub.acquirePart('generator');
+      const multimeter: Multimeter = hub.acquirePart('multimeter');
+
+      // Note: this starts the process of stepping modules each frame. We do
+      // this before assembly, and not after, because it has potential to show
+      // the player things going online spontaneously (though, realistically,
+      // code setup probably happens in under one frame).
+      electricalHousing.embed([
+        generator, multimeter,
+      ]);
+
+      generator.powerOn();
+      hub.plug(multimeter).intoPowerOutletOf(generator);
     });
   }
 
