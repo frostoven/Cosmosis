@@ -8,6 +8,7 @@ import {
   Vector3,
   sRGBEncoding,
 } from 'three';
+import { RectAreaLightUniformsLib } from 'three/examples/jsm/lights/RectAreaLightUniformsLib.js';
 import CosmosisPlugin from '../../types/CosmosisPlugin';
 import { gameRuntime } from '../../gameRuntime';
 import { CoreType } from '../Core';
@@ -18,8 +19,7 @@ import ChangeTracker from 'change-tracker/src';
 import { ShipModuleHub } from '../ShipModuleHub';
 import Generator from '../shipModules/Generator/types/Generator';
 import Multimeter from '../shipModules/Multimeter/types/Multimeter';
-import ElectricalHousing
-  from '../shipModules/ElectricalHousing/types/ElectricalHousing';
+import ElectricalHousing from '../shipModules/ElectricalHousing/types/ElectricalHousing';
 
 
 // TODO:
@@ -100,6 +100,12 @@ class LevelScene extends Scene {
     renderer.outputEncoding = sRGBEncoding;
 
     this._renderer = renderer;
+
+    // Allows for crazy-good fast rectangle area lights. Note that these
+    // unfortunately don't case shadows, so only use them for wall lighting
+    // where shadows wouldn't naturally form anyway (we can probably
+    // investigate stenciling at some point).
+    RectAreaLightUniformsLib.init();
   }
 
   _setupWatchers() {

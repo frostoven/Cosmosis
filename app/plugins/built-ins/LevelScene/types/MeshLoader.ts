@@ -4,6 +4,8 @@ import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 
 import AssetFinder from '../../../../local/AssetFinder';
 import ChangeTracker from 'change-tracker/src';
+import { MeshTypes } from './MeshTypes';
+import AreaLight from './AreaLight';
 
 const gltfLoader = new GLTFLoader();
 const dracoLoader = new DRACOLoader();
@@ -37,6 +39,18 @@ export default class MeshLoader {
               node.material.side = FrontSide;
               node.castShadow = true;
               node.receiveShadow = true;
+            }
+
+            const userData = node.userData;
+            const type = userData.type;
+
+            switch (type) {
+              case MeshTypes.areaLight:
+                // console.log(`Item (isMesh=${node.isMesh}) node:`, node);
+                const light = new AreaLight(node).getLight();
+                gltf.scene.remove(node);
+                gltf.scene.add(light);
+                break;
             }
           });
 
