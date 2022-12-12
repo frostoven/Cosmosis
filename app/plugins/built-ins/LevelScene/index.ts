@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import {
   BoxGeometry,
   MeshBasicMaterial,
@@ -18,6 +19,7 @@ import { GLTFInterface } from '../../interfaces/GLTFInterface';
 import ChangeTracker from 'change-tracker/src';
 import { ShipModuleHub } from '../ShipModuleHub';
 import Generator from '../shipModules/Generator/types/Generator';
+import CockpitLights from '../shipModules/CockpitLights/types/CockpitLights';
 import Multimeter from '../shipModules/Multimeter/types/Multimeter';
 import ElectricalHousing from '../shipModules/ElectricalHousing/types/ElectricalHousing';
 
@@ -45,6 +47,7 @@ class LevelScene extends Scene {
   private _renderer: WebGLRenderer;
   private _cachedCamera: PerspectiveCamera;
   private _vehicle: GLTFInterface;
+  private _vehicleInventory: { [moduleHookName: string]: Array<any> };
 
   public onVehicleEntered: ChangeTracker;
 
@@ -54,6 +57,7 @@ class LevelScene extends Scene {
 
     // @ts-ignore
     this._vehicle = null;
+    this._vehicleInventory = {};
     this.loadAndEnterLastVehicle();
 
     this._setupWatchers();
@@ -144,8 +148,9 @@ class LevelScene extends Scene {
     shipLoader.trackedMesh.getOnce(onDone.bind(this));
   }
 
-  enterVehicle(gltf: GLTFInterface) {
+  enterVehicle({ gltf, inventory }: { gltf: GLTFInterface, inventory: {} }) {
     this._vehicle = gltf;
+    this._vehicleInventory = inventory;
     // console.log('-> gltf:', gltf);
     const scene = this._vehicle.scene;
     this.add(scene);
@@ -169,6 +174,7 @@ class LevelScene extends Scene {
 
       const electricalHousing: ElectricalHousing = hub.acquirePart('electricalHousing');
       const generator: Generator = hub.acquirePart('generator');
+      const cockpitLights: CockpitLights = hub.acquirePart('cockpitLights');
       const multimeter: Multimeter = hub.acquirePart('multimeter');
 
       // Note: this starts the process of stepping modules each frame. We do
@@ -176,11 +182,16 @@ class LevelScene extends Scene {
       // the player things going online spontaneously (though, realistically,
       // code setup probably happens in under one frame).
       electricalHousing.embed([
-        generator, multimeter,
+        generator, cockpitLights, multimeter,
       ]);
 
       generator.powerOn();
       hub.plug(multimeter).intoPowerOutletOf(generator);
+
+      _.each(this._vehicleInventory, (inventoryArray, responsibleModule) => {
+        // console.log('--->', {responsibleModule, inventoryArray});
+        //
+      });
     });
   }
 

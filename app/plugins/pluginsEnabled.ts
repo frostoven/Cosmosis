@@ -15,6 +15,7 @@ import { shipModuleHubPlugin } from './built-ins/ShipModuleHub';
 import { generatorModulePlugin } from './built-ins/shipModules/Generator';
 import { multimeterModulePlugin } from './built-ins/shipModules/Multimeter';
 import { electricalHousingModulePlugin } from './built-ins/shipModules/ElectricalHousing';
+import { cockpitLightsModulePlugin } from './built-ins/shipModules/CockpitLights';
 
 const builtInPluginsEnabled: PluginEntry[] = [
   // General
@@ -38,6 +39,7 @@ const builtInPluginsEnabled: PluginEntry[] = [
   // Ship modules
   { name: 'electricalHousingModule', pluginInstance: electricalHousingModulePlugin },
   { name: 'generatorModule', pluginInstance: generatorModulePlugin },
+  { name: 'cockpitLightsModule', pluginInstance: cockpitLightsModulePlugin, dependencies: [ 'shipPilot' ] },
   { name: 'multimeterModule', pluginInstance: multimeterModulePlugin },
 
   // Ship module hub

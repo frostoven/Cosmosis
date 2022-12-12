@@ -19,9 +19,27 @@ export default class ModeController {
   constructor(name: string, modeId: ModeId, controlSchema: ControlSchema) {
     this.name = name;
     this.modeId = modeId;
-    this.controlSchema = controlSchema;
+    this.controlSchema = {};
     this.controlsByKey = {};
 
+    // Stores analog values, usually "key was pressed" kinda-stuff.
+    this.state = {};
+
+    // Designed for instant actions and toggleables. Contains change trackers.
+    this.pulse = {};
+
+    // Used for controls that need to simulate pre-frame key presses.
+    this.continualAdders = {};
+
+    // Control setup.
+    this.extendControlSchema(controlSchema);
+
+    const inputManager: InputManager = gameRuntime.tracked.inputManager.cachedValue;
+    inputManager.registerController(this);
+  }
+
+  // This allows both core code and modders to add their own control bindings.
+  extendControlSchema(controlSchema) {
     const savedControls = userProfile.getCurrentConfig({ identifier: 'controls' }).controls;
     _.each(controlSchema, (control, actionName) => {
       if (savedControls[actionName]) {
@@ -38,28 +56,17 @@ export default class ModeController {
       }
     });
 
-    // Stores analog values, usually "key was pressed" kinda-stuff.
-    this.state = {};
-
-    // Designed for instant actions and toggleables. Contains change trackers.
-    this.pulse = {};
-
-    this.continualAdders = {};
-
-    this._processControlSchema(controlSchema);
-
-    const inputManager: InputManager = gameRuntime.tracked.inputManager.cachedValue;
-    inputManager.registerController(this);
-  }
-
-  // This allows plugins to add their own control bindings.
-  extendControlSchema(controlSchema) {
-    //
-  }
-
-  _processControlSchema(controlSchema) {
     // Set up controlsByKey, state, and pulse.
     _.each(controlSchema, (control: ControlSchema['key'], actionName: string) => {
+      if (this.controlSchema[actionName]) {
+        return console.error(
+          `[ModeController] Ignoring attempt to set register control action ` +
+          `'${actionName}' in mode ${this.name} - ${this.name} already has `
+          + `that action defined for something else.`
+        );
+      }
+
+      this.controlSchema[actionName] = control;
       const keys = control.current;
       // The user can assign multiple keys to each action; store them all in
       // controlsByKey individually.
@@ -86,6 +93,7 @@ export default class ModeController {
   }
 
   receiveAction({ action, isDown, analogData }) {
+    console.log(this.controlSchema);
     const control = this.controlSchema[action];
     const actionType = control.actionType;
     const kbAmount = control.kbAmount;

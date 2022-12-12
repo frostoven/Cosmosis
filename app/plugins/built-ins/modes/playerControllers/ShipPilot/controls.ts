@@ -8,8 +8,7 @@ const shipPilotControls: ControlSchema = {
   toggleMouseSteering: { actionType: ActionType.pulse, current: null, default: [ 'spMouseMiddle', 'Numpad5' ] },
   engageHyperdrive:    { actionType: ActionType.pulse, current: null, default: [ 'KeyJ' ] },
   toggleFlightAssist:  { actionType: ActionType.pulse, current: null, default: [ 'KeyZ' ] },
-  cycleInternalLights: { actionType: ActionType.pulse, current: null, default: [ 'Numpad0' ] },
-  cycleExternalLights: { actionType: ActionType.pulse, current: null, default: [ 'KeyL' ] },
+  // cycleExternalLights: { actionType: ActionType.pulse, current: null, default: [ 'KeyL' ] },
 
   // Analog controls
   thrustInc:           { actionType: ActionType.analogAdditive, current: null, default: [ 'KeyW' ] },

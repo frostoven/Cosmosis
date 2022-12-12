@@ -45,7 +45,7 @@ export default class MeshLoader {
             meshCodeHandler.handle({ node, userData });
           });
 
-          this.trackedMesh.setValue(gltf);
+          this.trackedMesh.setValue({ gltf, inventory: meshCodeHandler.inventory });
         });
       }
     });
