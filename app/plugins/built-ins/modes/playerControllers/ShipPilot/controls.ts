@@ -14,18 +14,14 @@ const shipPilotControls: ControlSchema = {
   // Analog controls
   thrustInc:           { actionType: ActionType.analogAdditive, current: null, default: [ 'KeyW' ] },
   thrustDec:           { actionType: ActionType.analogAdditive, current: null, default: [ 'KeyS' ] },
-  pitchUp:             { actionType: ActionType.analogLiteral, current: null, default: [ 'spNorth' ] },
-  pitchDown:           { actionType: ActionType.analogLiteral, current: null, default: [ 'spSouth' ] },
+  // TODO: see if we can create a hybrid mode that additive during free-look, but literal during lock.
+  //  Alternatively, we'll need shipPilot to override action types directly as changes happen.
+  pitchUp:             { actionType: ActionType.analogAdditive, kbAmount: -1000, current: null, default: [ 'spNorth', 'Numpad8' ] },
+  pitchDown:           { actionType: ActionType.analogAdditive, kbAmount:  1000, current: null, default: [ 'spSouth', 'Numpad2' ] },
   rollLeft:            { actionType: ActionType.analogLiteral, current: null, default: [ 'KeyA' ] },
   rollRight:           { actionType: ActionType.analogLiteral, current: null, default: [ 'KeyD' ] },
-  yawLeft:             { actionType: ActionType.analogLiteral, current: null, default: [ 'spWest' ] },
-  yawRight:            { actionType: ActionType.analogLiteral, current: null, default: [ 'spEast' ] },
-
-  // Look-around controls
-  lookUp:    { actionType: ActionType.analogAdditive, kbAmount: -1000, current: null, default: [ 'spNorth', 'Numpad8' ] },
-  lookDown:  { actionType: ActionType.analogAdditive, kbAmount:  1000, current: null, default: [ 'spSouth', 'Numpad2' ] },
-  lookLeft:  { actionType: ActionType.analogAdditive, kbAmount: -1000, current: null, default: [ 'spWest', 'Numpad4' ] },
-  lookRight: { actionType: ActionType.analogAdditive, kbAmount:  1000, current: null, default: [ 'spEast', 'Numpad6' ] },
+  yawLeft:             { actionType: ActionType.analogAdditive, kbAmount: -1000, current: null, default: [ 'spWest', 'Numpad4' ] },
+  yawRight:            { actionType: ActionType.analogAdditive, kbAmount:  1000, current: null, default: [ 'spEast', 'Numpad6'  ] },
 
   // Dev controls.
   _debugFullWarpSpeed: { actionType: ActionType.pulse, current: null, default: [ 'ScrollLock' ] },

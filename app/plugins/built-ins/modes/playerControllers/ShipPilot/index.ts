@@ -66,7 +66,7 @@ class ShipPilot extends ModeController {
     });
 
     const state = this.state;
-    state.lookLeft = state.lookRight = state.lookUp = state.lookDown = 0;
+    state.yawLeft = state.yawRight = state.pitchUp = state.pitchDown = 0;
   }
 
   // Disallows a 360 degree neck, but also prevent the player's head from
@@ -77,8 +77,8 @@ class ShipPilot extends ModeController {
     // if (x > headYMax) {
     //   const diff = x - headYMax;
     //   x = headYMax;
-    //   this.state.lookLeft -= diff;
-    //   this.state.lookRight -= diff;
+    //   this.state.yawLeft -= diff;
+    //   this.state.yawRight -= diff;
     // }
     if (axis > 0) {
       if (axis > max) {
@@ -97,11 +97,11 @@ class ShipPilot extends ModeController {
   }
 
   stepFreeLook() {
-    let x = this.state.lookLeft + this.state.lookRight;
-    let y = this.state.lookUp + this.state.lookDown;
+    let x = this.state.yawLeft + this.state.yawRight;
+    let y = this.state.pitchUp + this.state.pitchDown;
 
-    this.constrainNeck(x, headXMax, this.state, 'lookLeft', 'lookRight');
-    this.constrainNeck(y, headYMax, this.state, 'lookUp', 'lookDown');
+    this.constrainNeck(x, headXMax, this.state, 'yawLeft', 'yawRight');
+    this.constrainNeck(y, headYMax, this.state, 'pitchUp', 'pitchDown');
 
     // Note: don't use delta here. We don't want mouse speed to be dependent on
     // framerate.
