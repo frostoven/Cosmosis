@@ -63,6 +63,22 @@ Creates an
 Note that Blender exports these in a way that causes Three.js to import them as
 Object3D instances (which happens to be ideal for our purposes).
 
+You'll probably want to use `moduleHook` often. Set to `cockpitLights` if
+placing in the cockpit.<!-- TODO: add: , or if used in a room with a switch,
+you can target the light with that switch. -->
+
+### Fake light
+```
+type: fakeLight
+moduleHook: [module that deals with lighting] | example: 'cockpitLights'
+```
+Fake lights are meant to be used alongside real lights. For example, if you
+create an area light, switching it on and off won't affect any materials of the
+light fixture meshes you have around it. Your light fixture meshes would be
+tagged as fake lights; when toggled, light-handler modules will convert all its
+emissive materials to standard materials (and vice-versa).
+<!-- TODO: show example of fake light combined with area light here -->
+
 <!-- Planned items
 
 #### Door

@@ -12,7 +12,7 @@ export default class MeshCodeHandler {
     const type = userData.type;
     if (this[type]) {
       const handler = this[type].bind(this);
-      return handler({ node, userData });
+      handler({ node, userData });
     }
   }
 
@@ -31,7 +31,24 @@ export default class MeshCodeHandler {
     const light = new AreaLight(node, !!userData.devHelper).getLight();
     this._gltf.scene.add(light);
     node.attach(light);
-    // We can use the 'visible' property to toggle lights.
+    // visibility toggles lights in this case.
     light.visible = false
+  }
+
+  fakeLight({ node, userData }) {
+    console.log('fake light:', node);
+    if (!node.children) {
+      console.warn('[MeshCodeHandler] Warning: could not process fake light:', node, userData);
+      return;
+    }
+
+    const children = node.children;
+    for (let i = 0, len = children.length; i < len; i++) {
+      const child = children[i];
+      if (child.material) {
+        // emissiveIntensity toggles lights in this case.
+        child.material.emissiveIntensity = 0;
+      }
+    }
   }
 }
