@@ -46,13 +46,34 @@ export default class ModeController {
 
     this.continualAdders = {};
 
+    this._processControlSchema(controlSchema);
+
+    const inputManager: InputManager = gameRuntime.tracked.inputManager.cachedValue;
+    inputManager.registerController(this);
+  }
+
+  // This allows plugins to add their own control bindings.
+  extendControlSchema(controlSchema) {
+    //
+  }
+
+  _processControlSchema(controlSchema) {
     // Set up controlsByKey, state, and pulse.
     _.each(controlSchema, (control: ControlSchema['key'], actionName: string) => {
       const keys = control.current;
       // The user can assign multiple keys to each action; store them all in
       // controlsByKey individually.
       _.each(keys, (key) => {
-        this.controlsByKey[key] = actionName;
+        if (this.controlsByKey[key]) {
+          console.warn(
+            `[ModeController] Ignoring attempt to set the same key (${key}) ` +
+            `for than one action (${actionName} would conflict with ` +
+            `${this.controlsByKey[key]})`
+          );
+        }
+        else {
+          this.controlsByKey[key] = actionName;
+        }
       });
 
       if (control.actionType === ActionType.pulse) {
@@ -62,9 +83,6 @@ export default class ModeController {
         this.state[actionName] = 0;
       }
     });
-
-    const inputManager: InputManager = gameRuntime.tracked.inputManager.cachedValue;
-    inputManager.registerController(this);
   }
 
   receiveAction({ action, isDown, analogData }) {
