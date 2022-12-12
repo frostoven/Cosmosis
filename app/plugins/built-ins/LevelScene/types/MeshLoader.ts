@@ -4,8 +4,7 @@ import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 
 import AssetFinder from '../../../../local/AssetFinder';
 import ChangeTracker from 'change-tracker/src';
-import { MeshTypes } from './MeshTypes';
-import AreaLight from './AreaLight';
+import MeshCodeHandler from '../MeshCodeHandler';
 
 const gltfLoader = new GLTFLoader();
 const dracoLoader = new DRACOLoader();
@@ -31,6 +30,7 @@ export default class MeshLoader {
 
         gltfLoader.setPath(dir + '/');
         gltfLoader.load(filename, (gltf) => {
+          const meshCodeHandler = new MeshCodeHandler(gltf);
 
           gltf.scene.traverse(function(node) {
             if (node.isMesh) {
@@ -42,16 +42,7 @@ export default class MeshLoader {
             }
 
             const userData = node.userData;
-            const type = userData.type;
-
-            switch (type) {
-              case MeshTypes.areaLight:
-                // console.log(`Item (isMesh=${node.isMesh}) node:`, node);
-                const light = new AreaLight(node).getLight();
-                gltf.scene.remove(node);
-                gltf.scene.add(light);
-                break;
-            }
+            meshCodeHandler.handle({ node, userData });
           });
 
           this.trackedMesh.setValue(gltf);

@@ -49,10 +49,14 @@ regions (wing, nose, etc.).
 
 All optional properties below are written in `[square brackets]`.
 
-#### Area light
+### Area light
 ```
 type: areaLight
+[moduleHook]: Name of a module to bind to. Useful with, ex., 'cockpitLights'
+[gfxqLight]: low/medium/high | force this light into a gfx quality category
+[devHelper]: true/false | If true, shows outlines to help debug the light
 ```
+<!-- TODO: make gfxqLight comma delimited. -->
 Creates an
 [area light](https://threejs.org/docs/?q=light#api/en/lights/RectAreaLight).
 
