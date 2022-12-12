@@ -122,7 +122,7 @@ class ShipPilot extends ModeController {
   }
 }
 
-const shipPilotPlugin = new CosmosisPlugin('shipPilotPlugin', ShipPilot);
+const shipPilotPlugin = new CosmosisPlugin('shipPilot', ShipPilot);
 
 export {
   ShipPilot,

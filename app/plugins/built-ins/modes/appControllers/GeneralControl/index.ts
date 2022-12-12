@@ -37,7 +37,7 @@ class GeneralControl extends ModeController {
   }
 }
 
-const generalControlPlugin = new CosmosisPlugin('generalControlPlugin', GeneralControl);
+const generalControlPlugin = new CosmosisPlugin('generalControl', GeneralControl);
 
 export {
   GeneralControl,

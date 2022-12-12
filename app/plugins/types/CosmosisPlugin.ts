@@ -11,6 +11,16 @@ export default class CosmosisPlugin extends ChangeTracker implements PluginInter
 
   constructor(trackedName: string, TrackedClass: any, overrides?: PluginInterface) {
     super();
+    if (trackedName === 'template') {
+      throw '[CosmosisPlugin] Fatal error: you may not call your plugin ' +
+      '"template" as this is likely a mistake.';
+    }
+    if (trackedName.endsWith('Plugin')) {
+      throw '[CosmosisPlugin] Please remove "Plugin" from end end of your ' +
+      `plugin name (${trackedName}) as adding it is likely an accident. If ` +
+      'you disagree, please raise an issue and we\'ll consider changing ' +
+      'this rule.'
+    }
     if (trackedName) {
       /** @type ChangeTracker */
       gameRuntime.tracked[trackedName] = this;

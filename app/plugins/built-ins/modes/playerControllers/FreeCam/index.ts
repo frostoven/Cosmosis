@@ -73,7 +73,7 @@ class FreeCam extends ModeController {
   }
 }
 
-const freeCamPlugin = new CosmosisPlugin('freeCamPlugin', FreeCam);
+const freeCamPlugin = new CosmosisPlugin('freeCam', FreeCam);
 
 export {
   FreeCam,
