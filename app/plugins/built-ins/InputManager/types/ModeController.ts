@@ -93,7 +93,6 @@ export default class ModeController {
   }
 
   receiveAction({ action, isDown, analogData }) {
-    console.log(this.controlSchema);
     const control = this.controlSchema[action];
     const actionType = control.actionType;
     const kbAmount = control.kbAmount;
