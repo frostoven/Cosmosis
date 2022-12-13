@@ -58,6 +58,22 @@ export default class Generator {
     }
   }
 
+  getDrainAsRatio(amount) {
+    if (!this._poweredOn) {
+      return 0;
+    }
+
+    if (this._outputRatio === 1) {
+      return 1;
+    }
+    else {
+      if (amount > this.maxOutput) {
+        return this.maxOutput / amount;
+      }
+      return this._outputRatio;
+    }
+  }
+
   connectDrain(device) {
     this._allConnectedDrains.push(device);
 
@@ -89,6 +105,12 @@ export default class Generator {
     this._supplyStateCache.demand = totalPowerNeeded;
     this._supplyStateCache.outputRatio = this._outputRatio;
     this._supplyStateCache.effectiveOutput = this._effectiveOutput;
+
+    // We're able to catch things this way because the ShipModule base class
+    // defaults are set to -Infinity.
+    if (this._supplyStateCache.demand === -Infinity) {
+      throw 'A module was connected with power requirements left undefined. Please correct this.';
+    }
 
     console.log('Device connected. Supply state:', this.getSupplyState());
   }
