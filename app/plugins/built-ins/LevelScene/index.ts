@@ -21,6 +21,8 @@ import Generator from '../shipModules/Generator/types/Generator';
 import CockpitLights from '../shipModules/CockpitLights/types/CockpitLights';
 import Multimeter from '../shipModules/Multimeter/types/Multimeter';
 import ElectricalHousing from '../shipModules/ElectricalHousing/types/ElectricalHousing';
+import ExternalLights
+  from '../shipModules/ExternalLights/types/ExternalLights';
 
 
 // TODO:
@@ -175,6 +177,7 @@ class LevelScene extends Scene {
       const electricalHousing: ElectricalHousing = hub.acquirePart({ name: 'electricalHousing', inventory });
       const generator: Generator = hub.acquirePart({ name: 'generator', inventory });
       const cockpitLights: CockpitLights = hub.acquirePart({ name: 'cockpitLights', inventory });
+      const externalLights: ExternalLights = hub.acquirePart({ name: 'externalLights', inventory });
       const multimeter: Multimeter = hub.acquirePart({ name: 'multimeter', inventory });
 
       // Note: this starts the process of stepping modules each frame. We do
@@ -182,12 +185,13 @@ class LevelScene extends Scene {
       // the player things going online spontaneously (though, realistically,
       // code setup probably happens in under one frame).
       electricalHousing.embed([
-        generator, cockpitLights, multimeter,
+        generator, cockpitLights, externalLights, multimeter,
       ]);
 
       generator.powerOn();
       hub.plug(multimeter).intoPowerOutletOf(generator);
       hub.plug(cockpitLights).intoPowerOutletOf(generator);
+      hub.plug(externalLights).intoPowerOutletOf(generator);
     });
   }
 

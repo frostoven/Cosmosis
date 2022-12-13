@@ -107,7 +107,6 @@ export default class MeshCodeHandler {
         if (child.material.emissiveIntensity) {
           // emissiveIntensity toggles lights in this case.
           child.material.emissiveIntensity = 0;
-          console.log('===> Emissive material:', child.material);
           switchableChildren.push(child);
         }
       }
@@ -117,5 +116,3 @@ export default class MeshCodeHandler {
     }
   }
 }
-
-console.log({ MeshCodeHandler });

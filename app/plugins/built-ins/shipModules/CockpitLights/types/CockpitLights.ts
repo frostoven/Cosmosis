@@ -3,8 +3,10 @@ import { ShipPilot } from '../../../modes/playerControllers/ShipPilot';
 import { NodeOps } from '../../../NodeOps';
 import ShipModule from '../../types/ShipModule';
 
+// TODO: move core functionality into a base class that similar devices can
+//  use.
 export default class CockpitLights extends ShipModule {
-  private readonly _inventory: any;
+  protected _inventory: any;
   private _switchedOn: boolean;
   private _hasPower: boolean;
   // The percentage of energy we're receiving vs what we actually need.
@@ -15,7 +17,7 @@ export default class CockpitLights extends ShipModule {
 
   constructor({ inventory }) {
     super();
-    this.friendlyName = 'cockpit light circuit';
+    this.friendlyName = 'cockpit lights circuit';
     this._inventory = inventory.cockpitLights;
     this._switchedOn = false;
     this._hasPower = false;
@@ -27,8 +29,10 @@ export default class CockpitLights extends ShipModule {
     this.bootPowerNeeded = 12;
     // this._powerAdjusted = this.powerNeeded * this._userAdjustedRatio;
 
-    console.log('--> CockpitLights received inventory:', this._inventory);
+    this._setupListeners();
+  }
 
+  _setupListeners() {
     gameRuntime.tracked.shipPilot.getOnce((shipPilot: ShipPilot) => {
       shipPilot.pulse.cycleCockpitLights.getEveryChange(this._handleUserEvent.bind(this));
     });
@@ -42,9 +46,7 @@ export default class CockpitLights extends ShipModule {
   }
 
   _changeSwitchState() {
-    // console.log(`==> _changeSwitchState: Number(${this._switchedOn && this._hasPower}) * ${this._ratioMet}`);
-    console.log(`==> _changeSwitchState: Number(${this._switchedOn} && ${this._hasPower}) * ${this._ratioMet}`);
-
+    // console.log(`==> _changeSwitchState: Number(${this._switchedOn} && ${this._hasPower}) * ${this._ratioMet}`);
     gameRuntime.tracked.nodeOps.getOnce((nodeOps: NodeOps) => {
       const inventory = this._inventory;
       for (let i = 0, len = inventory.length; i < len; i++) {
@@ -68,10 +70,9 @@ export default class CockpitLights extends ShipModule {
   setRatioAndInvalidate(value) {
     if (this._ratioMet !== value) {
 
-
-      const energy = this._powerSource.drain(this.powerNeeded);
-      const energyRatio = this._powerSource.getDrainAsRatio(this.powerNeeded);
-      console.log('==>', {energy, energyRatio});
+      // const energy = this._powerSource.drain(this.powerNeeded);
+      // const energyRatio = this._powerSource.getDrainAsRatio(this.powerNeeded);
+      // console.log('==>', {energy, energyRatio});
 
       this._ratioMet = value;
       this._changeSwitchState();
