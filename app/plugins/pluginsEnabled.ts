@@ -16,15 +16,17 @@ import { generatorModulePlugin } from './built-ins/shipModules/Generator';
 import { multimeterModulePlugin } from './built-ins/shipModules/Multimeter';
 import { electricalHousingModulePlugin } from './built-ins/shipModules/ElectricalHousing';
 import { cockpitLightsModulePlugin } from './built-ins/shipModules/CockpitLights';
+import { nodeOpsPlugin } from './built-ins/NodeOps';
 
 const builtInPluginsEnabled: PluginEntry[] = [
   // General
   { name: 'metadata', pluginInstance: metadataPlugin },
   { name: 'core', pluginInstance: corePlugin },
+  { name: 'nodeOps', pluginInstance: nodeOpsPlugin },
   { name: 'player', pluginInstance: playerPlugin, dependencies: [ 'core' ] },
 
   // Universe
-  { name: 'levelScene', pluginInstance: levelScenePlugin, dependencies: [ 'core' ], optional: [ 'shipModuleHub' ] },
+  { name: 'levelScene', pluginInstance: levelScenePlugin, dependencies: [ 'core', 'nodeOps' ], optional: [ 'shipModuleHub' ] },
   { name: 'spaceScene', pluginInstance: spaceScenePlugin, dependencies: [ 'core' ] },
   { name: 'location', pluginInstance: locationPlugin, dependencies: [ 'core', 'player', 'levelScene', 'spaceScene' ] },
   { name: 'navigation', pluginInstance: navigationPlugin, dependencies: [ 'core', 'location' ] },
@@ -39,7 +41,7 @@ const builtInPluginsEnabled: PluginEntry[] = [
   // Ship modules
   { name: 'electricalHousingModule', pluginInstance: electricalHousingModulePlugin },
   { name: 'generatorModule', pluginInstance: generatorModulePlugin },
-  { name: 'cockpitLightsModule', pluginInstance: cockpitLightsModulePlugin, dependencies: [ 'shipPilot' ] },
+  { name: 'cockpitLightsModule', pluginInstance: cockpitLightsModulePlugin, dependencies: [ 'shipPilot', 'nodeOps' ] },
   { name: 'multimeterModule', pluginInstance: multimeterModulePlugin },
 
   // Ship module hub
