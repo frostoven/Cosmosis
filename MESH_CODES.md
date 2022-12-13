@@ -72,12 +72,23 @@ you can target the light with that switch. -->
 type: fakeLight
 moduleHook: [module that deals with lighting] | example: 'cockpitLights'
 ```
+Use this with emissive textures. An emissive texture will have its emissive
+intensity cycled between 0 (off) and 1 (on) when being switched off and on.
+
 Fake lights are meant to be used alongside real lights. For example, if you
-create an area light, switching it on and off won't affect any materials of the
-light fixture meshes you have around it. Your light fixture meshes would be
-tagged as fake lights; when toggled, light-handler modules will convert all its
-emissive materials to standard materials (and vice-versa).
+create an area light, switching it on and off won't affect any emissive
+materials of the light fixture meshes you have next to the real light. Your
+light fixture meshes should be tagged as fake lights; when toggled,
+light-handler modules will toggle its emissive intensity.
 <!-- TODO: show example of fake light combined with area light here -->
+
+Important note: if in Blender you use a single emissive texture on multiple
+light fixtures, the game engine will assume all emissive textures are part of
+the same light circuit and power them all off even if you target just one. This
+is a performance optimisation that drastically reduces the amount of work
+involved with changing fake light power state. If you would like to avoid this
+optimisation for certain lights, clone their material in Blender and give them
+a different name.
 
 <!-- Planned items
 

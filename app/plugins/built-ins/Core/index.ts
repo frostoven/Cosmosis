@@ -55,6 +55,14 @@ export default class Core {
 
     // Used for custom framerate control.
     if (this._maxFrameDelta) {
+      // TODO: this method increases cpu by 20% on my system (though it
+      //  eliminates stuttering and frame inaccuracy that setTimeout tends to
+      //  cause) Perhaps make a dynamic system where setTimout delay only
+      //  50%-75% of all frames. Which a bit of luck we can achieve a
+      //  stutterless hybrid that doesn't increase CPU usage.
+      // TODO: until the previous point is resolved, add note in menu that
+      //  manual frame control increases CPU temperature and that
+      //  system-managed is the most optimal.
       this._frameLimitCount += delta;
       if ((this._frameLimitCount) <= this._maxFrameDelta) {
         return;
