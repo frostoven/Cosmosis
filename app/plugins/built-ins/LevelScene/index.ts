@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import {
   BoxGeometry,
   MeshBasicMaterial,
@@ -171,11 +170,12 @@ class LevelScene extends Scene {
     // TODO: formalise the hardcoded ship modules here into a proper system.
     gameRuntime.tracked.shipModuleHub.getOnce((hub: ShipModuleHub) => {
       this.moduleHub = hub;
+      const inventory = this._vehicleInventory;
 
-      const electricalHousing: ElectricalHousing = hub.acquirePart('electricalHousing');
-      const generator: Generator = hub.acquirePart('generator');
-      const cockpitLights: CockpitLights = hub.acquirePart('cockpitLights');
-      const multimeter: Multimeter = hub.acquirePart('multimeter');
+      const electricalHousing: ElectricalHousing = hub.acquirePart({ name: 'electricalHousing', inventory });
+      const generator: Generator = hub.acquirePart({ name: 'generator', inventory });
+      const cockpitLights: CockpitLights = hub.acquirePart({ name: 'cockpitLights', inventory });
+      const multimeter: Multimeter = hub.acquirePart({ name: 'multimeter', inventory });
 
       // Note: this starts the process of stepping modules each frame. We do
       // this before assembly, and not after, because it has potential to show
@@ -187,11 +187,7 @@ class LevelScene extends Scene {
 
       generator.powerOn();
       hub.plug(multimeter).intoPowerOutletOf(generator);
-
-      _.each(this._vehicleInventory, (inventoryArray, responsibleModule) => {
-        // console.log('--->', {responsibleModule, inventoryArray});
-        //
-      });
+      hub.plug(cockpitLights).intoPowerOutletOf(generator);
     });
   }
 

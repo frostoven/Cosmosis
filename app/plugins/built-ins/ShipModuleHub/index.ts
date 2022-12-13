@@ -13,12 +13,12 @@ class ShipModuleHub {
 
   // TODO: Decide on naming here. spawnPart might be more appropriate if we
   //  continue to use this function for unconditional part spawning.
-  acquirePart(partName: string) {
-    const deviceSpawner: ModuleSpawner = gameRuntime.tracked[`${partName}Module`]?.cachedValue;
+  acquirePart({ name, inventory } : { name: string, inventory: {} }) {
+    const deviceSpawner: ModuleSpawner = gameRuntime.tracked[`${name}Module`]?.cachedValue;
     if (!deviceSpawner) {
-      throw `Part type '${partName}' (aka ${partName}Module) does not seem to exist in this reality.`;
+      throw `Part type '${name}' (aka ${name}Module) does not seem to exist in this reality.`;
     }
-    return deviceSpawner.createPart();
+    return deviceSpawner.createPart({ inventory });
   }
 }
 

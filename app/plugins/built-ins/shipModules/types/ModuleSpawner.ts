@@ -1,5 +1,5 @@
 export default class ModuleSpawner {
-  createPart(): any {
+  createPart({ inventory } : { inventory? } = {}): any {
     throw 'Child class has not implemented createPart()';
   }
 }

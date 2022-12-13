@@ -12,8 +12,9 @@ class CockpitLightsModule extends ModuleSpawner {
       shipPilot.extendControlSchema(cockpitLightControls);
     });
   }
-  createPart() {
-    return new CockpitLights();
+
+  createPart({ inventory }) {
+    return new CockpitLights({ inventory });
   }
 }
 
