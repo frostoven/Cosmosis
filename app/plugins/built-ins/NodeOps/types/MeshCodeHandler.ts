@@ -1,4 +1,6 @@
-import AreaLight from './types/AreaLight';
+import { Object3D } from 'three';
+import AreaLight from './AreaLight';
+import { MeshCodes } from '../interfaces/MeshCodes';
 
 // Dev note on module hooks: they're sometimes optional, sometimes required,
 // and at other times implied. Which it is depends on the mesh code type. For
@@ -15,15 +17,31 @@ export default class MeshCodeHandler {
   // requirements).
   inventory: { [moduleHookName: string]: Array<any> };
 
+  // Between Blender and Three.js, they're smart enough to reuse the same
+  // material on different meshes. This means that we don't need to loop
+  // through every single mesh when disabling fake lights; we can simply alter
+  // the mesh and the rest will follow suit. This object keeps track of fake
+  // light materials we've already placed in inventory to avoid saving the same
+  // material twice.
+  private readonly _savedMaterials: {};
+
   constructor(gltf) {
     this._gltf = gltf;
     this.inventory = {};
+    this._savedMaterials = {};
   }
 
   handle({ node, userData }) {
     const type = userData.type;
     if (type?.match(/[^a-zA-Z\d]/g)) {
       return console.error('[MeshCodeHandler] Types may not contain special characters.');
+    }
+    if (userData.typeId) {
+      console.warn(
+        '[MeshCodeHandler] The "typeId" field is reserved and will be ' +
+        'replaced with an internal value; please consider removing it from ' +
+        'your mesh.'
+      );
     }
 
     if (this[type]) {
@@ -44,6 +62,8 @@ export default class MeshCodeHandler {
   //  values: 'top-down', 'bottom-up', 'left to right', 'front to back', etc,
   //  or an angle number.
   areaLight({ node, userData }) {
+    userData.typeId = MeshCodes.areaLight;
+
     // TODO: remove this. It's a substitute for until we figure out how to deal
     //  with spaceship lifecycles. This disable non-hq lights entirely.
     if (userData.gfxqLight === 'low' || userData.gfxqLight === 'medium') {
@@ -58,28 +78,44 @@ export default class MeshCodeHandler {
     light.visible = false;
 
     if (userData.moduleHook) {
-      this._targetModule(userData.moduleHook, { node, userData });
+      this._targetModule(userData.moduleHook, { node: light, userData });
     }
   }
 
   fakeLight({ node, userData }) {
-    console.log('fake light:', node);
+    userData.typeId = MeshCodes.fakeLight;
+
     if (!node.children) {
       console.warn('[MeshCodeHandler] Warning: could not process fake light:', node, userData);
       return;
     }
 
+    const switchableChildren: Array<Object3D> = [];
+
     const children = node.children;
     for (let i = 0, len = children.length; i < len; i++) {
       const child = children[i];
       if (child.material) {
-        // emissiveIntensity toggles lights in this case.
-        child.material.emissiveIntensity = 0;
+        if (this._savedMaterials[child.material.uuid]) {
+          // We've already stored this material. Skip it.
+          continue;
+        }
+        else {
+          this._savedMaterials[child.material.uuid] = true;
+        }
 
-        if (userData.moduleHook) {
-          this._targetModule(userData.moduleHook, { node, userData });
+        if (child.material.emissiveIntensity) {
+          // emissiveIntensity toggles lights in this case.
+          child.material.emissiveIntensity = 0;
+          console.log('===> Emissive material:', child.material);
+          switchableChildren.push(child);
         }
       }
     }
+    if (userData.moduleHook && switchableChildren.length) {
+      this._targetModule(userData.moduleHook, { node: switchableChildren, userData });
+    }
   }
 }
+
+console.log({ MeshCodeHandler });

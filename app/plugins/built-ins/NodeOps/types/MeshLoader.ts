@@ -4,7 +4,7 @@ import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 
 import AssetFinder from '../../../../local/AssetFinder';
 import ChangeTracker from 'change-tracker/src';
-import MeshCodeHandler from '../MeshCodeHandler';
+import MeshCodeHandler from '../../NodeOps/types/MeshCodeHandler';
 
 const gltfLoader = new GLTFLoader();
 const dracoLoader = new DRACOLoader();
