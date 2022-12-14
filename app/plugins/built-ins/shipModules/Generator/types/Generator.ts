@@ -76,7 +76,10 @@ export default class Generator {
 
   connectDrain(device) {
     this._allConnectedDrains.push(device);
+    this.recalculateDrainCache();
+  }
 
+  recalculateDrainCache() {
     let totalPowerNeeded = 0;
     for (let i = 0, len = this._allConnectedDrains.length; i < len; i++) {
       const drain = this._allConnectedDrains[i];
@@ -112,7 +115,7 @@ export default class Generator {
       throw 'A module was connected with power requirements left undefined. Please correct this.';
     }
 
-    console.log('Device connected. Supply state:', this.getSupplyState());
+    // console.log('Device connected. Supply state:', this.getSupplyState());
   }
 
   getSupplyState() {

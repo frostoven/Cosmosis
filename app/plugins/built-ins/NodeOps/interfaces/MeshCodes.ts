@@ -1,7 +1,8 @@
 enum MeshCodes {
   unknown,
-  areaLight,
   fakeLight,
+  areaLight,
+  spotLight,
 }
 
 export {

@@ -5,6 +5,7 @@ import { RectAreaLightHelper } from 'three/examples/jsm/helpers/RectAreaLightHel
 export default class AreaLight {
   private readonly _rectLight: any;
 
+  // TODO: the dimensions this generates is weird. Investigate.
   constructor(mesh: Object3D, createHelper=false) {
     const width = mesh.scale.x;
     const height = mesh.scale.y;

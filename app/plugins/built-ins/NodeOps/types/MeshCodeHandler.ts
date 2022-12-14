@@ -1,6 +1,7 @@
 import { Object3D } from 'three';
 import AreaLight from './AreaLight';
 import { MeshCodes } from '../interfaces/MeshCodes';
+import ZSpotlight from './ZSpotlight';
 
 // Dev note on module hooks: they're sometimes optional, sometimes required,
 // and at other times implied. Which it is depends on the mesh code type. For
@@ -76,6 +77,23 @@ export default class MeshCodeHandler {
     node.attach(light);
     // visibility toggles lights in this case.
     light.visible = false;
+
+    if (userData.moduleHook) {
+      this._targetModule(userData.moduleHook, { node: light, userData });
+    }
+  }
+
+  spotLight({ node, userData }) {
+    userData.typeId = MeshCodes.spotLight;
+
+    // TODO: remove this. It's a substitute for until we figure out how to deal
+    //  with spaceship lifecycles. This disable non-hq lights entirely.
+    if (userData.gfxqLight === 'low' || userData.gfxqLight === 'medium') {
+      node.visible = false;
+      return;
+    }
+
+    const light = new ZSpotlight(node, !!userData.devHelper).getLight();
 
     if (userData.moduleHook) {
       this._targetModule(userData.moduleHook, { node: light, userData });
