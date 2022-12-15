@@ -518,7 +518,7 @@
             "extras" : {
                 "moduleHook" : "externalLights",
                 "gfxqLight" : "high",
-                "type" : "spotLight"
+                "type" : "spotlight"
             },
             "name" : "Spot",
             "rotation" : [
@@ -558,7 +558,7 @@
             ],
             "extras" : {
                 "moduleHook" : "externalLights",
-                "type" : "spotLight",
+                "type" : "spotlight",
                 "gfxqLight" : "high"
             },
             "name" : "Spot.001",

@@ -49,6 +49,7 @@ regions (wing, nose, etc.).
 
 All optional properties below are written in `[square brackets]`.
 
+
 ### Area light
 ```
 type: areaLight
@@ -66,6 +67,7 @@ Object3D instances (which happens to be ideal for our purposes).
 You'll probably want to use `moduleHook` often. Set to `cockpitLights` if
 placing in the cockpit.<!-- TODO: add: , or if used in a room with a switch,
 you can target the light with that switch. -->
+
 
 ### Fake light
 ```
@@ -89,6 +91,15 @@ is a performance optimisation that drastically reduces the amount of work
 involved with changing fake light power state. If you would like to avoid this
 optimisation for certain lights, clone their material in Blender and give them
 a different name.
+
+
+### Spotlight
+```
+type: spotlight
+[moduleHook]: Name of a module to bind to. Useful with, ex., 'cockpitLights'
+[gfxqLight]: low/medium/high | force this light into a gfx quality category
+[devHelper]: true/false | If true, shows outlines to help debug the light
+```
 
 <!-- Planned items
 
