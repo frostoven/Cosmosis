@@ -4,7 +4,7 @@ import { MeshCodes } from './interfaces/MeshCodes';
 class NodeOps {
   switchLights(node: any, userData: any = {}, powerOutput) {
     // console.log(`Switching lights [`, node, `]. visible=${powerOutput!==0}, intensity=${powerOutput}`);
-    if (userData.typeId === MeshCodes.areaLight || userData.typeId === MeshCodes.spotLight) {
+    if (userData.typeId === MeshCodes.areaLight || userData.typeId === MeshCodes.spotlight) {
       node.visible = powerOutput !== 0;
       node.intensity = powerOutput;
     }

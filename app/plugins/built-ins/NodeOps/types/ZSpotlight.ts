@@ -22,7 +22,7 @@ export default class ZSpotlight {
         const spotlight = mesh.children[i];
 
         // @ts-ignore
-        const spotLightHelper = new SpotLightHelper(spotlight);
+        const spotlightHelper = new SpotLightHelper(spotlight);
 
         // Three helpers unfortunately require that we add the helpers straight
         // into the root scene, and update it each frame, but we currently
@@ -38,8 +38,8 @@ export default class ZSpotlight {
           );
         }
         else {
-          gameRuntime.tracked?.levelScene?.getOnce(level => level.add(spotLightHelper));
-          gameRuntime.tracked?.core?.getOnce((core) => core.onAnimateDone.getEveryChange(() => spotLightHelper.update()));
+          gameRuntime.tracked?.levelScene?.getOnce(level => level.add(spotlightHelper));
+          gameRuntime.tracked?.core?.getOnce((core) => core.onAnimateDone.getEveryChange(() => spotlightHelper.update()));
 
           // Create cube to show them shining onto something.
           const geometry = new BoxGeometry(0.25, 0.25, 0.25);

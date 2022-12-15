@@ -83,8 +83,8 @@ export default class MeshCodeHandler {
     }
   }
 
-  spotLight({ node, userData }) {
-    userData.typeId = MeshCodes.spotLight;
+  spotlight({ node, userData }) {
+    userData.typeId = MeshCodes.spotlight;
 
     // TODO: remove this. It's a substitute for until we figure out how to deal
     //  with spaceship lifecycles. This disable non-hq lights entirely.
