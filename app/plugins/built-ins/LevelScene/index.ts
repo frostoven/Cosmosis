@@ -198,8 +198,8 @@ class LevelScene extends Scene {
   resetCameraSeatPosition() {
     gameRuntime.tracked.player.getOnce((player) => {
       this.onVehicleEntered.getOnce((vehicle) => {
-        player.camera.position.copy(vehicle.cameras[0].parent.position);
-        player.camera.rotation.copy(vehicle.cameras[0].parent.rotation);
+        player.camera.position.copy(vehicle.cameras[0].position);
+        player.camera.rotation.copy(vehicle.cameras[0].rotation);
       });
     });
   }

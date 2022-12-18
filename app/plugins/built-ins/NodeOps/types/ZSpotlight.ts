@@ -18,40 +18,38 @@ export default class ZSpotlight {
     // light.shadow.camera.fov = 30;
 
     if (createHelper) {
-      for (let i = 0, len = mesh.children.length; i < len; i++) {
-        const spotlight = mesh.children[i];
+      const spotlight = mesh;
 
-        // @ts-ignore
-        const spotlightHelper = new SpotLightHelper(spotlight);
+      // @ts-ignore
+      const spotlightHelper = new SpotLightHelper(spotlight);
 
-        // Three helpers unfortunately require that we add the helpers straight
-        // into the root scene, and update it each frame, but we currently
-        // don't properly support arbitrary scene and render hooks. As these
-        // helpers are a dev function and therefore optional, we'll place it in
-        // here without rigorous setup; this means that the following code may
-        // fail to load if ZSpotlight is called too early.
-        if (!gameRuntime.tracked?.levelScene || !gameRuntime.tracked?.core) {
-          console.warn(
-            '[ZSpotlight] Could not create light helper. Note that these ' +
-            'helpers currently only support being loaded after core and ' +
-            'levelScene are done loading.'
-          );
-        }
-        else {
-          gameRuntime.tracked?.levelScene?.getOnce(level => level.add(spotlightHelper));
-          gameRuntime.tracked?.core?.getOnce((core) => core.onAnimateDone.getEveryChange(() => spotlightHelper.update()));
+      // Three helpers unfortunately require that we add the helpers straight
+      // into the root scene, and update it each frame, but we currently
+      // don't properly support arbitrary scene and render hooks. As these
+      // helpers are a dev function and therefore optional, we'll place it in
+      // here without rigorous setup; this means that the following code may
+      // fail to load if ZSpotlight is called too early.
+      if (!gameRuntime.tracked?.levelScene || !gameRuntime.tracked?.core) {
+        console.warn(
+          '[ZSpotlight] Could not create light helper. Note that these ' +
+          'helpers currently only support being loaded after core and ' +
+          'levelScene are done loading.'
+        );
+      }
+      else {
+        gameRuntime.tracked?.levelScene?.getOnce(level => level.add(spotlightHelper));
+        gameRuntime.tracked?.core?.getOnce((core) => core.onAnimateDone.getEveryChange(() => spotlightHelper.update()));
 
-          // Create cube to show them shining onto something.
-          const geometry = new BoxGeometry(0.25, 0.25, 0.25);
-          const material = new MeshStandardMaterial({ color: 0x999999 });
-          const cube = new Mesh(geometry, material);
-          cube.position.copy(spotlight.position);
-          spotlight.add(cube);
-          cube.translateZ(-2.5);
-          cube.rotateX(Math.random() * (Math.random() < 0.5 ? -1 : 1));
-          cube.rotateY(Math.random() * (Math.random() < 0.5 ? -1 : 1));
-          cube.rotateZ(Math.random() * (Math.random() < 0.5 ? -1 : 1));
-        }
+        // Create cube to show them shining onto something.
+        const geometry = new BoxGeometry(0.25, 0.25, 0.25);
+        const material = new MeshStandardMaterial({ color: 0x999999 });
+        const cube = new Mesh(geometry, material);
+        cube.position.copy(spotlight.position);
+        spotlight.add(cube);
+        cube.translateZ(-2.5);
+        cube.rotateX(Math.random() * (Math.random() < 0.5 ? -1 : 1));
+        cube.rotateY(Math.random() * (Math.random() < 0.5 ? -1 : 1));
+        cube.rotateZ(Math.random() * (Math.random() < 0.5 ? -1 : 1));
       }
     }
   }
