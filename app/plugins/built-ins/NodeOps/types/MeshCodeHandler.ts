@@ -1,7 +1,9 @@
+import _ from 'lodash';
 import { Object3D } from 'three';
 import AreaLight from './AreaLight';
 import { MeshCodes } from '../interfaces/MeshCodes';
 import ZSpotlight from './ZSpotlight';
+import { lowercaseFirst } from '../../../../local/utils';
 
 // Dev note on module hooks: they're sometimes optional, sometimes required,
 // and at other times implied. Which it is depends on the mesh code type. For
@@ -33,10 +35,27 @@ export default class MeshCodeHandler {
   }
 
   handle({ node, userData }) {
-    const type = userData.type;
+    const type = userData.csmType;
     if (type?.match(/[^a-zA-Z\d]/g)) {
       return console.error('[MeshCodeHandler] Types may not contain special characters.');
     }
+
+    if (type === 'csmUndefined') {
+      // Quirk of the Blender plugin. It actually means 'not set'.
+      return;
+    }
+
+    // To prevent conflicts with other add-ons, mesh codes in blender are
+    // prefixed with 'csm'. Remove them here. This also means we only keep
+    // entries that are explicitly related to Cosmosis.
+    const abridgedUserData = {};
+    _.each(userData, (entry, key) => {
+      if (key.startsWith('csm')) {
+        key = lowercaseFirst(key.substring(3));
+        abridgedUserData[key] = entry;
+      }
+    });
+
     if (userData.typeId) {
       console.warn(
         '[MeshCodeHandler] The "typeId" field is reserved and will be ' +
@@ -47,7 +66,7 @@ export default class MeshCodeHandler {
 
     if (this[type]) {
       const handler = this[type].bind(this);
-      handler({ node, userData });
+      handler({ node, userData: abridgedUserData });
     }
   }
 
@@ -64,15 +83,16 @@ export default class MeshCodeHandler {
   //  or an angle number.
   areaLight({ node, userData }) {
     userData.typeId = MeshCodes.areaLight;
+    const useDevHelper = userData.devHelper === 'true';
 
     // TODO: remove this. It's a substitute for until we figure out how to deal
     //  with spaceship lifecycles. This disable non-hq lights entirely.
-    if (userData.gfxqLight === 'low' || userData.gfxqLight === 'medium') {
+    if (userData.gfxqLight.includes('low') || userData.gfxqLight.includes('medium')) {
       node.visible = false;
       return;
     }
 
-    const light = new AreaLight(node, !!userData.devHelper).getLight();
+    const light = new AreaLight(node, useDevHelper).getLight();
     this._gltf.scene.add(light);
     node.attach(light);
     // visibility toggles lights in this case.
@@ -85,6 +105,7 @@ export default class MeshCodeHandler {
 
   spotlight({ node, userData }) {
     userData.typeId = MeshCodes.spotlight;
+    const useDevHelper = userData.devHelper === 'true';
 
     // TODO: remove this. It's a substitute for until we figure out how to deal
     //  with spaceship lifecycles. This disable non-hq lights entirely.
@@ -93,7 +114,7 @@ export default class MeshCodeHandler {
       return;
     }
 
-    const light = new ZSpotlight(node, !!userData.devHelper).getLight();
+    const light = new ZSpotlight(node, useDevHelper).getLight();
 
     if (userData.moduleHook) {
       this._targetModule(userData.moduleHook, { node: light, userData });

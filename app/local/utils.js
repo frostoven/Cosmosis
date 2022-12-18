@@ -155,6 +155,10 @@ function spacedTitled(string) {
   return addSpacesBetweenWords(toTitleCase(string));
 }
 
+function lowercaseFirst(string) {
+  return string.charAt(0).toLowerCase() + string.slice(1);
+}
+
 function capitaliseFirst(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
@@ -209,6 +213,7 @@ export {
   addSpacesBetweenWords,
   toTitleCase,
   spacedTitled,
+  lowercaseFirst,
   capitaliseFirst,
   capitaliseEachWord,
   safeString,
