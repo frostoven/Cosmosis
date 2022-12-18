@@ -1,8 +1,15 @@
 ## Intro
 
-Mesh codes are textual tags. How it works is that you select the mesh of
-choice, add an object property, and then use the code most appropriate for what
-you're trying to achieve.
+Mesh codes are textual tags set from within Blender. How it works, is that you
+select the needed mesh, and then add an object property that instructs the
+engine to treat that object in a special way. An example of this is using
+switches to open doors.
+
+**Note:** we've created a Blender plugin available at
+[frostoven/Cosmosis-Blender-Add-On](https://github.com/frostoven/Cosmosis-Blender-Add-On)
+that does all the heavy lifting for you. This document exists for auxiliary
+documentation. The plugin is completely optional however, and this document
+should be all you need to make your own spaceships.
 
 Examples will follow soon. We had working mesh codes in previous versions, but
 they caused some problems, so they're currently being reworked (which makes the
@@ -43,7 +50,7 @@ Your ship switch can now be interacted with in-game:
 
 ## Mesh codes
 
-The `type` property determine what kind of object it is (switch, door, light, etc.). Each type has its own additional properties that go with it. For
+The `csmType` property determine what kind of object it is (switch, door, light, etc.). Each type has its own additional properties that go with it. For
 example, a switch has one or more target doors. Hitboxes may refer to specific
 regions (wing, nose, etc.).
 
@@ -52,27 +59,25 @@ All optional properties below are written in `[square brackets]`.
 
 ### Area light
 ```
-type: areaLight
-[moduleHook]: Name of a module to bind to. Useful with, ex., 'cockpitLights'
-[gfxqLight]: low/medium/high | force this light into a gfx quality category
-[devHelper]: true/false | If true, shows outlines to help debug the light
+csmType: areaLight
+[csmModuleHook]: Name of a module to bind to. Useful with, ex., 'cockpitLights'
+[csmGfxqLight]: low/medium/high | force this light into a gfx quality category
+[csmDevHelper]: true/false | If true, shows outlines to help debug the light
 ```
-<!-- TODO: make gfxqLight comma delimited. -->
-Creates an
-[area light](https://threejs.org/docs/?q=light#api/en/lights/RectAreaLight).
+<!-- TODO: make csmGfxqLight comma delimited. -->
+Creates a surface that emits light uniformly across a rectangular face (see
+[area light](https://threejs.org/docs/?q=light#api/en/lights/RectAreaLight)).
 
-Note that Blender exports these in a way that causes Three.js to import them as
-Object3D instances (which happens to be ideal for our purposes).
-
-You'll probably want to use `moduleHook` often. Set to `cockpitLights` if
-placing in the cockpit.<!-- TODO: add: , or if used in a room with a switch,
+You'll want to set csmModuleHook if you want this hooked up to the game's
+power grid and light switches.
+<!-- TODO: add: , or if used in a room with a switch,
 you can target the light with that switch. -->
 
 
 ### Fake light
 ```
-type: fakeLight
-moduleHook: [module that deals with lighting] | example: 'cockpitLights'
+csmType: fakeLight
+csmModuleHook: [module that deals with lighting] | example: 'cockpitLights'
 ```
 Use this with emissive textures. An emissive texture will have its emissive
 intensity cycled between 0 (off) and 1 (on) when being switched off and on.
@@ -83,6 +88,9 @@ materials of the light fixture meshes you have next to the real light. Your
 light fixture meshes should be tagged as fake lights; when toggled,
 light-handler modules will toggle its emissive intensity.
 <!-- TODO: show example of fake light combined with area light here -->
+
+You'll want to adjust csmModuleHook if you want this hooked up to the game's
+power grid and light switches.
 
 Important note: if in Blender you use a single emissive texture on multiple
 light fixtures, the game engine will assume all emissive textures are part of
@@ -95,17 +103,21 @@ a different name.
 
 ### Spotlight
 ```
-type: spotlight
-[moduleHook]: Name of a module to bind to. Useful with, ex., 'cockpitLights'
-[gfxqLight]: low/medium/high | force this light into a gfx quality category
-[devHelper]: true/false | If true, shows outlines to help debug the light
+csmType: spotlight
+[csmModuleHook]: Name of a module to bind to. Useful with, ex., 'cockpitLights'
+[csmGfxqLight]: low/medium/high | force this light into a gfx quality category
+[csmDevHelper]: true/false | If true, shows outlines to help debug the light
 ```
+Create a focussed light cone.
+
+You'll want to adjust csmModuleHook if you want this hooked up to the game's
+power grid and light switches.
 
 <!-- Planned items
 
 #### Door
 ```
-type: door
+csmType: door
 [id]: yourString
 [switchless]: false
 ```
@@ -114,9 +126,20 @@ The `id` field is only needed if referred to by a switch. You may set
 
 #### Switch
 ```
-type: switch
+csmType: switch
 target: yourDoorId
 ```
 The `target` text should be the same as your door's `id` field.
 
 -->
+
+
+## Why aren't obvious objects inferred?
+
+For example, Blender, too, has a SpotLight, and the engine recognizes it as
+such during import, so why need a mesh code?
+
+The answer is that we might not actually want some items hooked up to ship
+systems. For example, if the player lands on a random large space station, the
+player might not have control over walkway lamps. Consequently, it doesn't make
+sense to assume, for example, that it's a light belonging to the ship.
