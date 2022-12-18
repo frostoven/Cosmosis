@@ -116,13 +116,16 @@ Cosmosis was brought into existence for the following reasons:
 
 #### Excellent modding support
 You can make a fully interactable spaceship yourself **with zero programming
-experience**. All you need is a copy of Blender 2.8+ and to follow the guide on
-mesh codes. Blender does not even need any special add-ons for this to work,
-though a future add-on is on the roadmap to make some tedious tasks faster.
+experience**. All you need is a copy of Blender 3.3. We have a
+[Blender add-on](https://github.com/frostoven/Cosmosis-Blender-Add-On)
+to make this easier, though you can easily manage this without the add-on by
+following our guide on [Cosmosis mesh codes](MESH_CODES.md).
 
-If you are a coder, coded modding support is planned but currently low priority
-due to the fact the game is still rapidly changing. Adding such support in
-future is trivial, because the game is written in JavaScript.
+If you're a coder, coded modding support is in active development;
+documentation and examples will be released soon.
+
+_Note on Blender support: we no longer support Blender 2.93 due to breaking
+changes in Blender 3.x GLTF export processes._
 
 #### Why we provide source code
 There are two niches out there that get poor development: space sims, and
