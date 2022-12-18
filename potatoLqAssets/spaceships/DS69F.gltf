@@ -1,6 +1,6 @@
 {
     "asset" : {
-        "generator" : "Khronos glTF Blender I/O v1.6.16",
+        "generator" : "Khronos glTF Blender I/O v3.3.35",
         "version" : "2.0"
     },
     "extensionsUsed" : [
@@ -49,21 +49,21 @@
     "scenes" : [
         {
             "extras" : {
+                "kitops" : {},
                 "sun_pos_properties" : {
+                    "sun_object" : {},
+                    "object_collection" : {},
                     "day_of_year" : 177
                 },
-                "glTF2ExportSettings" : {
-                    "export_apply" : 1,
-                    "export_cameras" : 1,
-                    "export_draco_mesh_compression_enable" : 1,
-                    "export_extras" : 1,
-                    "export_format" : "GLTF_SEPARATE",
-                    "export_lights" : 1
-                }
+                "bc" : {},
+                "svg_export" : {},
+                "rflow_props" : {}
             },
             "name" : "Scene",
             "nodes" : [
+                0,
                 1,
+                2,
                 3,
                 4,
                 5,
@@ -85,37 +85,25 @@
                 21,
                 22,
                 23,
+                24,
                 25,
-                27,
-                28,
-                29,
-                30,
-                31
+                26,
+                27
             ]
         }
     ],
     "nodes" : [
         {
             "camera" : 0,
-            "name" : "c1_seat_Orientation",
-            "rotation" : [
-                -0.7071067690849304,
-                0,
-                0,
-                0.7071067690849304
-            ]
-        },
-        {
-            "children" : [
-                0
-            ],
-            "extras" : {},
+            "extras" : {
+                "hops" : {}
+            },
             "name" : "c1_seat",
             "rotation" : [
-                -0.6801593899726868,
+                -0.037409354001283646,
                 0,
                 0,
-                -0.7330642342567444
+                0.9993000626564026
             ],
             "translation" : [
                 0.00471312552690506,
@@ -125,25 +113,15 @@
         },
         {
             "camera" : 1,
-            "name" : "c2_seat_Orientation",
-            "rotation" : [
-                -0.7071067690849304,
-                0,
-                0,
-                0.7071067690849304
-            ]
-        },
-        {
-            "children" : [
-                2
-            ],
-            "extras" : {},
+            "extras" : {
+                "hops" : {}
+            },
             "name" : "c2_seat",
             "rotation" : [
-                -0.6801593899726868,
+                -0.037409354001283646,
                 0,
                 0,
-                -0.7330642342567444
+                0.9993000626564026
             ],
             "translation" : [
                 0.004713013768196106,
@@ -152,14 +130,17 @@
             ]
         },
         {
-            "extras" : {},
+            "extras" : {
+                "kitops" : {},
+                "hops" : {}
+            },
             "mesh" : 0,
             "name" : "d1_exhaust",
             "rotation" : [
                 0,
-                1,
+                -1,
                 0,
-                -1.6292068494294654e-07
+                1.6292068494294654e-07
             ],
             "translation" : [
                 0.30604761838912964,
@@ -168,14 +149,16 @@
             ]
         },
         {
-            "extras" : {},
+            "extras" : {
+                "kitops" : {}
+            },
             "mesh" : 1,
             "name" : "d0_grill bars",
             "rotation" : [
                 0,
-                1,
+                -1,
                 0,
-                -1.6292068494294654e-07
+                1.6292068494294654e-07
             ],
             "translation" : [
                 0.5172991156578064,
@@ -184,14 +167,16 @@
             ]
         },
         {
-            "extras" : {},
+            "extras" : {
+                "kitops" : {}
+            },
             "mesh" : 2,
             "name" : "xb_maintenanceCover",
             "rotation" : [
-                0.22417351603507996,
-                0.9745493531227112,
+                -0.22417348623275757,
+                -0.9745492339134216,
                 0,
-                -1.587742417541449e-07
+                1.5877422754329018e-07
             ],
             "scale" : [
                 0.11501146852970123,
@@ -205,14 +190,17 @@
             ]
         },
         {
-            "extras" : {},
+            "extras" : {
+                "kitops" : {},
+                "hops" : {}
+            },
             "mesh" : 3,
             "name" : "d2_passenger2ArmRest",
             "rotation" : [
                 0,
-                1,
+                -1,
                 0,
-                -1.6292068494294654e-07
+                1.6292068494294654e-07
             ],
             "translation" : [
                 0.005410540848970413,
@@ -221,14 +209,17 @@
             ]
         },
         {
-            "extras" : {},
+            "extras" : {
+                "kitops" : {},
+                "hops" : {}
+            },
             "mesh" : 4,
             "name" : "d2_passenger1ArmRest",
             "rotation" : [
                 0,
-                1,
+                -1,
                 0,
-                -1.6292068494294654e-07
+                1.6292068494294654e-07
             ],
             "translation" : [
                 0.005410481244325638,
@@ -237,14 +228,17 @@
             ]
         },
         {
-            "extras" : {},
+            "extras" : {
+                "kitops" : {},
+                "hops" : {}
+            },
             "mesh" : 5,
             "name" : "d2_passenger1FootRest",
             "rotation" : [
                 0,
-                1,
+                -1,
                 0,
-                -1.6292068494294654e-07
+                1.6292068494294654e-07
             ],
             "translation" : [
                 0.003733147168532014,
@@ -253,14 +247,17 @@
             ]
         },
         {
-            "extras" : {},
+            "extras" : {
+                "kitops" : {},
+                "hops" : {}
+            },
             "mesh" : 6,
             "name" : "d2_passenger1Seat",
             "rotation" : [
                 0,
-                1,
+                -1,
                 0,
-                -1.6292068494294654e-07
+                1.6292068494294654e-07
             ],
             "translation" : [
                 0.004713166505098343,
@@ -269,14 +266,16 @@
             ]
         },
         {
-            "extras" : {},
+            "extras" : {
+                "kitops" : {}
+            },
             "mesh" : 7,
             "name" : "d1_grill support",
             "rotation" : [
                 0,
-                1,
+                -1,
                 0,
-                -1.6292068494294654e-07
+                1.6292068494294654e-07
             ],
             "translation" : [
                 -0.1228071004152298,
@@ -285,14 +284,17 @@
             ]
         },
         {
-            "extras" : {},
+            "extras" : {
+                "kitops" : {},
+                "hops" : {}
+            },
             "mesh" : 8,
             "name" : "d1_grill limiter",
             "rotation" : [
                 0,
-                1,
+                -1,
                 0,
-                -1.6292068494294654e-07
+                1.6292068494294654e-07
             ],
             "translation" : [
                 0.00609748438000679,
@@ -301,14 +303,17 @@
             ]
         },
         {
-            "extras" : {},
+            "extras" : {
+                "kitops" : {},
+                "hops" : {}
+            },
             "mesh" : 9,
             "name" : "d0_grillBarsSmall",
             "rotation" : [
                 0,
-                1,
+                -1,
                 0,
-                -1.6292068494294654e-07
+                1.6292068494294654e-07
             ],
             "translation" : [
                 0.657532274723053,
@@ -317,14 +322,16 @@
             ]
         },
         {
-            "extras" : {},
+            "extras" : {
+                "kitops" : {}
+            },
             "mesh" : 10,
             "name" : "d0_grill bars medium",
             "rotation" : [
                 0,
-                1,
+                -1,
                 0,
-                -1.6292068494294654e-07
+                1.6292068494294654e-07
             ],
             "translation" : [
                 0.568457305431366,
@@ -333,14 +340,16 @@
             ]
         },
         {
-            "extras" : {},
+            "extras" : {
+                "kitops" : {}
+            },
             "mesh" : 11,
             "name" : "d1_grill inside",
             "rotation" : [
                 0,
-                1,
+                -1,
                 0,
-                -1.6292068494294654e-07
+                1.6292068494294654e-07
             ],
             "translation" : [
                 0.0056896694004535675,
@@ -349,14 +358,17 @@
             ]
         },
         {
-            "extras" : {},
+            "extras" : {
+                "kitops" : {},
+                "hops" : {}
+            },
             "mesh" : 12,
             "name" : "d2_passenger2Seat",
             "rotation" : [
                 0,
-                1,
+                -1,
                 0,
-                -1.6292068494294654e-07
+                1.6292068494294654e-07
             ],
             "translation" : [
                 0.004713226109743118,
@@ -365,14 +377,17 @@
             ]
         },
         {
-            "extras" : {},
+            "extras" : {
+                "kitops" : {},
+                "hops" : {}
+            },
             "mesh" : 13,
             "name" : "d2_passenger2FootRest",
             "rotation" : [
                 0,
-                1,
+                -1,
                 0,
-                -1.6292068494294654e-07
+                1.6292068494294654e-07
             ],
             "translation" : [
                 0.0037332067731767893,
@@ -381,14 +396,17 @@
             ]
         },
         {
-            "extras" : {},
+            "extras" : {
+                "kitops" : {},
+                "hops" : {}
+            },
             "mesh" : 14,
             "name" : "d1_roof",
             "rotation" : [
                 0,
-                1,
+                -1,
                 0,
-                -1.6292068494294654e-07
+                1.6292068494294654e-07
             ],
             "translation" : [
                 0.00020908238366246223,
@@ -397,14 +415,16 @@
             ]
         },
         {
-            "extras" : {},
+            "extras" : {
+                "hops" : {}
+            },
             "mesh" : 15,
             "name" : "d2_main",
             "rotation" : [
                 0,
-                1,
+                -1,
                 0,
-                -1.6292068494294654e-07
+                1.6292068494294654e-07
             ],
             "translation" : [
                 0.00020908238366246223,
@@ -414,15 +434,23 @@
         },
         {
             "extras" : {
-                "type" : "areaLight",
-                "moduleHook" : "cockpitLights",
-                "gfxqLight" : "high"
+                "hops" : {},
+                "csmType" : "areaLight",
+                "csmModuleHook" : "cockpitLights",
+                "csmGfxqLight" : "high",
+                "csmDevHelper" : "false"
             },
             "name" : "Area",
+            "rotation" : [
+                -0.7071066498756409,
+                0,
+                0,
+                0.70710688829422
+            ],
             "scale" : [
                 0.7538562417030334,
-                0.5388073325157166,
-                0.03768119215965271
+                0.03768118843436241,
+                0.5388072729110718
             ],
             "translation" : [
                 0.0002056993544101715,
@@ -432,15 +460,23 @@
         },
         {
             "extras" : {
-                "type" : "areaLight",
-                "gfxqLight" : "high",
-                "moduleHook" : "cockpitLights"
+                "hops" : {},
+                "csmType" : "areaLight",
+                "csmModuleHook" : "cockpitLights",
+                "csmGfxqLight" : "high",
+                "csmDevHelper" : "false"
             },
             "name" : "Area.001",
+            "rotation" : [
+                -0.7071068286895752,
+                0,
+                0,
+                0.7071068286895752
+            ],
             "scale" : [
                 0.7538562417030334,
-                0.22880731523036957,
-                0.050088781863451004
+                0.050088778138160706,
+                0.22880730032920837
             ],
             "translation" : [
                 0.0002056993544101715,
@@ -450,21 +486,23 @@
         },
         {
             "extras" : {
-                "type" : "areaLight",
-                "gfxqLight" : "high",
-                "moduleHook" : "cockpitLights"
+                "hops" : {},
+                "csmType" : "areaLight",
+                "csmModuleHook" : "cockpitLights",
+                "csmGfxqLight" : "high",
+                "csmDevHelper" : "false"
             },
             "name" : "Area.002",
             "rotation" : [
-                -0.04628117009997368,
+                -0.7390747666358948,
                 0,
                 0,
-                0.9989285469055176
+                0.6736233830451965
             ],
             "scale" : [
                 0.7538561820983887,
-                0.22991962730884552,
-                0.23545823991298676
+                0.23545822501182556,
+                0.22991961240768433
             ],
             "translation" : [
                 0.0002056993544101715,
@@ -474,22 +512,24 @@
         },
         {
             "extras" : {
-                "type" : "areaLight",
-                "gfxqLight" : "medium",
-                "moduleHook" : "cockpitLights"
+                "hops" : {},
+                "csmType" : "areaLight",
+                "csmModuleHook" : "cockpitLights",
+                "csmGfxqLight" : "low,medium",
+                "csmDevHelper" : "false"
             },
             "mesh" : 16,
             "name" : "lqRooflight",
             "rotation" : [
-                -0.04028993472456932,
+                -0.04028993099927902,
                 0,
                 0,
-                0.9991881251335144
+                0.9991880059242249
             ],
             "scale" : [
                 0.3719583749771118,
                 0.37624114751815796,
-                0.6756141185760498
+                0.6756141781806946
             ],
             "translation" : [
                 0.004713013768196106,
@@ -503,34 +543,18 @@
                     "light" : 0
                 }
             },
-            "name" : "Spot_Orientation",
-            "rotation" : [
-                -0.7071067690849304,
-                0,
-                0,
-                0.7071067690849304
-            ]
-        },
-        {
-            "children" : [
-                24
-            ],
             "extras" : {
-                "moduleHook" : "externalLights",
-                "gfxqLight" : "high",
-                "type" : "spotlight"
+                "hops" : {},
+                "csmType" : "spotlight",
+                "csmModuleHook" : "externalLights",
+                "csmGfxqLight" : "high",
+                "csmDevHelper" : "false"
             },
             "name" : "Spot",
-            "rotation" : [
-                0.7071068286895752,
-                0,
-                0,
-                0.7071068286895752
-            ],
             "scale" : [
                 0.11846030503511429,
-                0.11846030503511429,
-                0.11846030503511429
+                0.11846029758453369,
+                0.11846029758453369
             ],
             "translation" : [
                 0.19471241533756256,
@@ -544,34 +568,18 @@
                     "light" : 1
                 }
             },
-            "name" : "Spot.001_Orientation",
-            "rotation" : [
-                -0.7071067690849304,
-                0,
-                0,
-                0.7071067690849304
-            ]
-        },
-        {
-            "children" : [
-                26
-            ],
             "extras" : {
-                "moduleHook" : "externalLights",
-                "type" : "spotlight",
-                "gfxqLight" : "high"
+                "hops" : {},
+                "csmType" : "spotlight",
+                "csmModuleHook" : "externalLights",
+                "csmGfxqLight" : "high",
+                "csmDevHelper" : "false"
             },
             "name" : "Spot.001",
-            "rotation" : [
-                0.7071068286895752,
-                0,
-                0,
-                0.7071068286895752
-            ],
             "scale" : [
                 0.11846030503511429,
-                0.11846030503511429,
-                0.11846030503511429
+                0.11846029758453369,
+                0.11846029758453369
             ],
             "translation" : [
                 -0.1852847784757614,
@@ -584,8 +592,10 @@
                 "hops" : {
                     "is_global" : 0
                 },
-                "moduleHook" : "externalLights",
-                "type" : "fakeLight"
+                "csmType" : "fakeLight",
+                "csmModuleHook" : "externalLights",
+                "csmGfxqLight" : "auto",
+                "csmDevHelper" : "false"
             },
             "mesh" : 17,
             "name" : "Cone",
@@ -600,16 +610,18 @@
                 "hops" : {
                     "is_global" : 1
                 },
-                "type" : "fakeLight",
-                "moduleHook" : "cockpitLights"
+                "csmType" : "fakeLight",
+                "csmModuleHook" : "cockpitLights",
+                "csmGfxqLight" : "auto",
+                "csmDevHelper" : "false"
             },
             "mesh" : 18,
             "name" : "Cube",
             "rotation" : [
-                1,
+                -1,
                 0,
                 0,
-                -1.6292068494294654e-07
+                1.6292068494294654e-07
             ],
             "translation" : [
                 0,
@@ -622,16 +634,18 @@
                 "hops" : {
                     "is_global" : 1
                 },
-                "moduleHook" : "cockpitLights",
-                "type" : "fakeLight"
+                "csmType" : "fakeLight",
+                "csmModuleHook" : "cockpitLights",
+                "csmGfxqLight" : "auto",
+                "csmDevHelper" : "false"
             },
             "mesh" : 19,
             "name" : "Cube.001",
             "rotation" : [
-                1,
+                -1,
                 0,
                 0,
-                -1.6292068494294654e-07
+                1.6292068494294654e-07
             ],
             "translation" : [
                 0,
@@ -644,16 +658,18 @@
                 "hops" : {
                     "is_global" : 1
                 },
-                "moduleHook" : "cockpitLights",
-                "type" : "fakeLight"
+                "csmType" : "fakeLight",
+                "csmModuleHook" : "cockpitLights",
+                "csmGfxqLight" : "auto",
+                "csmDevHelper" : "false"
             },
             "mesh" : 20,
             "name" : "Cube.002",
             "rotation" : [
-                1,
+                -1,
                 0,
                 0,
-                -1.6292068494294654e-07
+                1.6292068494294654e-07
             ],
             "translation" : [
                 0,
@@ -690,7 +706,7 @@
                 {
                     "sampler" : 0,
                     "target" : {
-                        "node" : 18,
+                        "node" : 16,
                         "path" : "rotation"
                     }
                 }
@@ -753,13 +769,13 @@
             "name" : "Plastic",
             "pbrMetallicRoughness" : {
                 "baseColorFactor" : [
-                    0.23685407638549805,
-                    0.23416578769683838,
-                    0.18492010235786438,
+                    0.23685400187969208,
+                    0.2341659963130951,
+                    0.18491999804973602,
                     1
                 ],
                 "metallicFactor" : 0,
-                "roughnessFactor" : 0.4000000059604645
+                "roughnessFactor" : 0.5
             }
         },
         {
@@ -773,7 +789,7 @@
                     1
                 ],
                 "metallicFactor" : 0,
-                "roughnessFactor" : 0.4000000059604645
+                "roughnessFactor" : 0.5
             }
         },
         {
@@ -784,7 +800,14 @@
                 1
             ],
             "name" : "l2_beaconLights",
-            "pbrMetallicRoughness" : {}
+            "pbrMetallicRoughness" : {
+                "baseColorFactor" : [
+                    0,
+                    0,
+                    0,
+                    1
+                ]
+            }
         },
         {
             "doubleSided" : true,
@@ -794,12 +817,21 @@
                 0.2706701457500458
             ],
             "name" : "l1_passiveLighting",
-            "pbrMetallicRoughness" : {}
+            "pbrMetallicRoughness" : {
+                "baseColorFactor" : [
+                    0,
+                    0,
+                    0,
+                    1
+                ]
+            }
         }
     ],
     "meshes" : [
         {
-            "extras" : {},
+            "extras" : {
+                "hops" : {}
+            },
             "name" : "Cylinder.003",
             "primitives" : [
                 {
@@ -841,7 +873,9 @@
             ]
         },
         {
-            "extras" : {},
+            "extras" : {
+                "hops" : {}
+            },
             "name" : "Cylinder",
             "primitives" : [
                 {
@@ -865,8 +899,10 @@
             ]
         },
         {
-            "extras" : {},
-            "name" : "Plane.002",
+            "extras" : {
+                "hops" : {}
+            },
+            "name" : "Mesh",
             "primitives" : [
                 {
                     "attributes" : {
@@ -889,8 +925,10 @@
             ]
         },
         {
-            "extras" : {},
-            "name" : "Cube.014",
+            "extras" : {
+                "hops" : {}
+            },
+            "name" : "Mesh",
             "primitives" : [
                 {
                     "attributes" : {
@@ -913,8 +951,10 @@
             ]
         },
         {
-            "extras" : {},
-            "name" : "Cube.012",
+            "extras" : {
+                "hops" : {}
+            },
+            "name" : "Mesh",
             "primitives" : [
                 {
                     "attributes" : {
@@ -937,8 +977,10 @@
             ]
         },
         {
-            "extras" : {},
-            "name" : "Cube.011",
+            "extras" : {
+                "hops" : {}
+            },
+            "name" : "Mesh",
             "primitives" : [
                 {
                     "attributes" : {
@@ -961,8 +1003,10 @@
             ]
         },
         {
-            "extras" : {},
-            "name" : "Cube.008",
+            "extras" : {
+                "hops" : {}
+            },
+            "name" : "Mesh",
             "primitives" : [
                 {
                     "attributes" : {
@@ -985,7 +1029,9 @@
             ]
         },
         {
-            "extras" : {},
+            "extras" : {
+                "hops" : {}
+            },
             "name" : "Cube.007",
             "primitives" : [
                 {
@@ -1009,7 +1055,9 @@
             ]
         },
         {
-            "extras" : {},
+            "extras" : {
+                "hops" : {}
+            },
             "name" : "Plane",
             "primitives" : [
                 {
@@ -1032,7 +1080,9 @@
             ]
         },
         {
-            "extras" : {},
+            "extras" : {
+                "hops" : {}
+            },
             "name" : "Cylinder.002",
             "primitives" : [
                 {
@@ -1056,7 +1106,9 @@
             ]
         },
         {
-            "extras" : {},
+            "extras" : {
+                "hops" : {}
+            },
             "name" : "Cylinder.001",
             "primitives" : [
                 {
@@ -1080,7 +1132,9 @@
             ]
         },
         {
-            "extras" : {},
+            "extras" : {
+                "hops" : {}
+            },
             "name" : "Cube.001",
             "primitives" : [
                 {
@@ -1104,8 +1158,10 @@
             ]
         },
         {
-            "extras" : {},
-            "name" : "Cube.016",
+            "extras" : {
+                "hops" : {}
+            },
+            "name" : "Mesh",
             "primitives" : [
                 {
                     "attributes" : {
@@ -1128,8 +1184,10 @@
             ]
         },
         {
-            "extras" : {},
-            "name" : "Cube.015",
+            "extras" : {
+                "hops" : {}
+            },
+            "name" : "Mesh",
             "primitives" : [
                 {
                     "attributes" : {
@@ -1152,8 +1210,10 @@
             ]
         },
         {
-            "extras" : {},
-            "name" : "Cube.006",
+            "extras" : {
+                "hops" : {}
+            },
+            "name" : "Mesh",
             "primitives" : [
                 {
                     "attributes" : {
@@ -1212,8 +1272,10 @@
             ]
         },
         {
-            "extras" : {},
-            "name" : "Cube",
+            "extras" : {
+                "hops" : {}
+            },
+            "name" : "Mesh",
             "primitives" : [
                 {
                     "attributes" : {
@@ -1290,7 +1352,9 @@
             ]
         },
         {
-            "extras" : {},
+            "extras" : {
+                "hops" : {}
+            },
             "name" : "Plane.001",
             "primitives" : [
                 {
@@ -1315,7 +1379,9 @@
             ]
         },
         {
-            "extras" : {},
+            "extras" : {
+                "hops" : {}
+            },
             "name" : "Cone",
             "primitives" : [
                 {
@@ -1361,7 +1427,9 @@
             ]
         },
         {
-            "extras" : {},
+            "extras" : {
+                "hops" : {}
+            },
             "name" : "Cube.002",
             "primitives" : [
                 {
@@ -1407,7 +1475,9 @@
             ]
         },
         {
-            "extras" : {},
+            "extras" : {
+                "hops" : {}
+            },
             "name" : "Cube.003",
             "primitives" : [
                 {
@@ -1453,7 +1523,9 @@
             ]
         },
         {
-            "extras" : {},
+            "extras" : {
+                "hops" : {}
+            },
             "name" : "Cube.004",
             "primitives" : [
                 {
@@ -1650,13 +1722,13 @@
             "count" : 836,
             "max" : [
                 0.1285914182662964,
-                -0.0019521053181961179,
-                0.31800374388694763
+                -0.0019521183567121625,
+                0.3180036246776581
             ],
             "min" : [
                 -0.12791210412979126,
-                -0.12359276413917542,
-                -0.1615324467420578
+                -0.1235928013920784,
+                -0.1615324318408966
             ],
             "type" : "VEC3"
         },
@@ -1797,7 +1869,7 @@
         },
         {
             "componentType" : 5126,
-            "count" : 578,
+            "count" : 580,
             "max" : [
                 0.6903077960014343,
                 0.1480303406715393,
@@ -1812,7 +1884,7 @@
         },
         {
             "componentType" : 5126,
-            "count" : 578,
+            "count" : 580,
             "type" : "VEC3"
         },
         {
@@ -1845,13 +1917,13 @@
             "count" : 836,
             "max" : [
                 0.1285914182662964,
-                -0.0019521053181961179,
-                0.31800374388694763
+                -0.0019521183567121625,
+                0.3180036246776581
             ],
             "min" : [
                 -0.12791210412979126,
-                -0.12359276413917542,
-                -0.1615324467420578
+                -0.1235928013920784,
+                -0.1615324318408966
             ],
             "type" : "VEC3"
         },
@@ -2327,163 +2399,163 @@
         },
         {
             "buffer" : 0,
-            "byteLength" : 25274,
+            "byteLength" : 25280,
             "byteOffset" : 2156
         },
         {
             "buffer" : 0,
-            "byteLength" : 2213,
-            "byteOffset" : 27432
+            "byteLength" : 2229,
+            "byteOffset" : 27436
         },
         {
             "buffer" : 0,
-            "byteLength" : 8939,
-            "byteOffset" : 29648
+            "byteLength" : 8949,
+            "byteOffset" : 29668
         },
         {
             "buffer" : 0,
-            "byteLength" : 8939,
-            "byteOffset" : 38588
+            "byteLength" : 8949,
+            "byteOffset" : 38620
         },
         {
             "buffer" : 0,
-            "byteLength" : 4897,
-            "byteOffset" : 47528
+            "byteLength" : 4899,
+            "byteOffset" : 47572
         },
         {
             "buffer" : 0,
-            "byteLength" : 5326,
-            "byteOffset" : 52428
+            "byteLength" : 5432,
+            "byteOffset" : 52472
         },
         {
             "buffer" : 0,
             "byteLength" : 224,
-            "byteOffset" : 57756
+            "byteOffset" : 57904
         },
         {
             "buffer" : 0,
             "byteLength" : 123,
-            "byteOffset" : 57980
+            "byteOffset" : 58128
         },
         {
             "buffer" : 0,
-            "byteLength" : 12988,
-            "byteOffset" : 58104
+            "byteLength" : 12992,
+            "byteOffset" : 58252
         },
         {
             "buffer" : 0,
-            "byteLength" : 13155,
-            "byteOffset" : 71092
+            "byteLength" : 13160,
+            "byteOffset" : 71244
         },
         {
             "buffer" : 0,
-            "byteLength" : 2051,
-            "byteOffset" : 84248
+            "byteLength" : 2055,
+            "byteOffset" : 84404
         },
         {
             "buffer" : 0,
-            "byteLength" : 5326,
-            "byteOffset" : 86300
+            "byteLength" : 5432,
+            "byteOffset" : 86460
         },
         {
             "buffer" : 0,
-            "byteLength" : 4897,
-            "byteOffset" : 91628
+            "byteLength" : 4899,
+            "byteOffset" : 91892
         },
         {
             "buffer" : 0,
-            "byteLength" : 45334,
-            "byteOffset" : 96528
+            "byteLength" : 45201,
+            "byteOffset" : 96792
         },
         {
             "buffer" : 0,
-            "byteLength" : 813,
-            "byteOffset" : 141864
+            "byteLength" : 807,
+            "byteOffset" : 141996
         },
         {
             "buffer" : 0,
             "byteLength" : 648,
-            "byteOffset" : 142680
+            "byteOffset" : 142804
         },
         {
             "buffer" : 0,
-            "byteLength" : 6441,
-            "byteOffset" : 143328
+            "byteLength" : 6314,
+            "byteOffset" : 143452
         },
         {
             "buffer" : 0,
-            "byteLength" : 121348,
-            "byteOffset" : 149772
+            "byteLength" : 122844,
+            "byteOffset" : 149768
         },
         {
             "buffer" : 0,
-            "byteLength" : 1156,
-            "byteOffset" : 271120
+            "byteLength" : 1205,
+            "byteOffset" : 272612
         },
         {
             "buffer" : 0,
-            "byteLength" : 1311,
-            "byteOffset" : 272276
+            "byteLength" : 1309,
+            "byteOffset" : 273820
         },
         {
             "buffer" : 0,
             "byteLength" : 166,
-            "byteOffset" : 273588
+            "byteOffset" : 275132
         },
         {
             "buffer" : 0,
             "byteLength" : 1134,
-            "byteOffset" : 273756
+            "byteOffset" : 275300
         },
         {
             "buffer" : 0,
             "byteLength" : 357,
-            "byteOffset" : 274892
+            "byteOffset" : 276436
         },
         {
             "buffer" : 0,
             "byteLength" : 1884,
-            "byteOffset" : 275252
+            "byteOffset" : 276796
         },
         {
             "buffer" : 0,
             "byteLength" : 763,
-            "byteOffset" : 277136
+            "byteOffset" : 278680
         },
         {
             "buffer" : 0,
             "byteLength" : 1884,
-            "byteOffset" : 277900
+            "byteOffset" : 279444
         },
         {
             "buffer" : 0,
             "byteLength" : 763,
-            "byteOffset" : 279784
+            "byteOffset" : 281328
         },
         {
             "buffer" : 0,
             "byteLength" : 1919,
-            "byteOffset" : 280548
+            "byteOffset" : 282092
         },
         {
             "buffer" : 0,
             "byteLength" : 776,
-            "byteOffset" : 282468
+            "byteOffset" : 284012
         },
         {
             "buffer" : 0,
             "byteLength" : 240,
-            "byteOffset" : 283244
+            "byteOffset" : 284788
         },
         {
             "buffer" : 0,
             "byteLength" : 960,
-            "byteOffset" : 283484
+            "byteOffset" : 285028
         }
     ],
     "buffers" : [
         {
-            "byteLength" : 284444,
+            "byteLength" : 285988,
             "uri" : "DS69F.bin"
         }
     ]
