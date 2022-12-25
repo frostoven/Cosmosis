@@ -113,7 +113,7 @@ Create a focussed light cone.
 You'll want to adjust csmModuleHook if you want this hooked up to the game's
 power grid and light switches.
 
-<!-- Planned items
+<!-- TODO / Planned items
 
 #### Door
 ```
@@ -130,6 +130,20 @@ csmType: switch
 target: yourDoorId
 ```
 The `target` text should be the same as your door's `id` field.
+
+#### Vehicle controller
+These will only be needed if there's no easy way of integrating multiple
+animations into a single mesh, leaving it up to the engine to animate
+dynamically. We could maybe optionally add the option to use the plugin to link
+actions, but it seems hacky and difficult to use, so it wouldn't be the default
+workflow.
+
+Example mesh codes if done by the engine:
+* flightStick - responds to pitch, yaw, roll. No animations done in Blender.
+* yoke - responds to pitch and roll. No animations done in Blender.
+* throttle - a control panel; responds to throttle changes. Animation done from
+Blender.
+* steeringWheel - responds to pitch. No animations done in Blender.
 
 -->
 

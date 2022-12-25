@@ -108,11 +108,6 @@ described above.
 
 ## Art style
 
-
-
-
-
-
 Please [raise an issue](https://github.com/frostoven/Cosmosis/issues/new/choose)
 before starting work. This game's art style has a very specific direction. Even
 if you create art much better than what's already in the project, it might
@@ -275,6 +270,16 @@ The only requirement we have is that you don't write TypeScript code in `.js`
 files. Any file ending in `.js` may only contain JavaScript. If TypeScript will
 be used, the file must end with `.ts`. Note that we may end up converting your
 JS files into TS if it's more appropriate for us.
+
+### Nomenclature
+* plugin - modifies game functionality and rules. Cosmosis is largely based on
+built-in plugins. Community game mods are also plugins.
+* ship module - a game plugin that specifically focuses on being a swappable
+physical ship part, sometimes with its own control mappings.
+* node module - external application dependency.
+* mesh code - data property, usually set within Blender, that is saved inside
+the spaceship model file. Instructs the engine to treat that part of the mesh
+specially. Switches and doors are examples of items that use mesh codes.
 
 ### Gotchas and problems
 
