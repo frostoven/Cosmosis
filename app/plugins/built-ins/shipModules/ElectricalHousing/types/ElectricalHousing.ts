@@ -36,10 +36,10 @@ export default class ElectricalHousing {
     );
   }
 
-  stepAll({ delta }) {
+  stepAll(numberData) {
     for (let i = 0, len = this._modules.length; i < len; i++) {
       const shipModule = this._modules[i];
-      shipModule.step();
+      shipModule.step(numberData);
     }
   }
 }

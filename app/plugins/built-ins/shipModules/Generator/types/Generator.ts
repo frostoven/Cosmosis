@@ -23,7 +23,7 @@ export default class Generator {
     this.powerNeeded = 0;
     this._poweredOn = false;
 
-    this.maxOutput = 15; // 124;
+    this.maxOutput = 124; // 15;
 
     this._allConnectedDrains = [];
     this._outputRatio = 1;
