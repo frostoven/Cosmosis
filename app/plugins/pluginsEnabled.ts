@@ -18,6 +18,8 @@ import { electricalHousingModulePlugin } from './built-ins/shipModules/Electrica
 import { cockpitLightsModulePlugin } from './built-ins/shipModules/CockpitLights';
 import { nodeOpsPlugin } from './built-ins/NodeOps';
 import { externalLightsModulePlugin } from './built-ins/shipModules/ExternalLights';
+import { propulsionManagerModulePlugin } from './built-ins/shipModules/PropulsionManager';
+import { warpDriveModulePlugin } from './built-ins/shipModules/WarpDrive';
 
 const builtInPluginsEnabled: PluginEntry[] = [
   // General
@@ -39,9 +41,19 @@ const builtInPluginsEnabled: PluginEntry[] = [
   { name: 'freeCam', pluginInstance: freeCamPlugin, dependencies: [ 'player', 'inputManager' ] },
   { name: 'shipPilot', pluginInstance: shipPilotPlugin, dependencies: [ 'player', 'inputManager', 'levelScene' ] },
 
+  // ------------------------------------------------------------ //
+
   // Ship modules
   { name: 'electricalHousingModule', pluginInstance: electricalHousingModulePlugin },
+
+  // Engine modules
+  { name: 'propulsionManagerModule', pluginInstance: propulsionManagerModulePlugin },
+  { name: 'warpDriveModule', pluginInstance: warpDriveModulePlugin, dependencies: [ 'shipPilot', 'propulsionManagerModule' ] },
+
+  // Power modules
   { name: 'generatorModule', pluginInstance: generatorModulePlugin },
+
+  // Low power modules
   { name: 'cockpitLightsModule', pluginInstance: cockpitLightsModulePlugin, dependencies: [ 'shipPilot', 'nodeOps' ] },
   { name: 'externalLightsModule', pluginInstance: externalLightsModulePlugin, dependencies: [ 'shipPilot', 'nodeOps', 'cockpitLightsModule' ] },
   { name: 'multimeterModule', pluginInstance: multimeterModulePlugin },

@@ -87,7 +87,7 @@ export default class MeshCodeHandler {
 
     // TODO: remove this. It's a substitute for until we figure out how to deal
     //  with spaceship lifecycles. This disable non-hq lights entirely.
-    if (userData.gfxqLight.includes('low') || userData.gfxqLight.includes('medium')) {
+    if (userData.gfxqLight?.includes('low') || userData.gfxqLight?.includes('medium')) {
       node.visible = false;
       return;
     }

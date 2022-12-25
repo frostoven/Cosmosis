@@ -6,7 +6,6 @@ const shipPilotControls: ControlSchema = {
   thrustUp10:          { actionType: ActionType.pulse, current: null, default: [ 'spScrollUp' ] },
   thrustReset:         { actionType: ActionType.pulse, current: null, default: [ 'spScrollDown' ] },
   toggleMouseSteering: { actionType: ActionType.pulse, current: null, default: [ 'spMouseMiddle', 'Numpad5' ] },
-  engageHyperdrive:    { actionType: ActionType.pulse, current: null, default: [ 'KeyJ' ] },
   toggleFlightAssist:  { actionType: ActionType.pulse, current: null, default: [ 'KeyZ' ] },
 
   // Analog controls

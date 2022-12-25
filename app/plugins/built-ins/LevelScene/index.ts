@@ -21,8 +21,10 @@ import Generator from '../shipModules/Generator/types/Generator';
 import CockpitLights from '../shipModules/CockpitLights/types/CockpitLights';
 import Multimeter from '../shipModules/Multimeter/types/Multimeter';
 import ElectricalHousing from '../shipModules/ElectricalHousing/types/ElectricalHousing';
-import ExternalLights
-  from '../shipModules/ExternalLights/types/ExternalLights';
+import ExternalLights from '../shipModules/ExternalLights/types/ExternalLights';
+import WarpDrive from '../shipModules/WarpDrive/types/WarpDrive';
+import PropulsionManager
+  from '../shipModules/PropulsionManager/types/PropulsionManager';
 
 
 // TODO:
@@ -157,7 +159,7 @@ class LevelScene extends Scene {
     this.add(scene);
     scene.add(this._cachedCamera);
     // Blender direction is 90 degrees off from what three.js considers to be
-    // 'stright-ahead'.
+    // 'straight-ahead'.
     this._cachedCamera.rotateX(-Math.PI / 2);
     this.onVehicleEntered.setValue(gltf);
     this.resetCameraSeatPosition();
@@ -180,18 +182,27 @@ class LevelScene extends Scene {
       const externalLights: ExternalLights = hub.acquirePart({ name: 'externalLights', inventory });
       const multimeter: Multimeter = hub.acquirePart({ name: 'multimeter', inventory });
 
+      const propulsionManager: PropulsionManager = hub.acquirePart({ name: 'propulsionManager', inventory });
+      const warpDrive: WarpDrive = hub.acquirePart({ name: 'warpDrive', inventory });
+
       // Note: this starts the process of stepping modules each frame. We do
       // this before assembly, and not after, because it has potential to show
       // the player things going online spontaneously (though, realistically,
       // code setup probably happens in under one frame).
       electricalHousing.embed([
         generator, cockpitLights, externalLights, multimeter,
+        propulsionManager, warpDrive,
       ]);
 
       generator.powerOn();
       hub.plug(multimeter).intoPowerOutletOf(generator);
       hub.plug(cockpitLights).intoPowerOutletOf(generator);
       hub.plug(externalLights).intoPowerOutletOf(generator);
+      hub.plug(propulsionManager).intoPowerOutletOf(generator);
+      hub.plug(warpDrive).intoPowerOutletOf(generator);
+      // hub -> plug warp drive data line into propulsion manager.
+
+      console.log('Generator state:', generator.getSupplyState());
     });
   }
 
