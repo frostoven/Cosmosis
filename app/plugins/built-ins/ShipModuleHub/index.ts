@@ -2,6 +2,7 @@ import CosmosisPlugin from '../../types/CosmosisPlugin';
 import Pluggable from './types/Pluggable';
 import { gameRuntime } from '../../gameRuntime';
 import ModuleSpawner from '../shipModules/types/ModuleSpawner';
+import Delegable from './types/Delegable';
 
 class ShipModuleHub {
   constructor() {
@@ -9,6 +10,10 @@ class ShipModuleHub {
 
   plug(device) {
     return new Pluggable(device);
+  }
+
+  delegate(device) {
+    return new Delegable(device);
   }
 
   // TODO: Decide on naming here. spawnPart might be more appropriate if we
