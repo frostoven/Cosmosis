@@ -24,3 +24,11 @@ hyperdrive, at the same time, is not a good idea. At the same time, we should
 allow the user to mess themselves up by forcing things. This means we have an
 inter-dependence on propulsion systems. That's why we need a manager module to
 manage these other modules.
+
+## Control mappings
+Your propulsion system should not create its own control mappings unless
+absolutely necessary. Your propulsion system should also opt-in-and-out of
+control mappings as it's activated / deactivated. For pulse events, this
+would be done as getEveryChange / removeGetEveryChangeListener calls on
+shipPilot interfaces. For non-pulse mechanisms, this involves breaking out
+early in your step function before reading shipPilot state.

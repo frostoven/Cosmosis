@@ -34,6 +34,7 @@ export default class CockpitLights extends ShipModule {
 
   _setupListeners() {
     gameRuntime.tracked.shipPilot.getOnce((shipPilot: ShipPilot) => {
+      // Bind controls.
       shipPilot.pulse.cycleCockpitLights.getEveryChange(this._handleUserEvent.bind(this));
     });
   }

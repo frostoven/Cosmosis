@@ -61,5 +61,6 @@ class Location {
 const locationPlugin = new CosmosisPlugin('location', Location);
 
 export {
+  Location,
   locationPlugin,
 }

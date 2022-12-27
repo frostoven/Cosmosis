@@ -195,12 +195,14 @@ class LevelScene extends Scene {
       ]);
 
       generator.powerOn();
+      //
       hub.plug(multimeter).intoPowerOutletOf(generator);
       hub.plug(cockpitLights).intoPowerOutletOf(generator);
       hub.plug(externalLights).intoPowerOutletOf(generator);
       hub.plug(propulsionManager).intoPowerOutletOf(generator);
       hub.plug(warpDrive).intoPowerOutletOf(generator);
-      // hub -> plug warp drive data line into propulsion manager.
+      //
+      hub.delegate(warpDrive).controlMechanismsTo(propulsionManager);
 
       console.log('Generator state:', generator.getSupplyState());
     });
