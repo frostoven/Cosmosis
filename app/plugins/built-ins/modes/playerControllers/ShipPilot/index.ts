@@ -72,11 +72,22 @@ class ShipPilot extends ModeController {
     this.resetLookState();
   }
 
-  resetLookState() {
+  resetPrincipleAxesInput() {
+    const state = this.state;
+    state.yawLeft = state.yawRight = state.pitchUp = state.pitchDown =
+      state.rollLeft = state.rollright = 0;
+  }
+
+  resetNeckAxesInput() {
     const state = this.state;
     state.lookUp = state.lookDown = state.lookLeft = state.lookRight = 0;
-    // TODO: consider making this next line a user-changeable option.
-    state.yawLeft = state.yawRight = state.pitchUp = state.pitchDown = 0;
+  }
+
+  resetLookState() {
+    this.resetNeckAxesInput();
+    // TODO: consider making this next line a user-changeable option, because
+    //  whether or not this is useful depends on controller setup.
+    this.resetPrincipleAxesInput();
 
     this.setNeckPosition(0, 0);
   }
@@ -126,10 +137,6 @@ class ShipPilot extends ModeController {
   }
 
   stepFreeLook() {
-    if (!this.state.mouseHeadLook) {
-      return;
-    }
-
     let x = this.state.lookLeft + this.state.lookRight;
     let y = this.state.lookUp + this.state.lookDown;
     this.setNeckPosition(x, y);
@@ -137,7 +144,15 @@ class ShipPilot extends ModeController {
 
   // noinspection JSSuspiciousNameCombination
   step(delta) {
-    this.stepFreeLook();
+    // TODO: instead of an if-then statement that resets positions, look for a
+    //  more elegant way of dealing with this.
+    if (!this.state.mouseHeadLook) {
+      this.resetNeckAxesInput();
+    }
+    else {
+      this.resetPrincipleAxesInput();
+      this.stepFreeLook();
+    }
   }
 }
 
