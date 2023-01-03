@@ -57,6 +57,7 @@ class ShipPilot extends ModeController {
   _setupPulseListeners() {
     this.pulse.mouseHeadLook.getEveryChange(() => {
       this.state.mouseHeadLook = Number(!this.state.mouseHeadLook);
+      this.resetLookState();
     });
     this.pulse._devChangeCamMode.getEveryChange(() => {
       this._cachedInputManager.activateController(ModeId.playerControl, 'freeCam');
@@ -68,8 +69,16 @@ class ShipPilot extends ModeController {
       levelScene.resetCameraSeatPosition();
     });
 
+    this.resetLookState();
+  }
+
+  resetLookState() {
     const state = this.state;
+    state.lookUp = state.lookDown = state.lookLeft = state.lookRight = 0;
+    // TODO: consider making this next line a user-changeable option.
     state.yawLeft = state.yawRight = state.pitchUp = state.pitchDown = 0;
+
+    this.setNeckPosition(0, 0);
   }
 
   // Disallows a 360 degree neck, but also prevent the player's head from
@@ -80,8 +89,8 @@ class ShipPilot extends ModeController {
     // if (x > headYMax) {
     //   const diff = x - headYMax;
     //   x = headYMax;
-    //   this.state.yawLeft -= diff;
-    //   this.state.yawRight -= diff;
+    //   this.state.lookLeft -= diff;
+    //   this.state.lookRight -= diff;
     // }
     if (axis > 0) {
       if (axis > max) {
@@ -99,16 +108,13 @@ class ShipPilot extends ModeController {
     }
   }
 
-  stepFreeLook() {
-    if (!this.state.mouseHeadLook) {
+  setNeckPosition(x, y) {
+    if (!this._cachedCamera) {
       return;
     }
 
-    let x = this.state.yawLeft + this.state.yawRight;
-    let y = this.state.pitchUp + this.state.pitchDown;
-
-    this.constrainNeck(x, headXMax, this.state, 'yawLeft', 'yawRight');
-    this.constrainNeck(y, headYMax, this.state, 'pitchUp', 'pitchDown');
+    this.constrainNeck(x, headXMax, this.state, 'lookLeft', 'lookRight');
+    this.constrainNeck(y, headYMax, this.state, 'lookUp', 'lookDown');
 
     // Note: don't use delta here. We don't want mouse speed to be dependent on
     // framerate.
@@ -119,12 +125,18 @@ class ShipPilot extends ModeController {
     );
   }
 
-  // noinspection JSSuspiciousNameCombination
-  step(delta) {
-    if (!this._cachedCamera) {
+  stepFreeLook() {
+    if (!this.state.mouseHeadLook) {
       return;
     }
 
+    let x = this.state.lookLeft + this.state.lookRight;
+    let y = this.state.lookUp + this.state.lookDown;
+    this.setNeckPosition(x, y);
+  }
+
+  // noinspection JSSuspiciousNameCombination
+  step(delta) {
     this.stepFreeLook();
   }
 }
