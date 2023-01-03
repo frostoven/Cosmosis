@@ -206,6 +206,22 @@ function randomArrayItem(underpantsGnomes=[]) {
   return underpantsGnomes[Math.floor(Math.random() * underpantsGnomes.length)];
 }
 
+/**
+ * Checks if one array contains the contents of another array. Returns false
+ * if any arguments are falsy.
+ * @param {Array|undefined} array
+ * @param {Array|undefined} includes
+ */
+function arrayContainsArray(array, includes) {
+  if (!array || !includes) {
+    return false;
+  }
+
+  return includes.every((value) => {
+    return array.includes(value);
+  });
+}
+
 export {
   fuzzyFindFile,
   forEachFn,
@@ -219,4 +235,5 @@ export {
   safeString,
   structuredClone,
   randomArrayItem,
+  arrayContainsArray,
 }
