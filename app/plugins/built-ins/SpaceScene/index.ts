@@ -81,6 +81,7 @@ class SpaceScene extends Scene {
     this._renderer.setSize(screenWidth * scale, screenHeight * scale);
     this._renderer.domElement.style.width = '100%';
     this._renderer.domElement.style.height = '100%';
+    // TODO: move this to player module.
     this._cachedCamera.aspect = screenWidth / screenHeight;
     this._cachedCamera.updateProjectionMatrix();
   }

@@ -25,6 +25,7 @@ import ExternalLights from '../shipModules/ExternalLights/types/ExternalLights';
 import WarpDrive from '../shipModules/WarpDrive/types/WarpDrive';
 import PropulsionManager
   from '../shipModules/PropulsionManager/types/PropulsionManager';
+import { Location } from '../Location';
 
 
 // TODO:
@@ -48,6 +49,7 @@ class LevelScene extends Scene {
 
   // @ts-ignore
   private _renderer: WebGLRenderer;
+  private _cachedLocation: Location;
   private _cachedCamera: PerspectiveCamera;
   private _vehicle: GLTFInterface;
   private _vehicleInventory: { [moduleHookName: string]: Array<any> };
@@ -57,6 +59,7 @@ class LevelScene extends Scene {
   constructor() {
     super();
     this._cachedCamera = new PerspectiveCamera();
+    this._cachedLocation = gameRuntime.tracked.location.cachedValue;
 
     // @ts-ignore
     this._vehicle = null;
@@ -82,6 +85,15 @@ class LevelScene extends Scene {
 
     window.addEventListener('resize', this.onWindowResize.bind(this));
     this.onWindowResize();
+  }
+
+  _setupWatchers() {
+    gameRuntime.tracked.player.getEveryChange((player) => {
+      this._cachedCamera = player.camera;
+    });
+    gameRuntime.tracked.location.getEveryChange((location) => {
+      this._cachedLocation = location;
+    });
   }
 
   _configureRenderer() {
@@ -115,12 +127,6 @@ class LevelScene extends Scene {
     RectAreaLightUniformsLib.init();
   }
 
-  _setupWatchers() {
-    gameRuntime.tracked.player.getEveryChange((player) => {
-      this._cachedCamera = player.camera;
-    });
-  }
-
   onWindowResize() {
     const { graphics } = userProfile.getCurrentConfig({
       identifier: 'userOptions',
@@ -133,6 +139,7 @@ class LevelScene extends Scene {
     this._renderer.setSize(screenWidth * scale, screenHeight * scale);
     this._renderer.domElement.style.width = '100%';
     this._renderer.domElement.style.height = '100%';
+    // TODO: move this to player module.
     this._cachedCamera.aspect = screenWidth / screenHeight;
     this._cachedCamera.updateProjectionMatrix();
   }
@@ -142,7 +149,14 @@ class LevelScene extends Scene {
     const { playerInfo } = userProfile.getCurrentConfig({
       identifier: 'gameState'
     });
-    const ship = playerInfo.vehicleInfo.piloting;
+    let ship = playerInfo?.vehicleInfo?.piloting;
+    if (typeof ship === 'undefined') {
+      console.error('Could get read ship info from configs. Defaulting to DS69F.');
+      // TODO: if this happens, we should actually offer a save rollback
+      //  option, and/or go to ship selector.
+      ship = 'DS69F';
+    }
+
     this.loadVehicle(ship, this.enterVehicle);
   }
 
@@ -217,7 +231,17 @@ class LevelScene extends Scene {
     });
   }
 
+  step() {
+    if (!this._vehicle) {
+      return;
+    }
+
+    this._vehicle.scene.position.copy(this._cachedLocation.universeCoordsM.position);
+    this._vehicle.scene.quaternion.copy(this._cachedLocation.universeRotationM.quaternion);
+  }
+
   render() {
+    this.step();
     this._renderer.render(this, this._cachedCamera);
   }
 }

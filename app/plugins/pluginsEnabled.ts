@@ -29,10 +29,10 @@ const builtInPluginsEnabled: PluginEntry[] = [
   { name: 'player', pluginInstance: playerPlugin, dependencies: [ 'core' ] },
 
   // Universe
-  { name: 'levelScene', pluginInstance: levelScenePlugin, dependencies: [ 'core', 'nodeOps' ], optional: [ 'shipModuleHub' ] },
-  { name: 'spaceScene', pluginInstance: spaceScenePlugin, dependencies: [ 'core' ] },
-  { name: 'location', pluginInstance: locationPlugin, dependencies: [ 'core', 'player', 'levelScene', 'spaceScene' ] },
+  { name: 'location', pluginInstance: locationPlugin, dependencies: [ 'core', 'player' ] },
   { name: 'navigation', pluginInstance: navigationPlugin, dependencies: [ 'core', 'location' ] },
+  { name: 'levelScene', pluginInstance: levelScenePlugin, dependencies: [ 'core', 'nodeOps', 'location', 'player' ], optional: [ 'shipModuleHub' ] },
+  { name: 'spaceScene', pluginInstance: spaceScenePlugin, dependencies: [ 'core', 'location' ] },
 
   // Input
   { name: 'mouseDriver', pluginInstance: mouseDriverPlugin, dependencies: [ 'core', 'player' ] },

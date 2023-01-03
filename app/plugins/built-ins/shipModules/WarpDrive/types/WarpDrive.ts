@@ -5,6 +5,7 @@ import { Location } from '../../../Location';
 import { CoordType } from '../../../Location/types/CoordType';
 import PropulsionManager from '../../PropulsionManager/types/PropulsionManager';
 import { PropulsionManagerModule } from '../../PropulsionManager';
+import WarpEngineMechanism from './WarpEngineMechanism';
 
 export default class WarpDrive extends ShipModule {
   readonly friendlyName: string;
@@ -17,6 +18,7 @@ export default class WarpDrive extends ShipModule {
   private _cachedPropulsionManager: PropulsionManagerModule;
   private _cachedLocation: Location;
   private _parentPropulsionManger: PropulsionManager | undefined;
+  private _warpEngine: WarpEngineMechanism;
 
   constructor() {
     super();
@@ -29,8 +31,9 @@ export default class WarpDrive extends ShipModule {
     this._powerSource = null;
 
     this._controlInterfaceActive = false;
-    this._warpChargeTime = 7;
-    this._warpCountdown = 0;
+    this._warpChargeTime = 1; // 7;
+    this._warpCountdown = -1;
+    this._warpEngine = new WarpEngineMechanism();
 
     this._cachedPropulsionManager = gameRuntime.tracked.propulsionManagerModule.cachedValue;
     this._cachedLocation = gameRuntime.tracked.location.cachedValue;
@@ -58,6 +61,8 @@ export default class WarpDrive extends ShipModule {
     }
 
     if (this._controlInterfaceActive) {
+      // First, stop any active countdowns:
+      this._warpCountdown = -1;
       console.log('[Warp drive] Sending deactivation request to propulsion management system.');
       this._parentPropulsionManger.deactivatePropulsionSystem(this);
     }
@@ -72,7 +77,6 @@ export default class WarpDrive extends ShipModule {
   }
 
   registerPropulsionManager(device) {
-    console.log('-----> [Warp drive] registering parent:', device);
     this._parentPropulsionManger = device;
   }
 
@@ -105,7 +109,7 @@ export default class WarpDrive extends ShipModule {
   }
 
   step({ delta }) {
-    if (!this._powerSource) {
+    if (!this._powerSource || !this._controlInterfaceActive) {
       return;
     }
 
@@ -119,8 +123,8 @@ export default class WarpDrive extends ShipModule {
       }
     }
 
-    // if (this._controlInterfaceActive) {
-    //   //
-    // }
+    if (this.warpBubbleActive) {
+      this._warpEngine.stepWarp(delta);
+    }
   }
 }
