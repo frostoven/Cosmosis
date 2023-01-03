@@ -55,6 +55,9 @@ class ShipPilot extends ModeController {
   }
 
   _setupPulseListeners() {
+    this.pulse.mouseHeadLook.getEveryChange(() => {
+      this.state.mouseHeadLook = Number(!this.state.mouseHeadLook);
+    });
     this.pulse._devChangeCamMode.getEveryChange(() => {
       this._cachedInputManager.activateController(ModeId.playerControl, 'freeCam');
     });
@@ -97,6 +100,10 @@ class ShipPilot extends ModeController {
   }
 
   stepFreeLook() {
+    if (!this.state.mouseHeadLook) {
+      return;
+    }
+
     let x = this.state.yawLeft + this.state.yawRight;
     let y = this.state.pitchUp + this.state.pitchDown;
 

@@ -5,7 +5,7 @@ const shipPilotControls: ControlSchema = {
   // Pulsed controls
   thrustUp10:          { actionType: ActionType.pulse, current: null, default: [ 'spScrollUp' ] },
   thrustReset:         { actionType: ActionType.pulse, current: null, default: [ 'spScrollDown' ] },
-  toggleMouseSteering: { actionType: ActionType.pulse, current: null, default: [ 'spMouseMiddle', 'Numpad5' ] },
+  mouseHeadLook:       { actionType: ActionType.pulse, current: null, default: [ 'spMouseMiddle', 'Numpad5' ] },
   toggleFlightAssist:  { actionType: ActionType.pulse, current: null, default: [ 'KeyZ' ] },
 
   // Analog controls
@@ -19,6 +19,11 @@ const shipPilotControls: ControlSchema = {
   rollRight:           { actionType: ActionType.analogLiteral, current: null, default: [ 'KeyD' ] },
   yawLeft:             { actionType: ActionType.analogAdditive, kbAmount: -1000, current: null, default: [ 'spWest', 'Numpad4' ] },
   yawRight:            { actionType: ActionType.analogAdditive, kbAmount:  1000, current: null, default: [ 'spEast', 'Numpad6'  ] },
+  //
+  lookUp:             { actionType: ActionType.analogAdditive, kbAmount: -1000, current: null, default: [ 'spNorth', 'Numpad8' ], allowKeyConflicts: [ 'pitchUp' ] },
+  lookDown:           { actionType: ActionType.analogAdditive, kbAmount:  1000, current: null, default: [ 'spSouth', 'Numpad2' ], allowKeyConflicts: [ 'pitchDown' ] },
+  lookLeft:             { actionType: ActionType.analogAdditive, kbAmount: -1000, current: null, default: [ 'spWest', 'Numpad4' ], allowKeyConflicts: [ 'yawLeft' ] },
+  lookRight:            { actionType: ActionType.analogAdditive, kbAmount:  1000, current: null, default: [ 'spEast', 'Numpad6'  ], allowKeyConflicts: [ 'yawRight' ] },
 
   // Dev controls.
   _debugFullWarpSpeed: { actionType: ActionType.pulse, current: null, default: [ 'ScrollLock' ] },

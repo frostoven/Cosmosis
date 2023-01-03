@@ -65,7 +65,7 @@ export default class WarpEngineMechanism {
     this.actualThrottle = 0;
     this.debugFullWarpSpeed = false;
     this.pitchAndYawSpeed = 0.00005;
-    this.rollSpeed = 0.01;
+    this.rollSpeed = 1;
     this.rollBuildup = 0;
     this.yawBuildup = 0;
     this.pitchBuildup = 0;
@@ -144,17 +144,10 @@ export default class WarpEngineMechanism {
   /**
    * Function that eases into targets.
    */
-  easeIntoBuildup(delta, buildup, target, rollSpeed, factor, direction=1) {
-    console.log('->', { delta, buildup, target, rollSpeed, factor });
-    // buildup = Math.abs(buildup);
+  easeIntoBuildup(delta, buildup, target, rollSpeed, factor) {
+    rollSpeed *= delta;
+    const total = (target + buildup) * factor * delta;
 
-    const total = ((delta) * factor * target) + buildup;
-    // buildup += effectiveSpin;
-    // if (buildup > effectiveSpin) {
-    //   buildup = effectiveSpin;
-    // }
-    //
-    // return buildup * direction;
     if (Math.abs(total) > rollSpeed) {
       return rollSpeed * Math.sign(total);
     }
@@ -163,7 +156,7 @@ export default class WarpEngineMechanism {
   }
 
   easeOutOfBuildup(delta, rollBuildup, easeFactor) {
-    if (Math.abs(rollBuildup) < 0.0001) {
+    if (Math.abs(rollBuildup) < delta * 0.1) {
       rollBuildup = 0;
     }
     else {
@@ -193,7 +186,7 @@ export default class WarpEngineMechanism {
     // }
 
     if (roll) {
-      this.rollBuildup = this.easeIntoBuildup(delta, this.rollBuildup, roll, this.rollSpeed, 0.1);
+      this.rollBuildup = this.easeIntoBuildup(delta, this.rollBuildup, roll, this.rollSpeed, 100000);
     }
 
     rotation.rotateY(this.yawBuildup * this.pitchAndYawSpeed);

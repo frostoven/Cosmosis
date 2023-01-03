@@ -6,6 +6,7 @@ import { InputManager } from '../index';
 import { ModeId } from './ModeId';
 import { ActionType } from './ActionType';
 import { ControlSchema } from '../interfaces/ControlSchema';
+import { arrayContainsArray } from '../../../../local/utils';
 
 export default class ModeController {
   public name: string;
@@ -56,6 +57,8 @@ export default class ModeController {
       }
     });
 
+    const allowedConflicts = {};
+
     // Set up controlsByKey, state, and pulse.
     _.each(controlSchema, (control: ControlSchema['key'], actionName: string) => {
       if (this.controlSchema[actionName]) {
@@ -67,19 +70,50 @@ export default class ModeController {
       }
 
       this.controlSchema[actionName] = control;
+
+      // Conflicts are rarely allowed in cases where a single mode internally
+      // disambiguates conflicts.
+      if (control.allowKeyConflicts) {
+        if (!allowedConflicts[actionName]) {
+          allowedConflicts[actionName] = [];
+        }
+
+        _.each(control.allowKeyConflicts, (conflictAction) => {
+          if (!allowedConflicts[actionName].includes(conflictAction)) {
+            // Example: allowedConflicts['lookUp'] = [ 'pitchUp' ];
+            allowedConflicts[actionName].push(conflictAction);
+          }
+
+          // Rewrite the conflicting keys to allow conflict with these keys. This
+          // allows devs and modders to define allowed conflicts in any order.
+          if (!allowedConflicts[conflictAction]) {
+            allowedConflicts[conflictAction] = [];
+          }
+          if (!allowedConflicts[conflictAction].includes(actionName)) {
+            // Example: allowedConflicts['pitchUp'] = [ 'lookUp' ];
+            allowedConflicts[conflictAction].push(actionName);
+          }
+        });
+      }
+
       const keys = control.current;
       // The user can assign multiple keys to each action; store them all in
       // controlsByKey individually.
       _.each(keys, (key) => {
-        if (this.controlsByKey[key]) {
+        const ctrlByKey = this.controlsByKey[key];
+        // console.log(`-> arrayContainsArray(`, allowedConflicts?.[actionName], `,`, this.controlsByKey[key], `) === `, arrayContainsArray(allowedConflicts?.[actionName], this.controlsByKey[key]));
+        if (this.controlsByKey[key] && !arrayContainsArray(allowedConflicts?.[actionName], this.controlsByKey[key])) {
           console.warn(
             `[ModeController] Ignoring attempt to set the same key (${key}) ` +
             `for than one action (${actionName} would conflict with ` +
-            `${this.controlsByKey[key]})`
+            `${this.controlsByKey[key]})`,
           );
         }
         else {
-          this.controlsByKey[key] = actionName;
+          if (!this.controlsByKey[key]) {
+            this.controlsByKey[key] = [];
+          }
+          this.controlsByKey[key].push(actionName);
         }
       });
 

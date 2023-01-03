@@ -323,10 +323,19 @@ class InputManager {
         continue;
       }
 
-      const action = controller.controlsByKey[key];
-      if (action) {
-        controller.receiveAction({ action, isDown, analogData });
+      const actions = controller.controlsByKey[key];
+      if (typeof actions === 'undefined') {
+        continue;
+      }
+
+      if (actions.length === 0) {
+        controller.receiveAction({ action: actions[0], isDown, analogData });
         return;
+      }
+      else {
+        for (let i = 0, len = actions.length; i < len; i++) {
+          controller.receiveAction({ action: actions[i], isDown, analogData });
+        }
       }
     }
   }

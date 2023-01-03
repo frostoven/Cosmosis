@@ -11,6 +11,7 @@ interface ControlSchema {
     current: Array<string> | null,
     // Default keybinding.
     default: Array<string>,
+    allowKeyConflicts?: Array<string>,
   }
 }
 
