@@ -1,5 +1,6 @@
 import CosmosisPlugin from '../../types/CosmosisPlugin';
 import { gameRuntime } from '../../gameRuntime';
+import { guessGamepadName } from './types/gamepadNames';
 
 // Note: this relates to how the mouse works with the game window. It has
 // nothing to do with mounting rodents, though we may or may not have such
@@ -26,12 +27,14 @@ class GamepadDriver {
   }
 
   onGamepadConnected(event: GamepadEvent) {
-    console.log(`[GamepadDriver] Connected ${event.gamepad.id}.`);
+    const name = guessGamepadName(event.gamepad.id);
+    console.log(`[GamepadDriver] Connected ${name}.`);
     this._allNull = false;
   }
 
   onGamepadDisconnected(event: GamepadEvent) {
-    console.log(`[GamepadDriver] Disconnected ${event.gamepad.id}.`);
+    const name = guessGamepadName(event.gamepad.id);
+    console.log(`[GamepadDriver] Disconnected ${name}.`);
 
     const controllers = navigator.getGamepads();
     for (let i = 0, len = controllers.length; i < len; i++) {
