@@ -9,8 +9,7 @@ class MouseDriver extends PointerLockControls {
   private readonly _superLock: Function;
 
   constructor() {
-    const camera = gameRuntime.tracked.player.cachedValue.camera;
-    super(camera, document.body);
+    super(document.body);
 
     const core = gameRuntime.tracked.core.cachedValue;
     core.onAnimateDone.getEveryChange(this.step.bind(this));

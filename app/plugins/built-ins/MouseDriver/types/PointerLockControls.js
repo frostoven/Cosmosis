@@ -7,8 +7,7 @@
 
 import { Euler, EventDispatcher } from 'three';
 
-const PointerLockControls = function(camera, domElement) {
-  this.camera = camera;
+const PointerLockControls = function(domElement) {
   if (domElement === undefined) {
     console.warn(
       'PointerLockControls: The second parameter "domElement" is now mandatory.',
