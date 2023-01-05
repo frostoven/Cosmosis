@@ -5,7 +5,7 @@ const shipPilotControls: ControlSchema = {
   // Pulsed controls
   thrustUp10:          { actionType: ActionType.pulse, current: null, default: [ 'spScrollUp' ] },
   thrustReset:         { actionType: ActionType.pulse, current: null, default: [ 'spScrollDown' ] },
-  mouseHeadLook:       { actionType: ActionType.pulse, current: null, default: [ 'spMouseMiddle', 'Numpad5' ] },
+  mouseHeadLook:       { actionType: ActionType.pulse, current: null, default: [ 'spMouseMiddle', 'Numpad5', 'bt11' ] },
   toggleFlightAssist:  { actionType: ActionType.pulse, current: null, default: [ 'KeyZ' ] },
 
   // Analog controls

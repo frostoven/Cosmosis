@@ -1,6 +1,7 @@
 import CosmosisPlugin from '../../types/CosmosisPlugin';
 import { gameRuntime } from '../../gameRuntime';
 import { guessGamepadName } from './types/gamepadNames';
+import { InputManager } from '../InputManager';
 
 // Note: this relates to how the mouse works with the game window. It has
 // nothing to do with mounting rodents, though we may or may not have such
@@ -13,17 +14,28 @@ class GamepadDriver {
   private _allNull: boolean;
   private readonly _axisCache: any[][];
   private readonly _buttonCache: any[][];
+  private _cachedInputManager: InputManager;
 
   constructor() {
     this._timestamps = [ 0, 0, 0, 0 ];
     this._allNull = true;
     this._axisCache = [ [], [], [], [] ];
     this._buttonCache = [ [], [], [], [] ];
+
     window.addEventListener("gamepadconnected", this.onGamepadConnected.bind(this));
     window.addEventListener("gamepaddisconnected", this.onGamepadDisconnected.bind(this));
 
-    const core = gameRuntime.tracked.core.cachedValue;
-    core.onAnimateDone.getEveryChange(this.step.bind(this));
+    this._cachedInputManager = gameRuntime.tracked.inputManager.cachedValue;
+    this._setupWatchers();
+  }
+
+  _setupWatchers() {
+    gameRuntime.tracked.core.getEveryChange((core) => {
+      core.onPreAnimate.getEveryChange(this.step.bind(this));
+    });
+    gameRuntime.tracked.inputManager.getEveryChange((inputManager) => {
+      this._cachedInputManager = inputManager;
+    });
   }
 
   onGamepadConnected(event: GamepadEvent) {
@@ -56,19 +68,21 @@ class GamepadDriver {
 
     // Propagate all axis changes.
     for (let i = 0, len = axes.length; i < len; i++) {
-      const axis = axes[i];
-      if (axisCache[i] !== axis) {
-        axisCache[i] = axis;
-        console.log(`[] axis ${i} changed to`, axis);
+      const axisValue = axes[i];
+      if (axisCache[i] !== axisValue) {
+        axisCache[i] = axisValue;
+        // console.log(`[] axis ${i} changed to`, axisValue);
+        this._cachedInputManager.propagateInput({ key: `ax${i}`, value: axisValue });
       }
     }
 
     // Propagate all button changes.
     for (let i = 0, len = buttons.length; i < len; i++) {
-      const button = buttons[i];
-      if (buttonCache[i] !== button.value) {
-        buttonCache[i] = button.value;
-        console.log(`[] button ${i} changed to`, button.value);
+      const buttonValue = buttons[i].value;
+      if (buttonCache[i] !== buttonValue) {
+        buttonCache[i] = buttonValue;
+        console.log(`[] button ${i} changed to`, buttonValue);
+        this._cachedInputManager.propagateInput({ key: `bt${i}`, value: buttonValue });
       }
     }
   }
