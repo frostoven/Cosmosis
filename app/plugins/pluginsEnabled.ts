@@ -20,6 +20,7 @@ import { nodeOpsPlugin } from './built-ins/NodeOps';
 import { externalLightsModulePlugin } from './built-ins/shipModules/ExternalLights';
 import { propulsionManagerModulePlugin } from './built-ins/shipModules/PropulsionManager';
 import { warpDriveModulePlugin } from './built-ins/shipModules/WarpDrive';
+import { gamepadDriverPlugin } from './built-ins/GamepadDriver';
 
 const builtInPluginsEnabled: PluginEntry[] = [
   // General
@@ -36,6 +37,7 @@ const builtInPluginsEnabled: PluginEntry[] = [
 
   // Input
   { name: 'mouseDriver', pluginInstance: mouseDriverPlugin, dependencies: [ 'core' ] },
+  { name: 'gamepadDriver', pluginInstance: gamepadDriverPlugin, dependencies: [ 'core' ] },
   { name: 'inputManager', pluginInstance: inputManagerPlugin, dependencies: [ 'core', 'mouseDriver' ] },
   { name: 'generalControl', pluginInstance: generalControlPlugin, dependencies: [ 'inputManager' ] },
   { name: 'freeCam', pluginInstance: freeCamPlugin, dependencies: [ 'player', 'inputManager' ] },
