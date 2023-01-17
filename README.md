@@ -43,7 +43,8 @@ functional warp drives, though travel is currently limited while functionality
 is smoothed out. A physics system is being implemented.
 
 Planets and their (hostile Lovecraftian) inhabitants will be procedurally
-generated, and ground-based combat will be souls-like.
+generated. Ground-based combat will probably be souls-like, but that decision
+has not been set in stone.
 
 The source is made available to all users for backup and modding purposes,
 **but this project is not free**
