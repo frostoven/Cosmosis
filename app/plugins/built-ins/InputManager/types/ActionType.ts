@@ -12,6 +12,10 @@ enum ActionType {
   // Sets the value to the device's change in momentum.
   // If a keyboard button, the value either 0% or 100% (0-1).
   analogGravity = 64,
+  // Think of this the way you would think of an analog stick. Your center is
+  // a zero-point, and the value increases as you go outward. You have a
+  // maximum amount you can go outward.
+  analogThreshold = 128,
 }
 
 export {

@@ -7,6 +7,18 @@ import ModeController from './types/ModeController';
 import { CoreType } from '../Core';
 
 /*
+ * TODO:
+ *  Implement mouse and analog sensitivity in this class. The objective should
+ *  be a system where any input is between 0 and 1.
+ *   * For keyboard, pressed = 1 and depressed = 0. Where we're simulating an
+ *     analog system, we can use
+ *   * For mouse, we need a mouse speed multiplier (eg. 0.07) that allows
+ *     something like analogThreshold to translate that to a 0-1. For something
+ *     that allows continuous changes (such as looking around), analogAdditive
+ *     can be used
+ */
+
+/*
  * Mechanism:
  * Controllers register themselves. The registration puts them inside a mode.
  * (Note that freeCam and shipPilot are two controllers in a single mode:
@@ -125,7 +137,8 @@ class InputManager {
       }
     }
 
-    let isDown = true;
+    // 0 = not being pressed, 1 = currently being pressed.
+    let value = 1;
     // If true, a button will never signal a key up. This is a requirement for
     // mouse wheel scrolls.
     let isNeverHeld = false;
@@ -154,7 +167,7 @@ class InputManager {
         key = `spMouse${mouseFriendly[event.button]}`;
       // Note: fallthrough is intentional here.
       case 'keyup':
-        isDown = false;
+        value = 0;
         break;
       case 'wheel':
         // Note: a wheel scroll is always classed as a press.
@@ -174,12 +187,12 @@ class InputManager {
       const yData = analogData.y;
       this.propagateInput({
         key: xData.key,
-        isDown,
+        value,
         analogData: { delta: xData.delta, gravDelta: xData.gravDelta, complement: xData.complement },
       });
       this.propagateInput({
         key: yData.key,
-        isDown,
+        value,
         analogData: { delta: yData.delta, gravDelta: yData.gravDelta, complement: yData.complement },
       });
     }
@@ -188,7 +201,7 @@ class InputManager {
       if (!isNeverHeld) {
         // Prevent event spam by keeping track of which buttons are currently held
         // down.
-        if (!isDown) {
+        if (value === 0) {
           this._heldButtons[key] = false;
           // delete heldButtons[key];
         }
@@ -200,12 +213,12 @@ class InputManager {
         }
       }
 
-      this.propagateInput({ key, isDown });
+      this.propagateInput({ key, value });
 
       // Immediately trigger a button release for buttons that cannot be held (such
       // as scroll wheels).
       if (isNeverHeld) {
-        this.propagateInput({ key: key, isDown: false });
+        this.propagateInput({ key: key, value: 0 });
       }
     }
   }
@@ -315,7 +328,7 @@ class InputManager {
     controller.onActivateController();
   }
 
-  propagateInput({ key, isDown, analogData } : { key: string, isDown: boolean, analogData?: {} }) {
+  propagateInput({ key, value, analogData } : { key: string, value: number, analogData?: {} }) {
     const active = this._activeControllers;
     for (let i = 0, len = active.length; i < len; i++) {
       const controller: ModeController = this._allControllers[active[i]];
@@ -329,12 +342,12 @@ class InputManager {
       }
 
       if (actions.length === 0) {
-        controller.receiveAction({ action: actions[0], isDown, analogData });
+        controller.receiveAction({ action: actions[0], value, analogData });
         return;
       }
       else {
         for (let i = 0, len = actions.length; i < len; i++) {
-          controller.receiveAction({ action: actions[i], isDown, analogData });
+          controller.receiveAction({ action: actions[i], value, analogData });
         }
       }
     }

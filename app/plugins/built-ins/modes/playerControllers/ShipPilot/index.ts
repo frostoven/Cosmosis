@@ -12,7 +12,7 @@ import { ModeId } from '../../../InputManager/types/ModeId';
 import { gameRuntime } from '../../../../gameRuntime';
 import { CoreType } from '../../../Core';
 import { InputManager } from '../../../InputManager';
-import { applyPolarRotation } from '../../../../../local/mathUtils';
+import { applyPolarRotation, lerpToZero, signRelativeMax } from '../../../../../local/mathUtils';
 
 // TODO: move me into user profile.
 const MOUSE_SPEED = 0.7;
@@ -72,17 +72,20 @@ class ShipPilot extends ModeController {
     this.resetLookState();
   }
 
+  // Sets stick and pedal input to 0.
   resetPrincipleAxesInput() {
     const state = this.state;
     state.yawLeft = state.yawRight = state.pitchUp = state.pitchDown =
-      state.rollLeft = state.rollright = 0;
+      state.rollLeft = state.rollRight = 0;
   }
 
+  // Sets neck inputs to 0.
   resetNeckAxesInput() {
     const state = this.state;
     state.lookUp = state.lookDown = state.lookLeft = state.lookRight = 0;
   }
 
+  // Sets all look and aim to 0.
   resetLookState() {
     this.resetNeckAxesInput();
     // TODO: consider making this next line a user-changeable option, because
@@ -119,6 +122,8 @@ class ShipPilot extends ModeController {
     }
   }
 
+  // Sets the neck rotational position. This tries to work the same way a human
+  // neck would, excluding tilting.
   setNeckPosition(x, y) {
     if (!this._cachedCamera) {
       return;
@@ -136,18 +141,43 @@ class ShipPilot extends ModeController {
     );
   }
 
+  stepAim(delta) {
+    const state = this.state;
+    // state.yawLeft = Math.min(state.yawLeft, -1);
+    // state.yawRight = Math.max(state.yawRight, 1);
+    // state.yawLeft = lerpToZero(signRelativeMax(state.yawLeft, 1), delta);
+    // state.yawRight = lerpToZero(signRelativeMax(state.yawRight, 1), delta);
+    // state.yawLeft = lerpToZero(signRelativeMax(state.yawLeft, 1), delta);
+    // state.yawRight = lerpToZero(signRelativeMax(state.yawRight, 1), delta);
+    // state.pitchUp = signRelativeMax(state.pitchUp, 1);
+    // state.pitchDown = signRelativeMax(state.pitchDown, 1);
+    // state.rollLeft = signRelativeMax(state.rollLeft, 1);
+    // state.rollRight = signRelativeMax(state.rollRight, 1);
+
+    // console.log('149 ->', {
+    //   yawLeft: state.yawLeft,
+    //   yawRight: state.yawRight,
+    //   // pitchUp: state.pitchUp,
+    //   // pitchDown: state.pitchDown,
+    //   // rollLeft: state.rollLeft,
+    //   // rollRight: state.rollRight,
+    // });
+  }
+
   stepFreeLook() {
     let x = this.state.lookLeft + this.state.lookRight;
     let y = this.state.lookUp + this.state.lookDown;
     this.setNeckPosition(x, y);
   }
 
-  // noinspection JSSuspiciousNameCombination
   step(delta) {
     // TODO: instead of an if-then statement that resets positions, look for a
-    //  more elegant way of dealing with this.
+    //  more elegant way of dealing with this. This becomes particularly
+    //  important if the user wants to use two different devices for looking
+    //  around and aiming. Maybe a checkbox in configs at least?
     if (!this.state.mouseHeadLook) {
       this.resetNeckAxesInput();
+      this.stepAim(delta);
     }
     else {
       this.resetPrincipleAxesInput();

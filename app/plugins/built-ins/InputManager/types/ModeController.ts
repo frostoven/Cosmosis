@@ -7,6 +7,7 @@ import { ModeId } from './ModeId';
 import { ActionType } from './ActionType';
 import { ControlSchema } from '../interfaces/ControlSchema';
 import { arrayContainsArray } from '../../../../local/utils';
+import { signRelativeMax } from '../../../../local/mathUtils';
 
 export default class ModeController {
   public name: string;
@@ -126,48 +127,77 @@ export default class ModeController {
     });
   }
 
-  receiveAction({ action, isDown, analogData }) {
+  receiveAction({ action, value, analogData }) {
     const control = this.controlSchema[action];
     const actionType = control.actionType;
     const kbAmount = control.kbAmount;
 
     if (actionType === ActionType.analogLiteral) {
-      this.handleReceiveLiteral({ action, isDown, analogData, kbAmount });
+      this.handleReceiveLiteral({ action, value, analogData, kbAmount });
+    }
+    else if (actionType === ActionType.analogThreshold) {
+      this.handleReceiveThreshold({ action, value, analogData, kbAmount });
     }
     else if (actionType === ActionType.analogGravity) {
-      this.handleReceiveGravity({ action, isDown, analogData, kbAmount });
+      this.handleReceiveGravity({ action, value, analogData, kbAmount });
     }
     else if (actionType === ActionType.pulse) {
-      this.handlePulse({ action, isDown });
+      this.handlePulse({ action, value });
     }
     else if (actionType === ActionType.analogAdditive) {
-      this.handleReceiveAdditive({ action, isDown, analogData, kbAmount });
+      this.handleReceiveAdditive({ action, value, analogData, kbAmount });
     }
   }
 
-  handleReceiveLiteral({ action, isDown, analogData, kbAmount }) {
+  handleReceiveLiteral({ action, value, analogData, kbAmount }) {
     if (analogData) {
+      // console.log('---> receive literal:', analogData);
+      // console.log(`   > this.state.${action} = ${analogData.delta}`);
+      //
+      // const delta = analogData.delta;
+      // // Delta never hits zero when using a mouse that goes the opposite
+      // // direction of this axis. Discard the 1 as a fix; this means the rest of
+      // // the game should treat 1 as a really tiny value (think 0.1%).
+      // this.state[action] = Math.abs(delta) === 1 ? 0 : delta;
+
       this.state[action] = analogData.delta;
     }
     else {
-      this.state[action] = isDown === true ? kbAmount : 0;
+      this.state[action] = value;
     }
   }
 
-  handleReceiveGravity({ action, isDown, analogData, kbAmount }) {
+  handleReceiveThreshold({ action, value, analogData, kbAmount }) {
+    if (analogData) {
+      // if (action.includes('yawLeft')) {
+      //   console.log(`171 -> [${action}], signRelativeMax(${analogData.delta}, ${Math.abs(kbAmount)}) =`, signRelativeMax(analogData.delta, Math.abs(kbAmount)));
+      // }
+      // this.state[action] = signRelativeMax(analogData.delta, Math.abs(kbAmount));
+      this.state[action] += analogData.delta / 1000;
+      if (Math.abs(this.state[action]) > Math.abs(kbAmount)) {
+        this.state[action] = signRelativeMax(this.state[action], Math.abs(kbAmount));
+      }
+      console.log('[threshold]', this.state[action]);
+    }
+    else {
+      this.state[action] = value;
+    }
+  }
+
+  handleReceiveGravity({ action, value, analogData, kbAmount }) {
     if (analogData) {
       this.state[action] = analogData.gravDelta;
     }
     else {
-      this.state[action] = isDown === true ? kbAmount : 0;
+      this.state[action] = value;
     }
   }
 
-  handleReceiveAdditive({ action, isDown, analogData, kbAmount }) {
+  handleReceiveAdditive({ action, value, analogData, kbAmount }) {
     if (analogData) {
       this.state[action] += analogData.delta;
     }
-    else if (isDown) {
+    else if (value !== 0) {
       this.continualAdders[action] = ({ delta }) => {
         // @ts-ignore
         this.state[action] += delta * kbAmount;
@@ -179,9 +209,9 @@ export default class ModeController {
     }
   }
 
-  handlePulse({ action, isDown }) {
+  handlePulse({ action, value }) {
     // Pulse once if the button is down. We don't pulse on release.
-    if (isDown) {
+    if (value) {
       this.pulse[action].setValue(1);
     }
   }
