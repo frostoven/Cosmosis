@@ -3,20 +3,13 @@ import { WarpEngineType } from './WarpEngineType';
 import { gameRuntime } from '../../../../gameRuntime';
 import { Location } from '../../../Location';
 import { ShipPilot } from '../../../modes/playerControllers/ShipPilot';
+import { lerpToZero, signRelativeMax } from '../../../../../local/mathUtils';
 
 // TODO: Refactor this into the Location module.
 // Just to alleviate some confusion: 1 means 'nothing', less then 1 is negative
 // ambient energy. In other words, this number should always be 1 or more. It
 // gets exponentially higher as you get closer to a planet/star/whatever.
 const ambientGravity = 1;
-
-// FIXME: move into utils if we end up still needing this.
-// Acts like Math.max if amount positive, or Math.min if amount is negative.
-function signRelativeMax(amount, max) {
-  if (amount > max) return max;
-  else if (amount < -max) return -max;
-  else return amount;
-}
 
 export default class WarpEngineMechanism {
   // 195 = 1,000c, 199 = 1,500c, 202 = 2,000c, 206 = 3,000c, 209 = 4,000c,
@@ -64,8 +57,8 @@ export default class WarpEngineMechanism {
     this.currentThrottle = 0;
     this.actualThrottle = 0;
     this.debugFullWarpSpeed = false;
-    this.pitchAndYawSpeed = 0.00005;
-    this.rollSpeed = 1;
+    this.pitchAndYawSpeed = 0.005;
+    this.rollSpeed = 0.01;
     this.rollBuildup = 0;
     this.yawBuildup = 0;
     this.pitchBuildup = 0;
@@ -85,6 +78,12 @@ export default class WarpEngineMechanism {
     gameRuntime.tracked.shipPilot.getEveryChange((shipPilot) => {
       this._cachedShipPilot = shipPilot;
     });
+  }
+
+  reset() {
+    this.yawBuildup = 0;
+    this.pitchBuildup = 0;
+    this.rollBuildup = 0;
   }
 
   /**
@@ -144,16 +143,27 @@ export default class WarpEngineMechanism {
   /**
    * Function that eases into targets.
    */
-  easeIntoBuildup(delta, buildup, target, rollSpeed, factor) {
-    rollSpeed *= delta;
-    const total = (target + buildup) * factor * delta;
-
-    if (Math.abs(total) > rollSpeed) {
-      return rollSpeed * Math.sign(total);
-    }
-
-    return total;
-  }
+  // easeIntoBuildup(delta, buildup, target, rollSpeed, factor=1) {
+  //   // rollSpeed *= delta;
+  //   const total = (target + buildup);
+  //
+  //   if (Math.abs(total) > rollSpeed) {
+  //     return rollSpeed * Math.sign(total);
+  //   }
+  //
+  //   return total * factor;
+  // }
+  // easeIntoBuildup(delta, buildup, rollSpeed, factor, direction=1) {
+  //   buildup = Math.abs(buildup);
+  //
+  //   const effectiveSpin = (rollSpeed * delta) * factor;
+  //   buildup += effectiveSpin;
+  //   if (buildup > effectiveSpin) {
+  //     buildup = effectiveSpin;
+  //   }
+  //
+  //   return buildup * direction;
+  // };
 
   easeOutOfBuildup(delta, rollBuildup, easeFactor) {
     if (Math.abs(rollBuildup) < delta * 0.1) {
@@ -166,38 +176,107 @@ export default class WarpEngineMechanism {
     return rollBuildup;
   }
 
+  easeIntoBuildup(delta, currentValue, requestedValue, maxAllowed, acceleration=1) {
+    let currentAbs = Math.abs(currentValue);
+    let requestedAbs = Math.abs(requestedValue);
+    let maxAbs = Math.abs(maxAllowed);
+
+    if (requestedAbs > maxAbs) {
+      requestedAbs = maxAbs;
+    }
+
+    if (currentAbs > requestedAbs) {
+      // This is to prevent an automatic ease-out.
+      return currentValue;
+    }
+
+    currentAbs += (delta * acceleration);
+    if (currentAbs > requestedAbs) {
+      return requestedAbs * (Math.sign(requestedValue) || 1);
+    }
+    else {
+      return currentAbs * (Math.sign(requestedValue) || 1);
+    }
+  }
+
+  quadEaseOut(time, startValue, change, duration) {
+    time /= duration / 2;
+    if (time < 1)  {
+      return change / 2 * time * time + startValue;
+    }
+
+    time--;
+    return -change / 2 * (time * (time - 2) - 1) + startValue;
+  };
+
+  lerp (t, b, c, d) {
+    return c*t/d + b;
+  }
+
   applyRotation(delta) {
+    const state = this._cachedShipPilot.state;
+
     const {
       pitchDown, pitchUp, rollLeft, rollRight, yawLeft, yawRight
     } = this._cachedShipPilot.state;
 
     const rotation = this._cachedLocation.universeRotationM;
 
-    const yaw = yawLeft - yawRight;
-    const pitch = pitchDown - pitchUp;
-    const roll = rollLeft - rollRight;
+    // const yaw = yawLeft + yawRight;
+    // const pitch = pitchUp - pitchDown;
+    // const roll = rollLeft - rollRight;
+
+
+    // ---------------
+    let yaw = (state.yawLeft + state.yawRight) * 0.00001;
+    let pitch = (state.pitchUp + state.pitchDown) * 0.00001;
+    let roll = (state.rollLeft + state.rollRight) * 0.0001;
 
     // if (yaw) {
-    //   this.yawBuildup = this.easeIntoBuildup(delta, this.yawBuildup, yaw, this.pitchAndYawSpeed, 38);
-    // }
     //
-    // if (pitch) {
-    //   this.pitchBuildup = this.easeIntoBuildup(delta, this.pitchBuildup, pitch, this.pitchAndYawSpeed, 38);
     // }
 
-    if (roll) {
-      this.rollBuildup = this.easeIntoBuildup(delta, this.rollBuildup, roll, this.rollSpeed, 100000);
-    }
+    // this.rollBuildup = this.easeIntoBuildup(delta, this.rollBuildup, roll, this.rollSpeed, 0.01);
+    // this.rollBuildup = this.lerp();
 
-    rotation.rotateY(this.yawBuildup * this.pitchAndYawSpeed);
-    rotation.rotateX(this.pitchBuildup * this.pitchAndYawSpeed);
+    // console.log({roll, rollBuildup: this.rollBuildup });
+
+    // state.yawRight = yaw;
+    // state.yawLeft = -yaw;
+    // ---------------
+    rotation.rotateY(signRelativeMax(-yaw, this.pitchAndYawSpeed));
+    rotation.rotateX(signRelativeMax(-pitch, this.pitchAndYawSpeed));
     rotation.rotateZ(this.rollBuildup);
+    // ---------------
 
-    if (this.flightAssist) {
-      this.yawBuildup = this.easeOutOfBuildup(delta, this.yawBuildup, 10);
-      this.pitchBuildup = this.easeOutOfBuildup(delta, this.pitchBuildup, 10);
-      this.rollBuildup = this.easeOutOfBuildup(delta, this.rollBuildup, 10);
-    }
+
+
+    // console.log('172 ->', { yaw, pitch, roll });
+    // console.log('172 ->', { yaw });
+
+    // if (yaw) {
+    //   this.yawBuildup = this.easeIntoBuildup(delta, this.yawBuildup, -yaw, this.pitchAndYawSpeed);
+    // }
+
+    // console.log('yawBuildup:', this.yawBuildup);
+
+    // if (pitch) {
+    //   this.pitchBuildup = this.easeIntoBuildup(delta, this.pitchBuildup, pitch, this.pitchAndYawSpeed);
+    // }
+
+    // if (roll) {
+    //   this.rollBuildup = this.easeIntoBuildup(delta, this.rollBuildup, roll, this.rollSpeed);
+    // }
+
+    // rotation.rotateY(this.yawBuildup);
+    // rotation.rotateX(this.pitchBuildup);
+    // rotation.rotateZ(this.rollBuildup);
+    //
+    // if (this.flightAssist) {
+    //   yaw = this.easeOutOfBuildup(delta, yaw, 10);
+    //   // this.pitchBuildup = this.easeOutOfBuildup(delta, this.pitchBuildup, 10);
+    //   this.rollBuildup = this.easeOutOfBuildup(delta, this.rollBuildup, 10);
+    // }
   }
 
   // FIXME: update me to work with new plugin system.

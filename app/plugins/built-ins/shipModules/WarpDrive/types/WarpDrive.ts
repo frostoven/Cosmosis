@@ -84,6 +84,7 @@ export default class WarpDrive extends ShipModule {
   // bubble is active and functional, power requirements drop again.
   initiateWarpBubble() {
     console.log(`-> Initiating warp countdown. ETA: ${this._warpChargeTime} seconds.`);
+    this._warpEngine.reset();
     this._warpCountdown = this._warpChargeTime;
   }
 
