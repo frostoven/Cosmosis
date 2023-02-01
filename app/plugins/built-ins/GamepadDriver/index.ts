@@ -3,6 +3,14 @@ import { gameRuntime } from '../../gameRuntime';
 import { guessGamepadName } from './types/gamepadNames';
 import { InputManager } from '../InputManager';
 
+const axisNames: Array<string> = [];
+const buttonNames: Array<string> = [];
+
+for (let i = 0; i < 32; i++) {
+  axisNames.push(`ax${i}`);
+  buttonNames.push(`bt${i}`);
+}
+
 // Note: this relates to how the mouse works with the game window. It has
 // nothing to do with mounting rodents, though we may or may not have such
 // implementation plans.
@@ -72,7 +80,7 @@ class GamepadDriver {
       if (axisCache[i] !== axisValue) {
         axisCache[i] = axisValue;
         // console.log(`[] axis ${i} changed to`, axisValue);
-        this._cachedInputManager.propagateInput({ key: `ax${i}`, value: axisValue });
+        this._cachedInputManager.propagateInput({ key: axisNames[i], value: axisValue });
       }
     }
 
@@ -82,7 +90,13 @@ class GamepadDriver {
       if (buttonCache[i] !== buttonValue) {
         buttonCache[i] = buttonValue;
         console.log(`[] button ${i} changed to`, buttonValue);
-        this._cachedInputManager.propagateInput({ key: `bt${i}`, value: buttonValue });
+        // TODO: use `bt` for Xbox, Sony, and generic controllers. For others,
+        //  use names that resemble the type or brand. For example, maybe name
+        //  flight stick buttons `fl` and HOTAS switches `ht`. This allows
+        //  using similar controllers interchangeably while insuring that
+        //  vastly different controllers don't steal keybindings not belonging
+        //  to them. If unknown, default to bt. Don't do this for axes.
+        this._cachedInputManager.propagateInput({ key: buttonNames[i], value: buttonValue });
       }
     }
   }

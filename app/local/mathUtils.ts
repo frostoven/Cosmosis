@@ -11,6 +11,46 @@ function applyPolarRotation(x, y, observerQuaternion, minPolarAngle = 0, maxPola
   observerQuaternion.setFromEuler(_aprEuler);
 }
 
+// Returns a max relative to the amount's sign. Acts like Math.max if amount
+// positive, or Math.min with a negative max if amount is negative.
+function signRelativeMax(amount, max) {
+  if (amount > max) return max;
+  else if (amount < -max) return -max;
+  else return amount;
+}
+
+// // Like signRelativeMax, but in the opposite direction.
+// function signRelativeMin(amount, min) {
+//   if (amount > 0) {
+//     return Math.min(amount, min);
+//   }
+//   else if (amount < 0) {
+//     return
+//   }
+// }
+
+function lerpToZero(number, stepAmount) {
+  if (number < 0) {
+    if (number + stepAmount > 0) {
+      return 0;
+    }
+    return number + stepAmount;
+  }
+  else if (number > 0) {
+    if (number - stepAmount < 0) {
+      return 0;
+    }
+    else {
+      return number - stepAmount;
+    }
+  }
+  else {
+    return 0;
+  }
+}
+
 export {
   applyPolarRotation,
+  signRelativeMax,
+  lerpToZero,
 }

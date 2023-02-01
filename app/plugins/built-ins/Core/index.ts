@@ -13,6 +13,7 @@ import Stats from '../../../../hackedlibs/stats/stats.module';
 const animationData = { delta: 0, bigDelta: 0 };
 
 export default class Core {
+  public onPreAnimate: ChangeTracker;
   public onAnimate: ChangeTracker;
   public onAnimateDone: ChangeTracker;
   public _maxFrameDelta: number;
@@ -22,8 +23,14 @@ export default class Core {
   private readonly _rendererHooks: Function[];
 
   constructor() {
+    // Do not place game logic in pre-animate. It's meant for setup used by
+    // onAnimate.
+    this.onPreAnimate = new ChangeTracker();
+    // Most game logic should go in here.
     this.onAnimate = new ChangeTracker();
+    // Stuff that should happen after game logic resolution for this frame.
     this.onAnimateDone = new ChangeTracker();
+
     this._maxFrameDelta = 0;
     this._frameLimitCount = 0;
     this._rendererHooks = [];
@@ -90,6 +97,9 @@ export default class Core {
     for (let i = 0, len = renderers.length; i < len; i++) {
       renderers[i]();
     }
+
+    // Anything that should happen before core game logic goes here.
+    this.onPreAnimate.setValue(animationData);
 
     // Always place this as early in the animation function as possible,
     // preferably right after the rendering. No game logic should happen before
