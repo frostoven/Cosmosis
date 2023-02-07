@@ -151,6 +151,7 @@ class InputManager {
       // Don't use built-in presses as they don't fire for all possible keys.
       // https://developer.mozilla.org/en-US/docs/Web/API/Document/keydown_event
       // Luckily, manually dealing with keypresses are easy anyway.
+        break;
       case 'mousemove':
         if (!this._mouseDriver.isPointerLocked) {
           // Ignore mouse if pointer is being used by menu or HUD.
@@ -342,12 +343,13 @@ class InputManager {
       }
 
       if (actions.length === 0) {
-        controller.receiveAction({ action: actions[0], value, analogData });
+        // const keyType = actions[0]
+        controller.receiveAction({ action: actions[0], key, value, analogData });
         return;
       }
       else {
         for (let i = 0, len = actions.length; i < len; i++) {
-          controller.receiveAction({ action: actions[i], value, analogData });
+          controller.receiveAction({ action: actions[i], key, value, analogData });
         }
       }
     }
