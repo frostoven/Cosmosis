@@ -25,6 +25,9 @@ const ANALOG_STICK_EASING = false;
 const MOUSE_SPEED = 0.375;
 const ANALOG_SPEED = 20;
 
+// TODO: move me into user profile.
+const KB_LOOK_SPEED = 5;
+
 export default class ModeController {
   public name: string;
   public modeId: ModeId;
@@ -261,9 +264,13 @@ export default class ModeController {
   // InputType: keyboardButton
   receiveAsKbButton({ action, value, analogData, control }) {
     // console.log('[keyboard button]', { action, actionType: ActionType[control.actionType], value, analogData, control });
-    // If only all control types were this simple :')
-    // Under normal circumstances this value is always either 0 or 1.
-    this.state[action] = value;
+    if (control.analogRemap) {
+      this.activeState[control.analogRemap] = value * KB_LOOK_SPEED * control.sign;
+    }
+    else {
+      // Under normal circumstances this value is always either 0 or 1.
+      this.state[action] = value;
+    }
   }
 
   // InputType: analogButton
