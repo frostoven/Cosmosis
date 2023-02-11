@@ -176,6 +176,13 @@ to supplement your main job, we may be happy to work out something more formal.
 -->
 
 ### Development
+* This project loosely follows
+[Google's JavaScript Style Guide](https://google.github.io/styleguide/jsguide.html).
+This means that we
+[avoid relying on automatic semicolon insertion](https://google.github.io/styleguide/jsguide.html#formatting-semicolons-are-required).
+While we're not strictly enforcing the standard yet, there's an
+[open issue](https://github.com/frostoven/Cosmosis/issues/93)
+to create the needed ESLint setup to do so.
 * Please use [official Node.js sources](https://nodejs.org/en/download/) to
 install Node 10 or higher, LTS. On Windows the installer should ask if you'd
 like to install Chocolatey and Python - say yes unless you have your own custom
