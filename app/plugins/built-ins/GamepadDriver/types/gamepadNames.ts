@@ -34,6 +34,10 @@ const friendlyButtonNames = {};
 //  brands in orange.
 
 friendlyButtonNames['Xbox 360 Controller'] = {
+  ax0: 'LS Vertical',
+  ax1: 'LS Horizontal',
+  ax3: 'RS Vertical',
+  ax4: 'RS Horizontal',
   bt0: 'A',
   bt1: 'B',
   bt2: 'X',
@@ -57,6 +61,10 @@ friendlyButtonNames['Xbox 360 Controller'] = {
 friendlyButtonNames['default'] = friendlyButtonNames['Xbox 360 Controller'];
 
 friendlyButtonNames['Sony Dualshock 3 Controller'] = {
+  ax0: 'LS Vertical',
+  ax1: 'LS Horizontal',
+  ax3: 'RS Vertical',
+  ax4: 'RS Horizontal',
   bt0: '✖', // ✖ X ╳
   bt1: '●', // ● O ◯
   bt2: '■', // ■ □ □
