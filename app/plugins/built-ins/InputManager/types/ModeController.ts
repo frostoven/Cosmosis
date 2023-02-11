@@ -7,8 +7,8 @@ import { ModeId } from './ModeId';
 import { ActionType } from './ActionType';
 import { ControlSchema } from '../interfaces/ControlSchema';
 import { arrayContainsArray } from '../../../../local/utils';
-import { signRelativeMax } from '../../../../local/mathUtils';
 import { InputType } from './InputTypes';
+import { easeIntoExp, signRelativeMax } from '../../../../local/mathUtils';
 
 // TODO: move to user configs, and expose to UI. Minimum value should be zero,
 //  and max should be 0.95 to prevent bugs.
@@ -18,16 +18,28 @@ import { InputType } from './InputTypes';
 // this only applies to digital actions such as toggles, and not to continuous
 // actions such as throttles.
 const ANALOG_BUTTON_THRESHOLD = 0.05;
+const ANALOG_STICK_THRESHOLD = 5;
+const ANALOG_STICK_EASING = false;
+
+// TODO: move me into user profile.
+const MOUSE_SPEED = 0.375;
+const ANALOG_SPEED = 20;
 
 export default class ModeController {
   public name: string;
   public modeId: ModeId;
   public controlSchema: ControlSchema;
   public controlsByKey: {};
+  private readonly _actionReceivers: Array<Function>;
+
+  // Passive state. This only changes when something external changes. Stores
+  // last known pressed values.
   public state: { [action: string]: number };
+  // This actively updates this.state. Useful for situations where action is
+  // implied (for example a gamepad stick sitting at -1.0 without changing).
+  public activeState: { [action: string]: number };
+  // Designed for instant actions and toggleables. Contains change trackers.
   public pulse: { [actionName: string]: ChangeTracker };
-  private readonly continualAdders: { [action: string]: Function };
-  private _actionReceivers: Array<Function>;
 
   constructor(name: string, modeId: ModeId, controlSchema: ControlSchema) {
     this.name = name;
@@ -35,14 +47,9 @@ export default class ModeController {
     this.controlSchema = {};
     this.controlsByKey = {};
 
-    // Stores analog values, usually "key was pressed" kinda-stuff.
     this.state = {};
-
-    // Designed for instant actions and toggleables. Contains change trackers.
+    this.activeState = {};
     this.pulse = {};
-
-    // Used for controls that need to simulate pre-frame key presses.
-    this.continualAdders = {};
 
     // Note: the indexes of this array MUST match the indexes in ./InputTypes
     // or things will break.
@@ -111,8 +118,8 @@ export default class ModeController {
       //   actionName
       // };
 
-      if (!controlSchema[actionName].kbAmount) {
-        controlSchema[actionName].kbAmount = 1;
+      if (!controlSchema[actionName].sign) {
+        controlSchema[actionName].sign = 1;
       }
     });
 
@@ -182,9 +189,11 @@ export default class ModeController {
 
       if (control.actionType === ActionType.pulse) {
         this.pulse[actionName] = new ChangeTracker();
+        this.pulse[actionName].setSilent(0);
       }
       else {
         this.state[actionName] = 0;
+        this.activeState[actionName] = 0;
       }
     });
   }
@@ -199,7 +208,7 @@ export default class ModeController {
   ) {
     const control = this.controlSchema[action];
     const actionType = control.actionType;
-    const kbAmount = control.kbAmount;
+    const sign = control.sign;
 
     let inputType;
     if (!inputType) {
@@ -213,7 +222,7 @@ export default class ModeController {
       inputType = InputType.keyboardButton;
     }
 
-    if (actionType === ActionType.pulse) {
+    if (actionType === ActionType.pulse && inputType !== 0) {
       this.handlePulse({ action, value });
     }
     else {
@@ -248,25 +257,43 @@ export default class ModeController {
     console.log('Received but ignoring', action);
   }
 
+  // Receives a non-pulsed keyboard button.
   // InputType: keyboardButton
   receiveAsKbButton({ action, value, analogData, control }) {
-    console.log('[keyboard button]', { action, actionType: ActionType[control.actionType], value, analogData, control });
-    if (control.actionType === ActionType.pulse) {
-      //
-    }
-    else {
-      //
-    }
+    // console.log('[keyboard button]', { action, actionType: ActionType[control.actionType], value, analogData, control });
+    // If only all control types were this simple :')
+    // Under normal circumstances this value is always either 0 or 1.
+    this.state[action] = value;
   }
 
   // InputType: analogButton
   receiveAsAnalogButton({ action, value, analogData, control }) {
     console.log('[analog button]', { action, actionType: ActionType[control.actionType], value, analogData, control });
+    // Under normal circumstances this value is always in range of 0-1.
+    this.state[action] = value;
   }
 
   // InputType: analogStickAxis
   receiveAsAnalogStick({ action, value, analogData, control }) {
-    console.log('[analog stick]', { action, actionType: ActionType[control.actionType], value, analogData, control });
+    // console.log('xxx [analog stick]', { action, actionType: ActionType[control.actionType], value, analogData, control });
+    let result = value * ANALOG_SPEED;
+    if (Math.abs(result) < ANALOG_STICK_THRESHOLD) {
+      result = 0;
+    }
+    else if (result !== 0) {
+      // This allows the user to ease into the turn without suddenly jumping to
+      // for example 50%. It's basically makes the threshold an offset.
+      result > 0
+        ? result -= ANALOG_STICK_THRESHOLD
+        : result += ANALOG_STICK_THRESHOLD;
+    }
+    const maxRange = ANALOG_SPEED - ANALOG_STICK_THRESHOLD;
+    if (ANALOG_STICK_EASING) {
+      this.activeState[action] = easeIntoExp(result, maxRange);
+    }
+    else {
+      this.activeState[action] = result;
+    }
   }
 
   // InputType: mouseButton
@@ -276,81 +303,89 @@ export default class ModeController {
 
   // InputType: mouseAxisInfinite
   receiveAsMouse({ action, value, analogData, control }) {
-    console.log('[mouse movement | standard]', { action, actionType: ActionType[control.actionType], value, analogData, control });
+    // console.log('[mouse movement | standard]', { action, actionType: ActionType[control.actionType], value, analogData, control });
+    // console.log(`--> analogData[${action}]: delta=${analogData.delta}; grav=${analogData.gravDelta}`);
+    this.state[action] += analogData.delta * MOUSE_SPEED;
   }
 
   // InputType: mouseAxisGravity
   receiveAsMouseAxisGravity({ action, value, analogData, control }) {
     console.log('[mouse movement | gravity]', { action, actionType: ActionType[control.actionType], value, analogData, control });
+    this.state[action] += this.state[action] += analogData.delta;
   }
 
   // InputType: mouseAxisThreshold
   receiveAsMouseAxisThreshold({ action, value, analogData, control }) {
     console.log('[mouse movement | threshold]', { action, actionType: ActionType[control.actionType], value, analogData, control });
+    const result = this.state[action] += value * MOUSE_SPEED;
+    if (Math.abs(result) > 1) {
+      this.state[action] = signRelativeMax(result, 1);
+    }
+    console.log(`[mouse{${this.name}}|${action}]`, this.state[action]);
   }
 
 
   // --------------------------------------------------------------------------
 
-  handleReceiveLiteral({ action, value, analogData, kbAmount }) {
-    if (analogData) {
-      // console.log('---> receive literal:', analogData);
-      // console.log(`   > this.state.${action} = ${analogData.delta}`);
-      //
-      // const delta = analogData.delta;
-      // // Delta never hits zero when using a mouse that goes the opposite
-      // // direction of this axis. Discard the 1 as a fix; this means the rest of
-      // // the game should treat 1 as a really tiny value (think 0.1%).
-      // this.state[action] = Math.abs(delta) === 1 ? 0 : delta;
-
-      this.state[action] = analogData.delta;
-    }
-    else {
-      this.state[action] = value;
-    }
-  }
-
-  handleReceiveThreshold({ action, value, analogData, kbAmount }) {
-    if (analogData) {
-      // if (action.includes('yawLeft')) {
-      //   console.log(`171 -> [${action}], signRelativeMax(${analogData.delta}, ${Math.abs(kbAmount)}) =`, signRelativeMax(analogData.delta, Math.abs(kbAmount)));
-      // }
-      // this.state[action] = signRelativeMax(analogData.delta, Math.abs(kbAmount));
-      this.state[action] += analogData.delta / 1000;
-      if (Math.abs(this.state[action]) > Math.abs(kbAmount)) {
-        this.state[action] = signRelativeMax(this.state[action], Math.abs(kbAmount));
-      }
-      console.log('[threshold]', this.state[action]);
-    }
-    else {
-      this.state[action] = value;
-    }
-  }
-
-  handleReceiveGravity({ action, value, analogData, kbAmount }) {
-    if (analogData) {
-      this.state[action] = analogData.gravDelta;
-    }
-    else {
-      this.state[action] = value;
-    }
-  }
-
-  handleReceiveAdditive({ action, value, analogData, kbAmount }) {
-    if (analogData) {
-      this.state[action] += analogData.delta;
-    }
-    else if (value !== 0) {
-      this.continualAdders[action] = ({ delta }) => {
-        // @ts-ignore
-        this.state[action] += delta * kbAmount;
-      };
-      gameRuntime.tracked.core.cachedValue.onAnimate.getEveryChange(this.continualAdders[action]);
-    }
-    else {
-      gameRuntime.tracked.core.cachedValue.onAnimate.removeGetEveryChangeListener(this.continualAdders[action]);
-    }
-  }
+  // handleReceiveLiteral({ action, value, analogData, kbAmount }) {
+  //   if (analogData) {
+  //     // console.log('---> receive literal:', analogData);
+  //     // console.log(`   > this.state.${action} = ${analogData.delta}`);
+  //     //
+  //     // const delta = analogData.delta;
+  //     // // Delta never hits zero when using a mouse that goes the opposite
+  //     // // direction of this axis. Discard the 1 as a fix; this means the rest of
+  //     // // the game should treat 1 as a really tiny value (think 0.1%).
+  //     // this.state[action] = Math.abs(delta) === 1 ? 0 : delta;
+  //
+  //     this.state[action] = analogData.delta;
+  //   }
+  //   else {
+  //     this.state[action] = value;
+  //   }
+  // }
+  //
+  // handleReceiveThreshold({ action, value, analogData, kbAmount }) {
+  //   if (analogData) {
+  //     // if (action.includes('yawLeft')) {
+  //     //   console.log(`171 -> [${action}], signRelativeMax(${analogData.delta}, ${Math.abs(kbAmount)}) =`, signRelativeMax(analogData.delta, Math.abs(kbAmount)));
+  //     // }
+  //     // this.state[action] = signRelativeMax(analogData.delta, Math.abs(kbAmount));
+  //     this.state[action] += analogData.delta / 1000;
+  //     if (Math.abs(this.state[action]) > Math.abs(kbAmount)) {
+  //       this.state[action] = signRelativeMax(this.state[action], Math.abs(kbAmount));
+  //     }
+  //     console.log('[threshold]', this.state[action]);
+  //   }
+  //   else {
+  //     this.state[action] = value;
+  //   }
+  // }
+  //
+  // handleReceiveGravity({ action, value, analogData, kbAmount }) {
+  //   if (analogData) {
+  //     this.state[action] = analogData.gravDelta;
+  //   }
+  //   else {
+  //     this.state[action] = value;
+  //   }
+  // }
+  //
+  // handleReceiveAdditive({ action, value, analogData, kbAmount }) {
+  //   if (analogData) {
+  //     this.state[action] += analogData.delta;
+  //   }
+  //   else if (value !== 0) {
+  //     this.continualAdders[action] = ({ delta }) => {
+  //       // @ts-ignore
+  //       this.state[action] += delta * kbAmount;
+  //     };
+  //     gameRuntime.tracked.core.cachedValue.onAnimate.getEveryChange(this.continualAdders[action]);
+  //   }
+  //   else {
+  //     gameRuntime.tracked.core.cachedValue.onAnimate.removeGetEveryChangeListener(this.continualAdders[action]);
+  //   }
+  // }
 
   // Pulse once if the button is down. We don't pulse on release. Doesn't pulse
   // if receiving two subsequent non-zero values without first getting a zero.

@@ -5,9 +5,13 @@ interface ControlSchema {
   [key: string]: {
     // Continuous, toggle, etc.
     actionType: ActionType,
-    // If using keyboard in analog context, what amount of change does the
-    // keyboard output? If not set, this should be treated as 1.
-    kbAmount?: number,
+    // The direction in which the value goes.
+    // @deprecated
+    sign?: number,
+    // Used for cases where digital keys are used in analog contexts. This
+    // should almost always be used with the sign option.
+    analogRemap?: string,
+
     // // Current keybinding.
     // current: Array<{ key: string, inputType: InputType }> | null,
     // // Default keybinding.
@@ -19,6 +23,10 @@ interface ControlSchema {
     default: { [key: string]: InputType },
 
     allowKeyConflicts?: Array<string>,
+
+    // If true, only the mouse and analog sticks are allowed to interface with
+    // control.
+    strictlyBidirectionalAnalog?: boolean,
   };
 }
 

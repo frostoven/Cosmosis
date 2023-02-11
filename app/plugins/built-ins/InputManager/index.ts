@@ -253,8 +253,8 @@ class InputManager {
     let deltaX = x - prevX;
     let deltaY = y - prevY;
 
-    let xKey = x > prevX ? 'spEast' : 'spWest';
-    let yKey = y > prevY ? 'spSouth' : 'spNorth';
+    let xKey = 'spEastWest'; // x > prevX ? 'spEast' : 'spWest';
+    let yKey = 'spNorthSouth'; // y > prevY ? 'spSouth' : 'spNorth';
 
     // let xKey, yKey;
     //

@@ -1,31 +1,42 @@
 import { ActionType } from '../../../InputManager/types/ActionType';
 import { ControlSchema } from '../../../InputManager/interfaces/ControlSchema';
+import { InputType } from '../../../InputManager/types/InputTypes';
+
+const { continuous } = ActionType;
+const { keyboardButton, mouseAxisInfinite } = InputType;
 
 const freeCamControls: ControlSchema = {
   // Basic controls
-  moveForward:  { actionType: ActionType.analogLiteral, current: null, default: [ 'KeyW', 'ArrowUp' ] },
-  moveBackward: { actionType: ActionType.analogLiteral, current: null, default: [ 'KeyS', 'ArrowDown' ] },
-  moveLeft:     { actionType: ActionType.analogLiteral, current: null, default: [ 'ArrowLeft', 'KeyA' ] },
-  moveRight:    { actionType: ActionType.analogLiteral, current: null, default: [ 'ArrowRight', 'KeyD' ] },
-  moveUp:       { actionType: ActionType.analogLiteral, current: null, default: [ 'KeyR', 'Space' ] },
-  moveDown:     { actionType: ActionType.analogLiteral, current: null, default: [ 'KeyF' ] },
-  speedUp:      { actionType: ActionType.analogLiteral, current: null, default: [ 'NumpadAdd' ] },
-  speedDown:    { actionType: ActionType.analogLiteral, current: null, default: [ 'NumpadSubtract' ] },
-  doubleSpeed:  { actionType: ActionType.analogLiteral, current: null, default: [ 'ShiftLeft', 'ShiftRight' ] },
+  moveForward:   { actionType: continuous, current: null, default: { KeyW: keyboardButton, ArrowUp: keyboardButton } },
+  moveBackward:  { actionType: continuous, current: null, default: { KeyS: keyboardButton, ArrowDown: keyboardButton } },
+  moveLeft:      { actionType: continuous, current: null, default: { ArrowLeft: keyboardButton, KeyA: keyboardButton } },
+  moveRight:     { actionType: continuous, current: null, default: { ArrowRight: keyboardButton, KeyD: keyboardButton } },
+  moveUp:        { actionType: continuous, current: null, default: { KeyR: keyboardButton, Space: keyboardButton } },
+  moveDown:      { actionType: continuous, current: null, default: { KeyF: keyboardButton } },
+  speedUp:       { actionType: continuous, current: null, default: { NumpadAdd: keyboardButton } },
+  speedDown:     { actionType: continuous, current: null, default: { NumpadSubtract: keyboardButton } },
+  doubleSpeed:   { actionType: continuous, current: null, default: { ShiftLeft: keyboardButton, ShiftRight: keyboardButton } },
 
   // Analog and look-around
-  pitchUp:      { actionType: ActionType.analogAdditive, kbAmount: -1000, current: null, default: [ 'spNorth', 'Numpad8' ] },
-  pitchDown:    { actionType: ActionType.analogAdditive, kbAmount:  1000, current: null, default: [ 'spSouth', 'Numpad2' ] },
-  rollLeft:     { actionType: ActionType.analogLiteral,  kbAmount:  0.01, current: null, default: [ 'Numpad7' ] },
-  rollRight:    { actionType: ActionType.analogLiteral,  kbAmount: -0.01, current: null, default: [ 'Numpad9' ] },
-  yawLeft:      { actionType: ActionType.analogAdditive, kbAmount: -1000, current: null, default: [ 'spWest', 'Numpad4' ] },
-  yawRight:     { actionType: ActionType.analogAdditive, kbAmount:  1000, current: null, default: [ 'spEast', 'Numpad6' ] },
+  //
+  lookUp:        { actionType: continuous, sign: -1, analogRemap: 'lookUpDown', current: null, default: { Numpad8: keyboardButton } },
+  lookDown:      { actionType: continuous, sign:  1, analogRemap: 'lookUpDown', current: null, default: { Numpad2: keyboardButton } },
+  lookUpDown:    { actionType: continuous, current: null, default: { spNorthSouth: mouseAxisInfinite, ax3: InputType.analogStickAxis }, strictlyBidirectionalAnalog: true },
+  //
+  //
+  rollLeft:      { actionType: continuous, sign:  1, current: null, default: { Numpad7: mouseAxisInfinite } },
+  rollRight:     { actionType: continuous, sign: -1, current: null, default: { Numpad9: mouseAxisInfinite } },
+  // rollLeftRight: { triggers }
+  //
+  lookLeft:      { actionType: continuous, sign: -1, analogRemap: 'lookLeftRight', current: null, default: { Numpad4: keyboardButton } },
+  lookRight:     { actionType: continuous, sign:  1, analogRemap: 'lookLeftRight', current: null, default: { Numpad6: keyboardButton } },
+  lookLeftRight: { actionType: continuous, current: null, default: { spEastWest: mouseAxisInfinite, ax2: InputType.analogStickAxis }, strictlyBidirectionalAnalog: true },
 
   // Pulsed values
-  interact:     { actionType: ActionType.pulse,         current: null, default: [ 'KeyE' ] },
+  interact:      { actionType: ActionType.pulse,         current: null, default: { KeyE: keyboardButton } },
 
   // Dev controls.
-  _devChangeCamMode:   { actionType: ActionType.pulse, current: null, default: [ 'F7', 'F8' ] },
+  _devChangeCamMode:   { actionType: ActionType.pulse, current: null, default: { F7: keyboardButton, F8: keyboardButton } },
 };
 
 export {

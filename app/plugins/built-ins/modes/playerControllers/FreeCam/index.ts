@@ -7,9 +7,6 @@ import { gameRuntime } from '../../../../gameRuntime';
 import { InputManager } from '../../../InputManager';
 import { applyPolarRotation } from '../../../../../local/mathUtils';
 
-// TODO: move me into user profile.
-const MOUSE_SPEED = 0.7;
-
 class FreeCam extends ModeController {
   // @ts-ignore
   private _cachedCamera: Camera;
@@ -44,7 +41,7 @@ class FreeCam extends ModeController {
 
   onActivateController() {
     const state = this.state;
-    state.yawLeft = state.yawRight = state.pitchUp = state.pitchDown = 0;
+    state.lookLeftRight = state.lookUpDown = 0;
   }
 
   // noinspection JSSuspiciousNameCombination
@@ -52,6 +49,11 @@ class FreeCam extends ModeController {
     if (!this._cachedCamera) {
       return;
     }
+
+    this.state.lookLeftRight += this.activeState.lookLeftRight;
+    this.state.lookUpDown += this.activeState.lookUpDown;
+
+    // console.log(`lookLeftRight=${this.state.lookLeftRight}; lookUpDown=${this.activeState.lookUpDown}`);
 
     // Left and right movement:
     this._cachedCamera.translateX((this.state.moveRight - this.state.moveLeft) * delta);
@@ -63,8 +65,8 @@ class FreeCam extends ModeController {
     // Note: don't use delta here. We don't want mouse speed to be dependent on
     // framerate.
     applyPolarRotation(
-      (this.state.yawLeft + this.state.yawRight) * MOUSE_SPEED,
-      (this.state.pitchUp + this.state.pitchDown) * MOUSE_SPEED,
+      (this.state.lookLeftRight),
+      (this.state.lookUpDown),
       this._cachedCamera.quaternion,
     );
 
