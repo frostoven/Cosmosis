@@ -18,15 +18,15 @@ import { easeIntoExp, signRelativeMax } from '../../../../local/mathUtils';
 // this only applies to digital actions such as toggles, and not to continuous
 // actions such as throttles.
 const ANALOG_BUTTON_THRESHOLD = 0.05;
-const ANALOG_STICK_THRESHOLD = 5;
-const ANALOG_STICK_EASING = false;
+const ANALOG_STICK_THRESHOLD = 625;
 
 // TODO: move me into user profile.
 const MOUSE_SPEED = 0.375;
-const ANALOG_SPEED = 20;
+const ANALOG_STICK_EASING = false;
+const ANALOG_STICK_SPEED = 2500;
 
 // TODO: move me into user profile.
-const KB_LOOK_SPEED = 5;
+const KB_LOOK_SPEED = 625;
 
 export default class ModeController {
   public name: string;
@@ -283,7 +283,7 @@ export default class ModeController {
   // InputType: analogStickAxis
   receiveAsAnalogStick({ action, value, analogData, control }) {
     // console.log('xxx [analog stick]', { action, actionType: ActionType[control.actionType], value, analogData, control });
-    let result = value * ANALOG_SPEED;
+    let result = value * ANALOG_STICK_SPEED;
     if (Math.abs(result) < ANALOG_STICK_THRESHOLD) {
       result = 0;
     }
@@ -294,7 +294,7 @@ export default class ModeController {
         ? result -= ANALOG_STICK_THRESHOLD
         : result += ANALOG_STICK_THRESHOLD;
     }
-    const maxRange = ANALOG_SPEED - ANALOG_STICK_THRESHOLD;
+    const maxRange = ANALOG_STICK_SPEED - ANALOG_STICK_THRESHOLD;
     if (ANALOG_STICK_EASING) {
       this.activeState[action] = easeIntoExp(result, maxRange);
     }

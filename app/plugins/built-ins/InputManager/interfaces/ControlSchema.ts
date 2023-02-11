@@ -20,7 +20,7 @@ interface ControlSchema {
     // Current keybinding.
     current: { [key: string]: InputType } | null,
     // Default keybinding.
-    default: { [key: string]: InputType },
+    default: { [key: string]: InputType } | null,
 
     allowKeyConflicts?: Array<string>,
 

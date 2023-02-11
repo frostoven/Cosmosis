@@ -1,11 +1,11 @@
-import { Camera } from 'three';
+import { Camera, Euler } from 'three';
 import CosmosisPlugin from '../../../../types/CosmosisPlugin';
 import ModeController from '../../../InputManager/types/ModeController';
 import { freeCamControls } from './controls';
 import { ModeId } from '../../../InputManager/types/ModeId';
 import { gameRuntime } from '../../../../gameRuntime';
 import { InputManager } from '../../../InputManager';
-import { applyPolarRotation } from '../../../../../local/mathUtils';
+import { applyPolarRotation, zAxis } from '../../../../../local/mathUtils';
 
 class FreeCam extends ModeController {
   // @ts-ignore
@@ -50,10 +50,14 @@ class FreeCam extends ModeController {
       return;
     }
 
-    this.state.lookLeftRight += this.activeState.lookLeftRight;
-    this.state.lookUpDown += this.activeState.lookUpDown;
-
-    // console.log(`lookLeftRight=${this.state.lookLeftRight}; lookUpDown=${this.activeState.lookUpDown}`);
+    // Note: this method of adding delta is intentional - we don't want passive
+    // values delta'd, because passive values come from absolute numbers (such
+    // as actual mouse position). We do however want active values delta'd,
+    // because they represent a relative change on a per-frame basis (ex. a
+    // gamepad stick at the 50% mark means add 0.5 units per x unit time).
+    this.state.lookLeftRight += this.activeState.lookLeftRight * delta;
+    this.state.lookUpDown += this.activeState.lookUpDown * delta;
+    this.state.rollLeftRight += this.activeState.rollLeftRight * delta * 0.001;
 
     // Left and right movement:
     this._cachedCamera.translateX((this.state.moveRight - this.state.moveLeft) * delta);
@@ -62,6 +66,9 @@ class FreeCam extends ModeController {
     // Backwards and forwards movement:
     this._cachedCamera.translateZ((this.state.moveBackward - this.state.moveForward) * delta);
 
+    // Apply camera roll.
+    this._cachedCamera.quaternion.setFromAxisAngle(zAxis, -this.state.rollLeftRight);
+
     // Note: don't use delta here. We don't want mouse speed to be dependent on
     // framerate.
     applyPolarRotation(
@@ -69,9 +76,6 @@ class FreeCam extends ModeController {
       (this.state.lookUpDown),
       this._cachedCamera.quaternion,
     );
-
-    // Camera rolling.
-    this._cachedCamera.rotateZ(this.state.rollLeft + this.state.rollRight);
   }
 }
 

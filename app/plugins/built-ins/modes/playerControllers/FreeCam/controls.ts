@@ -24,8 +24,9 @@ const freeCamControls: ControlSchema = {
   lookUpDown:    { actionType: continuous, current: null, default: { spNorthSouth: mouseAxisInfinite, ax3: InputType.analogStickAxis }, strictlyBidirectionalAnalog: true },
   //
   //
-  rollLeft:      { actionType: continuous, sign:  1, current: null, default: { Numpad7: mouseAxisInfinite } },
-  rollRight:     { actionType: continuous, sign: -1, current: null, default: { Numpad9: mouseAxisInfinite } },
+  rollLeft:      { actionType: continuous, sign: -1, analogRemap: 'rollLeftRight', current: null, default: { Numpad7: keyboardButton } },
+  rollRight:     { actionType: continuous, sign:  1, analogRemap: 'rollLeftRight', current: null, default: { Numpad9: keyboardButton } },
+  rollLeftRight: { actionType: continuous, current: null, default: { ax0: InputType.analogStickAxis }, strictlyBidirectionalAnalog: true },
   // rollLeftRight: { triggers }
   //
   lookLeft:      { actionType: continuous, sign: -1, analogRemap: 'lookLeftRight', current: null, default: { Numpad4: keyboardButton } },
