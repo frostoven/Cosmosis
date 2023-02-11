@@ -7,6 +7,9 @@ import { gameRuntime } from '../../../../gameRuntime';
 import { InputManager } from '../../../InputManager';
 import { applyPolarRotation, zAxis } from '../../../../../local/mathUtils';
 
+// Used to reduce rotation speed.
+const ROTATION_FACTOR = 0.001;
+
 class FreeCam extends ModeController {
   // @ts-ignore
   private _cachedCamera: Camera;
@@ -57,7 +60,7 @@ class FreeCam extends ModeController {
     // gamepad stick at the 50% mark means add 0.5 units per x unit time).
     this.state.lookLeftRight += this.activeState.lookLeftRight * delta;
     this.state.lookUpDown += this.activeState.lookUpDown * delta;
-    this.state.rollLeftRight += this.activeState.rollLeftRight * delta * 0.001;
+    this.state.rollLeftRight += this.activeState.rollLeftRight * delta;
 
     // Left and right movement:
     this._cachedCamera.translateX((this.state.moveRight - this.state.moveLeft) * delta);
@@ -67,7 +70,7 @@ class FreeCam extends ModeController {
     this._cachedCamera.translateZ((this.state.moveBackward - this.state.moveForward) * delta);
 
     // Apply camera roll.
-    this._cachedCamera.quaternion.setFromAxisAngle(zAxis, -this.state.rollLeftRight);
+    this._cachedCamera.quaternion.setFromAxisAngle(zAxis, -this.state.rollLeftRight * ROTATION_FACTOR);
 
     // Note: don't use delta here. We don't want mouse speed to be dependent on
     // framerate.
