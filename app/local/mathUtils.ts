@@ -49,8 +49,14 @@ function lerpToZero(number, stepAmount) {
   }
 }
 
+// x^2 / max
+function easeIntoExp(step, max) {
+  return (Math.pow(step, 2) / max) * Math.sign(step);
+}
+
 export {
   applyPolarRotation,
   signRelativeMax,
   lerpToZero,
+  easeIntoExp,
 }
