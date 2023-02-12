@@ -336,12 +336,21 @@ export default class ModeController {
         ? result -= effectiveThreshold
         : result += effectiveThreshold;
     }
-    const maxRange = control.multiplier.analogStickAxis - ANALOG_STICK_THRESHOLD;
-    if (ANALOG_STICK_EASING) {
-      this.activeState[action] = easeIntoExp(result, maxRange);
+
+    let stateTarget;
+    if (control.isBidirectional) {
+      stateTarget = this.activeState;
     }
     else {
-      this.activeState[action] = result;
+      stateTarget = this.state;
+    }
+
+    const maxRange = control.multiplier.analogStickAxis - ANALOG_STICK_THRESHOLD;
+    if (ANALOG_STICK_EASING) {
+      stateTarget[action] = easeIntoExp(result, maxRange);
+    }
+    else {
+      stateTarget[action] = result;
     }
   }
 

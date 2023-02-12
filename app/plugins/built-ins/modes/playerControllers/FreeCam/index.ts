@@ -63,12 +63,16 @@ class FreeCam extends ModeController {
     const moveUpDown = this.state.moveUpDown + this.activeState.moveUpDown;
     const moveForwardBackward = this.state.moveForwardBackward + this.activeState.moveForwardBackward;
 
+    let speedFactor = 1;
+    this.state.halfSpeed && (speedFactor = 0.5);
+    this.state.doubleSpeed && (speedFactor = 2);
+
     // Left and right movement:
-    this._cachedCamera.translateX((moveLeftRight) * delta);
+    this._cachedCamera.translateX((moveLeftRight) * delta * speedFactor);
     // Up and down movement:
-    this._cachedCamera.translateY((moveUpDown) * delta);
+    this._cachedCamera.translateY((moveUpDown) * delta * speedFactor);
     // Backwards and forwards movement:
-    this._cachedCamera.translateZ((moveForwardBackward) * delta);
+    this._cachedCamera.translateZ((moveForwardBackward) * delta * speedFactor);
 
     // Apply camera roll.
     this._cachedCamera.quaternion.setFromAxisAngle(zAxis, -this.state.rollLeftRight);

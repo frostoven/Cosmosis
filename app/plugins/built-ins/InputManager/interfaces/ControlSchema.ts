@@ -29,7 +29,7 @@ interface ControlSchema {
 
     // If true, only the mouse and analog sticks are allowed to interface with
     // control.
-    strictlyBidirectionalAnalog?: boolean,
+    isBidirectional?: boolean,
   };
 }
 
