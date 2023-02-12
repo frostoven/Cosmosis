@@ -47,6 +47,16 @@ export default class ModeController {
   // Designed for instant actions and toggleables. Contains change trackers.
   public pulse: { [actionName: string]: ChangeTracker };
 
+  // This fixes an issues where, if an analog stick and another device such as
+  // the keyboard are mapped to the same action, eg. walk forward, the keyboard
+  // action will spontaneously stop working (eg. the player will stop walking
+  // even though the walk button is still pressed). This happens because the
+  // jitter of a bad stick effectively simulates the equivalent keyboard button
+  // being released. This object keeps track of previous analog values. If, by
+  // threshold, it was effectively zero the last time it was activated, then
+  // the input is ignored instead of being reset in state.
+  private _analogFlutterCheck: { [actionName: string]: number };
+
   constructor(name: string, modeId: ModeId, controlSchema: ControlSchema) {
     this.name = name;
     this.modeId = modeId;
@@ -56,6 +66,7 @@ export default class ModeController {
     this.state = {};
     this.activeState = {};
     this.pulse = {};
+    this._analogFlutterCheck = {};
 
     // Note: the indexes of this array MUST match the indexes in ./InputTypes
     // or things will break.
@@ -336,6 +347,12 @@ export default class ModeController {
     let result;
     if (Math.abs(value) < ANALOG_STICK_THRESHOLD) {
       result = 0;
+
+      // Check the previous action to see if that, too, was effectively 0.
+      if (this._analogFlutterCheck[action] === 0) {
+        // console.log(`[receiveAsAnalogStick] Preventing bad ${action} reset.`);
+        return;
+      }
     }
     else if (result !== 0) {
       const multiplier = control.multiplier.analogStickAxis;
@@ -364,6 +381,9 @@ export default class ModeController {
     else {
       stateTarget[action] = result;
     }
+
+    // Store the value so that we can check for invalid resets on next use.
+    this._analogFlutterCheck[action] = result;
   }
 
   // InputType: mouseButton
