@@ -72,6 +72,10 @@ function easeIntoExp(step, max) {
   return (Math.pow(step, 2) / max) * Math.sign(step);
 }
 
+function clamp(n, min, max) {
+  return Math.min(Math.max(n, min), max);
+}
+
 export {
   xAxis,
   yAxis,
@@ -82,4 +86,5 @@ export {
   signRelativeMax,
   lerpToZero,
   easeIntoExp,
+  clamp,
 }
