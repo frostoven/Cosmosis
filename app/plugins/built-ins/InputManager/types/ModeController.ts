@@ -21,7 +21,12 @@ const ANALOG_BUTTON_THRESHOLD = 0.1;
 // Note: this number is so huge because I got screwed when I forgot to add
 // delta. Consider dividing by 0.008 and fixing the code to match. Same goes
 // for ANALOG_STICK_SPEED.
-const ANALOG_STICK_THRESHOLD = 5;
+// const ANALOG_STICK_THRESHOLD = 5;
+const ANALOG_STICK_THRESHOLD = 0.25;
+// If you push a gamepad stick (xbox, ds, etc.) all the way up, you get 1.0. If
+// however you push that same stick 45 degrees up, it sits at ~0.75. This value
+// represents that error.
+// const ANALOG_STICK_OVERSHOOT = 1.25;
 
 // TODO: move me into user profile.
 const ANALOG_STICK_EASING = false;
@@ -38,6 +43,8 @@ export default class ModeController {
   public state: { [action: string]: number };
   // This actively updates this.state. Useful for situations where action is
   // implied (for example a gamepad stick sitting at -1.0 without changing).
+  // TODO: rename to additive state instead? Because that's technically what
+  //  it's for - its state is added to this.state each frame.
   public activeState: { [action: string]: number };
   // Designed for instant actions and toggleables. Contains change trackers.
   public pulse: { [actionName: string]: ChangeTracker };
@@ -316,16 +323,19 @@ export default class ModeController {
   // InputType: analogStickAxis
   receiveAsAnalogStick({ action, value, analogData, control }) {
     // console.log('xxx [analog stick]', { action, actionType: ActionType[control.actionType], value, analogData, control });
-    let result = value * control.multiplier.analogStickAxis;
-    if (Math.abs(result) < ANALOG_STICK_THRESHOLD) {
+    let result;
+    if (Math.abs(value) < ANALOG_STICK_THRESHOLD) {
       result = 0;
     }
     else if (result !== 0) {
+      const multiplier = control.multiplier.analogStickAxis;
+      const effectiveThreshold = multiplier * ANALOG_STICK_THRESHOLD;
+      result = value * multiplier;
       // This allows the user to ease into the turn without suddenly jumping to
       // for example 50%. It's basically makes the threshold an offset.
       result > 0
-        ? result -= ANALOG_STICK_THRESHOLD
-        : result += ANALOG_STICK_THRESHOLD;
+        ? result -= effectiveThreshold
+        : result += effectiveThreshold;
     }
     const maxRange = control.multiplier.analogStickAxis - ANALOG_STICK_THRESHOLD;
     if (ANALOG_STICK_EASING) {
