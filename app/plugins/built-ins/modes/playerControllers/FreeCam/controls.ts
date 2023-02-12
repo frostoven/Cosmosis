@@ -49,7 +49,7 @@ const freeCamControls: ControlSchema = {
   //
   speedUp:             { actionType: continuous, current: null, default: { NumpadAdd: keyboardButton } },
   slowDown:            { actionType: continuous, current: null, default: { NumpadSubtract: keyboardButton } },
-  doubleSpeed:         { actionType: continuous, current: null, default: { ShiftLeft: keyboardButton } },
+  doubleSpeed:         { actionType: continuous, current: null, default: { ShiftLeft: keyboardButton, ShiftRight: keyboardButton } },
   halfSpeed:           { actionType: continuous, current: null, default: { AltLeft: keyboardButton, AltRight: keyboardButton } },
   //
   // Analog and look-around

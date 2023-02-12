@@ -8,7 +8,7 @@ import { ActionType } from './ActionType';
 import { ControlSchema } from '../interfaces/ControlSchema';
 import { arrayContainsArray } from '../../../../local/utils';
 import { InputType } from './InputTypes';
-import { clamp, easeIntoExp, signRelativeMax } from '../../../../local/mathUtils';
+import { easeIntoExp, signRelativeMax } from '../../../../local/mathUtils';
 
 // TODO: move to user configs, and expose to UI. Minimum value should be zero,
 //  and max should be 0.95 to prevent bugs.
@@ -363,8 +363,6 @@ export default class ModeController {
       result > 0
         ? result -= effectiveThreshold + -ANALOG_STICK_THRESHOLD
         : result += effectiveThreshold + -ANALOG_STICK_THRESHOLD;
-
-      result = clamp(result, -1, 1);
     }
 
     let stateTarget;
@@ -376,7 +374,8 @@ export default class ModeController {
     }
 
     if (ANALOG_STICK_EASING) {
-      stateTarget[action] = easeIntoExp(result, control.multiplier.analogStickAxis);
+      const maxRange = control.multiplier.analogStickAxis - ANALOG_STICK_THRESHOLD;
+      stateTarget[action] = easeIntoExp(result, maxRange);
     }
     else {
       stateTarget[action] = result;

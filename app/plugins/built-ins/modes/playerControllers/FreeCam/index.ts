@@ -5,7 +5,7 @@ import { freeCamControls } from './controls';
 import { ModeId } from '../../../InputManager/types/ModeId';
 import { gameRuntime } from '../../../../gameRuntime';
 import { InputManager } from '../../../InputManager';
-import { applyPolarRotation, zAxis } from '../../../../../local/mathUtils';
+import { applyPolarRotation, clamp, zAxis } from '../../../../../local/mathUtils';
 import Speed from '../../../../../local/Speed';
 
 class FreeCam extends ModeController {
@@ -62,9 +62,9 @@ class FreeCam extends ModeController {
     this.state.lookUpDown += this.activeState.lookUpDown * bigDelta;
     this.state.rollLeftRight += this.activeState.rollLeftRight * bigDelta;
     //
-    const moveLeftRight = this.state.moveLeftRight + this.activeState.moveLeftRight;
-    const moveUpDown = this.state.moveUpDown + this.activeState.moveUpDown;
-    const moveForwardBackward = this.state.moveForwardBackward + this.activeState.moveForwardBackward;
+    const moveLeftRight = clamp(this.state.moveLeftRight + this.activeState.moveLeftRight, -1, 1);
+    const moveUpDown = clamp(this.state.moveUpDown + this.activeState.moveUpDown, -1, 1);
+    const moveForwardBackward = clamp(this.state.moveForwardBackward + this.activeState.moveForwardBackward, -1, 1);
 
     let speedFactor = 1;
     this.state.halfSpeed && (speedFactor = 0.5);
