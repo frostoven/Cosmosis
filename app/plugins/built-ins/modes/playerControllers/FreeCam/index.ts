@@ -6,15 +6,18 @@ import { ModeId } from '../../../InputManager/types/ModeId';
 import { gameRuntime } from '../../../../gameRuntime';
 import { InputManager } from '../../../InputManager';
 import { applyPolarRotation, zAxis } from '../../../../../local/mathUtils';
+import Speed from '../../../../../local/Speed';
 
 class FreeCam extends ModeController {
   // @ts-ignore
   private _cachedCamera: Camera;
   private _cachedInputManager: InputManager;
+  public maxMoveSpeed: Speed;
 
   constructor() {
     super('freeCam', ModeId.playerControl, freeCamControls);
     this._cachedInputManager = gameRuntime.tracked.inputManager.cachedValue;
+    this.maxMoveSpeed = new Speed(1);
 
     this._setupWatchers();
     this._setupPulseListeners();
@@ -67,12 +70,21 @@ class FreeCam extends ModeController {
     this.state.halfSpeed && (speedFactor = 0.5);
     this.state.doubleSpeed && (speedFactor = 2);
 
+    if (this.state.speedUp) {
+      this.maxMoveSpeed.rampUpSmall(delta * Math.pow(speedFactor, 10));
+    }
+    if (this.state.slowDown) {
+      this.maxMoveSpeed.rampDownSmall(delta * Math.pow(speedFactor, 10));
+    }
+
+    const speed = this.maxMoveSpeed.currentSpeed;
+
     // Left and right movement:
-    this._cachedCamera.translateX((moveLeftRight) * delta * speedFactor);
+    this._cachedCamera.translateX((moveLeftRight * speed) * delta * speedFactor);
     // Up and down movement:
-    this._cachedCamera.translateY((moveUpDown) * delta * speedFactor);
+    this._cachedCamera.translateY((moveUpDown * speed) * delta * speedFactor);
     // Backwards and forwards movement:
-    this._cachedCamera.translateZ((moveForwardBackward) * delta * speedFactor);
+    this._cachedCamera.translateZ((moveForwardBackward * speed) * delta * speedFactor);
 
     // Apply camera roll.
     this._cachedCamera.quaternion.setFromAxisAngle(zAxis, -this.state.rollLeftRight);

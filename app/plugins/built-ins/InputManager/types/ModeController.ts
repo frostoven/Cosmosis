@@ -8,7 +8,7 @@ import { ActionType } from './ActionType';
 import { ControlSchema } from '../interfaces/ControlSchema';
 import { arrayContainsArray } from '../../../../local/utils';
 import { InputType } from './InputTypes';
-import { easeIntoExp, signRelativeMax } from '../../../../local/mathUtils';
+import { clamp, easeIntoExp, signRelativeMax } from '../../../../local/mathUtils';
 
 // TODO: move to user configs, and expose to UI. Minimum value should be zero,
 //  and max should be 0.95 to prevent bugs.
@@ -18,11 +18,9 @@ import { easeIntoExp, signRelativeMax } from '../../../../local/mathUtils';
 // this only applies to digital actions such as toggles, and not to continuous
 // actions such as throttles.
 const ANALOG_BUTTON_THRESHOLD = 0.1;
-// Note: this number is so huge because I got screwed when I forgot to add
-// delta. Consider dividing by 0.008 and fixing the code to match. Same goes
-// for ANALOG_STICK_SPEED.
-// const ANALOG_STICK_THRESHOLD = 5;
 const ANALOG_STICK_THRESHOLD = 0.25;
+// // Note: far away we are from 100% before we just treat it as 100%.
+// const ANALOG_STICK_INV_THRESHOLD = 0.05;
 // If you push a gamepad stick (xbox, ds, etc.) all the way up, you get 1.0. If
 // however you push that same stick 45 degrees up, it sits at ~0.75. This value
 // represents that error.
@@ -346,8 +344,10 @@ export default class ModeController {
       // This allows the user to ease into the turn without suddenly jumping to
       // for example 50%. It's basically makes the threshold an offset.
       result > 0
-        ? result -= effectiveThreshold
-        : result += effectiveThreshold;
+        ? result -= effectiveThreshold + -ANALOG_STICK_THRESHOLD
+        : result += effectiveThreshold + -ANALOG_STICK_THRESHOLD;
+
+      result = clamp(result, -1, 1);
     }
 
     let stateTarget;
@@ -358,9 +358,8 @@ export default class ModeController {
       stateTarget = this.state;
     }
 
-    const maxRange = control.multiplier.analogStickAxis - ANALOG_STICK_THRESHOLD;
     if (ANALOG_STICK_EASING) {
-      stateTarget[action] = easeIntoExp(result, maxRange);
+      stateTarget[action] = easeIntoExp(result, control.multiplier.analogStickAxis);
     }
     else {
       stateTarget[action] = result;

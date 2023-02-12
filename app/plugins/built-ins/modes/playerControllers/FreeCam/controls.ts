@@ -48,7 +48,7 @@ const freeCamControls: ControlSchema = {
   moveUpDown:          { actionType: continuous, current: null, default: null, isBidirectional: true, multiplier: { ...defaultBidirectionalMoveMulti } },
   //
   speedUp:             { actionType: continuous, current: null, default: { NumpadAdd: keyboardButton } },
-  speedDown:           { actionType: continuous, current: null, default: { NumpadSubtract: keyboardButton } },
+  slowDown:            { actionType: continuous, current: null, default: { NumpadSubtract: keyboardButton } },
   doubleSpeed:         { actionType: continuous, current: null, default: { ShiftLeft: keyboardButton } },
   halfSpeed:           { actionType: continuous, current: null, default: { AltLeft: keyboardButton, AltRight: keyboardButton } },
   //
