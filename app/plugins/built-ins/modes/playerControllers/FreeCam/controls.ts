@@ -11,6 +11,7 @@ const {
   analogButtonLookSpeed,
   analogButtonRotationSpeed,
   analogStickLookSpeed,
+  analogStickGhostWalkSpeed,
   mouseAxisInfiniteLookSpeed
 } = DefaultInputSpeeds;
 
@@ -18,9 +19,12 @@ const freeCamControls: ControlSchema = {
   // Basic controls
   moveForward:         { actionType: continuous, sign: -1, analogRemap: 'moveForwardBackward', current: null, default: { KeyW: keyboardButton, ArrowUp: keyboardButton } },
   moveBackward:        { actionType: continuous, sign:  1, analogRemap: 'moveForwardBackward', current: null, default: { KeyS: keyboardButton, ArrowDown: keyboardButton } },
-  moveForwardBackward: { actionType: continuous, current: null, default: null, strictlyBidirectionalAnalog: true },
-  moveLeft:            { actionType: continuous, current: null, default: { ArrowLeft: keyboardButton, KeyA: keyboardButton } },
-  moveRight:           { actionType: continuous, current: null, default: { ArrowRight: keyboardButton, KeyD: keyboardButton } },
+  moveForwardBackward: { actionType: continuous, current: null, default: { ax1: InputType.analogStickAxis }, strictlyBidirectionalAnalog: true, multiplier: { analogStickAxis: analogStickGhostWalkSpeed } },
+  //
+  moveLeft:            { actionType: continuous, sign: -1, analogRemap: 'moveLeftRight', current: null, default: { ArrowLeft: keyboardButton, KeyA: keyboardButton } },
+  moveRight:           { actionType: continuous, sign:  1, analogRemap: 'moveLeftRight', current: null, default: { ArrowRight: keyboardButton, KeyD: keyboardButton } },
+  moveLeftRight:       { actionType: continuous, current: null, default: { ax0: InputType.analogStickAxis }, strictlyBidirectionalAnalog: true, multiplier: { analogStickAxis: analogStickGhostWalkSpeed } },
+  //
   moveUp:              { actionType: continuous, current: null, default: { KeyR: keyboardButton, Space: keyboardButton } },
   moveDown:            { actionType: continuous, current: null, default: { KeyF: keyboardButton } },
   speedUp:             { actionType: continuous, current: null, default: { NumpadAdd: keyboardButton } },

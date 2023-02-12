@@ -59,10 +59,11 @@ class FreeCam extends ModeController {
     this.state.lookUpDown += this.activeState.lookUpDown * bigDelta;
     this.state.rollLeftRight += this.activeState.rollLeftRight * bigDelta;
     //
-    this.state.moveForwardBackward += this.activeState.moveForwardBackward;
+    this.state.moveForwardBackward = this.activeState.moveForwardBackward;
+    this.state.moveLeftRight = this.activeState.moveLeftRight;
 
     // Left and right movement:
-    this._cachedCamera.translateX((this.state.moveRight - this.state.moveLeft) * delta);
+    this._cachedCamera.translateX((this.state.moveLeftRight) * delta);
     // Up and down movement:
     this._cachedCamera.translateY((this.state.moveUp - this.state.moveDown) * delta);
     // Backwards and forwards movement:
