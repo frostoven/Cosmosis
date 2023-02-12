@@ -7,9 +7,6 @@ import { gameRuntime } from '../../../../gameRuntime';
 import { InputManager } from '../../../InputManager';
 import { applyPolarRotation, zAxis } from '../../../../../local/mathUtils';
 
-// Used to reduce rotation speed.
-const ROTATION_FACTOR = 0.001;
-
 class FreeCam extends ModeController {
   // @ts-ignore
   private _cachedCamera: Camera;
@@ -48,7 +45,7 @@ class FreeCam extends ModeController {
   }
 
   // noinspection JSSuspiciousNameCombination
-  step(delta) {
+  step(delta, bigDelta) {
     if (!this._cachedCamera) {
       return;
     }
@@ -58,19 +55,21 @@ class FreeCam extends ModeController {
     // as actual mouse position). We do however want active values delta'd,
     // because they represent a relative change on a per-frame basis (ex. a
     // gamepad stick at the 50% mark means add 0.5 units per x unit time).
-    this.state.lookLeftRight += this.activeState.lookLeftRight * delta;
-    this.state.lookUpDown += this.activeState.lookUpDown * delta;
-    this.state.rollLeftRight += this.activeState.rollLeftRight * delta;
+    this.state.lookLeftRight += this.activeState.lookLeftRight * bigDelta;
+    this.state.lookUpDown += this.activeState.lookUpDown * bigDelta;
+    this.state.rollLeftRight += this.activeState.rollLeftRight * bigDelta;
+    //
+    this.state.moveForwardBackward += this.activeState.moveForwardBackward;
 
     // Left and right movement:
     this._cachedCamera.translateX((this.state.moveRight - this.state.moveLeft) * delta);
     // Up and down movement:
     this._cachedCamera.translateY((this.state.moveUp - this.state.moveDown) * delta);
     // Backwards and forwards movement:
-    this._cachedCamera.translateZ((this.state.moveBackward - this.state.moveForward) * delta);
+    this._cachedCamera.translateZ((this.state.moveForwardBackward) * delta);
 
     // Apply camera roll.
-    this._cachedCamera.quaternion.setFromAxisAngle(zAxis, -this.state.rollLeftRight * ROTATION_FACTOR);
+    this._cachedCamera.quaternion.setFromAxisAngle(zAxis, -this.state.rollLeftRight);
 
     // Note: don't use delta here. We don't want mouse speed to be dependent on
     // framerate.

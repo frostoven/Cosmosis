@@ -19,6 +19,16 @@ enum InputType {
   mouseAxisThreshold,
 }
 
+type InputTypeKeys = keyof typeof InputType;
+type InputTypeKeyFields = { [key in InputTypeKeys]?: number }
+
+// Example if we wanted to extend things further:
+// interface InterfaceInputTypeExtended extends InputTypeKeyFields {
+//   AdditionKey1: number;
+//   AdditionKey2: number;
+// }
+
 export {
   InputType,
-}
+  InputTypeKeyFields,
+};

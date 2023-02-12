@@ -1,5 +1,5 @@
 import { ActionType } from '../types/ActionType';
-import { InputType } from '../types/InputTypes';
+import { InputType, InputTypeKeyFields } from '../types/InputTypes';
 
 interface ControlSchema {
   [key: string]: {
@@ -11,6 +11,9 @@ interface ControlSchema {
     // Used for cases where digital keys are used in analog contexts. This
     // should almost always be used with the sign option.
     analogRemap?: string,
+    // Multiplies the input value by the defined amount. Each property defaults
+    // to 1 during init.
+    multiplier?: InputTypeKeyFields,
 
     // // Current keybinding.
     // current: Array<{ key: string, inputType: InputType }> | null,

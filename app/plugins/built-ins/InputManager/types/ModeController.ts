@@ -21,16 +21,10 @@ const ANALOG_BUTTON_THRESHOLD = 0.1;
 // Note: this number is so huge because I got screwed when I forgot to add
 // delta. Consider dividing by 0.008 and fixing the code to match. Same goes
 // for ANALOG_STICK_SPEED.
-const ANALOG_STICK_THRESHOLD = 625;
+const ANALOG_STICK_THRESHOLD = 5;
 
 // TODO: move me into user profile.
-const MOUSE_SPEED = 0.375;
 const ANALOG_STICK_EASING = false;
-const ANALOG_STICK_SPEED = 2500;
-
-// TODO: move me into user profile.
-const KB_LOOK_SPEED = 625;
-const ANALOG_BUTTON_MULTIPLIER = 625;
 
 export default class ModeController {
   public name: string;
@@ -111,8 +105,28 @@ export default class ModeController {
         try {
           // controlSchema[actionName].current = controlSchema[actionName].default;
           controlSchema[actionName].current = { ...controlSchema[actionName].default };
-          // console.log('85========>', `controlSchema[${actionName}].current = { ...`, controlSchema[actionName].default, '}')
+
+          // Clone multiplier so that we don't change the original.
+          if (controlSchema[actionName].multiplier) {
+            controlSchema[actionName].multiplier = { ...controlSchema[actionName].multiplier };
+          }
+          else {
+            controlSchema[actionName].multiplier = {};
+          }
+          // Fill multiplier with sane default values.
+          _.each(InputType, (inputType) => {
+            if (typeof inputType !== 'string') {
+              return;
+            }
+            // @ts-ignore - assessment not relevant.
+            if (!controlSchema[actionName].multiplier[inputType]) {
+              // @ts-ignore - assessment not relevant.
+              controlSchema[actionName].multiplier[inputType] = 1;
+            }
+          });
         }
+          // console.log('85========>', `controlSchema[${actionName}].current = { ...`, controlSchema[actionName].default, '}')
+
         catch (error) {
           console.error(`[ModeController] Failed to set key for action '${actionName}'`, error);
         }
@@ -266,14 +280,14 @@ export default class ModeController {
 
   // Receives a non-pulsed keyboard button.
   // InputType: keyboardButton
-  receiveAsKbButton({ action, value, analogData, control }) {
+  receiveAsKbButton({ action, value, control }) {
     // console.log('[keyboard button]', { action, actionType: ActionType[control.actionType], value, analogData, control });
     if (control.analogRemap) {
       // TODO: value multipliers should probably go into the control definition
       //  as we probably don't want things being arbitrarily multiplied for no
       //  reason. Maybe call it 'remapMultiplier' to indicate it's only used
       //  for analog remaps.
-      this.activeState[control.analogRemap] = value * KB_LOOK_SPEED * control.sign;
+      this.activeState[control.analogRemap] = value * control.multiplier.keyboardButton * control.sign;
     }
     else {
       // Under normal circumstances this value is always either 0 or 1.
@@ -291,7 +305,7 @@ export default class ModeController {
     }
 
     if (control.analogRemap) {
-      this.activeState[control.analogRemap] = value * ANALOG_BUTTON_MULTIPLIER * control.sign;
+      this.activeState[control.analogRemap] = value * control.multiplier.analogRemap * control.sign;
     }
     else {
       // This has a range of 0 to 1.
@@ -302,7 +316,7 @@ export default class ModeController {
   // InputType: analogStickAxis
   receiveAsAnalogStick({ action, value, analogData, control }) {
     // console.log('xxx [analog stick]', { action, actionType: ActionType[control.actionType], value, analogData, control });
-    let result = value * ANALOG_STICK_SPEED;
+    let result = value * control.multiplier.analogStickAxis;
     if (Math.abs(result) < ANALOG_STICK_THRESHOLD) {
       result = 0;
     }
@@ -313,7 +327,7 @@ export default class ModeController {
         ? result -= ANALOG_STICK_THRESHOLD
         : result += ANALOG_STICK_THRESHOLD;
     }
-    const maxRange = ANALOG_STICK_SPEED - ANALOG_STICK_THRESHOLD;
+    const maxRange = control.multiplier.analogStickAxis - ANALOG_STICK_THRESHOLD;
     if (ANALOG_STICK_EASING) {
       this.activeState[action] = easeIntoExp(result, maxRange);
     }
@@ -331,7 +345,7 @@ export default class ModeController {
   receiveAsMouse({ action, value, analogData, control }) {
     // console.log('[mouse movement | standard]', { action, actionType: ActionType[control.actionType], value, analogData, control });
     // console.log(`--> analogData[${action}]: delta=${analogData.delta}; grav=${analogData.gravDelta}`);
-    this.state[action] += analogData.delta * MOUSE_SPEED;
+    this.state[action] += analogData.delta * control.multiplier.mouseAxisInfinite;
   }
 
   // InputType: mouseAxisGravity
@@ -343,7 +357,7 @@ export default class ModeController {
   // InputType: mouseAxisThreshold
   receiveAsMouseAxisThreshold({ action, value, analogData, control }) {
     console.log('[mouse movement | threshold]', { action, actionType: ActionType[control.actionType], value, analogData, control });
-    const result = this.state[action] += value * MOUSE_SPEED;
+    const result = this.state[action] += value * control.multiplier.mouseAxisInfinite;
     if (Math.abs(result) > 1) {
       this.state[action] = signRelativeMax(result, 1);
     }
@@ -440,7 +454,7 @@ export default class ModeController {
     // The ModeController base class does not use activation itself.
   }
 
-  step(delta) {
+  step(delta, bigDelta) {
     // The ModeController base class does not use stepping itself.
   }
 }
