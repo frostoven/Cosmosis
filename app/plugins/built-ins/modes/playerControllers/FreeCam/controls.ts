@@ -12,39 +12,59 @@ const {
   analogButtonRotationSpeed,
   analogStickLookSpeed,
   analogStickGhostWalkSpeed,
-  mouseAxisInfiniteLookSpeed
+  mouseAxisInfiniteLookSpeed,
 } = DefaultInputSpeeds;
+
+const defaultButtonLookMulti = {
+  keyboardButton: kbLookSpeed, analogButton: analogButtonLookSpeed,
+};
+
+const defaultButtonRollMulti = {
+  keyboardButton: kbRotationSpeed, analogButton: analogButtonRotationSpeed,
+};
+
+const defaultBidirectionalLookMulti = {
+  analogStickAxis: analogStickLookSpeed,
+  mouseAxisInfinite: mouseAxisInfiniteLookSpeed,
+};
+
+const defaultBidirectionalMoveMulti = {
+  analogStickAxis: analogStickGhostWalkSpeed,
+  mouseAxisInfinite: mouseAxisInfiniteLookSpeed,
+};
 
 const freeCamControls: ControlSchema = {
   // Basic controls
   moveForward:         { actionType: continuous, sign: -1, analogRemap: 'moveForwardBackward', current: null, default: { KeyW: keyboardButton, ArrowUp: keyboardButton } },
   moveBackward:        { actionType: continuous, sign:  1, analogRemap: 'moveForwardBackward', current: null, default: { KeyS: keyboardButton, ArrowDown: keyboardButton } },
-  moveForwardBackward: { actionType: continuous, current: null, default: { ax1: InputType.analogStickAxis }, strictlyBidirectionalAnalog: true, multiplier: { analogStickAxis: analogStickGhostWalkSpeed } },
+  moveForwardBackward: { actionType: continuous, current: null, default: { ax1: InputType.analogStickAxis }, strictlyBidirectionalAnalog: true, multiplier: { ...defaultBidirectionalMoveMulti } },
   //
   moveLeft:            { actionType: continuous, sign: -1, analogRemap: 'moveLeftRight', current: null, default: { ArrowLeft: keyboardButton, KeyA: keyboardButton } },
   moveRight:           { actionType: continuous, sign:  1, analogRemap: 'moveLeftRight', current: null, default: { ArrowRight: keyboardButton, KeyD: keyboardButton } },
-  moveLeftRight:       { actionType: continuous, current: null, default: { ax0: InputType.analogStickAxis }, strictlyBidirectionalAnalog: true, multiplier: { analogStickAxis: analogStickGhostWalkSpeed } },
+  moveLeftRight:       { actionType: continuous, current: null, default: { ax0: InputType.analogStickAxis }, strictlyBidirectionalAnalog: true, multiplier: { ...defaultBidirectionalMoveMulti } },
   //
-  moveUp:              { actionType: continuous, current: null, default: { KeyR: keyboardButton, Space: keyboardButton } },
-  moveDown:            { actionType: continuous, current: null, default: { KeyF: keyboardButton } },
+  moveUp:              { actionType: continuous, sign:  1, analogRemap: 'moveUpDown', current: null, default: { KeyR: keyboardButton, Space: keyboardButton, bt3: analogButton } },
+  moveDown:            { actionType: continuous, sign: -1, analogRemap: 'moveUpDown', current: null, default: { KeyF: keyboardButton, bt0: analogButton } },
+  moveUpDown:          { actionType: continuous, current: null, default: null, strictlyBidirectionalAnalog: true, multiplier: { ...defaultBidirectionalMoveMulti } },
+  //
   speedUp:             { actionType: continuous, current: null, default: { NumpadAdd: keyboardButton } },
   speedDown:           { actionType: continuous, current: null, default: { NumpadSubtract: keyboardButton } },
   doubleSpeed:         { actionType: continuous, current: null, default: { ShiftLeft: keyboardButton, ShiftRight: keyboardButton } },
-
+  //
   // Analog and look-around
   //
-  lookUp:        { actionType: continuous, sign: -1, analogRemap: 'lookUpDown', current: null, default: { Numpad8: keyboardButton }, multiplier: { keyboardButton: kbLookSpeed, analogButton: analogButtonLookSpeed } },
-  lookDown:      { actionType: continuous, sign:  1, analogRemap: 'lookUpDown', current: null, default: { Numpad2: keyboardButton }, multiplier: { keyboardButton: kbLookSpeed, analogButton: analogButtonLookSpeed } },
-  lookUpDown:    { actionType: continuous, current: null, default: { spNorthSouth: mouseAxisInfinite, ax3: InputType.analogStickAxis }, strictlyBidirectionalAnalog: true, multiplier: { analogStickAxis: analogStickLookSpeed, mouseAxisInfinite: mouseAxisInfiniteLookSpeed } },
+  lookUp:        { actionType: continuous, sign: -1, analogRemap: 'lookUpDown', current: null, default: { Numpad8: keyboardButton }, multiplier: { ...defaultButtonLookMulti } },
+  lookDown:      { actionType: continuous, sign:  1, analogRemap: 'lookUpDown', current: null, default: { Numpad2: keyboardButton }, multiplier: { ...defaultButtonLookMulti } },
+  lookUpDown:    { actionType: continuous, current: null, default: { spNorthSouth: mouseAxisInfinite, ax3: InputType.analogStickAxis }, strictlyBidirectionalAnalog: true, multiplier: { ...defaultBidirectionalLookMulti } },
   //
   //
-  rollLeft:      { actionType: continuous, sign: -1, analogRemap: 'rollLeftRight', current: null, default: { bt6: analogButton, Numpad7: keyboardButton }, multiplier: { keyboardButton: kbRotationSpeed, analogButton: analogButtonRotationSpeed } },
-  rollRight:     { actionType: continuous, sign:  1, analogRemap: 'rollLeftRight', current: null, default: { bt7: analogButton, Numpad9: keyboardButton }, multiplier: { keyboardButton: kbRotationSpeed, analogButton: analogButtonRotationSpeed } },
-  rollLeftRight: { actionType: continuous, current: null, default: null, strictlyBidirectionalAnalog: true, multiplier: { analogStickAxis: analogStickLookSpeed, mouseAxisInfinite: mouseAxisInfiniteLookSpeed } },
+  rollLeft:      { actionType: continuous, sign: -1, analogRemap: 'rollLeftRight', current: null, default: { bt6: analogButton, Numpad7: keyboardButton }, multiplier: { ...defaultButtonRollMulti } },
+  rollRight:     { actionType: continuous, sign:  1, analogRemap: 'rollLeftRight', current: null, default: { bt7: analogButton, Numpad9: keyboardButton }, multiplier: { ...defaultButtonRollMulti } },
+  rollLeftRight: { actionType: continuous, current: null, default: null, strictlyBidirectionalAnalog: true, multiplier: { ...defaultBidirectionalLookMulti } },
   //
-  lookLeft:      { actionType: continuous, sign: -1, analogRemap: 'lookLeftRight', current: null, default: { Numpad4: keyboardButton }, multiplier: { keyboardButton: kbLookSpeed, analogButton: kbLookSpeed } },
-  lookRight:     { actionType: continuous, sign:  1, analogRemap: 'lookLeftRight', current: null, default: { Numpad6: keyboardButton }, multiplier: { keyboardButton: kbLookSpeed, analogButton: kbLookSpeed } },
-  lookLeftRight: { actionType: continuous, current: null, default: { spEastWest: mouseAxisInfinite, ax2: InputType.analogStickAxis }, strictlyBidirectionalAnalog: true, multiplier: { analogStickAxis: analogStickLookSpeed, mouseAxisInfinite: mouseAxisInfiniteLookSpeed } },
+  lookLeft:      { actionType: continuous, sign: -1, analogRemap: 'lookLeftRight', current: null, default: { Numpad4: keyboardButton }, multiplier: { ...defaultButtonLookMulti } },
+  lookRight:     { actionType: continuous, sign:  1, analogRemap: 'lookLeftRight', current: null, default: { Numpad6: keyboardButton }, multiplier: { ...defaultButtonLookMulti } },
+  lookLeftRight: { actionType: continuous, current: null, default: { spEastWest: mouseAxisInfinite, ax2: InputType.analogStickAxis }, strictlyBidirectionalAnalog: true, multiplier: { ...defaultBidirectionalLookMulti } },
 
   // Pulsed values
   interact:      { actionType: ActionType.pulse, current: null, default: { KeyE: keyboardButton } },

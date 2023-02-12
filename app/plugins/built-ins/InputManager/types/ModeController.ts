@@ -306,13 +306,12 @@ export default class ModeController {
   receiveAsAnalogButton({ action, value, control }) {
     // console.log('[analog button]', { action, actionType: ActionType[control.actionType], value, control });
     // Under normal circumstances this value is always in range of 0-1.
-    // this.state[action] = value;
     if (value < ANALOG_BUTTON_THRESHOLD) {
       value = 0;
     }
 
     if (control.analogRemap) {
-      this.activeState[control.analogRemap] = value * control.multiplier.analogRemap * control.sign;
+      this.activeState[control.analogRemap] = value * control.multiplier.analogButton * control.sign;
     }
     else {
       // This has a range of 0 to 1.
