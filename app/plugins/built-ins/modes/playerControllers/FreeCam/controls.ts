@@ -3,7 +3,7 @@ import { ControlSchema } from '../../../InputManager/interfaces/ControlSchema';
 import { InputType } from '../../../InputManager/types/InputTypes';
 
 const { continuous } = ActionType;
-const { keyboardButton, mouseAxisInfinite } = InputType;
+const { keyboardButton, analogButton, mouseAxisInfinite } = InputType;
 
 const freeCamControls: ControlSchema = {
   // Basic controls
@@ -24,8 +24,8 @@ const freeCamControls: ControlSchema = {
   lookUpDown:    { actionType: continuous, current: null, default: { spNorthSouth: mouseAxisInfinite, ax3: InputType.analogStickAxis }, strictlyBidirectionalAnalog: true },
   //
   //
-  rollLeft:      { actionType: continuous, sign: -1, analogRemap: 'rollLeftRight', current: null, default: { Numpad7: keyboardButton } },
-  rollRight:     { actionType: continuous, sign:  1, analogRemap: 'rollLeftRight', current: null, default: { Numpad9: keyboardButton } },
+  rollLeft:      { actionType: continuous, sign: -1, analogRemap: 'rollLeftRight', current: null, default: { bt6: analogButton, Numpad7: keyboardButton } },
+  rollRight:     { actionType: continuous, sign:  1, analogRemap: 'rollLeftRight', current: null, default: { bt7: analogButton, Numpad9: keyboardButton } },
   rollLeftRight: { actionType: continuous, current: null, default: null, strictlyBidirectionalAnalog: true },
   // rollLeftRight: { triggers }
   //

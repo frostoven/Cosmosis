@@ -17,7 +17,10 @@ import { easeIntoExp, signRelativeMax } from '../../../../local/mathUtils';
 // value works well for both xbox controllers and ps controllers. Note that
 // this only applies to digital actions such as toggles, and not to continuous
 // actions such as throttles.
-const ANALOG_BUTTON_THRESHOLD = 0.05;
+const ANALOG_BUTTON_THRESHOLD = 0.1;
+// Note: this number is so huge because I got screwed when I forgot to add
+// delta. Consider dividing by 0.008 and fixing the code to match. Same goes
+// for ANALOG_STICK_SPEED.
 const ANALOG_STICK_THRESHOLD = 625;
 
 // TODO: move me into user profile.
@@ -27,6 +30,7 @@ const ANALOG_STICK_SPEED = 2500;
 
 // TODO: move me into user profile.
 const KB_LOOK_SPEED = 625;
+const ANALOG_BUTTON_MULTIPLIER = 625;
 
 export default class ModeController {
   public name: string;
@@ -265,6 +269,10 @@ export default class ModeController {
   receiveAsKbButton({ action, value, analogData, control }) {
     // console.log('[keyboard button]', { action, actionType: ActionType[control.actionType], value, analogData, control });
     if (control.analogRemap) {
+      // TODO: value multipliers should probably go into the control definition
+      //  as we probably don't want things being arbitrarily multiplied for no
+      //  reason. Maybe call it 'remapMultiplier' to indicate it's only used
+      //  for analog remaps.
       this.activeState[control.analogRemap] = value * KB_LOOK_SPEED * control.sign;
     }
     else {
@@ -277,7 +285,18 @@ export default class ModeController {
   receiveAsAnalogButton({ action, value, analogData, control }) {
     console.log('[analog button]', { action, actionType: ActionType[control.actionType], value, analogData, control });
     // Under normal circumstances this value is always in range of 0-1.
-    this.state[action] = value;
+    // this.state[action] = value;
+    if (value < ANALOG_BUTTON_THRESHOLD) {
+      value = 0;
+    }
+
+    if (control.analogRemap) {
+      this.activeState[control.analogRemap] = value * ANALOG_BUTTON_MULTIPLIER * control.sign;
+    }
+    else {
+      // This has a range of 0 to 1.
+      this.state[action] = value;
+    }
   }
 
   // InputType: analogStickAxis

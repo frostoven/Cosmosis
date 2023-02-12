@@ -19,13 +19,13 @@ const cockpitLightControls: ControlSchema = {
     //   'bt7': InputType.analogButton,
     //   'bt0': InputType.analogButton,
     // },
-    default: { 'Numpad0': InputType.keyboardButton, 'bt7': InputType.analogButton, 'bt0': InputType.analogButton },
+    default: { 'Numpad0': InputType.keyboardButton, /*'bt7': InputType.analogButton, 'bt0': InputType.analogButton*/ },
   },
   // TODO: display in controls menu as 'Cycle cockpit lights (held)'
   cycleCockpitLightsHeld: {
     actionType: ActionType.continuous,
     current: null,
-    default: { 'NumpadDecimal': InputType.keyboardButton, 'Numpad7': InputType.keyboardButton, 'bt6': InputType.analogButton, 'bt1': InputType.analogButton },
+    default: { 'NumpadDecimal': InputType.keyboardButton, 'Numpad7': InputType.keyboardButton, /*'bt6': InputType.analogButton, 'bt1': InputType.analogButton*/ },
   },
   // 'continuous key test': {
   //   actionType: ActionType.continuous,
