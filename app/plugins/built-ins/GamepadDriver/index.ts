@@ -6,6 +6,10 @@ import { InputManager } from '../InputManager';
 const axisNames: Array<string> = [];
 const buttonNames: Array<string> = [];
 
+// TODO: maybe set these to -1 or something. The first time a button is
+//  pressed, the gamepad will forcibly report a bunch of zeros and the one
+//  button that's being pressed. If -1, and button value is zero, set to zero
+//  and return. If 1, set and propagate.
 for (let i = 0; i < 32; i++) {
   axisNames.push(`ax${i}`);
   buttonNames.push(`bt${i}`);
@@ -79,7 +83,7 @@ class GamepadDriver {
       const axisValue = axes[i];
       if (axisCache[i] !== axisValue) {
         axisCache[i] = axisValue;
-        // console.log(`[] axis ${i} changed to`, axisValue);
+        // console.log(`[] axis '${axisNames[i]}' changed to`, axisValue);
         this._cachedInputManager.propagateInput({ key: axisNames[i], value: axisValue });
       }
     }
@@ -89,7 +93,7 @@ class GamepadDriver {
       const buttonValue = buttons[i].value;
       if (buttonCache[i] !== buttonValue) {
         buttonCache[i] = buttonValue;
-        console.log(`[] button ${i} changed to`, buttonValue);
+        // console.log(`[] button ${i} changed to`, buttonValue);
         // TODO: use `bt` for Xbox, Sony, and generic controllers. For others,
         //  use names that resemble the type or brand. For example, maybe name
         //  flight stick buttons `fl` and HOTAS switches `ht`. This allows

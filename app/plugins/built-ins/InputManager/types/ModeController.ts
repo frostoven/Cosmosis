@@ -288,7 +288,7 @@ export default class ModeController {
   // Receives a non-pulsed keyboard button.
   // InputType: keyboardButton
   receiveAsKbButton({ action, value, control }) {
-    // console.log('[keyboard button]', { action, actionType: ActionType[control.actionType], value, analogData, control });
+    // console.log('[keyboard button]', { action, actionType: ActionType[control.actionType], value, control });
     if (control.analogRemap) {
       // TODO: value multipliers should probably go into the control definition
       //  as we probably don't want things being arbitrarily multiplied for no
@@ -303,8 +303,8 @@ export default class ModeController {
   }
 
   // InputType: analogButton
-  receiveAsAnalogButton({ action, value, analogData, control }) {
-    console.log('[analog button]', { action, actionType: ActionType[control.actionType], value, analogData, control });
+  receiveAsAnalogButton({ action, value, control }) {
+    // console.log('[analog button]', { action, actionType: ActionType[control.actionType], value, control });
     // Under normal circumstances this value is always in range of 0-1.
     // this.state[action] = value;
     if (value < ANALOG_BUTTON_THRESHOLD) {
@@ -321,8 +321,8 @@ export default class ModeController {
   }
 
   // InputType: analogStickAxis
-  receiveAsAnalogStick({ action, value, analogData, control }) {
-    // console.log('xxx [analog stick]', { action, actionType: ActionType[control.actionType], value, analogData, control });
+  receiveAsAnalogStick({ action, value, control }) {
+    // console.log('xxx [analog stick]', { action, actionType: ActionType[control.actionType], value, control });
     let result;
     if (Math.abs(value) < ANALOG_STICK_THRESHOLD) {
       result = 0;
@@ -347,8 +347,8 @@ export default class ModeController {
   }
 
   // InputType: mouseButton
-  receiveAsMouseButton({ action, value, analogData, control }) {
-    console.log('[mouse button]', { action, actionType: ActionType[control.actionType], value, analogData, control });
+  receiveAsMouseButton({ action, value, control }) {
+    console.log('[mouse button]', { action, actionType: ActionType[control.actionType], value, control });
   }
 
   // InputType: mouseAxisInfinite
