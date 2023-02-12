@@ -27,6 +27,11 @@ interface ControlSchema {
 
     allowKeyConflicts?: Array<string>,
 
+    // Useful for dividing a gamepad stick or mouse axis into two halves. Must
+    // be used with allowKeyConflicts, otherwise the application will refuse to
+    // bind the other half to a different control.
+    disallowSign?: -1 | 1 | 0;
+
     // If true, only the mouse and analog sticks are allowed to interface with
     // control.
     isBidirectional?: boolean,

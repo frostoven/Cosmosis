@@ -131,6 +131,10 @@ export default class ModeController {
               controlSchema[actionName].multiplier[inputType] = 1;
             }
           });
+
+          if (typeof controlSchema[actionName].disallowSign === 'undefined') {
+            controlSchema[actionName].disallowSign = 0;
+          }
         }
           // console.log('85========>', `controlSchema[${actionName}].current = { ...`, controlSchema[actionName].default, '}')
 
@@ -321,7 +325,16 @@ export default class ModeController {
 
   // InputType: analogStickAxis
   receiveAsAnalogStick({ action, value, control }) {
-    // console.log('xxx [analog stick]', { action, actionType: ActionType[control.actionType], value, control });
+    if (control.disallowSign !== 0) {
+      if (control.disallowSign === 1 && value > 0) {
+        return;
+      }
+      else if (control.disallowSign === -1 && value < 0) {
+        return;
+      }
+    }
+
+    // console.log('[analog stick]', { action, actionType: ActionType[control.actionType], value, control });
     let result;
     if (Math.abs(value) < ANALOG_STICK_THRESHOLD) {
       result = 0;
@@ -361,6 +374,15 @@ export default class ModeController {
 
   // InputType: mouseAxisInfinite
   receiveAsMouse({ action, value, analogData, control }) {
+    if (control.disallowSign !== 0) {
+      if (control.disallowSign === 1 && value > 0) {
+        return;
+      }
+      else if (control.disallowSign === -1 && value < 0) {
+        return;
+      }
+    }
+
     // console.log('[mouse movement | standard]', { action, actionType: ActionType[control.actionType], value, analogData, control });
     // console.log(`--> analogData[${action}]: delta=${analogData.delta}; grav=${analogData.gravDelta}`);
     this.state[action] += analogData.delta * control.multiplier.mouseAxisInfinite;
