@@ -8,6 +8,7 @@ const knownGamepadNames = {
   'Wireless Controller (STANDARD GAMEPAD Vendor: 054c Product: 09cc)': 'Sony Dualshock 4 Controller (2nd Gen)',
   'Wireless Controller (STANDARD GAMEPAD Vendor: 054c Product: 0ce6)': 'Sony DualSense Controller',
   'Xbox 360 Controller (XInput STANDARD GAMEPAD)': 'Xbox 360 Controller',
+  'Throttle - HOTAS Warthog (Vendor: 044f Product: 0404)': 'HOTAS Warthog Throttle',
 };
 
 function guessGamepadName(string) {
@@ -38,6 +39,7 @@ friendlyButtonNames['Xbox 360 Controller'] = {
   ax1: 'LS Horizontal',
   ax3: 'RS Vertical',
   ax4: 'RS Horizontal',
+  //
   bt0: 'A',
   bt1: 'B',
   bt2: 'X',
@@ -65,6 +67,7 @@ friendlyButtonNames['Sony Dualshock 3 Controller'] = {
   ax1: 'LS Horizontal',
   ax3: 'RS Vertical',
   ax4: 'RS Horizontal',
+  //
   bt0: '✖', // ✖ X ╳
   bt1: '●', // ● O ◯
   bt2: '■', // ■ □ □
@@ -100,6 +103,54 @@ ds5.bt8 = 'Create';
 ds5.bt9 = 'Options';
 ds5.bt17 = 'Touchpad Click';
 ds5.bt18 = 'DS5 Bt 18';
+
+friendlyButtonNames['HOTAS Warthog Throttle'] = {
+  ha0: 'Slew Control Axis [0]',
+  ha1: 'Slew Control Axis [1]',
+  ha2: 'Throttle [Right Half]',
+  ha5: 'Throttle [Left Half]',
+  ha6: 'Throttle [Friction control]',
+  ha9: 'Coolie Switch',
+  //
+  hb0: 'Slew Button',
+  //
+  hb1: 'MIC Switch [Push]',
+  hb2: 'MIC Switch [Up]',
+  hb3: 'MIC Switch [Far]',
+  hb4: 'MIC Switch [Down]',
+  hb5: 'MIC Switch [Near]',
+  //
+  hb6: 'Speedbrake [Far]',
+  hb7: 'Speedbrake [Near]',
+  hb8: 'Boat Switch [Far]',
+  hb9: 'Boat Switch [Near]',
+  hb10: 'China Hat [Far]',
+  hb11: 'China Hat [Near]',
+  //
+  hb12: 'Pinky Switch [Far]',
+  hb13: 'Pinky Switch [Near]',
+  hb14: 'Red Throttle Button',
+  //
+  hb15: 'Fuel Flow [Left]',
+  hb16: 'Fuel Flow [Right]',
+  hb17: 'Engine [Left]',
+  hb18: 'Engine [Right]',
+  hb19: 'APU Start',
+  hb20: 'Landing Gear | WRN',
+  //
+  hb21: 'Flaps [Up]',
+  hb22: 'Flaps [Down]',
+  //
+  hb23: 'EAC Arm',
+  hb24: 'RDR ALTM',
+  hb25: 'Autopilot [On/Off]',
+  hb26: 'Path [Autopilot]',
+  hb27: 'Alt [Autopilot]',
+  hb28: 'Park [Right]',
+  hb29: 'Park [Left]',
+  hb30: 'Ignition [Left]',
+  hb31: 'Ignition [Right]',
+};
 
 // ----------------------------------------------------------------------------
 
