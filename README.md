@@ -32,7 +32,7 @@ Click <a href="https://github.com/frostoven/frostoven.github.io/blob/main/showca
 The game is rapidly changing, and constantly brings graphical improvements and new features.
 
 <div>
-    <a href="https://github.com/frostoven/Cosmosis/releases/latest">
+    <a href="https://github.com/frostoven/frostoven.github.io/blob/main/showcase.md">
         <img src="https://img.shields.io/static/v1?label=%3E&message=Showcase&color=green&style=for-the-badge">
     </a>
 </div>
