@@ -30,6 +30,12 @@ Click <a href="https://github.com/frostoven/frostoven.github.io/blob/main/showca
 
 The game is rapidly changing, and constantly brings graphical improvements and new features.
 
+<div align="center">
+    <a href="https://github.com/frostoven/Cosmosis/releases/latest">
+        <img src="https://img.shields.io/static/v1?label=&gt;&message=Showcase&color=green&style=for-the-badge">
+    </a>
+</div>
+
 ## What is Cosmosis?
 Cosmosis plans to eventually be a high quality open world space exploration
 game. It has the Milky Way galaxy as its home and currently uses real NASA data
