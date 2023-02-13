@@ -32,7 +32,7 @@ The game is rapidly changing, and constantly brings graphical improvements and n
 
 <div align="center">
     <a href="https://github.com/frostoven/Cosmosis/releases/latest">
-        <img src="https://img.shields.io/static/v1?label=&gt;&message=Showcase&color=green&style=for-the-badge">
+        <img src="https://img.shields.io/static/v1?label=%3E&message=Showcase&color=green&style=for-the-badge">
     </a>
 </div>
 
