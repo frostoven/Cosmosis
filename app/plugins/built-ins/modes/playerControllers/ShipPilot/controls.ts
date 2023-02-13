@@ -1,0 +1,44 @@
+import { ActionType } from '../../../InputManager/types/ActionType';
+import { ControlSchema } from '../../../InputManager/interfaces/ControlSchema';
+import { InputType } from '../../../InputManager/types/InputTypes';
+
+const { pulse, continuous } = ActionType;
+const { keyboardButton, analogButton, analogStickAxis, mouseButton,
+  mouseAxisInfinite, mouseAxisGravity, mouseAxisThreshold
+} = InputType;
+
+const shipPilotControls: ControlSchema = {
+  // Pulsed controls
+  thrustUp10:          { actionType: pulse, current: null, default: { spScrollUp: mouseButton } },
+  thrustReset:         { actionType: pulse, current: null, default: { spScrollDown: mouseButton } },
+  mouseHeadLook:       { actionType: pulse, current: null, default: { spMouseMiddle: mouseButton, Numpad5: keyboardButton, bt11: analogButton, bt10: analogButton } },
+  toggleFlightAssist:  { actionType: pulse, current: null, default: { KeyZ: keyboardButton } },
+
+  // Analog controls
+  thrustInc:     { actionType: continuous, current: null, default: { KeyW: keyboardButton } },
+  thrustDec:     { actionType: continuous, current: null, default: { KeyS: keyboardButton } },
+  //
+  //
+  pitchUp:       { actionType: continuous, sign: -1, analogRemap: 'pitchUpDown', current: null, default: { Numpad8: keyboardButton } },
+  pitchDown:     { actionType: continuous, sign:  1, analogRemap: 'pitchUpDown', current: null, default: { Numpad2: keyboardButton } },
+  pitchUpDown:   { actionType: continuous, current: null, default: { spNorthSouth: mouseAxisThreshold, ax3: InputType.analogStickAxis }, isBidirectional: true },
+  //
+  //
+  rollLeft:      { actionType: continuous, sign:  1, current: null, default: { KeyA: keyboardButton } },
+  rollRight:     { actionType: continuous, sign: -1, current: null, default: { KeyD: keyboardButton } },
+  yawLeft:       { actionType: continuous, sign: -1, current: null, default: { spWest: mouseAxisGravity, Numpad4: keyboardButton } },
+  yawRight:      { actionType: continuous, sign:  1, current: null, default: { spEast: mouseAxisGravity, Numpad6: keyboardButton  } },
+  //
+  lookUp:        { actionType: continuous, sign: -1, current: null, default: { spNorth: mouseAxisInfinite, Numpad8: keyboardButton }, allowKeyConflicts: [ 'pitchUp' ] },
+  lookDown:      { actionType: continuous, sign:  1, current: null, default: { spSouth: mouseAxisInfinite, Numpad2: keyboardButton }, allowKeyConflicts: [ 'pitchDown' ] },
+  lookLeft:      { actionType: continuous, sign: -1, current: null, default: { spWest: mouseAxisInfinite,  Numpad4: keyboardButton }, allowKeyConflicts: [ 'yawLeft' ] },
+  lookRight:     { actionType: continuous, sign:  1, current: null, default: { spEast: mouseAxisInfinite,  Numpad6: keyboardButton }, allowKeyConflicts: [ 'yawRight' ] },
+
+  // Dev controls.
+  _debugFullWarpSpeed: { actionType: pulse, current: null, default: { ScrollLock: keyboardButton } },
+  _devChangeCamMode:   { actionType: pulse, current: null, default: { F7: keyboardButton, F8: keyboardButton } },
+};
+
+export {
+  shipPilotControls,
+};

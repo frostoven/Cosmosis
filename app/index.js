@@ -2,24 +2,25 @@ import './polyfills';
 import './earlyLoad';
 import React from 'react';
 import * as ReactDOM from 'react-dom';
-import RootNode from './reactComponents/RootNode';
+// import RootNode from './reactComponents/RootNode';
 import v8 from 'v8';
 
-import core from './local/core';
-import powerOnSelfTest from './test';
+import { loadPlugins } from './plugins';
+// import core from './local/core';
+// import powerOnSelfTest from './test';
 import api from './local/api';
 import packageJson from '../package.json';
-import { onDocumentReady, onReadyToBoot, logBootInfo }
-  from './local/windowLoadListener';
+import { onDocumentReady, onReadyToBoot, logBootInfo } from './local/windowLoadListener';
 
 // Game modules.
-import './local/toast';
+// import './local/toast';
 import * as THREE from 'three';
 import * as CANNON from 'cannon';
 import { startupEvent, getStartupEmitter } from './emitters';
-import './modeControl';
+// import './modeControl';
 import userProfile from './userProfile';
-import { logicalSceneGroup } from './logicalSceneGroup';
+// import { logicalSceneGroup } from './logicalSceneGroup';
+// import { gameState } from './plugins/gameState';
 
 const startupEmitter = getStartupEmitter();
 
@@ -30,12 +31,12 @@ window.debug.CANNON = CANNON;
 // Debug reference to API.
 window.debug.api = api;
 
-const defaultScene = logicalSceneGroup.space;
+// const defaultScene = logicalSceneGroup.space;
 
 // Integration tests. Note that these will no longer run by itself. The user
 // manually runs these by opening the dev console and entering
 // 'powerOnSelfTest()'.
-window.powerOnSelfTest = powerOnSelfTest;
+// window.powerOnSelfTest = powerOnSelfTest;
 
 /* Main
 /* --------------------------------- */
@@ -60,15 +61,15 @@ const heapSize = (
 console.log(`▪ Max heap size: ${heapSize}GB`);
 
 onDocumentReady(() => {
-  window.rootNode = ReactDOM.render(
-    <RootNode />,
-    document.getElementById('reactRoot'),
-  );
+  // window.rootNode = ReactDOM.render(
+  //   <RootNode />,
+  //   document.getElementById('reactRoot'),
+  // );
 });
 
-function initCore() {
+function init() {
   // Glue it together, and start the rendering process.
-  core.init({ defaultScene });
+  // core.init({ defaultScene, camera });
 
   startupEmitter.on(startupEvent.gameViewReady, () => {
     // For some god-awful reason or another the browser doesn't always detect
@@ -109,7 +110,26 @@ function initCore() {
   });
 }
 
+function closeLoadingScreen() {
+  const loaders = document.getElementsByClassName('loading-indicator');
+  if (loaders) {
+    for(let i = 0, len = loaders.length; i < len; i++){
+      loaders[i].classList.add('splash-fade-out');
+    }
+  }
+
+  const bootLog = document.getElementById('boot-log');
+  if (bootLog) {
+    bootLog.classList.add('splash-fade-out');
+  }
+}
+
 onReadyToBoot(() => {
   logBootInfo('Process units ready');
-  initCore();
+  loadPlugins(() => {
+    // gameState.tracked.player.getOnce(({ camera }) => {
+    //   init({ camera });
+    // });
+    closeLoadingScreen();
+  });
 });

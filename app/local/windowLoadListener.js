@@ -43,7 +43,7 @@ if (!process) {
 
 /**
  * Queues callback to run after both window.onload completes and pre-boot has
- * completed. If those has already fired, callback is called immediately.
+ * completed. If those have already fired, callback is called immediately.
  * @param callback
  * @returns {*}
  */

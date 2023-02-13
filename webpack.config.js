@@ -23,12 +23,20 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.js?$/,
+        test: /\.(js|ts)?$/,
         loader: 'babel-loader',
         options: {
           compact: false,
-          presets: ['@babel/preset-react'],
-          plugins: [ '@babel/plugin-proposal-class-properties']
+          presets: [
+            [
+              '@babel/preset-typescript', {
+                "isTSX": true,
+                "allExtensions": true,
+              }
+            ],
+          '@babel/preset-react'
+          ],
+          plugins: [ '@babel/plugin-proposal-class-properties', '@babel/plugin-proposal-optional-chaining' ]
         }
       },
       {
@@ -52,7 +60,7 @@ module.exports = {
   },
 
   resolve: {
-    extensions: ['.js', '.json', '.jsx']
+    extensions: ['.js', '.ts', '.json', '.jsx']
   },
 
   stats: {

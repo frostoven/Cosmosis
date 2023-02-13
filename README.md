@@ -43,10 +43,12 @@ functional warp drives, though travel is currently limited while functionality
 is smoothed out. A physics system is being implemented.
 
 Planets and their (hostile Lovecraftian) inhabitants will be procedurally
-generated, and ground-based combat will be souls-like.
+generated. Ground-based combat will probably be souls-like, but that decision
+has not been set in stone.
 
-The source is made available to all users for backup and modding purposes, but
-this project is not free (see [Why we provide source code](README.md#why-we-provide-source-code) below).
+The source is made available to all users for backup and modding purposes,
+**but this project is not free**
+(see [Why we provide source code](README.md#why-we-provide-source-code) below).
 
 ## Testing the game
 This game is currently still in pre-alpha, meaning you won't have much to do.
@@ -92,8 +94,8 @@ For now, you may force Windows to use discrete graphics by setting power
 saving mode to high performance. If your driver configuration does not provide
 the option (or you don't like that idea), you can manually force it as follows:
 * Open your Windows start menu.
-* Within the start menu, go to Settings, the click System.
-* Scroll down to Graphics Settings.
+* Within the start menu, go to Settings, then click System.
+* Click Display, Scroll down to Graphics Settings.
 * Select "Classic app", then click "Browse".
 * Navigate to `Cosmosis.exe` and select it.
 * Once it's been added to the list click "Options" then select "High
@@ -115,13 +117,16 @@ Cosmosis was brought into existence for the following reasons:
 
 #### Excellent modding support
 You can make a fully interactable spaceship yourself **with zero programming
-experience**. All you need is a copy of Blender 2.8+ and to follow the guide on
-mesh codes. Blender does not even need any special add-ons for this to work,
-though a future add-on is on the roadmap to make some tedious tasks faster.
+experience**. All you need is a copy of Blender 3.3. We have a
+[Blender add-on](https://github.com/frostoven/Cosmosis-Blender-Add-On)
+to make this easier, though you can easily manage this without the add-on by
+following our guide on [Cosmosis mesh codes](MESH_CODES.md).
 
-If you are a coder, coded modding support is planned but currently low priority
-due to the fact the game is still rapidly changing. Adding such support in
-future is trivial, because the game is written in JavaScript.
+If you're a coder, coded modding support is in active development;
+documentation and examples will be released soon.
+
+_Note on Blender support: we no longer support Blender 2.93 due to breaking
+changes in Blender 3.x GLTF export processes._
 
 #### Why we provide source code
 There are two niches out there that get poor development: space sims, and

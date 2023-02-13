@@ -6,8 +6,8 @@
 
 import * as THREE from 'three';
 // import * as CANNON from 'cannon';
+import ChangeTracker from 'change-tracker/src';
 import Stats from '../../hackedlibs/stats/stats.module.js';
-import packageJson from '../../package.json';
 
 import { forEachFn } from './utils';
 // import physics from './physics';
@@ -26,13 +26,8 @@ import {
 import { createRenderer } from './renderer';
 import AssetFinder from './AssetFinder';
 import OffscreenSkyboxWorker from '../managedWorkers/OffscreenSkyboxWorker';
-import ChangeTracker from '../emitters/ChangeTracker';
 import { getEnums } from '../userProfile/defaultsConfigs';
 import api from './api';
-
-// 1 micrometer to 100 billion light years in one scene, with 1 unit = 1 meter?
-// preposterous!  and yet...
-const NEAR = 0.001, FAR = 1e27;
 
 // Used to generate delta.
 let deltaPrevTime = 0;
@@ -46,15 +41,18 @@ let maxAllowsAnimCrashes = 600;
  * Global vars
  * ================================= */
 
+// Used to stop all main thread graphics processing in an emergency. Game can
+// be halted from the dev console by typing "$game.halt = true".
+let halt = false;
+// Note: versions below 0.73.0-beta.4 will not have this value defined.
+// Set to true once the world is fully initialised.
+let ready = false;
+
 window.$stats = null;
-window.$game = {
-  // Used to stop all main thread graphics processing in an emergency. Game can
-  // be halted from the dev console by typing "$game.halt = true".
-  halt: false,
-  // Note: versions below 0.73.0-beta.4 will not have this value defined.
-  version: packageJson.version,
-  // Set to true once the world is fully initialised.
-  ready: false,
+/**
+ * Contains tracked game objects.
+ */
+const $game = {
   // Contains the all scenes. Mainly used for movement optimisation. It's
   // possible this has become redundant. TODO: investigate removal.
   // group: null,
@@ -64,7 +62,9 @@ window.$game = {
   // spaceScene: null,
   // Contains everything small.
   // levelScene: null,
+  /** @deprecated */
   camera: null,
+  player: new ChangeTracker(),
   // The primary graphics renderer.
   primaryRenderer: null,
   // Offscreen renderer used for skybox generation.
@@ -95,6 +95,8 @@ window.$game = {
   },
   api,
 };
+window.$game = $game;
+
 window.$options = {
   // 0=off, 1=basic, 2=full
   hudDetailLevel: 0,
@@ -105,6 +107,7 @@ window.$options = {
   // Rate at which arrow actions repeat once repeatDelay is met.
   repeatRate: 50,
 };
+
 window.$displayOptions = {
   // Please do not expose this to users just yet. It utilises setTimeout, which
   // produces significant stutter. It exists to test for timing issues only.
@@ -115,18 +118,22 @@ window.$displayOptions = {
   // a known ~9% drop.
   fpsLimit: 30 * 1.09,
 };
+
 window.$webWorkers = {
   offscreenSkybox: new OffscreenSkyboxWorker(),
 };
+
 window.$gfx = {
   fullscreenEffects: new ChangeTracker(),
   spaceEffects: new ChangeTracker(),
   levelEffects: new ChangeTracker(),
 };
+
 // The preBootPlaceholder stores functions that match the actual model object.
 // Calling those functions queue them as requests. Once the menu system has
 // booted, all requests are then honored as the actual modal functions.
 window.$modal = preBootPlaceholder;
+
 
 /* =================================
  * End global vars
@@ -174,22 +181,22 @@ function updateHyperdriveDebugText() {
   div.innerText = `Hyperdrive: (unknown...)`;
 }
 
-// TODO: remove me once the game is more stable.
-function closeLoadingScreen() {
-  const loaders = document.getElementsByClassName('loading-indicator');
-  if (loaders) {
-    for(let i = 0, len = loaders.length; i < len; i++){
-      loaders[i].classList.add('splash-fade-out');
-    }
-  }
+// // TODO: remove me once the game is more stable.
+// function closeLoadingScreen() {
+//   const loaders = document.getElementsByClassName('loading-indicator');
+//   if (loaders) {
+//     for(let i = 0, len = loaders.length; i < len; i++){
+//       loaders[i].classList.add('splash-fade-out');
+//     }
+//   }
+//
+//   const bootLog = document.getElementById('boot-log');
+//   if (bootLog) {
+//     bootLog.classList.add('splash-fade-out');
+//   }
+// }
 
-  const bootLog = document.getElementById('boot-log');
-  if (bootLog) {
-    bootLog.classList.add('splash-fade-out');
-  }
-}
-
-function init({ defaultScene }) {
+function init({ defaultScene, camera }) {
   console.log('Initialising core.');
   logBootInfo('Core init start');
 
@@ -203,19 +210,15 @@ function init({ defaultScene }) {
 
   // Default graphics font.
   // const fontLoader = new THREE.FontLoader();
-  const primaryCanvas = document.getElementById('primary-canvas');
+  const nearObjectCanvas = document.getElementById('near-object-canvas');
   const starfieldCanvas = document.getElementById('starfield-canvas');
-  if (!primaryCanvas) {
+  if (!nearObjectCanvas) {
     $modal.alert('Error: canvas not available; no rendering will work.');
   }
 
-  const camera = new THREE.PerspectiveCamera(
-    display.fieldOfView, window.innerWidth / window.innerHeight, NEAR, FAR
-  );
-  camera.name = 'primaryCamera';
   const primaryRenderer = createRenderer({
     initialisation: {
-      canvas: primaryCanvas,
+      canvas: nearObjectCanvas,
     },
     options: {
       width: window.innerWidth,
@@ -281,7 +284,7 @@ function initView({ primaryRenderer, camera }) {
   $game.primaryRenderer = primaryRenderer;
   $game.camera = camera;
   $game.ptrLockControls = ptrLockControls;
-  $game.ready = true;
+  ready = true;
 }
 
 function initPlayer() {
@@ -316,7 +319,7 @@ function updatePrimaryRendererSizes() {
  * Invokes all registered render functions.
  */
 function animate() {
-  if ($game.halt) {
+  if (halt) {
     return;
   }
 
@@ -332,7 +335,7 @@ function animate() {
       'frames. Renderer will now halt.';
     console.error(error);
     $modal.alert({ header: 'Renderer crash', body: error });
-    return $game.halt = true;
+    return halt = true;
   }
 
   const time = performance.now();
@@ -385,7 +388,7 @@ $game.playerShip.getOnce(() => {
 
 // TODO: remove me once the game is more stable.
 startupEmitter.on(startupEvent.ready, () => {
-  closeLoadingScreen();
+  // closeLoadingScreen();
 
   // For some reason the game takes nearly 5x longer to boot in fullscreen...
   // slower boot happens even if the res scale is at 0.1 (less than 200x200
@@ -464,7 +467,7 @@ function waitForAllLoaded() {
     }
   }, warnTime);
 }
-waitForAllLoaded();
+// waitForAllLoaded();
 
 /**
  * Adjusts x and y according to user-chosen mouse sensitivity.
@@ -477,6 +480,10 @@ function userMouseSpeed(x, y) {
     x: $options.mouseSpeed[0] * x,
     y: $options.mouseSpeed[1] * y,
   };
+}
+
+export {
+  $game,
 }
 
 export default {

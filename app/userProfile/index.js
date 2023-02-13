@@ -1,5 +1,6 @@
 const fs = require('fs');
 const { spawn } = require('child_process');
+import ChangeTracker from 'change-tracker/src';
 
 import packageJson from '../../package.json';
 import { getStartupEmitter } from '../emitters';
@@ -9,7 +10,6 @@ import {
   getFriendlyFsError, convertToOsPath, createJsonIfNotExists
 } from '../local/fsUtils';
 import { logBootInfo } from '../local/windowLoadListener';
-import ChangeTracker from '../emitters/ChangeTracker';
 
 // TODO: create readme in CosmosisGame on boot that tells users not to create dirs as dirs are treated as profiles.
 //  Mention that they may create customs dirs with {dot}whatever, and that these will be ignored by the engines.

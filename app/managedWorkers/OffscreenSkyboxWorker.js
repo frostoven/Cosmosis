@@ -1,7 +1,7 @@
 import * as THREE from 'three';
+import ChangeTracker from 'change-tracker/src';
 import Unit from '../local/Unit';
 import { logBootInfo } from '../local/windowLoadListener';
-import ChangeTracker from '../emitters/ChangeTracker';
 
 // TODO: maybe rename to astrometrics worker? It's become more than just a
 //  skybox machine.

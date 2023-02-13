@@ -2,7 +2,10 @@
  * Provides functionality for handling registering and deregistering of pretty
  * much anything, although specifically made to deduplicate callback
  * boilerplate.
+ * <br><br>
+ * * Note: This has been superseded by the ChangeTracker class.
  * @constructor
+ * @deprecated
  */
 export default function CbQueueExtra() {
   this.listeners = [];

@@ -1,7 +1,7 @@
 {
   "name": "cosmosis",
   "gameDataDirName": "CosmosisGame",
-  "version": "0.73.0-beta.4",
+  "version": "0.74.0-beta.1",
   "main": "index.html",
   "window": {
     "title": "Cosmosis",
@@ -10,7 +10,8 @@
     "height": 621,
     "icon": "icon.png"
   },
-  "chromium-args": "--enable-logging=stderr",
+  "js-flags": "--focus=true",
+  "chromium-args": "--enable-logging=stderr --disable-raf-throttling --enable-frame-rate-limit",
   "description": "Drugs. Control. Concubines.",
   "scripts": {
     "//": "prepare-dev is actually redundant, but it saves telling new users to reload nw after game.js first build.",
@@ -38,12 +39,14 @@
     "@babel/preset-env": "7.16.4",
     "@babel/preset-react": "7.16.0",
     "@babel/preset-stage-2": "7.8.3",
+    "@babel/preset-typescript": "7.18.6",
     "@babel/register": "7.16.0",
+    "@types/node": "18.11.10",
+    "@types/nw.gui": "^0.0.21",
     "babel-loader": "8.2.3",
     "cannon": "0.6.2",
-    "change-tracker": "^1.0.5",
+    "change-tracker": "1.0.7",
     "css-loader": "0.28.11",
-    "drei": "1.5.7",
     "extract-text-webpack-plugin": "4.0.0-beta.0",
     "file-loader": "1.1.11",
     "lodash": "4.17.21",

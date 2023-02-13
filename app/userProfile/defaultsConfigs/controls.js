@@ -61,8 +61,8 @@ const config = {
         spWest: 'yawLeft',
         spEast: 'yawRight',
         KeyZ: 'toggleFlightAssist',
-        KeyL: 'cycleInternalLights',
-        Numpad0: 'cycleExternalLights',
+        KeyL: 'cycleExternalLights',
+        Numpad0: 'cycleInternalLights',
       },
       freeCam: {
         _description: 'Free flying camera (press F8 to activate).',

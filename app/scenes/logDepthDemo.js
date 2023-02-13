@@ -3,7 +3,7 @@
 
 import * as THREE from 'three';
 
-import core from '../local/core';
+// import core from '../local/core';
 
 const labelData = [
   {size: .01, scale: 0.0001, label: "microscopic (1µm)"}, // FIXME - triangulating text fails at this size, so we scale instead

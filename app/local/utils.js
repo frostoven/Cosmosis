@@ -155,6 +155,10 @@ function spacedTitled(string) {
   return addSpacesBetweenWords(toTitleCase(string));
 }
 
+function lowercaseFirst(string) {
+  return string.charAt(0).toLowerCase() + string.slice(1);
+}
+
 function capitaliseFirst(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
@@ -202,6 +206,22 @@ function randomArrayItem(underpantsGnomes=[]) {
   return underpantsGnomes[Math.floor(Math.random() * underpantsGnomes.length)];
 }
 
+/**
+ * Checks if one array contains the contents of another array. Returns false
+ * if any arguments are falsy.
+ * @param {Array|undefined} array
+ * @param {Array|undefined} includes
+ */
+function arrayContainsArray(array, includes) {
+  if (!array || !includes) {
+    return false;
+  }
+
+  return includes.every((value) => {
+    return array.includes(value);
+  });
+}
+
 export {
   fuzzyFindFile,
   forEachFn,
@@ -209,9 +229,11 @@ export {
   addSpacesBetweenWords,
   toTitleCase,
   spacedTitled,
+  lowercaseFirst,
   capitaliseFirst,
   capitaliseEachWord,
   safeString,
   structuredClone,
   randomArrayItem,
+  arrayContainsArray,
 }

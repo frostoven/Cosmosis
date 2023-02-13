@@ -435,6 +435,11 @@ ShipPilot.prototype.handleHyper = function handleHyper(delta) {
   this.levelScene.position.addScaledVector(direction, -hyperSpeed);
   this.playerWarpBubble.position.addScaledVector(direction, hyperSpeed);
   this.playerShipCenter.position.copy(this.playerWarpBubble.position);
+
+  // console.log('direction:', direction);
+  // console.log('this.playerWarpBubble.position:', this.playerWarpBubble.position);
+  // $game.playerShip._cached.mesh.scene.getWorldPosition(new THREE.Vector3())
+
 };
 
 // // TODO: move to math utils.

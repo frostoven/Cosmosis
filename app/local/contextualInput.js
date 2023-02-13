@@ -149,7 +149,7 @@ function keyFromWheelDelta(deltaY) {
  * modes (such as a cam controller and a menu) should use separate instances.
  * @constructor
  */
-function ContextualInput(stringName) {
+export default function ContextualInput(stringName) {
   if (!stringName) {
     throw 'ContextualInput() needs a string name for identification purposes.';
   }
@@ -206,6 +206,11 @@ ContextualInput.activateInstances = function(additions) {
 // Redirects all input to this listener.
 ContextualInput.rawInputListener = null;
 
+// Used for mouse control. This variable should be an instance of
+// PointerLockControls.
+// @type {PointerLockControls}
+ContextualInput.mouseDriver = null;
+
 /**
  * Sets a raw input listener. Only one raw input listener can be active at a
  * time. This used should be used for most things; it's currently used
@@ -221,6 +226,10 @@ ContextualInput.setRawInputListener = function(callback) {
  */
 ContextualInput.clearRawInputListener = function() {
   ContextualInput.rawInputListener = null;
+};
+
+ContextualInput.registerMouseDriver = function(driver) {
+  ContextualInput.mouseDriver = driver;
 };
 
 /**
@@ -344,7 +353,7 @@ ContextualInput.prototype.replaceAction = function onModeAction(
 };
 
 /**
- * Registers listeners for the specified actions. Please not that every
+ * Registers listeners for the specified actions. Please note that every
  * enrolled child is allowed only one callback per action. That is, registering
  * the same name again replaces the previous.
  * @param {string[]} actionNames
@@ -557,7 +566,12 @@ ContextualInput.universalEventListener = function(event) {
       // https://developer.mozilla.org/en-US/docs/Web/API/Document/keydown_event
       // Luckily, manually dealing with keypresses are easy anyway.
     case 'mousemove':
-      if (!$game.ptrLockControls || !$game.ptrLockControls.isPointerLocked) {
+      // TODO: implement me as plugin
+      // if (!window.warnedAboutPtrMissing563) {
+      //   window.warnedAboutPtrMissing563 = true;
+      //   console.warn('[ContextualInput] pointer lock controls are not currently set up correctly.');
+      // }
+      if (ContextualInput.mouseDriver.isPointerLocked) {
         // Ignore mouse if pointer is being used by menu.
         return;
       }
@@ -701,7 +715,7 @@ const virtualMenu = new ContextualInput('virtualMenu');
 
 // Note: you'll notice we have an allModes mode in controls, yet it's not
 // specified here. That's because allModes is an internal mode that literally
-// means 'all modes', and is handled specially. allModes literally represents
+// means 'all modes', and is handled specially. allModes actually represents
 // all the modes in this array.
 ContextualInput.activateInstances([
   misc,
