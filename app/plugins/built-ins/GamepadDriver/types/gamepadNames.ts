@@ -9,6 +9,7 @@ const knownGamepadNames = {
   'Wireless Controller (STANDARD GAMEPAD Vendor: 054c Product: 0ce6)': 'Sony DualSense Controller',
   'Xbox 360 Controller (XInput STANDARD GAMEPAD)': 'Xbox 360 Controller',
   'Throttle - HOTAS Warthog (Vendor: 044f Product: 0404)': 'HOTAS Warthog Throttle',
+  'Joystick - HOTAS Warthog (Vendor: 044f Product: 0402)': 'HOTAS Warthog Flight Stick',
 };
 
 function guessGamepadName(string) {
@@ -104,6 +105,7 @@ ds5.bt9 = 'Options';
 ds5.bt17 = 'Touchpad Click';
 ds5.bt18 = 'DS5 Bt 18';
 
+// Dev note: the manual counts from 1 instead of 0.
 friendlyButtonNames['HOTAS Warthog Throttle'] = {
   ha0: 'Slew Control Axis [0]',
   ha1: 'Slew Control Axis [1]',
@@ -150,6 +152,36 @@ friendlyButtonNames['HOTAS Warthog Throttle'] = {
   hb29: 'Park [Left]',
   hb30: 'Ignition [Left]',
   hb31: 'Ignition [Right]',
+};
+
+// Dev note: the manual counts from 1 instead of 0.
+friendlyButtonNames['HOTAS Warthog Flight Stick'] = {
+  fa0: 'Stick [Roll]',
+  fa1: 'Stick [Pitch]',
+  fa9: 'Trim Switch',
+  //
+  fb0: 'Gun Trigger (Stage 1)',
+  fb1: 'Weapons Release',
+  fb2: 'Nosewheel Button',
+  fb3: 'Paddle Switch',
+  fb4: 'Master Mode Control',
+  fb5: 'Gun Trigger (Fire)',
+  //
+  fb6: 'Target [Up]',
+  fb7: 'Target [Right]',
+  fb8: 'Target [Down]',
+  fb9: 'Target [Left]',
+  //
+  fb10: 'Data Management [Up]',
+  fb11: 'Data Management [Right]',
+  fb12: 'Data Management [Down]',
+  fb13: 'Data Management [Left]',
+  //
+  fb14: 'Countermeasures [Far]',
+  fb15: 'Countermeasures [Right]',
+  fb16: 'Countermeasures [Near]',
+  fb17: 'Countermeasures [Left]',
+  fb18: 'Countermeasures [Push]',
 };
 
 // ----------------------------------------------------------------------------
