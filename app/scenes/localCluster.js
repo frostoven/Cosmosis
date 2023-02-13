@@ -80,11 +80,14 @@ function generateStars({ scene, data }) {
     const mesh = createStarMesh(star);
     scene.add(mesh);
 
-    // TODO: apply this for nearest star instead of only sun.
+    // TODO: apply this for nearest star instead of only the sun.
     if (star.n === 'Sol') {
       // Add postprocessing effects.
       $gfx.spaceEffects.getOnce((context) => {
         context.setGodRays({ mesh });
+      });
+      $gfx.levelEffects.getOnce((context) => {
+        context.setMicroDirectionalStarlight({ mesh, star });
       });
     }
   }

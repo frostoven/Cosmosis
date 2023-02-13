@@ -6,6 +6,7 @@ import AssetFinder from '../local/AssetFinder';
 import { setup as meshCodeSetup } from './meshCodeProcessor';
 import Level from './level';
 import { startupEvent, getStartupEmitter } from '../emitters';
+import userProfile from '../userProfile';
 
 const startupEmitter = getStartupEmitter();
 
@@ -110,9 +111,11 @@ function modelPostSetup(modelName, gltf, pos, scene, world, onReady) {
     // TODO: improve the way this is decided. The spaceship designer should be
     //  choosing what the standard arrow is.
     const standardArrow = mesh.cameras[0];
+    mesh.name = modelName;
 
     // Spaceship container.
     const bubble = new THREE.Group();
+    bubble.name = 'playerShipBubble';
     bubble.add(mesh.scene);
     scene.add(bubble);
 
@@ -122,6 +125,7 @@ function modelPostSetup(modelName, gltf, pos, scene, world, onReady) {
 
     // Follows the ship, but does not rotate with it.
     const centerPoint = new THREE.Group();
+    centerPoint.name = 'playerShipCenterPoint';
     scene.add(centerPoint);
 
     // Get standard arrow world direction:
@@ -153,6 +157,32 @@ function modelPostSetup(modelName, gltf, pos, scene, world, onReady) {
         // console.log('got:', node, 'cast:', node.castShadow, 'recv:', node.receiveShadow);
       }
     });
+
+    const { createDebugFloor } = userProfile.getCurrentConfig({
+      identifier: 'userOptions',
+    }).debug;
+    //
+    if (createDebugFloor && createDebugFloor.enabled) {
+      const opts = createDebugFloor;
+      // Creates a platform that follows the player around.
+      const floor = new THREE.Mesh(
+        new THREE.PlaneGeometry(opts.size, opts.size),
+        new THREE.MeshPhongMaterial({ color: opts.floorColor })
+      );
+      floor.name = 'debugFloor';
+      // Note: this is relative and needs to happen before rotation.
+      opts.yOffset && floor.translateY(opts.yOffset);
+      floor.rotation.x = THREE.Math.degToRad(-90);
+      floor.receiveShadow = opts.receiveShadow;
+      bubble.add(floor);
+
+      const grid = new THREE.GridHelper(opts.size, opts.divisions, opts.axisColor, opts.gridColor);
+      grid.name = 'debugGrid';
+      opts.yOffset && grid.translateY(opts.yOffset);
+      grid.material.opacity = opts.gridOpacity;
+      grid.material.transparent = opts.gridOpacity !== 1;
+      bubble.add(grid);
+    }
 
     onReady(mesh, bubble, centerPoint);
   });

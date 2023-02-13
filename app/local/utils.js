@@ -47,8 +47,10 @@ function fuzzyFindFile(
 
     for (let i = 0, len = files.length; i < len; i++) {
       const fileName = files[i];
-      if (fileName.match(regex)) {
-        return onFind(null, fileName, path);
+      const match = fileName.match(regex);
+      if (match) {
+        const extension = match[1];
+        return onFind(null, fileName, path, extension);
       }
     }
 

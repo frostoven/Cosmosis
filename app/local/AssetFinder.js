@@ -24,7 +24,7 @@ const assetDefaults = {
   },
   models: {
     dir: 'models',
-    extensions: [ 'gltf' ],
+    extensions: [ 'glb', 'gltf' ],
   },
   music: {
     dir: 'music',
@@ -44,7 +44,7 @@ const assetDefaults = {
   // },
   spaceships: {
     dir: 'spaceships',
-    extensions: [ 'gltf', 'glb' ],
+    extensions: [ 'glb', 'gltf' ],
     // Helps to make things 'just work' in dev builds, although doing this
     // should always generate an error indicating that assets are missing.
     placeholder: 'DS69F',
@@ -84,11 +84,11 @@ AssetFinder.prototype.getRes = function getRes(name, options={}, callback) {
   forEachFn([
     (cb) => fuzzyFindFile({ name, extensions, path: prod, onFind: cb }),
     (cb) => fuzzyFindFile({ name, extensions, path: dev, onFind: cb }),
-  ], (error, fileName, parentDir) => {
+  ], (error, fileName, parentDir, extension) => {
     totalChecks++;
     if (!error) {
       // Return first file name found: this will be prod if exists, else dev.
-      callback(error, fileName, parentDir);
+      callback(error, fileName, parentDir, extension);
       // Signal that we can stop looking.
       return false;
     }
