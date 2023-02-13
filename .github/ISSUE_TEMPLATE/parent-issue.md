@@ -3,7 +3,7 @@ name: Parent issue
 about: Groups similar tasks in one place with a detailed description, similar to an
   epic but with user stories included
 title: "[Parent issue] Title describing common relationship"
-labels: parent task
+labels: ''
 assignees: ''
 
 ---
