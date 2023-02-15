@@ -76,6 +76,28 @@ function clamp(n, min, max) {
   return Math.min(Math.max(n, min), max);
 }
 
+// Moves toward a target value at a set speed.
+function chaseValue(stepSize, current: number, target: number) {
+  if (current === target) {
+    return target;
+  }
+
+  if (current < target) {
+    current += stepSize;
+    if (current > target) {
+      return target;
+    }
+  }
+  else {
+    current -= stepSize;
+    if (current < target) {
+      return target;
+    }
+  }
+
+  return current;
+}
+
 export {
   xAxis,
   yAxis,
@@ -87,4 +109,5 @@ export {
   lerpToZero,
   easeIntoExp,
   clamp,
+  chaseValue,
 }

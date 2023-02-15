@@ -12,7 +12,7 @@ import { ModeId } from '../../../InputManager/types/ModeId';
 import { gameRuntime } from '../../../../gameRuntime';
 import { CoreType } from '../../../Core';
 import { InputManager } from '../../../InputManager';
-import { applyPolarRotation, lerpToZero, signRelativeMax } from '../../../../../local/mathUtils';
+import { applyPolarRotation, clamp } from '../../../../../local/mathUtils';
 
 // TODO: move me into user profile.
 const MOUSE_SPEED = 0.7;
@@ -28,6 +28,9 @@ class ShipPilot extends ModeController {
   private _cachedCamera: Camera;
   private _cachedInputManager: InputManager;
 
+  private _actualThrottle: number;
+  private _requestedThrottle: number;
+
   constructor() {
     super('shipPilot', ModeId.playerControl, shipPilotControls);
     this._cachedCore = gameRuntime.tracked.core.cachedValue;
@@ -39,6 +42,9 @@ class ShipPilot extends ModeController {
     // This controller activates itself by default:
     this._cachedInputManager = gameRuntime.tracked.inputManager.cachedValue;
     // this._cachedInputManager.activateController(ModeId.playerControl, this.name);
+
+    this._actualThrottle = 0;
+    this._requestedThrottle = 0;
 
     gameRuntime.tracked.player.getOnce((player) => {
       this._cachedCamera = player.camera;
@@ -63,6 +69,28 @@ class ShipPilot extends ModeController {
       this._cachedInputManager.activateController(ModeId.playerControl, 'freeCam');
     });
   }
+
+  // --- Getters and setters ----------------------------------------------- //
+
+  get actualThrottle() {
+    return this._actualThrottle;
+  }
+
+  set actualThrottle(value) {
+    throw '[ShipPilot] actualThrottle is read-only and can only be set by ' +
+    'internal means. Set requestedThrottle instead.';
+  }
+
+  get requestedThrottle() {
+    return this._requestedThrottle;
+  }
+
+  set requestedThrottle(value) {
+    this.state.thrustIncDec = clamp(value, -1, 1);
+    this.activeState.thrustIncDec = 0;
+  }
+
+  // ----------------------------------------------------------------------- //
 
   onActivateController() {
     gameRuntime.tracked.levelScene.getOnce((levelScene) => {
@@ -170,20 +198,27 @@ class ShipPilot extends ModeController {
     this.setNeckPosition(x, y);
   }
 
-  step(delta) {
-    // TODO: instead of an if-then statement that resets positions, look for a
-    //  more elegant way of dealing with this. This becomes particularly
-    //  important if the user wants to use two different devices for looking
-    //  around and aiming. Maybe a checkbox in configs at least?
-    if (!this.state.mouseHeadLook) {
-      this.resetNeckAxesInput();
-      this.stepAim(delta);
-    }
-    else {
-      this.resetPrincipleAxesInput();
-      this.stepFreeLook();
-    }
+  processShipControls(delta, bigDelta) {
+    // this._requestedThrottle = clamp(this.state.thrustIncDec + this.activeState.thrustIncDec, -1, 1);
+    // this._actualThrottle = this.chaseValue(bigDelta, this._actualThrottle, this._requestedThrottle);
+    //
+    // console.log({ actualThrottle: this._actualThrottle });
   }
+
+  step(delta, bigDelta) {
+    this.processShipControls(delta, bigDelta);
+  }
+
+  // step(delta) {
+  //   if (!this.state.mouseHeadLook) {
+  //     this.resetNeckAxesInput();
+  //     this.stepAim(delta);
+  //   }
+  //   else {
+  //     this.resetPrincipleAxesInput();
+  //     this.stepFreeLook();
+  //   }
+  // }
 }
 
 const shipPilotPlugin = new CosmosisPlugin('shipPilot', ShipPilot);

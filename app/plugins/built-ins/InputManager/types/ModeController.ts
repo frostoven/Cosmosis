@@ -29,6 +29,9 @@ const ANALOG_STICK_THRESHOLD = 0.25;
 // TODO: move me into user profile.
 const ANALOG_STICK_EASING = false;
 
+// TODO: move me into user profile.
+const SLIDER_EPSILON = 0.01;
+
 export default class ModeController {
   public name: string;
   public modeId: ModeId;
@@ -79,6 +82,7 @@ export default class ModeController {
       this.receiveAsMouse.bind(this),
       this.receiveAsMouseAxisGravity.bind(this),
       this.receiveAsMouseAxisThreshold.bind(this),
+      this.receiveAsAnalogSlider.bind(this),
     ];
 
     // Control setup.
@@ -251,13 +255,10 @@ export default class ModeController {
     const actionType = control.actionType;
     const sign = control.sign;
 
-    let inputType;
+    // @ts-ignore - this is set during init. If not, this point isn't
+    // reachable unless by bug.
+    let inputType = control.current[key];
     if (!inputType) {
-      // @ts-ignore - this is set during init. If not, this point isn't
-      // reachable unless by bug.
-      inputType = control.current[key];
-    }
-    else {
       // If this is hit, then it's probably triggered by API. Keyboard is a
       // very simple choice that should work in all cases, so pretend it's kb.
       inputType = InputType.keyboardButton;
@@ -269,26 +270,6 @@ export default class ModeController {
     else {
       this._actionReceivers[inputType]({ action, value, analogData, control });
     }
-
-    // console.log('-------> receiveAction:', { action, key, value, control });
-    // // @ts-ignore - this is set during init. If not, this point isn't reachable unless by bug.
-    // console.log('----> input type:', inputType);
-
-    // if (actionType === ActionType.analogLiteral) {
-    //   this.handleReceiveLiteral({ action, value, analogData, kbAmount });
-    // }
-    // else if (actionType === ActionType.analogThreshold) {
-    //   this.handleReceiveThreshold({ action, value, analogData, kbAmount });
-    // }
-    // else if (actionType === ActionType.analogGravity) {
-    //   this.handleReceiveGravity({ action, value, analogData, kbAmount });
-    // }
-    // else if (actionType === ActionType.pulse) {
-    //   this.handlePulse({ action, value });
-    // }
-    // else if (actionType === ActionType.analogAdditive) {
-    //   this.handleReceiveAdditive({ action, value, analogData, kbAmount });
-    // }
   }
 
   // --------------------------------------------------------------------------
@@ -422,68 +403,47 @@ export default class ModeController {
     console.log(`[mouse{${this.name}}|${action}]`, this.state[action]);
   }
 
+  receiveAsAnalogSlider({ action, value, control }) {
+    if (control.disallowSign !== 0) {
+      if (control.disallowSign === 1 && value > 0) {
+        return;
+      }
+      else if (control.disallowSign === -1 && value < 0) {
+        return;
+      }
+    }
 
-  // --------------------------------------------------------------------------
+    // console.log('[analog slider]', { action, actionType: ActionType[control.actionType], value, control });
 
-  // handleReceiveLiteral({ action, value, analogData, kbAmount }) {
-  //   if (analogData) {
-  //     // console.log('---> receive literal:', analogData);
-  //     // console.log(`   > this.state.${action} = ${analogData.delta}`);
-  //     //
-  //     // const delta = analogData.delta;
-  //     // // Delta never hits zero when using a mouse that goes the opposite
-  //     // // direction of this axis. Discard the 1 as a fix; this means the rest of
-  //     // // the game should treat 1 as a really tiny value (think 0.1%).
-  //     // this.state[action] = Math.abs(delta) === 1 ? 0 : delta;
-  //
-  //     this.state[action] = analogData.delta;
-  //   }
-  //   else {
-  //     this.state[action] = value;
-  //   }
-  // }
-  //
-  // handleReceiveThreshold({ action, value, analogData, kbAmount }) {
-  //   if (analogData) {
-  //     // if (action.includes('yawLeft')) {
-  //     //   console.log(`171 -> [${action}], signRelativeMax(${analogData.delta}, ${Math.abs(kbAmount)}) =`, signRelativeMax(analogData.delta, Math.abs(kbAmount)));
-  //     // }
-  //     // this.state[action] = signRelativeMax(analogData.delta, Math.abs(kbAmount));
-  //     this.state[action] += analogData.delta / 1000;
-  //     if (Math.abs(this.state[action]) > Math.abs(kbAmount)) {
-  //       this.state[action] = signRelativeMax(this.state[action], Math.abs(kbAmount));
-  //     }
-  //     console.log('[threshold]', this.state[action]);
-  //   }
-  //   else {
-  //     this.state[action] = value;
-  //   }
-  // }
-  //
-  // handleReceiveGravity({ action, value, analogData, kbAmount }) {
-  //   if (analogData) {
-  //     this.state[action] = analogData.gravDelta;
-  //   }
-  //   else {
-  //     this.state[action] = value;
-  //   }
-  // }
-  //
-  // handleReceiveAdditive({ action, value, analogData, kbAmount }) {
-  //   if (analogData) {
-  //     this.state[action] += analogData.delta;
-  //   }
-  //   else if (value !== 0) {
-  //     this.continualAdders[action] = ({ delta }) => {
-  //       // @ts-ignore
-  //       this.state[action] += delta * kbAmount;
-  //     };
-  //     gameRuntime.tracked.core.cachedValue.onAnimate.getEveryChange(this.continualAdders[action]);
-  //   }
-  //   else {
-  //     gameRuntime.tracked.core.cachedValue.onAnimate.removeGetEveryChangeListener(this.continualAdders[action]);
-  //   }
-  // }
+    if (control.repurposeThreshold) {
+      const info = control.repurposeThreshold;
+      if (Math.sign(value) === Math.sign(info.threshold)) {
+        if (Math.abs(value) >= Math.abs(info.threshold)) {
+          this.handlePulse({ action: info.remapToPulse, value: 1 });
+          this.state[action] = info.ghostValue;
+          this.activeState[action] = 0;
+          return;
+        }
+        else {
+          this.handlePulse({ action: info.remapToPulse, value: 0 });
+        }
+      }
+    }
+
+    // The slider should overwrite active values as the slider gives an
+    // absolute value. This makes mode implementations easier. Note that this
+    // does not disallow the user from using a stick and a slider for the same
+    // control at the same time.
+    this.activeState[action] = 0;
+    // If the value is very close to 0, then we're at that annoying point where
+    // the player wants a zero but can't quite get it. Just set to 0.
+    if (Math.abs(value) < SLIDER_EPSILON) {
+      this.state[action] = 0;
+    }
+    else {
+      this.state[action] = value;
+    }
+  }
 
   // Pulse once if the button is down. We don't pulse on release. Doesn't pulse
   // if receiving two subsequent non-zero values without first getting a zero.
@@ -502,7 +462,7 @@ export default class ModeController {
       // console.log(`-> ignoring bad value ${value} < ${ANALOG_BUTTON_THRESHOLD}`);
       return;
     }
-    else {
+    else if (this.pulse[action].cachedValue !== 0) {
       // console.log('[input-agnostic pulse] -- RESET --', { action, value });
       this.pulse[action].setSilent(0);
     }

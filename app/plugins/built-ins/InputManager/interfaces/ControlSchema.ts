@@ -32,6 +32,23 @@ interface ControlSchema {
     // bind the other half to a different control.
     disallowSign?: -1 | 1 | 0;
 
+    // A remaps the action to something else if a threshold is met. This is
+    // useful, for example, when a device (such as a Warthog flight stick) is
+    // physically modded to support an afterburner. Beyond the specified
+    // threshold, a new action is triggered.
+    // This is currently only supported but slider types, and the remap target
+    // should always be a pulse.
+    repurposeThreshold?: {
+      // The point at which the remap is triggered.
+      threshold: number,
+      // The action to remap to.
+      remapToPulse: string,
+      // The value the old action should be set to while the input is reserved
+      // by the new action (-1 makes the most sense when remapping to something
+      // like an afterburner or sprinting action).
+      ghostValue: number,
+    },
+
     // If true, only the mouse and analog sticks are allowed to interface with
     // control.
     isBidirectional?: boolean,
