@@ -5,6 +5,7 @@ import { locationPlugin } from './built-ins/Location';
 import { navigationPlugin } from './built-ins/Navigation';
 import { levelScenePlugin } from './built-ins/LevelScene';
 import { spaceScenePlugin } from './built-ins/SpaceScene';
+import { hud3DPlugin } from './built-ins/ui/Hud3D';
 import { corePlugin } from './built-ins/Core';
 import { mouseDriverPlugin } from './built-ins/MouseDriver';
 import { inputManagerPlugin } from './built-ins/InputManager';
@@ -34,6 +35,9 @@ const builtInPluginsEnabled: PluginEntry[] = [
   { name: 'navigation', pluginInstance: navigationPlugin, dependencies: [ 'core', 'location' ] },
   { name: 'levelScene', pluginInstance: levelScenePlugin, dependencies: [ 'core', 'nodeOps', 'location', 'player' ], optional: [ 'shipModuleHub' ] },
   { name: 'spaceScene', pluginInstance: spaceScenePlugin, dependencies: [ 'core', 'location' ] },
+
+  // HUD and control visuals
+  { name: 'hud3d', pluginInstance: hud3DPlugin, dependencies: [ 'nodeOps', 'spaceScene', 'player' ] },
 
   // Input
   { name: 'mouseDriver', pluginInstance: mouseDriverPlugin, dependencies: [ 'core' ] },
