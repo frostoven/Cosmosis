@@ -18,6 +18,10 @@ const prodPath = 'prodHqAssets';
 const cachedPaths = {};
 
 const assetDefaults = {
+  hudModel: {
+    dir: 'hudModel',
+    extensions: [ 'glb', 'gltf' ],
+  },
   icons: {
     dir: 'icons',
     extensions: [ 'jpg', 'png', 'gif' ],
@@ -118,6 +122,10 @@ AssetFinder.prototype.getRes = function getRes(name, options={}, callback) {
       }
     }
   });
+};
+
+AssetFinder.prototype.getHudModel = function getHudModel({ name, options={}, callback=()=>{} }) {
+  this.getRes(name, { ...assetDefaults.hudModel, ...options }, callback);
 };
 
 AssetFinder.prototype.getIcon = function getIcon({ name, options={}, callback=()=>{} }) {
