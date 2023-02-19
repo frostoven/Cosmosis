@@ -13,6 +13,7 @@ import { gameRuntime } from '../../../../gameRuntime';
 import { CoreType } from '../../../Core';
 import { InputManager } from '../../../InputManager';
 import { applyPolarRotation, clamp } from '../../../../../local/mathUtils';
+import { initShipPilotUi } from './ui';
 
 // TODO: move me into user profile.
 const MOUSE_SPEED = 0.7;
@@ -52,6 +53,7 @@ class ShipPilot extends ModeController {
 
     this._setupWatchers();
     this._setupPulseListeners();
+    initShipPilotUi(this);
   }
 
   _setupWatchers() {
