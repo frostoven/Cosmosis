@@ -13,7 +13,9 @@ import { gameRuntime } from '../../../../gameRuntime';
 import { CoreType } from '../../../Core';
 import { InputManager } from '../../../InputManager';
 import { applyPolarRotation, clamp } from '../../../../../local/mathUtils';
-import { initShipPilotUi } from './ui';
+import ShipPilotUi3D from './ShipPilotUi3D';
+import PluginCacheTracker from '../../../../../emitters/PluginCacheTracker';
+import Player from '../../../Player';
 
 // TODO: move me into user profile.
 const MOUSE_SPEED = 0.7;
@@ -23,43 +25,39 @@ const headXMax = 2200;
 // Maximum number y-look can be at.
 const headYMax = 1150;
 
-class ShipPilot extends ModeController {
-  private _cachedCore: CoreType;
-  // @ts-ignore
-  private _cachedCamera: Camera;
-  private _cachedInputManager: InputManager;
+type PluginCompletion = PluginCacheTracker & {
+  player: Player, camera: Camera, inputManager: InputManager,
+};
 
+class ShipPilot extends ModeController {
   private _actualThrottle: number;
   private _requestedThrottle: number;
+  private _ui3d: ShipPilotUi3D;
+  private _pluginCache: PluginCompletion;
 
   constructor() {
     super('shipPilot', ModeId.playerControl, shipPilotControls);
-    this._cachedCore = gameRuntime.tracked.core.cachedValue;
-    this._cachedInputManager = gameRuntime.tracked.inputManager.cachedValue;
+
+    // @ts-ignore - better contextual completion.
+    this._pluginCache = new PluginCacheTracker(
+      [ 'player', 'core', 'inputManager' ],
+      { player: { camera: 'camera' } },
+    );
 
     // This controller activates itself by default:
-    this._cachedInputManager.activateController(ModeId.playerControl, this.name);
+    this._pluginCache.inputManager.activateController(ModeId.playerControl, this.name);
 
     // This controller activates itself by default:
-    this._cachedInputManager = gameRuntime.tracked.inputManager.cachedValue;
-    // this._cachedInputManager.activateController(ModeId.playerControl, this.name);
+    this._pluginCache.inputManager = gameRuntime.tracked.inputManager.cachedValue;
+    // this._pluginCache.inputManager.activateController(ModeId.playerControl, this.name);
 
     this._actualThrottle = 0;
     this._requestedThrottle = 0;
 
-    gameRuntime.tracked.player.getOnce((player) => {
-      this._cachedCamera = player.camera;
-    });
-
-    this._setupWatchers();
     this._setupPulseListeners();
-    initShipPilotUi(this);
-  }
 
-  _setupWatchers() {
-    gameRuntime.tracked.player.getEveryChange((player) => {
-      this._cachedCamera = player.camera;
-    });
+    this._ui3d = new ShipPilotUi3D();
+    this._ui3d.init(this);
   }
 
   _setupPulseListeners() {
@@ -68,7 +66,7 @@ class ShipPilot extends ModeController {
       this.resetLookState();
     });
     this.pulse._devChangeCamMode.getEveryChange(() => {
-      this._cachedInputManager.activateController(ModeId.playerControl, 'freeCam');
+      this._pluginCache.inputManager.activateController(ModeId.playerControl, 'freeCam');
     });
   }
 
@@ -155,7 +153,7 @@ class ShipPilot extends ModeController {
   // Sets the neck rotational position. This tries to work the same way a human
   // neck would, excluding tilting.
   setNeckPosition(x, y) {
-    if (!this._cachedCamera) {
+    if (!this._pluginCache.allPluginsLoaded) {
       return;
     }
 
@@ -167,7 +165,7 @@ class ShipPilot extends ModeController {
     applyPolarRotation(
       x * MOUSE_SPEED,
       y * MOUSE_SPEED,
-      this._cachedCamera.quaternion,
+      this._pluginCache.camera.quaternion,
     );
   }
 
