@@ -47,6 +47,10 @@ function signRelativeMax(amount, max) {
 //   }
 // }
 
+function lerp(min, max, percentage) {
+  return min + percentage * (max - min);
+}
+
 function lerpToZero(number, stepAmount) {
   if (number < 0) {
     if (number + stepAmount > 0) {
@@ -106,6 +110,7 @@ export {
   getQuatAxis,
   getQuatAngle,
   signRelativeMax,
+  lerp,
   lerpToZero,
   easeIntoExp,
   clamp,
