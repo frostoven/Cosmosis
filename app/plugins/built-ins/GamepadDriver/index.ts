@@ -134,6 +134,11 @@ class GamepadDriver {
       }
     }
     this._allNull = true;
+    // TODO: consider adding hooks in the application that reset certain states
+    //  (such as thrust) if a controller is unplugged. The reason here being
+    //  that a slider, for example, sets different state to a keyboard, meaning
+    //  that stale state will remain from the slider until something else
+    //  explicitly resets its state.
     console.log('[GamepadDriver] Nothing else connected; stopping all processing.');
   }
 

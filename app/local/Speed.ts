@@ -10,7 +10,12 @@ export default class Speed {
     this.currentSpeed = speedKmh / SPEED_UNIT;
   };
 
+  // TODO: post-refactor to plugin structure, this value no longer seems to be
+  //  correct. Investigate before using in real code.
   getSpeedKmh() {
+    console.warn(
+      'This function currently returns wrong values. Don\'t use just yet.'
+    );
     return this.currentSpeed * SPEED_UNIT;
   }
 

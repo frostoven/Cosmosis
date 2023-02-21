@@ -17,6 +17,9 @@ enum InputType {
   mouseAxisGravity,
   // Range from -1 to 1.
   mouseAxisThreshold,
+  // Analog devices that stay in place after moving them (eg. the throttle
+  // control on a HOTAS box).
+  analogSlider,
 }
 
 type InputTypeKeys = keyof typeof InputType;

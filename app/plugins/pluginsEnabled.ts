@@ -5,6 +5,7 @@ import { locationPlugin } from './built-ins/Location';
 import { navigationPlugin } from './built-ins/Navigation';
 import { levelScenePlugin } from './built-ins/LevelScene';
 import { spaceScenePlugin } from './built-ins/SpaceScene';
+import { hud3DPlugin } from './built-ins/ui/Hud3D';
 import { corePlugin } from './built-ins/Core';
 import { mouseDriverPlugin } from './built-ins/MouseDriver';
 import { inputManagerPlugin } from './built-ins/InputManager';
@@ -21,6 +22,7 @@ import { externalLightsModulePlugin } from './built-ins/shipModules/ExternalLigh
 import { propulsionManagerModulePlugin } from './built-ins/shipModules/PropulsionManager';
 import { warpDriveModulePlugin } from './built-ins/shipModules/WarpDrive';
 import { gamepadDriverPlugin } from './built-ins/GamepadDriver';
+import { visorHudModulePlugin } from './built-ins/shipModules/VisorHud';
 
 const builtInPluginsEnabled: PluginEntry[] = [
   // General
@@ -34,6 +36,9 @@ const builtInPluginsEnabled: PluginEntry[] = [
   { name: 'navigation', pluginInstance: navigationPlugin, dependencies: [ 'core', 'location' ] },
   { name: 'levelScene', pluginInstance: levelScenePlugin, dependencies: [ 'core', 'nodeOps', 'location', 'player' ], optional: [ 'shipModuleHub' ] },
   { name: 'spaceScene', pluginInstance: spaceScenePlugin, dependencies: [ 'core', 'location' ] },
+
+  // HUD and control visuals
+  { name: 'hud3d', pluginInstance: hud3DPlugin, dependencies: [ 'nodeOps', 'spaceScene', 'player' ] },
 
   // Input
   { name: 'mouseDriver', pluginInstance: mouseDriverPlugin, dependencies: [ 'core' ] },
@@ -56,6 +61,7 @@ const builtInPluginsEnabled: PluginEntry[] = [
   { name: 'generatorModule', pluginInstance: generatorModulePlugin },
 
   // Low power modules
+  { name: 'visorHudModule', pluginInstance: visorHudModulePlugin, dependencies: [ 'shipPilot', 'nodeOps' ] },
   { name: 'cockpitLightsModule', pluginInstance: cockpitLightsModulePlugin, dependencies: [ 'shipPilot', 'nodeOps' ] },
   { name: 'externalLightsModule', pluginInstance: externalLightsModulePlugin, dependencies: [ 'shipPilot', 'nodeOps', 'cockpitLightsModule' ] },
   { name: 'multimeterModule', pluginInstance: multimeterModulePlugin },

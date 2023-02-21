@@ -6,7 +6,6 @@ enum ControllerType {
   racingWheel,
 }
 
-
 function guessControllerType(id) {
   // Useful lookup links:
   // https://devicehunt.com/search/type/usb/vendor/044F/device/any

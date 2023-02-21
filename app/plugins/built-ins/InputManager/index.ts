@@ -7,18 +7,6 @@ import ModeController from './types/ModeController';
 import { CoreType } from '../Core';
 
 /*
- * TODO:
- *  Implement mouse and analog sensitivity in this class. The objective should
- *  be a system where any input is between 0 and 1.
- *   * For keyboard, pressed = 1 and depressed = 0. Where we're simulating an
- *     analog system, we can use
- *   * For mouse, we need a mouse speed multiplier (eg. 0.07) that allows
- *     something like analogThreshold to translate that to a 0-1. For something
- *     that allows continuous changes (such as looking around), analogAdditive
- *     can be used
- */
-
-/*
  * Mechanism:
  * Controllers register themselves. The registration puts them inside a mode.
  * (Note that freeCam and shipPilot are two controllers in a single mode:
@@ -255,18 +243,6 @@ class InputManager {
 
     let xKey = 'spEastWest'; // x > prevX ? 'spEast' : 'spWest';
     let yKey = 'spNorthSouth'; // y > prevY ? 'spSouth' : 'spNorth';
-
-    // let xKey, yKey;
-    //
-    // // Check x changes.
-    // if (x > prevX) {xKey = 'spEast';}
-    // else if (x < prevX) {xKey = 'spWest';}
-    // else {xKey = null;}
-    //
-    // // Check y changes.
-    // if (y > prevY) {yKey = 'spSouth';}
-    // else if (y < prevY) {yKey = 'spNorth';}
-    // else {yKey = null;}
 
     // Below: sp means 'special'. Or 'somewhat promiscuous'. Whatever. Used to
     // indicate the 'key' is non-standard.

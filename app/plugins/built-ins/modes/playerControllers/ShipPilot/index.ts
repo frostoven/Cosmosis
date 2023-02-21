@@ -5,14 +5,16 @@
 // that means.
 
 import { Camera } from 'three';
+import Core from '../../../Core';
 import CosmosisPlugin from '../../../../types/CosmosisPlugin';
 import ModeController from '../../../InputManager/types/ModeController';
 import { shipPilotControls } from './controls';
 import { ModeId } from '../../../InputManager/types/ModeId';
 import { gameRuntime } from '../../../../gameRuntime';
-import { CoreType } from '../../../Core';
 import { InputManager } from '../../../InputManager';
-import { applyPolarRotation, lerpToZero, signRelativeMax } from '../../../../../local/mathUtils';
+import { applyPolarRotation, chaseValue, clamp } from '../../../../../local/mathUtils';
+import PluginCacheTracker from '../../../../../emitters/PluginCacheTracker';
+import Player from '../../../Player';
 
 // TODO: move me into user profile.
 const MOUSE_SPEED = 0.7;
@@ -22,36 +24,35 @@ const headXMax = 2200;
 // Maximum number y-look can be at.
 const headYMax = 1150;
 
+type PluginCompletion = PluginCacheTracker & {
+  player: Player, camera: Camera, inputManager: InputManager,
+};
+
 class ShipPilot extends ModeController {
-  private _cachedCore: CoreType;
-  // @ts-ignore
-  private _cachedCamera: Camera;
-  private _cachedInputManager: InputManager;
+  private _prettyPosition: number;
+  private _throttlePosition: number;
+  private _pluginCache: PluginCompletion;
 
   constructor() {
     super('shipPilot', ModeId.playerControl, shipPilotControls);
-    this._cachedCore = gameRuntime.tracked.core.cachedValue;
-    this._cachedInputManager = gameRuntime.tracked.inputManager.cachedValue;
+
+    // @ts-ignore - better contextual completion.
+    this._pluginCache = new PluginCacheTracker(
+      [ 'player', 'core', 'inputManager' ],
+      { player: { camera: 'camera' } },
+    );
 
     // This controller activates itself by default:
-    this._cachedInputManager.activateController(ModeId.playerControl, this.name);
+    this._pluginCache.inputManager.activateController(ModeId.playerControl, this.name);
 
     // This controller activates itself by default:
-    this._cachedInputManager = gameRuntime.tracked.inputManager.cachedValue;
-    // this._cachedInputManager.activateController(ModeId.playerControl, this.name);
+    this._pluginCache.inputManager = gameRuntime.tracked.inputManager.cachedValue;
+    // this._pluginCache.inputManager.activateController(ModeId.playerControl, this.name);
 
-    gameRuntime.tracked.player.getOnce((player) => {
-      this._cachedCamera = player.camera;
-    });
+    this._prettyPosition = 0;
+    this._throttlePosition = 0;
 
-    this._setupWatchers();
     this._setupPulseListeners();
-  }
-
-  _setupWatchers() {
-    gameRuntime.tracked.player.getEveryChange((player) => {
-      this._cachedCamera = player.camera;
-    });
   }
 
   _setupPulseListeners() {
@@ -59,10 +60,33 @@ class ShipPilot extends ModeController {
       this.state.mouseHeadLook = Number(!this.state.mouseHeadLook);
       this.resetLookState();
     });
+
     this.pulse._devChangeCamMode.getEveryChange(() => {
-      this._cachedInputManager.activateController(ModeId.playerControl, 'freeCam');
+      this._pluginCache.inputManager.activateController(ModeId.playerControl, 'freeCam');
     });
   }
+
+  // --- Getters and setters ----------------------------------------------- //
+
+  get prettyThrottle() {
+    return this._prettyPosition;
+  }
+
+  set prettyThrottle(value) {
+    throw '[ShipPilot] actualThrottle is read-only and can only be set by ' +
+    'internal means. Set throttlePosition instead.';
+  }
+
+  get throttlePosition() {
+    return this._throttlePosition;
+  }
+
+  set throttlePosition(value) {
+    this.state.thrustIncDec = clamp(value, -1, 1);
+    this.activeState.thrustIncDec = 0;
+  }
+
+  // ----------------------------------------------------------------------- //
 
   onActivateController() {
     gameRuntime.tracked.levelScene.getOnce((levelScene) => {
@@ -125,7 +149,7 @@ class ShipPilot extends ModeController {
   // Sets the neck rotational position. This tries to work the same way a human
   // neck would, excluding tilting.
   setNeckPosition(x, y) {
-    if (!this._cachedCamera) {
+    if (!this._pluginCache.allPluginsLoaded) {
       return;
     }
 
@@ -137,7 +161,7 @@ class ShipPilot extends ModeController {
     applyPolarRotation(
       x * MOUSE_SPEED,
       y * MOUSE_SPEED,
-      this._cachedCamera.quaternion,
+      this._pluginCache.camera.quaternion,
     );
   }
 
@@ -170,20 +194,31 @@ class ShipPilot extends ModeController {
     this.setNeckPosition(x, y);
   }
 
-  step(delta) {
-    // TODO: instead of an if-then statement that resets positions, look for a
-    //  more elegant way of dealing with this. This becomes particularly
-    //  important if the user wants to use two different devices for looking
-    //  around and aiming. Maybe a checkbox in configs at least?
-    if (!this.state.mouseHeadLook) {
-      this.resetNeckAxesInput();
-      this.stepAim(delta);
-    }
-    else {
-      this.resetPrincipleAxesInput();
-      this.stepFreeLook();
-    }
+  processShipControls(delta, bigDelta) {
+    this._throttlePosition = clamp(this.state.thrustIncDec + this.activeState.thrustIncDec, -1, 1);
+    // The pretty position is a way of making very sudden changes (like with a
+    // keyboard button press) look a bit more natural by gradually going to
+    // where it needs to, but does not reduce actual throttle position.
+    this._prettyPosition = chaseValue(delta * 25, this._prettyPosition, this._throttlePosition);
+
+    Core.unifiedView.throttlePosition = this._throttlePosition;
+    Core.unifiedView.throttlePrettyPosition = this._prettyPosition;
   }
+
+  step(delta, bigDelta) {
+    this.processShipControls(delta, bigDelta);
+  }
+
+  // step(delta) {
+  //   if (!this.state.mouseHeadLook) {
+  //     this.resetNeckAxesInput();
+  //     this.stepAim(delta);
+  //   }
+  //   else {
+  //     this.resetPrincipleAxesInput();
+  //     this.stepFreeLook();
+  //   }
+  // }
 }
 
 const shipPilotPlugin = new CosmosisPlugin('shipPilot', ShipPilot);

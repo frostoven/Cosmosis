@@ -47,6 +47,10 @@ function signRelativeMax(amount, max) {
 //   }
 // }
 
+function lerp(min, max, percentage) {
+  return min + percentage * (max - min);
+}
+
 function lerpToZero(number, stepAmount) {
   if (number < 0) {
     if (number + stepAmount > 0) {
@@ -76,6 +80,28 @@ function clamp(n, min, max) {
   return Math.min(Math.max(n, min), max);
 }
 
+// Moves toward a target value at a set speed.
+function chaseValue(stepSize, current: number, target: number) {
+  if (current === target) {
+    return target;
+  }
+
+  if (current < target) {
+    current += stepSize;
+    if (current > target) {
+      return target;
+    }
+  }
+  else {
+    current -= stepSize;
+    if (current < target) {
+      return target;
+    }
+  }
+
+  return current;
+}
+
 export {
   xAxis,
   yAxis,
@@ -84,7 +110,9 @@ export {
   getQuatAxis,
   getQuatAngle,
   signRelativeMax,
+  lerp,
   lerpToZero,
   easeIntoExp,
   clamp,
+  chaseValue,
 }
