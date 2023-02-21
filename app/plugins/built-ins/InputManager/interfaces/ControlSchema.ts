@@ -32,11 +32,11 @@ interface ControlSchema {
     // bind the other half to a different control.
     disallowSign?: -1 | 1 | 0;
 
-    // A remaps the action to something else if a threshold is met. This is
-    // useful, for example, when a device (such as a Warthog flight stick) is
+    // Remaps the action to something else if a threshold is met. This is
+    // useful, for example, when a device (such as a Warthog throttle) is
     // physically modded to support an afterburner. Beyond the specified
     // threshold, a new action is triggered.
-    // This is currently only supported but slider types, and the remap target
+    // This is currently only supported by slider types, and the remap target
     // should always be a pulse.
     repurposeThreshold?: {
       // The point at which the remap is triggered.

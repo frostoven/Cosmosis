@@ -3,7 +3,7 @@ import { gameRuntime } from '../plugins/gameRuntime';
 import ChangeTracker from 'change-tracker/src';
 
 /**
- * Caches plugin changes. Please don't track changes this way if they change
+ * Caches plugin changes. Please avoid tracking changes this way if they change
  * each frame.
  *
  * Example 1:

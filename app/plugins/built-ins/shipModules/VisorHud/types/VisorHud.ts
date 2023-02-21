@@ -7,7 +7,6 @@ import HudPage from '../../../ui/Hud3D/types/HudPage';
 import { gameRuntime } from '../../../../gameRuntime';
 import { Hud3D } from '../../../ui/Hud3D';
 import Core from '../../../Core';
-import ChangeTracker from 'change-tracker/src';
 
 export default class VisorHud extends ShipModule {
   readonly friendlyName: string;
@@ -75,10 +74,3 @@ export default class VisorHud extends ShipModule {
     this.throttle.setProgress(-Core.unifiedView.throttlePrettyPosition);
   }
 }
-
-/*
-
-
-
-
- */

@@ -21,7 +21,7 @@ class Hud3D {
     this._activeHudScene = null;
   }
 
-  // This in theory work with both holographic projection screens and the
+  // This can in theory work with both holographic projection screens and the
   // player's visor, though it's only been tested with the player's visor. We
   // can probably implement some mesh codes that request things by page name.
   setScreenPage(page: HudPage, targetParent: Object3D) {

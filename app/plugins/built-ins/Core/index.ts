@@ -28,7 +28,7 @@ export default class Core {
    * explicitly hook into dependencies. For example, this allows the user to
    * manually hook custom values into custom UIs without writing any code.
    *
-   * This object is currently used internally by the visor hud to read ship
+   * This object is currently used internally by the visor HUD to read ship
    * stats such as throttle, walking speed, etc.
    */
   static unifiedView: { [key: string]: any } = {

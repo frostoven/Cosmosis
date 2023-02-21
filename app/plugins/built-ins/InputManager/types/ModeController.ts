@@ -435,6 +435,7 @@ export default class ModeController {
     // does not disallow the user from using a stick and a slider for the same
     // control at the same time.
     this.activeState[action] = 0;
+
     // If the value is very close to 0, then we're at that annoying point where
     // the player wants a zero but can't quite get it. Just set to 0.
     if (Math.abs(value) < SLIDER_EPSILON) {
