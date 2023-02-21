@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import { gameRuntime } from '../plugins/gameRuntime';
+import ChangeTracker from 'change-tracker/src';
 
 /**
  * Caches plugin changes. Please don't track changes this way if they change
@@ -32,6 +33,7 @@ export default class PluginCacheTracker {
   // dynamically assignable at runtime to this class.
   [key: string]: any;
 
+  public readonly onAllPluginsLoaded: ChangeTracker;
   private pluginsLoaded: number;
   private readonly pluginCount: number;
   private readonly _function: {};
@@ -40,6 +42,7 @@ export default class PluginCacheTracker {
   constructor(pluginsToTrack: Array<string>, shallowTracking: {} = {}) {
     this.pluginsLoaded = 0;
     this.pluginCount = pluginsToTrack.length;
+    this.onAllPluginsLoaded = new ChangeTracker();
 
     this._function = {};
     this._shallowTracking = shallowTracking;
@@ -67,6 +70,10 @@ export default class PluginCacheTracker {
       // plugins to load.
       gameRuntime.tracked[name].getOnce(() => {
         this.pluginsLoaded++;
+
+        if (this.pluginsLoaded === this.pluginCount) {
+          this.onAllPluginsLoaded.setValue(this.pluginCount);
+        }
       });
     }
   }
