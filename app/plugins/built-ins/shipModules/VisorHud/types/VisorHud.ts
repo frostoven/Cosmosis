@@ -39,10 +39,12 @@ export default class VisorHud extends ShipModule {
 
   _setupUi() {
     this.throttle = new HudItem({
-      model: 'throttle',
+      model: 'throttleStandard',
       align: HudAlign.right,
       offsetY: 0.001,
-      xRotation: 0.01
+      xRotation: 0.01,
+      scale: 1.1,
+      flipOnNegativeProgress: true,
     });
 
     const page = new HudPage('visorHud', [ this.throttle ]);

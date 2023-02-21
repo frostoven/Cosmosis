@@ -10,6 +10,7 @@ export default class HudItem {
     model: 'ndcTester',
     align: HudAlign.center,
     scale: 1,
+    flipOnNegativeProgress: false,
   };
 
   public align: OmitThisParameter<() => void>;
@@ -22,6 +23,7 @@ export default class HudItem {
   private _parent: Scene;
   private _modelFileName: string;
   private scale: number;
+  private flipOnNegativeProgress: boolean;
 
   constructor(options) {
     this.align = () => {};
@@ -35,6 +37,7 @@ export default class HudItem {
     // @ts-ignore
     this.animationSlider = null;
     this.onMeshLoaded = new ChangeTracker();
+    this.flipOnNegativeProgress = false;
 
     this.changeOptions(options);
   }
@@ -44,6 +47,7 @@ export default class HudItem {
     options.model && (this._modelFileName = options.model);
     options.align && (this.setAlignment(options.align));
     options.scale && (this.scale = options.scale);
+    options.flipOnNegativeProgress && (this.flipOnNegativeProgress = options.flipOnNegativeProgress);
   }
 
   init(parent) {
@@ -87,7 +91,17 @@ export default class HudItem {
   }
 
   setProgress(percentage) {
-    this.animationSlider.seek(percentage);
+    if (this.flipOnNegativeProgress) {
+      if (percentage < 0) {
+        // @ts-ignore
+        this.scene.rotation.x = Math.PI;
+      }
+      else {
+        // @ts-ignore
+        this.scene.rotation.x = 0;
+      }
+    }
+    this.animationSlider.seek(Math.abs(percentage));
   }
 
   fitRight() {
