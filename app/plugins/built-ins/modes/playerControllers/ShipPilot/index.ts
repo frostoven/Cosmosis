@@ -5,15 +5,14 @@
 // that means.
 
 import { Camera } from 'three';
+import Core from '../../../Core';
 import CosmosisPlugin from '../../../../types/CosmosisPlugin';
 import ModeController from '../../../InputManager/types/ModeController';
 import { shipPilotControls } from './controls';
 import { ModeId } from '../../../InputManager/types/ModeId';
 import { gameRuntime } from '../../../../gameRuntime';
-import { CoreType } from '../../../Core';
 import { InputManager } from '../../../InputManager';
-import { applyPolarRotation, clamp } from '../../../../../local/mathUtils';
-import ShipPilotUi3D from './ShipPilotUi3D';
+import { applyPolarRotation, chaseValue, clamp } from '../../../../../local/mathUtils';
 import PluginCacheTracker from '../../../../../emitters/PluginCacheTracker';
 import Player from '../../../Player';
 
@@ -30,9 +29,8 @@ type PluginCompletion = PluginCacheTracker & {
 };
 
 class ShipPilot extends ModeController {
-  private _actualThrottle: number;
-  private _requestedThrottle: number;
-  private _ui3d: ShipPilotUi3D;
+  private _prettyPosition: number;
+  private _throttlePosition: number;
   private _pluginCache: PluginCompletion;
 
   constructor() {
@@ -51,13 +49,10 @@ class ShipPilot extends ModeController {
     this._pluginCache.inputManager = gameRuntime.tracked.inputManager.cachedValue;
     // this._pluginCache.inputManager.activateController(ModeId.playerControl, this.name);
 
-    this._actualThrottle = 0;
-    this._requestedThrottle = 0;
+    this._prettyPosition = 0;
+    this._throttlePosition = 0;
 
     this._setupPulseListeners();
-
-    this._ui3d = new ShipPilotUi3D();
-    this._ui3d.init(this);
   }
 
   _setupPulseListeners() {
@@ -65,6 +60,7 @@ class ShipPilot extends ModeController {
       this.state.mouseHeadLook = Number(!this.state.mouseHeadLook);
       this.resetLookState();
     });
+
     this.pulse._devChangeCamMode.getEveryChange(() => {
       this._pluginCache.inputManager.activateController(ModeId.playerControl, 'freeCam');
     });
@@ -72,20 +68,20 @@ class ShipPilot extends ModeController {
 
   // --- Getters and setters ----------------------------------------------- //
 
-  get actualThrottle() {
-    return this._actualThrottle;
+  get prettyThrottle() {
+    return this._prettyPosition;
   }
 
-  set actualThrottle(value) {
+  set prettyThrottle(value) {
     throw '[ShipPilot] actualThrottle is read-only and can only be set by ' +
-    'internal means. Set requestedThrottle instead.';
+    'internal means. Set throttlePosition instead.';
   }
 
-  get requestedThrottle() {
-    return this._requestedThrottle;
+  get throttlePosition() {
+    return this._throttlePosition;
   }
 
-  set requestedThrottle(value) {
+  set throttlePosition(value) {
     this.state.thrustIncDec = clamp(value, -1, 1);
     this.activeState.thrustIncDec = 0;
   }
@@ -199,10 +195,14 @@ class ShipPilot extends ModeController {
   }
 
   processShipControls(delta, bigDelta) {
-    // this._requestedThrottle = clamp(this.state.thrustIncDec + this.activeState.thrustIncDec, -1, 1);
-    // this._actualThrottle = this.chaseValue(bigDelta, this._actualThrottle, this._requestedThrottle);
-    //
-    // console.log({ actualThrottle: this._actualThrottle });
+    this._throttlePosition = clamp(this.state.thrustIncDec + this.activeState.thrustIncDec, -1, 1);
+    // The pretty position is a way of making very sudden changes (like with a
+    // keyboard button press) look a bit more natural by gradually going to
+    // where it needs to, but does not reduce actual throttle position.
+    this._prettyPosition = chaseValue(delta * 25, this._prettyPosition, this._throttlePosition);
+
+    Core.unifiedView.throttlePosition = this._throttlePosition;
+    Core.unifiedView.throttlePrettyPosition = this._prettyPosition;
   }
 
   step(delta, bigDelta) {

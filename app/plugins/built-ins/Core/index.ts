@@ -13,6 +13,28 @@ import Stats from '../../../../hackedlibs/stats/stats.module';
 const animationData = { delta: 0, bigDelta: 0 };
 
 export default class Core {
+  /**
+   * The unified view is meant as a friendly place that all modules may report
+   * their significant values. For example, ship speed is ship speed regardless
+   * of what manages it, so whatever manages it may choose to store is here as
+   * shipSpeed. Note that these values should not be altered by code that don't
+   * own those values, as they are ignored by the actual owners. For example,
+   * setting ship speed to something else won't change the physical systems
+   * governing ship speed - the value here is effectively read-only, but
+   * updated each frame. That why it's called the unified "view" - it's just a
+   * high-level view into game state.
+   *
+   * The reason this object exists is for easy stat lookups without needing to
+   * explicitly hook into dependencies. For example, this allows the user to
+   * manually hook custom values into custom UIs without writing any code.
+   *
+   * This object is currently used internally by the visor hud to read ship
+   * stats such as throttle, walking speed, etc.
+   */
+  static unifiedView: { [key: string]: any } = {
+    gameClock: 0,
+  };
+
   public onPreAnimate: ChangeTracker;
   public onAnimate: ChangeTracker;
   public onAnimateDone: ChangeTracker;
@@ -88,6 +110,7 @@ export default class Core {
     // The animationData object is sent to all per-frame functions each frame.
     animationData.delta = delta;
     animationData.bigDelta = bigDelta;
+    Core.unifiedView.gameClock += delta;
 
     // TODO: check if level logic needs to go before rendering, or if it's ok
     // to place in onAnimate.
@@ -124,6 +147,10 @@ export default class Core {
 
 const corePlugin = new CosmosisPlugin('core', Core);
 interface CoreType extends Core{}
+
+// Debugging:
+// @ts-ignore
+window.$unifiedView = Core.unifiedView;
 
 export {
   corePlugin,

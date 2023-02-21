@@ -40,6 +40,8 @@ interface ControlSchema {
     // should always be a pulse.
     repurposeThreshold?: {
       // The point at which the remap is triggered.
+      // Dev note: the natural stopping point for the Thrustmaster Warthog is
+      // -0.3599463105201721.
       threshold: number,
       // The action to remap to.
       remapToPulse: string,

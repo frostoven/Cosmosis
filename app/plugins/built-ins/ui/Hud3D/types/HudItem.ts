@@ -1,7 +1,9 @@
-import { MeshBasicMaterial, Scene } from 'three';
+import { Mesh, MeshBasicMaterial, Scene } from 'three';
 import { HudAlign } from './HudAlign';
 import MeshLoader from '../../../NodeOps/types/MeshLoader';
 import { gameRuntime } from '../../../../gameRuntime';
+import ChangeTracker from 'change-tracker/src';
+import AnimationSlider from '../../../../../local/AnimationSlider';
 
 export default class HudItem {
   static defaultOptions = {
@@ -13,6 +15,10 @@ export default class HudItem {
   public align: OmitThisParameter<() => void>;
 
   public scene: Scene | null;
+  public mesh: Mesh | null;
+  public onMeshLoaded: ChangeTracker;
+  public animationSlider: AnimationSlider;
+
   private _parent: Scene;
   private _modelFileName: string;
   private scale: number;
@@ -23,8 +29,12 @@ export default class HudItem {
     this.scale = 1;
 
     this.scene = null;
+    this.mesh = null;
     this._parent = new Scene();
     this._modelFileName = '';
+    // @ts-ignore
+    this.animationSlider = null;
+    this.onMeshLoaded = new ChangeTracker();
 
     this.changeOptions(options);
   }
@@ -41,7 +51,6 @@ export default class HudItem {
 
     let aspect = window.innerWidth / window.innerHeight;
     aspect > 1 ? aspect = 1 / aspect : null;
-    console.log('--> res:', window.innerWidth, window.innerHeight, ':', aspect);
 
     const options = { ...MeshLoader.defaultNodeOpts };
     options.materialOverrideCallback = (node) => {
@@ -56,18 +65,29 @@ export default class HudItem {
     // const loader = new MeshLoader('getHudModel', 'ndcTester', options);
     const loader = new MeshLoader('getHudModel', this._modelFileName, options);
     loader.trackedMesh.getOnce(({ gltf }) => {
+      this.mesh = gltf;
       this.scene = gltf.scene;
-      console.log('---> hud gltf mesh:', gltf.scene.scale);
-
       gameRuntime.tracked.player.getOnce(({ camera }) => {
         camera.add(gltf.scene);
+        // Place hud item 0.05cm away from the player's face (or projector
+        // screen, if that's the target).
         gltf.scene.translateZ(-0.05);
-
         this.align();
+        this._setupAnimation();
 
         window.addEventListener('resize', this.align);
+
+        this.onMeshLoaded.setValue(true);
       });
     });
+  }
+
+  _setupAnimation() {
+    this.animationSlider = new AnimationSlider(this.mesh);
+  }
+
+  setProgress(percentage) {
+    this.animationSlider.seek(percentage);
   }
 
   fitRight() {

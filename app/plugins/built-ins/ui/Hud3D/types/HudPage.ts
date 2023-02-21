@@ -16,8 +16,6 @@ export default class HudPage {
     for (let i = 0, len = this.children.length; i < len; i++) {
       const item: HudItem = this.children[i];
       item.init(parent);
-      // Note: if the scene already contains the item, nothing happens.
-      this.scene.add(item.scene);
     }
   }
 }

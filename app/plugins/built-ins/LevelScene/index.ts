@@ -26,6 +26,7 @@ import WarpDrive from '../shipModules/WarpDrive/types/WarpDrive';
 import PropulsionManager
   from '../shipModules/PropulsionManager/types/PropulsionManager';
 import { Location } from '../Location';
+import VisorHud from '../shipModules/VisorHud/types/VisorHud';
 
 
 // TODO:
@@ -192,6 +193,7 @@ class LevelScene extends Scene {
 
       const electricalHousing: ElectricalHousing = hub.acquirePart({ name: 'electricalHousing', inventory });
       const generator: Generator = hub.acquirePart({ name: 'generator', inventory });
+      const visorHud: VisorHud = hub.acquirePart({ name: 'visorHud', inventory });
       const cockpitLights: CockpitLights = hub.acquirePart({ name: 'cockpitLights', inventory });
       const externalLights: ExternalLights = hub.acquirePart({ name: 'externalLights', inventory });
       const multimeter: Multimeter = hub.acquirePart({ name: 'multimeter', inventory });
@@ -204,13 +206,14 @@ class LevelScene extends Scene {
       // the player things going online spontaneously (though, realistically,
       // code setup probably happens in under one frame).
       electricalHousing.embed([
-        generator, cockpitLights, externalLights, multimeter,
+        generator, visorHud, cockpitLights, externalLights, multimeter,
         propulsionManager, warpDrive,
       ]);
 
       generator.powerOn();
       //
       hub.plug(multimeter).intoPowerOutletOf(generator);
+      hub.plug(visorHud).intoPowerOutletOf(generator);
       hub.plug(cockpitLights).intoPowerOutletOf(generator);
       hub.plug(externalLights).intoPowerOutletOf(generator);
       hub.plug(propulsionManager).intoPowerOutletOf(generator);

@@ -22,6 +22,7 @@ import { externalLightsModulePlugin } from './built-ins/shipModules/ExternalLigh
 import { propulsionManagerModulePlugin } from './built-ins/shipModules/PropulsionManager';
 import { warpDriveModulePlugin } from './built-ins/shipModules/WarpDrive';
 import { gamepadDriverPlugin } from './built-ins/GamepadDriver';
+import { visorHudModulePlugin } from './built-ins/shipModules/VisorHud';
 
 const builtInPluginsEnabled: PluginEntry[] = [
   // General
@@ -60,6 +61,7 @@ const builtInPluginsEnabled: PluginEntry[] = [
   { name: 'generatorModule', pluginInstance: generatorModulePlugin },
 
   // Low power modules
+  { name: 'visorHudModule', pluginInstance: visorHudModulePlugin, dependencies: [ 'shipPilot', 'nodeOps' ] },
   { name: 'cockpitLightsModule', pluginInstance: cockpitLightsModulePlugin, dependencies: [ 'shipPilot', 'nodeOps' ] },
   { name: 'externalLightsModule', pluginInstance: externalLightsModulePlugin, dependencies: [ 'shipPilot', 'nodeOps', 'cockpitLightsModule' ] },
   { name: 'multimeterModule', pluginInstance: multimeterModulePlugin },
