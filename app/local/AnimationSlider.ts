@@ -59,6 +59,10 @@ export default class AnimationSlider {
     }
   }
 
+  /**
+   * Sets the animation to an exact point.
+   * @param percentage - A number from 0 to 1, where 0 is 0% and 1 is 100%.
+   */
   seek(percentage: number = 0) {
     if (this._percentage === percentage) {
       return;
