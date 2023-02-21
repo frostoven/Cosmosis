@@ -1,9 +1,35 @@
-import { Mesh, MeshBasicMaterial, Scene } from 'three';
+import _ from 'lodash';
+import { Color, Mesh, MeshBasicMaterial, Scene } from 'three';
 import { HudAlign } from './HudAlign';
 import MeshLoader from '../../../NodeOps/types/MeshLoader';
 import { gameRuntime } from '../../../../gameRuntime';
 import ChangeTracker from 'change-tracker/src';
 import AnimationSlider from '../../../../../local/AnimationSlider';
+import { clamp } from '../../../../../local/mathUtils';
+
+const themeExamples = {
+  industrial: {
+    primary: 0xc6dde3,
+    active: 0xff8c00,
+    reverse: 0xff0000,
+    inactive: 0x080808,
+    lowlights: 0x000000,
+  },
+  blueOnPurple: {
+    primary: 0xff0000,
+    active: 0x00adff,
+    reverse: 0xff0000,
+    inactive: 0x080808,
+    lowlights: 0xf600ff,
+  },
+  redOnPurple: {
+    primary: 0x00adff,
+    active: 0xff0000,
+    reverse: 0xff0000,
+    inactive: 0x080808,
+    lowlights: 0xf600ff,
+  }
+};
 
 export default class HudItem {
   static defaultOptions = {
@@ -18,12 +44,17 @@ export default class HudItem {
   public scene: Scene | null;
   public mesh: Mesh | null;
   public onMeshLoaded: ChangeTracker;
-  public animationSlider: AnimationSlider;
+  public _animationSlider: AnimationSlider;
+  public _progressBlips: Array<Mesh>;
 
   private _parent: Scene;
   private _modelFileName: string;
   private scale: number;
   private flipOnNegativeProgress: boolean;
+  private colors: {
+    primary: number, active: number, reverse: number,
+    inactive: number, lowlights: number
+  };
 
   constructor(options) {
     this.align = () => {};
@@ -35,9 +66,11 @@ export default class HudItem {
     this._parent = new Scene();
     this._modelFileName = '';
     // @ts-ignore
-    this.animationSlider = null;
+    this._animationSlider = null;
+    this._progressBlips = [];
     this.onMeshLoaded = new ChangeTracker();
     this.flipOnNegativeProgress = false;
+    this.colors = { ...themeExamples.industrial };
 
     this.changeOptions(options);
   }
@@ -48,13 +81,11 @@ export default class HudItem {
     options.align && (this.setAlignment(options.align));
     options.scale && (this.scale = options.scale);
     options.flipOnNegativeProgress && (this.flipOnNegativeProgress = options.flipOnNegativeProgress);
+    options.colors && (this.colors = options.colors);
   }
 
   init(parent) {
     this._parent = parent;
-
-    let aspect = window.innerWidth / window.innerHeight;
-    aspect > 1 ? aspect = 1 / aspect : null;
 
     const options = { ...MeshLoader.defaultNodeOpts };
     options.materialOverrideCallback = (node) => {
@@ -87,10 +118,48 @@ export default class HudItem {
   }
 
   _setupAnimation() {
-    this.animationSlider = new AnimationSlider(this.mesh);
+    // Check for appropriate mesh code. Normally, we would let the mesh code
+    // handler deal with this, but given that this is a HUD component and not
+    // a ship part, I'm not sure how to properly deal with this. Placing here
+    // for now, can refactor later if this is a mistake.
+    let foundAnimation = false;
+    let blipSteps: Array<Mesh> = [];
+
+    // @ts-ignore - seems the d.ts defs are incomplete.
+    this.scene?.traverse((node: Mesh) => {
+      // @ts-ignore - isMesh does, in fact, exist.
+      if (node.isMesh) {
+        console.log('--> hud node:', node);
+        const userData = node.userData;
+        if (userData.csmType === 'hudProgressAnimation') {
+          // @ts-ignore - the d.ts defs are very incomplete.
+          node.material.color.set(this.colors.primary);
+          foundAnimation = true;
+        }
+        else if (userData.csmType === 'hudProgressBlip') {
+          // @ts-ignore - the d.ts defs are very incomplete.
+          node.material.color.set(this.colors.inactive);
+          blipSteps.push(node);
+        }
+        else {
+          // @ts-ignore - the d.ts defs are very incomplete.
+          node.material.color.set(this.colors.active);
+        }
+      }
+    });
+
+    if (blipSteps.length) {
+      this._progressBlips = _.sortBy(
+        blipSteps, (item) => item.userData.csmStepPosition,
+      );
+    }
+
+    this._animationSlider = new AnimationSlider(this.mesh);
   }
 
   setProgress(percentage) {
+    const absPerc = Math.abs(percentage);
+
     if (this.flipOnNegativeProgress) {
       if (percentage < 0) {
         // @ts-ignore
@@ -101,7 +170,34 @@ export default class HudItem {
         this.scene.rotation.x = 0;
       }
     }
-    this.animationSlider.seek(Math.abs(percentage));
+    this._animationSlider.seek(absPerc);
+
+    if (this._progressBlips.length) {
+      let lowColor = new Color(this.colors.inactive);
+      let highColor = new Color(this.colors.active);
+
+      const step = absPerc * 10;
+      const blips = this._progressBlips;
+      for (let i = 0, len = blips.length; i < len; i++) {
+        const node = this._progressBlips[i];
+        const color = new Color();
+
+        let progress = clamp(step - i, 0, 1);
+
+        if (progress === 0) {
+          progress = Math.abs(clamp(((step - i) / 10), -1, 0));
+          highColor = new Color(this.colors.lowlights);
+        }
+        else if (percentage !== absPerc) {
+          highColor = new Color(this.colors.reverse);
+        }
+
+        // @ts-ignore -  three.js d.ts defs out of date.
+        color.lerpColors(lowColor, highColor, progress);
+        // @ts-ignore -  three.js d.ts defs out of date.
+        node.material.color.set(color);
+      }
+    }
   }
 
   fitRight() {

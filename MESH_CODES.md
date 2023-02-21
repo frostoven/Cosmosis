@@ -147,6 +147,33 @@ Blender.
 
 -->
 
+## HUD mesh codes
+
+These mesh codes are specifically for cases where 3D objects are used as HUD
+elements.
+
+#### HUD progress blip
+```
+csmType: hudProgressBlip
+csmStepPosition: 1-10
+```
+Used to indicate some sort of percentage. Useful for example with a ship
+throttle.
+
+The exact use-case here is for blips fading in from dim to bright as they're
+activated.
+
+#### HUD progress animation
+```
+csmType: hudProgressAnimation
+```
+Used to indicate some sort of percentage. Useful for example with a ship
+throttle.
+
+For this item, the game engine will play the animation from 0-100 as in
+indication of completion.
+
+This item has no configurable options.
 
 ## Why aren't obvious objects inferred?
 

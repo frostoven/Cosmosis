@@ -12,6 +12,9 @@ import { lowercaseFirst } from '../../../../local/utils';
 // are various implementations [cockpit, external, etc.]. Switches however fall
 // under level intractability, so are implied to be part of level
 // intractability handlers.
+//
+// TODO: figure out where to place HUD-specific things. For now, it's placed in
+//  the VisorHud ship module code.
 
 export default class MeshCodeHandler {
   private _gltf: any;
