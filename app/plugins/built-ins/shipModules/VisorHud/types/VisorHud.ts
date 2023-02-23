@@ -1,4 +1,3 @@
-import * as THREE from 'three';
 import ShipModule from '../../types/ShipModule';
 import PluginCacheTracker from '../../../../../emitters/PluginCacheTracker';
 import HudItem from '../../../ui/Hud3D/types/HudItem';
@@ -69,7 +68,7 @@ export default class VisorHud extends ShipModule {
     }
 
     // TODO: on power dim, consider implementing this, it's very satisfying:
-    // this.throttle.progress.seek(Math.random());
+    // this.throttle.setProgress(Math.random(), true);
 
     this.throttle.setProgress(-Core.unifiedView.throttlePrettyPosition);
   }

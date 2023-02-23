@@ -157,7 +157,7 @@ export default class HudItem {
     this._animationSlider = new AnimationSlider(this.mesh);
   }
 
-  setProgress(percentage) {
+  setProgress(percentage, disableBlip = false) {
     const absPerc = Math.abs(percentage);
 
     if (this.flipOnNegativeProgress) {
@@ -171,6 +171,10 @@ export default class HudItem {
       }
     }
     this._animationSlider.seek(absPerc);
+
+    if (disableBlip) {
+      return;
+    }
 
     if (this._progressBlips.length) {
       let lowColor = new Color(this.colors.inactive);

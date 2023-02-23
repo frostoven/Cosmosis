@@ -1,5 +1,6 @@
 import './polyfills';
 import './earlyLoad';
+import './local/PerfTest';
 import React from 'react';
 import * as ReactDOM from 'react-dom';
 // import RootNode from './reactComponents/RootNode';
