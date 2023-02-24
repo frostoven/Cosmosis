@@ -7,6 +7,8 @@ import ChangeTracker from 'change-tracker/src';
 import AnimationSlider from '../../../../../local/AnimationSlider';
 import { clamp } from '../../../../../local/mathUtils';
 
+type MeshWithBasicMat = Mesh & { material: MeshBasicMaterial };
+
 const themeExamples = {
   industrial: {
     primary: 0xc6dde3,
@@ -42,10 +44,10 @@ export default class HudItem {
   public align: OmitThisParameter<() => void>;
 
   public scene: Scene | null;
-  public mesh: Mesh | null;
+  public mesh: MeshWithBasicMat | null;
   public onMeshLoaded: ChangeTracker;
   public _animationSlider: AnimationSlider;
-  public _progressBlips: Array<Mesh>;
+  public _progressBlips: Array<MeshWithBasicMat>;
 
   private _parent: Scene;
   private _modelFileName: string;
@@ -123,26 +125,21 @@ export default class HudItem {
     // a ship part, I'm not sure how to properly deal with this. Placing here
     // for now, can refactor later if this is a mistake.
     let foundAnimation = false;
-    let blipSteps: Array<Mesh> = [];
+    let blipSteps: Array<MeshWithBasicMat> = [];
 
-    // @ts-ignore - seems the d.ts defs are incomplete.
-    this.scene?.traverse((node: Mesh) => {
-      // @ts-ignore - isMesh does, in fact, exist.
+    // @ts-ignore - our usage is correct.
+    this.scene?.traverse((node: MeshWithBasicMat) => {
       if (node.isMesh) {
-        console.log('--> hud node:', node);
         const userData = node.userData;
         if (userData.csmType === 'hudProgressAnimation') {
-          // @ts-ignore - the d.ts defs are very incomplete.
           node.material.color.set(this.colors.primary);
           foundAnimation = true;
         }
         else if (userData.csmType === 'hudProgressBlip') {
-          // @ts-ignore - the d.ts defs are very incomplete.
           node.material.color.set(this.colors.inactive);
           blipSteps.push(node);
         }
         else {
-          // @ts-ignore - the d.ts defs are very incomplete.
           node.material.color.set(this.colors.active);
         }
       }
@@ -196,9 +193,7 @@ export default class HudItem {
           highColor = new Color(this.colors.reverse);
         }
 
-        // @ts-ignore -  three.js d.ts defs out of date.
         color.lerpColors(lowColor, highColor, progress);
-        // @ts-ignore -  three.js d.ts defs out of date.
         node.material.color.set(color);
       }
     }
