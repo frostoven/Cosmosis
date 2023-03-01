@@ -61,6 +61,13 @@ const assetDefaults = {
     dir: 'voicePacks',
     extensions: [ 'mp3', 'ogg' ],
   },
+  jsonFonts: {
+    // Fonts need to be accessible to HTML as well, so we keep that in a
+    // singular location (as apposed to prod / dev variants other asset types
+    // have).
+    dir: '../fonts/json',
+    extensions: [ 'json' ],
+  }
 };
 
 function getCache(dir, name) {
@@ -158,6 +165,10 @@ AssetFinder.prototype.getSpaceship = function getSpaceship({ name, options={}, c
 
 AssetFinder.prototype.getStarCatalog = function getStarCatalog({ name, options={}, callback=()=>{} }) {
   this.getRes(name, { ...assetDefaults.starCatalogs, ...options }, callback);
+};
+
+AssetFinder.prototype.getJsonFont = function getJsonFont({ name, options={}, callback=()=>{} }) {
+  this.getRes(name, { ...assetDefaults.jsonFonts, ...options }, callback);
 };
 
 AssetFinder.prototype.getStarCatalogWFallback = function getStarCatalog({ name, fallbackName, options={}, callback=()=>{} }) {
