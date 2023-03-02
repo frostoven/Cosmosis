@@ -59,20 +59,32 @@ const availableFonts: FontTemplates = {
 };
 
 export default class Fast2DText {
-  public onComplete!: ChangeTracker;
-
+  public onComplete: ChangeTracker;
   private _font: any;
   private readonly _fontInfo!: FontInfo;
   private _bmTextGeo: any;
   private _bmTextMat: any;
-  private _bmTextMesh: any;
+  public mesh: THREE.Mesh | null;
   private readonly _initialOpacity!: number;
   private readonly _initialSide!: number;
   private readonly _baseScale!: number;
   private _currentScale!: number;
   private readonly _singlePaged!: boolean;
+  // Used to make this act a bit more like a scene. It's a dirty work-around
+  // and probably needs to be reworked.
+  private readonly _scale_compat!: { setScalar: (newScale) => void };
 
   constructor(fontName, options: Fast2DTextOptions = {}) {
+    this.onComplete = new ChangeTracker();
+
+    this._font = null;
+    this._bmTextGeo = null;
+    this.mesh = null;
+
+    this._scale_compat = {
+      setScalar: newScale => this.setScale(newScale),
+    };
+
     if (!fontName) {
       console.error(
         'Fast2DText needs a font name. Available fonts:',
@@ -90,10 +102,6 @@ export default class Fast2DText {
       return;
     }
 
-    this.onComplete = new ChangeTracker();
-    this._font = null;
-    this._bmTextGeo = null;
-    this._bmTextMesh = null;
     this._initialOpacity = options.opacity || 0.6;
     this._initialSide = options.backfaceCulling === false
         ? THREE.DoubleSide
@@ -102,7 +110,7 @@ export default class Fast2DText {
     this._baseScale = this._fontInfo.scale;
     this._currentScale = this._baseScale;
     this._singlePaged = !Array.isArray(this._fontInfo.atlas);
-    
+
     this._loadFont(fontName);
   }
 
@@ -111,8 +119,24 @@ export default class Fast2DText {
       return;
     }
     const scale = newScale * this._baseScale;
-    this._bmTextMesh.scale.set(scale, -scale, -scale);
+    this.mesh!.scale.set(scale, scale, scale);
     this._currentScale = newScale;
+  }
+
+  setText(text) {
+    this._bmTextGeo.update(text);
+  }
+
+  get scale() {
+    return this._scale_compat;
+  }
+
+  get position() {
+    return this.mesh!.position;
+  }
+
+  get rotation() {
+    return this.mesh!.rotation;
   }
 
   get opacity() {
@@ -197,15 +221,11 @@ export default class Fast2DText {
   }
 
   _createMesh(geometry: THREE.BufferGeometry, material: FontMaterial) {
-    const scale = this._fontInfo.scale;
-
     const mesh = new THREE.Mesh(geometry, material);
-    mesh.scale.set(scale, -scale, -scale);
-
-    this._bmTextMesh = mesh;
+    this.mesh = mesh;
     this._bmTextGeo = geometry;
     this._bmTextMat = material;
-
+    this.setScale(1);
     this.onComplete.setValue(1);
     // this._debugFont();
   }
@@ -213,9 +233,9 @@ export default class Fast2DText {
   // _debugFont() {
   //   this._bmTextGeo.update('3291.84 km/h');
   //   let count = 0;
-  //   this._bmTextMesh.translateY(1);
-  //   this._bmTextMesh.translateZ(-0.5);
-  //   $gameRuntime._tracked.levelScene._cached.add(this._bmTextMesh);
+  //   this.mesh.translateY(1);
+  //   this.mesh.translateZ(-0.5);
+  //   $gameRuntime._tracked.levelScene._cached.add(this.mesh);
   //   const anim = () => {
   //     requestAnimationFrame(anim);
   //     this._bmTextGeo.update('Count:' + ++count);
