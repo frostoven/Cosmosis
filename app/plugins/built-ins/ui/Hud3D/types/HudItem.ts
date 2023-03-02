@@ -8,7 +8,10 @@ import AnimationSlider from '../../../../../local/AnimationSlider';
 import { clamp } from '../../../../../local/mathUtils';
 import Fast2DText from '../../../../../local/Fast2DText';
 
+type SceneOrText = Scene | Fast2DText;
 type MeshWithBasicMat = Mesh & { material: MeshBasicMaterial };
+
+const DISTANCE_TO_FACE = -0.05;
 
 const themeExamples = {
   industrial: {
@@ -45,7 +48,7 @@ export default class HudItem {
 
   public align: OmitThisParameter<() => void>;
 
-  public scene: Scene | null;
+  public scene: SceneOrText | null;
   public mesh: MeshWithBasicMat | null;
   public onMeshLoaded: ChangeTracker;
   public _animationSlider: AnimationSlider;
@@ -64,7 +67,6 @@ export default class HudItem {
     primary: number, active: number, reverse: number,
     inactive: number, lowlights: number
   };
-  public Fast2DText: Fast2DText | undefined;
 
   constructor(options) {
     this.align = () => {};
@@ -118,8 +120,30 @@ export default class HudItem {
   }
 
   _loadFont(options) {
-    // this.Fast2DText = new Fast2DText('arial');
-    this.Fast2DText = new Fast2DText('norwester');
+    // Note: Fast2DText is not actually Scene-compatible - it has some
+    // functions that were specifically written to overlap for use in HurdItem.
+    const text2d = new Fast2DText('norwester');
+    text2d.onComplete.getOnce(() => {
+
+      gameRuntime.tracked.player.getOnce(({ camera }) => {
+        camera.add(text2d.mesh);
+
+        text2d.mesh!.rotateY(Math.PI);
+        text2d.mesh!.rotateZ(Math.PI);
+        text2d.mesh!.translateZ(-DISTANCE_TO_FACE);
+        this.scale *= 5.0;
+        text2d.setText(this._text);
+        this.scene = text2d;
+        // @ts-ignore
+        this.mesh = text2d.mesh;
+
+        this.align();
+        window.addEventListener('resize', () => {
+          this.align();
+        });
+        this.onMeshLoaded.setValue(true);
+      });
+    });
   }
 
   _loadMesh(options) {
@@ -132,12 +156,10 @@ export default class HudItem {
         camera.add(gltf.scene);
         // Place hud item 0.05cm away from the player's face (or projector
         // screen, if that's the target).
-        gltf.scene.translateZ(-0.05);
+        gltf.scene.translateZ(DISTANCE_TO_FACE);
         this.align();
         this._setupAnimation();
-
         window.addEventListener('resize', this.align);
-
         this.onMeshLoaded.setValue(true);
       });
     });
@@ -223,22 +245,34 @@ export default class HudItem {
     }
   }
 
+  setText(text) {
+    // @ts-ignore
+    this.scene.setText(text);
+  }
+
   fitRight() {
     if (!this.scene) {
       return;
     }
 
-    const offset = 0.005;
+    let offset = 0.005;
     let trueAspect = window.innerWidth / window.innerHeight;
     let relAspect = trueAspect > 1 ? 1 / trueAspect : trueAspect;
 
     // Always choose the ratio that's between 0 and 1. We use this to
     // dynamically resize HUD elements according to window size.
     const size = relAspect * 0.025 * this.scale;
-    this.scene.scale.set(size, size, size);
+    this.scene.scale.setScalar(size);
+
+    if (this._text) {
+      // Align the text so it stays in the screen.
+      const geo = this.mesh!.geometry;
+      geo.computeBoundingBox();
+      const realX = geo.boundingBox!.max.x * this.mesh!.scale.x;
+      offset -= realX;
+    }
+
     this.scene.position.x = (window.innerWidth * trueAspect * 0.00001) + offset;
-    // console.log(window.innerWidth, size);
-    console.log(this.scene.position.x);
 
     // // This stays on the same physical position on the screen. Not what we
     // // want, but useful from an educational perspective.
@@ -250,17 +284,25 @@ export default class HudItem {
       return;
     }
 
-    const offset = 0.005;
+    let offset = 0.005;
     let trueAspect = window.innerWidth / window.innerHeight;
     let relAspect = trueAspect > 1 ? 1 / trueAspect : trueAspect;
 
     // Always choose the ratio that's between 0 and 1. We use this to
     // dynamically resize HUD elements according to window size.
-    const size = relAspect * 0.025;
-    this.scene.scale.set(size, size, size);
+    const size = relAspect * 0.025 * this.scale;
+    this.scene.scale.setScalar(size);
+
+    if (this._text) {
+      // Align the text so it stays in the screen.
+      const geo = this.mesh!.geometry;
+      geo.computeBoundingBox();
+      const realX = geo.boundingBox!.max.x * this.mesh!.scale.x;
+      offset = realX;
+    }
+
     this.scene.position.x = (window.innerWidth * trueAspect * 0.00001) + offset;
-    this.scene.position.y = (-window.innerHeight * trueAspect * 0.00001);
-    console.log(this.scene.position.x);
+    this.scene.position.y = (-window.innerHeight * trueAspect * 0.000011);
   }
 
   fitTopRight() {
@@ -274,8 +316,8 @@ export default class HudItem {
 
     // Always choose the ratio that's between 0 and 1. We use this to
     // dynamically resize HUD elements according to window size.
-    const size = relAspect * 0.025;
-    this.scene.scale.set(size, size, size);
+    const size = relAspect * 0.025 * this.scale;
+    this.scene.scale.setScalar(size);
     this.scene.position.x = (window.innerWidth * trueAspect * 0.00001) + offset;
     this.scene.position.y = (window.innerHeight * trueAspect * 0.00001);
   }
@@ -288,8 +330,8 @@ export default class HudItem {
     let aspect = window.innerWidth / window.innerHeight;
     // Always choose the ratio that's between 0 and 1. We use this to
     // dynamically resize HUD elements according to window size.
-    const size = (aspect > 1 ? 1 / aspect : aspect) * 0.025;
-    this.scene.scale.set(size, size, size);
+    const size = (aspect > 1 ? 1 / aspect : aspect) * 0.025 * this.scale;
+    this.scene.scale.setScalar(size);
   }
 
   setAlignment(alignment: HudAlign) {
@@ -313,5 +355,19 @@ export default class HudItem {
         console.error('[HudItem] Invalid option', alignment);
         return;
     }
+  }
+
+  // Don't use for real code, it hardcodes some stuff for testing.
+  _debugDetachFromFace() {
+    gameRuntime.tracked.levelScene.getOnce((levelScene) => {
+      console.log('-> HudItem detaching:', this.scene);
+      try {
+        // @ts-ignore
+        levelScene.attach(this.scene.mesh);
+      }
+      catch (error) {
+        levelScene.attach(this.scene);
+      }
+    });
   }
 }
