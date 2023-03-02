@@ -45,6 +45,15 @@ export default class VisorHud extends ShipModule {
       flipOnNegativeProgress: true,
     });
 
+    // this.throttle = new HudItem({
+    //   text: 'throttleStandard',
+    //   align: HudAlign.right,
+    //   offsetY: 0.001,
+    //   xRotation: 0.01,
+    //   scale: 1.1,
+    //   flipOnNegativeProgress: true,
+    // });
+
     const page = new HudPage('visorHud', [ this.throttle ]);
     gameRuntime.tracked.hud3D.getOnce((hud3d: Hud3D) => {
       hud3d.setScreenPage(page, this._pluginCache.camera);

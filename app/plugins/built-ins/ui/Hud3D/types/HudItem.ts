@@ -6,6 +6,7 @@ import { gameRuntime } from '../../../../gameRuntime';
 import ChangeTracker from 'change-tracker/src';
 import AnimationSlider from '../../../../../local/AnimationSlider';
 import { clamp } from '../../../../../local/mathUtils';
+import Fast2DText from '../../../../../local/Fast2DText';
 
 type MeshWithBasicMat = Mesh & { material: MeshBasicMaterial };
 
@@ -36,6 +37,7 @@ const themeExamples = {
 export default class HudItem {
   static defaultOptions = {
     model: 'ndcTester',
+    text: null,
     align: HudAlign.center,
     scale: 1,
     flipOnNegativeProgress: false,
@@ -50,13 +52,19 @@ export default class HudItem {
   public _progressBlips: Array<MeshWithBasicMat>;
 
   private _parent: Scene;
+  // The name (without extension) of the model to load from the hudModel
+  // directory. Note that this option and _text are mutually exclusive.
   private _modelFileName: string;
+  // The text you want displayed. Note that this option and _modeFileName are
+  // mutually exclusive.
+  private _text: string;
   private scale: number;
   private flipOnNegativeProgress: boolean;
   private colors: {
     primary: number, active: number, reverse: number,
     inactive: number, lowlights: number
   };
+  public Fast2DText: Fast2DText | undefined;
 
   constructor(options) {
     this.align = () => {};
@@ -67,6 +75,7 @@ export default class HudItem {
     this.mesh = null;
     this._parent = new Scene();
     this._modelFileName = '';
+    this._text = '';
     // @ts-ignore
     this._animationSlider = null;
     this._progressBlips = [];
@@ -80,6 +89,7 @@ export default class HudItem {
   changeOptions(options) {
     options = { ...HudItem.defaultOptions, ...options };
     options.model && (this._modelFileName = options.model);
+    options.text && (this._text = options.text);
     options.align && (this.setAlignment(options.align));
     options.scale && (this.scale = options.scale);
     options.flipOnNegativeProgress && (this.flipOnNegativeProgress = options.flipOnNegativeProgress);
@@ -99,6 +109,20 @@ export default class HudItem {
       return;
     }
 
+    if (this._text) {
+      this._loadFont(options);
+    }
+    else {
+      this._loadMesh(options);
+    }
+  }
+
+  _loadFont(options) {
+    // this.Fast2DText = new Fast2DText('arial');
+    this.Fast2DText = new Fast2DText('norwester');
+  }
+
+  _loadMesh(options) {
     // const loader = new MeshLoader('getHudModel', 'ndcTester', options);
     const loader = new MeshLoader('getHudModel', this._modelFileName, options);
     loader.trackedMesh.getOnce(({ gltf }) => {
