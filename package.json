@@ -50,6 +50,7 @@
     "css-loader": "0.28.11",
     "extract-text-webpack-plugin": "4.0.0-beta.0",
     "file-loader": "1.1.11",
+    "load-bmfont": "1.4.1",
     "lodash": "4.17.21",
     "npm-run-all": "4.1.5",
     "nw": "0.55.0",
