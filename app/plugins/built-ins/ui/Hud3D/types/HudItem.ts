@@ -302,7 +302,7 @@ export default class HudItem {
     }
 
     this.scene.position.x = (window.innerWidth * trueAspect * 0.00001) + offset;
-    this.scene.position.y = (-window.innerHeight * trueAspect * 0.000011);
+    this.scene.position.y = -0.025;
   }
 
   fitTopRight() {
@@ -357,7 +357,9 @@ export default class HudItem {
     }
   }
 
-  // Don't use for real code, it hardcodes some stuff for testing.
+  // Don't use for real code, it hardcodes some stuff for testing. It will also
+  // name to the level center if the window is resized (because it auto-aligns
+  // with the parent after aspect changes).
   _debugDetachFromFace() {
     gameRuntime.tracked.levelScene.getOnce((levelScene) => {
       console.log('-> HudItem detaching:', this.scene);
