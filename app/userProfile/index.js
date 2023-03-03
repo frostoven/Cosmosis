@@ -837,4 +837,5 @@ export default {
   cacheChangeEvent,
   getAvailableProfiles,
   reloadConfigs,
+  getUserDataDir,
 }

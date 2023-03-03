@@ -1,13 +1,13 @@
 import './polyfills';
 import './earlyLoad';
 import './local/PerfTest';
+import './debugger';
 import React from 'react';
 import * as ReactDOM from 'react-dom';
 // import RootNode from './reactComponents/RootNode';
 import v8 from 'v8';
 
 import { loadPlugins } from './plugins';
-// import core from './local/core';
 // import powerOnSelfTest from './test';
 import api from './local/api';
 import packageJson from '../package.json';
@@ -18,10 +18,7 @@ import { onDocumentReady, onReadyToBoot, logBootInfo } from './local/windowLoadL
 import * as THREE from 'three';
 import * as CANNON from 'cannon';
 import { startupEvent, getStartupEmitter } from './emitters';
-// import './modeControl';
 import userProfile from './userProfile';
-// import { logicalSceneGroup } from './logicalSceneGroup';
-// import { gameState } from './plugins/gameState';
 
 const startupEmitter = getStartupEmitter();
 
