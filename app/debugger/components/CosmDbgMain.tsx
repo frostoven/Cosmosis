@@ -1,10 +1,13 @@
+import _ from 'lodash';
 import React from 'react';
 import { Tab } from 'semantic-ui-react';
 import { genVariableHijacker } from '../modules/variableHijacker';
 import { cosmDbg } from '../index';
+import { genSettings } from '../modules/settings';
 
 export default class CosmDbgMain extends React.Component {
-  state: { [key: string]: any } = {};
+  static defaultState = { rootActiveTab: 0 };
+  state: { [key: string]: any } = { ...CosmDbgMain.defaultState };
 
   constructor(props) {
     super(props);
@@ -20,6 +23,20 @@ export default class CosmDbgMain extends React.Component {
     });
   };
 
+  resetRootState = () => {
+    const newState = {};
+    _.each(this.state, (value, key) => {
+      newState[key] = null;
+    });
+
+    this.setState({
+      ...CosmDbgMain.defaultState,
+      ...newState,
+    }, () => {
+      cosmDbg.resetState();
+    });
+  };
+
   handleTabChange = (event, { activeIndex }) => {
     this.setRootState({ rootActiveTab: activeIndex });
   };
@@ -28,17 +45,23 @@ export default class CosmDbgMain extends React.Component {
     const rootUtils = {
       rootState: this.state,
       setRootState: this.setRootState,
+      resetRootState: this.resetRootState,
       test: () => alert('Props passed through correctly.'),
     };
 
+    let activeTab = this.state.rootActiveTab;
+    if (activeTab === null || typeof activeTab === 'undefined') {
+      activeTab = 0;
+    }
+
     return (
       <Tab
-        activeIndex={this.state.rootActiveTab}
+        activeIndex={activeTab}
         // @ts-ignore - definition is wrong.
         onTabChange={this.handleTabChange}
         panes={[
           genVariableHijacker({ rootUtils }),
-          { menuItem: 'Settings', render: () => <Tab.Pane>TBD</Tab.Pane> },
+          genSettings({ rootUtils }),
         ]}
       />
     );

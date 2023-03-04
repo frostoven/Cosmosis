@@ -13,7 +13,7 @@ const stringifyPretty = (data: any) => {
 };
 
 export default class CosmDbg {
-  private readonly _configState: CosmDbgConfig;
+  private _configState: CosmDbgConfig;
   private _packageJson: { [key: string]: any };
   private _storageLocation: string | null;
   private _mainDiv!: HTMLElement;
@@ -113,7 +113,9 @@ export default class CosmDbg {
       this._storageLocation,
       stringifyPretty(this._configState),
       (error) => {
-        console.log('[CosmDbg]', error);
+        if (error) {
+          console.error('[CosmDbg]', error);
+        }
       }
     );
   }
@@ -125,6 +127,11 @@ export default class CosmDbg {
 
   getState() {
     return this._configState;
+  }
+
+  resetState() {
+    this._configState = { debugUiVisible: this._configState.debugUiVisible };
+    this._saveConfig();
   }
 
   showUI() {

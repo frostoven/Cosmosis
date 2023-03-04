@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import Hijacker from './Hijacker';
 import { Accordion, AccordionContent, Icon } from 'semantic-ui-react';
+import Hijacker from './Hijacker';
 
 // TODO:
 //  Structure:
@@ -10,9 +10,7 @@ import { Accordion, AccordionContent, Icon } from 'semantic-ui-react';
 //  * > External hooks [vars that prod code injects straight into var hacker]
 
 export default class VariableHijacker extends React.Component<{ rootUtils }> {
-  static propTypes = {
-    rootUtils: PropTypes.any,
-  };
+  static propTypes = { rootUtils: PropTypes.any };
 
   expandPluginInterrogation = (event, titleProps) => {
     const { index } = titleProps;
@@ -22,7 +20,10 @@ export default class VariableHijacker extends React.Component<{ rootUtils }> {
   };
 
   render() {
-    const active = this.props.rootUtils.rootState.varHackActiveSection;
+    let active = this.props.rootUtils.rootState.varHackActiveSection;
+    if (active === null || typeof active === 'undefined') {
+      active = -1;
+    }
 
     return (
       <div>
