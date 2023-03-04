@@ -1,7 +1,9 @@
 import React from 'react';
-import { Accordion, Tab } from 'semantic-ui-react';
+import { Tab } from 'semantic-ui-react';
+import { genVariableHijacker } from '../modules/variableHijacker';
 
 const panes = [
+  genVariableHijacker(),
   { menuItem: 'CosmDbg', render: () => <Tab.Pane>TBD</Tab.Pane> },
 ];
 
