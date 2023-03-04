@@ -123,6 +123,10 @@ export default class CosmDbg {
     this._saveConfig();
   }
 
+  getState() {
+    return this._configState;
+  }
+
   showUI() {
     let mainDiv = document.getElementById('cosm-dbg');
     if (!mainDiv) {
