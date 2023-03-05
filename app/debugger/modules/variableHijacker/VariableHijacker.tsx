@@ -16,12 +16,12 @@ export default class VariableHijacker extends React.Component<{ rootUtils }> {
     const { index } = titleProps;
     const active = this.props.rootUtils.rootState.varHackActiveSection;
     const newIndex = active === index ? -1 : index;
-    this.props.rootUtils.setRootState({ varHackActiveSection: newIndex });
+    this.props.rootUtils.setPersistentState({ varHackActiveSection: newIndex });
   };
 
   render() {
     let active = this.props.rootUtils.rootState.varHackActiveSection;
-    if (active === null || typeof active === 'undefined') {
+    if (typeof active === 'undefined') {
       active = -1;
     }
 

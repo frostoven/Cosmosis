@@ -6,7 +6,7 @@ export default class Settings extends React.Component<{ rootUtils }> {
   static propTypes = { rootUtils: PropTypes.any };
 
   handleReset = () => {
-    this.props.rootUtils.resetRootState();
+    this.props.rootUtils.resetPersistentState();
   };
 
   render() {
