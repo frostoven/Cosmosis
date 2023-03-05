@@ -7,6 +7,7 @@ import CosmosisPlugin from './CosmosisPlugin';
 
 export default class PluginLoader {
   public onLoaded: ChangeTracker;
+  public onProgress: ChangeTracker;
 
   private _communityManifestPath: string;
   private _runIndex: number;
@@ -23,6 +24,7 @@ export default class PluginLoader {
     this._shovedPlugins = [];
     this._pluginOverrides = {};
     this.onLoaded = new ChangeTracker();
+    this.onProgress = new ChangeTracker();
   }
 
   start(onLoaded: Function) {
@@ -69,6 +71,7 @@ export default class PluginLoader {
       if (!disallowShoving) {
         shoved = true;
         this._shovedPlugins.push(array[index]);
+        this.onProgress.setValue({ name, loaded: false, shoved: true });
         // console.log(`-> ${name} wants to be loaded last; shoving.`);
       }
     }
@@ -88,6 +91,7 @@ export default class PluginLoader {
             console.log(`[${name}] Dependency ${dependency} not ready; shoving ${name}.`);
             shoved = true;
             this._shovedPlugins.push(array[index]);
+            this.onProgress.setValue({ name, loaded: false, shoved: true });
           }
         }
       }
@@ -131,6 +135,7 @@ export default class PluginLoader {
         next: () => {
           clearTimeout(warnTimer);
           this._dependenciesLoaded[name] = true;
+          this.onProgress.setValue({ name, loaded: true, shoved: false });
           setTimeout(() => this._doPluginRun(array, disallowShoving));
         },
         replaceClass: ({ pluginName, replaceClassWith }) => {
