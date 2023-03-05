@@ -1,12 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Button, Icon } from 'semantic-ui-react';
+import { Button, Form, Icon } from 'semantic-ui-react';
 import { CosmDbgRootUtils } from '../../components/interfaces/CosmDbgRootUtils';
 
 const arrow = 'long arrow alternate up';
-
 const arrowTransform = 'translateY(2.5px)';
-
 const arrowAngle = {
   top: 'rotate(0deg)',
   topRight: 'rotate(45deg)',
@@ -52,11 +50,24 @@ export default class Settings extends React.Component<{ rootUtils: RootUtils }> 
 
     return (
       <div>
-        <Button fluid onClick={this.handleReset}>Reset</Button>
+        {/* @ts-ignore - doing React in TS was a mistake. */}
+        <Form>
+          <Form.Field>
+            <label>Completely resets the debugger</label>
+            <Button fluid onClick={this.handleReset}>Reset</Button>
+          </Form.Field>
 
-        <Button fluid onClick={this.cycleDefaultPosition}>
-          Default position:&nbsp;&nbsp;<Icon name={arrow} style={defaultPosStyle}/>
-        </Button>
+          <Form.Field>
+            <label>Default debugger position on boot</label>
+            <Button fluid onClick={this.cycleDefaultPosition}>
+              Default position:&nbsp;&nbsp;
+              <Icon
+                name={arrow}
+                style={defaultPosStyle}
+              />
+            </Button>
+          </Form.Field>
+        </Form>
       </div>
     );
   }
