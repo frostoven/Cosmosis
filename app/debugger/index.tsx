@@ -8,6 +8,18 @@ import { CosmDbgConfig } from './types/CosmDbgConfig';
 
 const CONFIG_FILE = 'cosmDbg.json';
 
+const englishToCoords = {
+  top: { top: '0', left: '50%', transform: 'translateX(-50%)' },
+  topRight: { top: '0', right: '0' },
+  right: { right: '0', top: '50%', transform: 'translateY(-50%)' },
+  bottomRight: { bottom: '0', right: '0' },
+  bottom: { bottom: '0', left: '50%', transform: 'translateX(-50%)' },
+  bottomLeft: { bottom: '0', left: '0' },
+  left: { top: '50%', transform: 'translateY(-50%)' },
+  topLeft: { top: '0', left: '0' },
+  center: { top: '50%', left: '50%', transform: 'translate(-50%, -50%)'  },
+};
+
 const stringifyPretty = (data: any) => {
   return JSON.stringify(data, null, 4);
 };
@@ -141,6 +153,7 @@ export default class CosmDbg {
       mainDiv.id = 'cosm-dbg';
       document.body.append(mainDiv);
       this._mainDiv = mainDiv;
+      this.moveToDefaultPosition();
       ReactDOM.render(<CosmDbgMain/>, mainDiv);
     }
     this._mainDiv.style.display = 'block';
@@ -150,6 +163,22 @@ export default class CosmDbg {
   hideUI() {
     this._mainDiv.style.display = 'none';
     this.setOption('debugUiVisible', false);
+  }
+
+  moveToDefaultPosition() {
+    let mainDiv = document.getElementById('cosm-dbg');
+    if (!mainDiv) {
+      return;
+    }
+
+    const defaultPosString = this._configState.uiState?.settingsDefaultPosition;
+    let style = englishToCoords[defaultPosString] || englishToCoords.topRight;
+
+    mainDiv.style.top = style.top || '';
+    mainDiv.style.left = style.left || '';
+    mainDiv.style.bottom = style.bottom || '';
+    mainDiv.style.right = style.right || '';
+    mainDiv.style.transform = style.transform || '';
   }
 }
 
