@@ -1,8 +1,7 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Accordion, AccordionContent, Icon } from 'semantic-ui-react';
 import { CosmDbgRootUtils } from '../../components/interfaces/CosmDbgRootUtils';
-import Hijacker from './Hijacker';
+import PluginInterrogator from './components/PluginInterrogator';
 
 // TODO:
 //  Structure:
@@ -17,8 +16,6 @@ interface RootUtils extends CosmDbgRootUtils {
 }
 
 export default class VariableHijacker extends React.Component<{ rootUtils: RootUtils }> {
-  static propTypes = { rootUtils: PropTypes.any };
-
   expandPluginInterrogation = (event, titleProps) => {
     const { index } = titleProps;
     const active = this.props.rootUtils.rootState.varHackActiveSection;
@@ -34,7 +31,7 @@ export default class VariableHijacker extends React.Component<{ rootUtils: RootU
 
     return (
       <div>
-        <Accordion /*fluid styled*/>
+        <Accordion fluid styled>
           <Accordion.Title
             active={active === 0}
             index={0}
@@ -42,9 +39,15 @@ export default class VariableHijacker extends React.Component<{ rootUtils: RootU
           >
             <Icon name="dropdown"/>
             Plugin interrogation
+            {/*&nbsp;*/}
+            {/*<Popup*/}
+            {/*  content='Detects plugins and offers means to override their values.'*/}
+            {/*  trigger={<Icon name="question circle"/>}*/}
+            {/*/>*/}
           </Accordion.Title>
           <AccordionContent active={active === 0}>
-            [Plugin interrogation section TBD]
+            {/* @ts-ignore */}
+            <PluginInterrogator rootUtils={this.props.rootUtils}/>
           </AccordionContent>
 
           <Accordion.Title
