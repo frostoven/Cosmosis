@@ -1,12 +1,28 @@
 import _ from 'lodash';
 import React from 'react';
-import { Tab } from 'semantic-ui-react';
+import { Icon, Tab } from 'semantic-ui-react';
+import Draggable from 'react-draggable'
 import { genVariableHijacker } from '../modules/variableHijacker';
 import { cosmDbg } from '../index';
 import { genSettings } from '../modules/settings';
 
+const CONTAINER_STYLE = {
+  backgroundColor: '#282828',
+  // borderRadius: '4px 4px 0 0',
+};
+
+const TITLE_BAR_STYLE = {
+  backgroundColor: '#343434',
+  padding: 8,
+  // borderRadius: '4px 4px 0 0',
+};
+
+const TITLE_BAR_BUTTONS = {
+  float: 'right',
+};
+
 export default class CosmDbgMain extends React.Component {
-  static defaultState = { rootActiveTab: 0 };
+  static defaultState = { rootActiveTab: 0, isCollapsed: false };
   state: { [key: string]: any } = { ...CosmDbgMain.defaultState };
 
   constructor(props) {
@@ -41,6 +57,14 @@ export default class CosmDbgMain extends React.Component {
     this.setRootState({ rootActiveTab: activeIndex });
   };
 
+  handleClose = () => {
+    cosmDbg.hideUI();
+  };
+
+  handleCollapse = () => {
+    this.setRootState({ isCollapsed: !this.state.isCollapsed });
+  };
+
   render() {
     const rootUtils = {
       rootState: this.state,
@@ -55,15 +79,31 @@ export default class CosmDbgMain extends React.Component {
     }
 
     return (
-      <Tab
-        activeIndex={activeTab}
-        // @ts-ignore - definition is wrong.
-        onTabChange={this.handleTabChange}
-        panes={[
-          genVariableHijacker({ rootUtils }),
-          genSettings({ rootUtils }),
-        ]}
-      />
+      <Draggable
+        handle=".cosm-dbg-handle"
+        bounds={{ right: 148, top: 0 }}
+      >
+        <div style={CONTAINER_STYLE}>
+          <div className="cosm-dbg-handle" style={TITLE_BAR_STYLE}>
+            <Icon name='moon outline'/>
+            &nbsp;CosmDbg&nbsp;&nbsp;
+            {/* @ts-ignore */}
+            <div style={TITLE_BAR_BUTTONS}><Icon name='close' onClick={this.handleClose}/></div>
+            {/* @ts-ignore */}
+            <div style={TITLE_BAR_BUTTONS}><Icon name='sort' onClick={this.handleCollapse}/></div>
+          </div>
+          <Tab
+            style={{ display: this.state.isCollapsed ? 'none' : 'block' }}
+            activeIndex={activeTab}
+            // @ts-ignore - definition is wrong.
+            onTabChange={this.handleTabChange}
+            panes={[
+              genVariableHijacker({ rootUtils }),
+              genSettings({ rootUtils }),
+            ]}
+          />
+        </div>
+      </Draggable>
     );
   }
 }

@@ -60,6 +60,7 @@
     "quad-indices": "2.0.1",
     "react": "16.14.0",
     "react-dom": "16.14.0",
+    "react-draggable": "4.4.5",
     "semantic-ui-react": "2.0.3",
     "webpack": "4.46.0",
     "webpack-cli": "3.3.12"
