@@ -1,8 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Button } from 'semantic-ui-react';
+import { CosmDbgRootUtils } from '../../components/interfaces/CosmDbgRootUtils';
 
-export default class Settings extends React.Component<{ rootUtils }> {
+export default class Settings extends React.Component<{ rootUtils: CosmDbgRootUtils }> {
   static propTypes = { rootUtils: PropTypes.any };
 
   handleReset = () => {

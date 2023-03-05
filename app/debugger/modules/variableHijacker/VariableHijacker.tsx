@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Accordion, AccordionContent, Icon } from 'semantic-ui-react';
+import { CosmDbgRootUtils } from '../../components/interfaces/CosmDbgRootUtils';
 import Hijacker from './Hijacker';
 
 // TODO:
@@ -9,7 +10,13 @@ import Hijacker from './Hijacker';
 //  * > Hook builder [manual path exec, basically. maybe separate object and key]
 //  * > External hooks [vars that prod code injects straight into var hacker]
 
-export default class VariableHijacker extends React.Component<{ rootUtils }> {
+interface RootUtils extends CosmDbgRootUtils {
+  rootState: {
+    varHackActiveSection: number,
+  }
+}
+
+export default class VariableHijacker extends React.Component<{ rootUtils: RootUtils }> {
   static propTypes = { rootUtils: PropTypes.any };
 
   expandPluginInterrogation = (event, titleProps) => {

@@ -6,6 +6,7 @@ import { genVariableHijacker } from '../modules/variableHijacker';
 import { cosmDbg } from '../index';
 import { genSettings } from '../modules/settings';
 import { pickIconByTime } from '../debuggerUtils';
+import { CosmDbgRootUtils } from './interfaces/CosmDbgRootUtils';
 
 const CONTAINER_STYLE = {
   backgroundColor: '#282828',
@@ -89,11 +90,10 @@ export default class CosmDbgMain extends React.Component {
   };
 
   render() {
-    const rootUtils = {
+    const rootUtils: CosmDbgRootUtils = {
       rootState: this.state,
       setPersistentState: this.setPersistentState,
       resetPersistentState: this.resetPersistentState,
-      test: () => alert('Props passed through correctly.'),
     };
 
     let activeTab = this.state.rootActiveTab;
