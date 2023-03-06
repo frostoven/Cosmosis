@@ -1,15 +1,15 @@
 import { Tab } from 'semantic-ui-react';
 import React from 'react';
 import Settings from './Settings';
-import { TAB_STYLE } from '../../style';
+import DebuggerTab from '../../components/DebuggerTab';
 
 function genSettings(props) {
   return {
     menuItem: 'Settings',
     render: () => (
-      <Tab.Pane style={TAB_STYLE}>
+      <DebuggerTab>
         {<Settings {...props}/>}
-      </Tab.Pane>
+      </DebuggerTab>
     ),
   };
 }
