@@ -4,6 +4,7 @@ import { builtInPluginsEnabled } from '../../../../plugins/pluginsEnabled';
 import { pluginLoader } from '../../../../plugins';
 import { Accordion, Icon, List } from 'semantic-ui-react';
 import { CosmDbgRootUtils } from '../../../components/interfaces/CosmDbgRootUtils';
+import ObjectScanner from './ObjectScanner';
 
 const ROTATION_STYLE_FIX = {
   paddingRight: 0,
@@ -82,11 +83,12 @@ export default class PluginInterrogator extends React.Component<{ rootUtils: Roo
     const rootState = this.props.rootUtils.rootState;
     const active = rootState.pluginInterrogatorActiveSections || [];
     const persistentIndex = active.indexOf(index);
-    if (persistentIndex === -1) {
-      active.push(index);
+    const isActive = persistentIndex !== -1;
+    if (isActive) {
+      active.splice(persistentIndex, 1);
     }
     else {
-      active.splice(persistentIndex, 1);
+      active.push(index);
     }
     this.props.rootUtils.setPersistentState({
       pluginInterrogatorActiveSections: [ ...active ],
@@ -127,8 +129,6 @@ export default class PluginInterrogator extends React.Component<{ rootUtils: Roo
 
   // Used after the application has finished booting.
   genPluginList = () => {
-    // let active = this.props.rootUtils.rootState.varHackActiveSection;
-
     const list: any = [];
     let accordionIndex = 0;
     _.each(this.pluginInfo, (entry, name) => {
@@ -151,7 +151,7 @@ export default class PluginInterrogator extends React.Component<{ rootUtils: Roo
             {name}
           </Accordion.Title>,
           <Accordion.Content key={`interrogated-item-${name}`} active={isActive}>
-            Contains info for {name}
+            {isActive && <ObjectScanner name={name}/>}
           </Accordion.Content>
         ]
       );
