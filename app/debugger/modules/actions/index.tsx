@@ -1,18 +1,18 @@
 import React from 'react';
-import Settings from './Settings';
+import Actions from './Actions';
 import DebuggerTab from '../../components/DebuggerTab';
 
-function genSettings(props) {
+function genActions(props) {
   return {
-    menuItem: 'Settings',
+    menuItem: 'Actions',
     render: () => (
       <DebuggerTab>
-        {<Settings {...props}/>}
+        {<Actions {...props}/>}
       </DebuggerTab>
     ),
   };
 }
 
 export {
-  genSettings,
+  genActions,
 }

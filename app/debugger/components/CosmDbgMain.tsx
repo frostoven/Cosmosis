@@ -2,8 +2,9 @@ import _ from 'lodash';
 import React from 'react';
 import { Icon, Tab } from 'semantic-ui-react';
 import Draggable from 'react-draggable'
-import { genVariableHijacker } from '../modules/variableHijacker';
 import { cosmDbg } from '../index';
+import { genVariableHijacker } from '../modules/variableHijacker';
+import { genActions } from '../modules/actions';
 import { genSettings } from '../modules/settings';
 import { pickIconByTime } from '../debuggerUtils';
 import { CosmDbgRootUtils } from './interfaces/CosmDbgRootUtils';
@@ -121,6 +122,7 @@ export default class CosmDbgMain extends React.Component {
             onTabChange={this.handleTabChange}
             panes={[
               genVariableHijacker({ rootUtils }),
+              genActions({ rootUtils }),
               genSettings({ rootUtils }),
             ]}
           />
