@@ -16,11 +16,11 @@ userProfile.cacheChangeEvent.getOnce(({ userOptions }) => {
 if (process.env && process.env.NODE_ENV !== 'production') {
   // This flag allows us to disable HMR when we don't want reloads during
   // debugging.
-  window.hmrEnabled = true;
+  window.hmrDisabled = false;
 
   function reload(event, filename) {
     if (filename) {
-      if (!window.hmrEnabled) {
+      if (window.hmrDisabled) {
         return console.log('HMR: Ignoring external changes.');
       }
       // console.log(`${filename} file Changed`);

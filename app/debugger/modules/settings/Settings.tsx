@@ -21,7 +21,7 @@ const angleKeys = Object.keys(arrowAngle);
 interface RootUtils extends CosmDbgRootUtils {
   rootState: {
     settingsDefaultPosition: string,
-    hmrEnabled: boolean | undefined,
+    hmrDisabled: boolean | undefined,
   }
 }
 
@@ -29,12 +29,15 @@ export default class Settings extends React.Component<{ rootUtils: RootUtils }> 
   static propTypes = { rootUtils: PropTypes.any };
 
   componentDidMount() {
-    // @ts-ignore
-    window.hmrEnabled = this.props.rootUtils.rootState.hmrEnabled;
+    this.applyHmr();
   }
 
+  // Resets all UI state.
   handleReset = () => {
-    this.props.rootUtils.resetPersistentState();
+    this.props.rootUtils.resetPersistentState(() => {
+      // @ts-ignore
+      window.hmrDisabled = false;
+    });
   };
 
   cycleDefaultPosition = () => {
@@ -50,14 +53,21 @@ export default class Settings extends React.Component<{ rootUtils: RootUtils }> 
   };
 
   toggleHmr = () => {
-    const hmrEnabled = !this.props.rootUtils.rootState.hmrEnabled;
     // @ts-ignore
-    window.hmrEnabled = hmrEnabled;
-    // console.log('[Actions] hmrEnabled:', hmrEnabled);
+    const newSetting = !window.hmrDisabled;
+    console.log('[Settings] hmrDisabled:', newSetting);
     this.props.rootUtils.setPersistentState({
-      hmrEnabled: hmrEnabled,
+      hmrDisabled: newSetting,
+    }, (newState) => {
+      this.applyHmr();
     });
   };
+
+  applyHmr() {
+    // @ts-ignore - variable does indeed exist on window. A relic from when
+    // there was no debug window.
+    window.hmrDisabled = !!this.props.rootUtils.rootState.hmrDisabled;
+  }
 
   render() {
     const { rootUtils } = this.props;
@@ -67,7 +77,7 @@ export default class Settings extends React.Component<{ rootUtils: RootUtils }> 
     const defaultPosStyle = { transform: arrowTransform + ' ' + arrowAngle[currentSetting] };
 
     // Auto-reload on code change.
-    const hmrEnabled = rootUtils.rootState.hmrEnabled;
+    const hmrDisabled = !!rootUtils.rootState.hmrDisabled;
 
     return (
       <div>
@@ -91,7 +101,7 @@ export default class Settings extends React.Component<{ rootUtils: RootUtils }> 
 
           <Form.Field>
             <label>Auto-reload if source code changes</label>
-            <Button fluid onClick={this.toggleHmr}>HMR enabled: {hmrEnabled ? 'yes' : 'no'}</Button>
+            <Button fluid onClick={this.toggleHmr}>HMR enabled: {hmrDisabled ? 'no' : 'yes'}</Button>
           </Form.Field>
         </Form>
       </div>

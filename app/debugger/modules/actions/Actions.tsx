@@ -23,7 +23,7 @@ export default class Actions extends React.Component<{ rootUtils: RootUtils }> {
         <Form>
           <Form.Field>
             <label>Opens the user profile directory</label>
-            <Button fluid onClick={this.openProfileDir}>Open profile dir</Button>
+            <Button fluid onClick={this.openProfileDir}>Open profile directory</Button>
           </Form.Field>
         </Form>
       </div>
