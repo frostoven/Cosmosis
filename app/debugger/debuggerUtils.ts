@@ -80,8 +80,14 @@ function guessTypeInfo(value): {
     if (value instanceof THREE.Scene) {
       result.friendlyName = 'Scene';
     }
-    if (value instanceof THREE.Mesh) {
+    else if (value instanceof THREE.Mesh) {
       result.friendlyName = 'Mesh';
+    }
+    else if (value instanceof THREE.PerspectiveCamera) {
+      result.friendlyName = 'PerspectiveCamera';
+    }
+    else if (value instanceof THREE.OrthographicCamera) {
+      result.friendlyName = 'OrthographicCamera';
     }
     else {
       result.friendlyName = 'Object3D';
