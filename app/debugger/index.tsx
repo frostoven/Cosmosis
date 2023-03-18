@@ -27,12 +27,14 @@ const stringifyPretty = (data: any) => {
 export default class CosmDbg {
   private _configState: CosmDbgConfig;
   private _packageJson: { [key: string]: any };
+  private _storageDir: string | null;
   private _storageLocation: string | null;
   private _mainDiv!: HTMLElement;
 
   constructor() {
     this._configState = {};
     this._packageJson = {};
+    this._storageDir = null;
     this._storageLocation = null;
     this._loadPackageJson(() => {
       this._setupStorage(() => {
@@ -71,7 +73,21 @@ export default class CosmDbg {
     }
 
     const gameDataDirName = this._packageJson.gameDataDirName;
-    this._storageLocation = `${userDataDir}/${gameDataDirName}/${CONFIG_FILE}`;
+    this._storageDir = `${userDataDir}/${gameDataDirName}`;
+    this._storageLocation = `${this._storageDir}/${CONFIG_FILE}`;
+
+    // There is no OS where we can reasonably have a profile path with such few
+    // characters, unless the user has a super-strange profile path such as
+    // /a. Even a profile saved in /tmp will pass this test when accounting for
+    // slashes.
+    const minLen = gameDataDirName.length + 5;
+    if (this._storageDir.length < minLen || this._storageLocation.length < minLen) {
+      const message = '[debugger] Profile path very short. ' +
+        'This is likely a bug. Abort.';
+      console.error(message);
+      throw message;
+    }
+
     fs.exists(this._storageLocation, (exists) => {
       if (!exists) {
         // @ts-ignore.
@@ -130,6 +146,16 @@ export default class CosmDbg {
         }
       }
     );
+  }
+
+  get storageDir() {
+    return this._storageDir;
+  }
+
+  set storageDir(v) {
+    const message = '[debugger] storageDir is read-only.';
+    console.error(message);
+    throw message;
   }
 
   setOption(key: string, value: any) {

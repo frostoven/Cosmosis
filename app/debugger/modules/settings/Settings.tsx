@@ -21,11 +21,17 @@ const angleKeys = Object.keys(arrowAngle);
 interface RootUtils extends CosmDbgRootUtils {
   rootState: {
     settingsDefaultPosition: string,
+    hmrEnabled: boolean | undefined,
   }
 }
 
 export default class Settings extends React.Component<{ rootUtils: RootUtils }> {
   static propTypes = { rootUtils: PropTypes.any };
+
+  componentDidMount() {
+    // @ts-ignore
+    window.hmrEnabled = this.props.rootUtils.rootState.hmrEnabled;
+  }
 
   handleReset = () => {
     this.props.rootUtils.resetPersistentState();
@@ -43,10 +49,25 @@ export default class Settings extends React.Component<{ rootUtils: RootUtils }> 
     });
   };
 
+  toggleHmr = () => {
+    const hmrEnabled = !this.props.rootUtils.rootState.hmrEnabled;
+    // @ts-ignore
+    window.hmrEnabled = hmrEnabled;
+    // console.log('[Actions] hmrEnabled:', hmrEnabled);
+    this.props.rootUtils.setPersistentState({
+      hmrEnabled: hmrEnabled,
+    });
+  };
+
   render() {
     const { rootUtils } = this.props;
+
+    // Boot-time window position.
     const currentSetting = rootUtils.rootState.settingsDefaultPosition || 'topRight';
     const defaultPosStyle = { transform: arrowTransform + ' ' + arrowAngle[currentSetting] };
+
+    // Auto-reload on code change.
+    const hmrEnabled = rootUtils.rootState.hmrEnabled;
 
     return (
       <div>
@@ -66,6 +87,11 @@ export default class Settings extends React.Component<{ rootUtils: RootUtils }> 
                 style={defaultPosStyle}
               />
             </Button>
+          </Form.Field>
+
+          <Form.Field>
+            <label>Auto-reload if source code changes</label>
+            <Button fluid onClick={this.toggleHmr}>HMR enabled: {hmrEnabled ? 'yes' : 'no'}</Button>
           </Form.Field>
         </Form>
       </div>

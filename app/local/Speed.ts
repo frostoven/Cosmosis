@@ -43,5 +43,3 @@ export default class Speed {
     this.currentSpeed -= amount + this.currentSpeed;
   }
 }
-
-console.log(new Speed());
