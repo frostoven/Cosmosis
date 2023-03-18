@@ -58,13 +58,14 @@ export default class CosmDbgMain extends React.Component {
   // By storing all state in the debugger root, we can easily save exact state
   // and restore it during reboots. The purpose is to give the feel that the
   // debugger keeps running across code-change-induced reboots.
-  setPersistentState = (state) => {
+  setPersistentState = (state, callback = () => {}) => {
     this.setState(state, () => {
       cosmDbg.setOption('uiState', this.state);
+      callback();
     });
   };
 
-  resetPersistentState = () => {
+  resetPersistentState = (callback = () => {}) => {
     const newState = {};
     _.each(this.state, (value, key) => {
       newState[key] = undefined;
@@ -75,6 +76,7 @@ export default class CosmDbgMain extends React.Component {
       ...newState,
     }, () => {
       cosmDbg.resetState();
+      callback();
     });
   };
 
