@@ -63,11 +63,11 @@ export default class Settings extends React.Component<{ rootUtils: RootUtils }> 
     });
   };
 
-  applyHmr() {
+  applyHmr = () => {
     // @ts-ignore - variable does indeed exist on window. A relic from when
     // there was no debug window.
     window.hmrDisabled = !!this.props.rootUtils.rootState.hmrDisabled;
-  }
+  };
 
   render() {
     const { rootUtils } = this.props;
