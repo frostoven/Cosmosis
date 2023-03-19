@@ -29,6 +29,9 @@ export default class Settings extends React.Component<{ rootUtils: RootUtils }> 
   static propTypes = { rootUtils: PropTypes.any };
 
   componentDidMount() {
+    // TODO: have a look at adding to a different boot mechanism; this function
+    //  is only called if the settings tab is opened, meaning HMR settings are
+    //  not applied when booting with other tabs active.
     this.applyHmr();
   }
 

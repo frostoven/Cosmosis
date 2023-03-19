@@ -49,7 +49,7 @@ function guessTypeInfo(value): {
   stringCompatible: boolean,
 } {
   let friendlyName = typeof value;
-  switch (value) {
+  switch (friendlyName) {
     case 'bigint':
     case 'boolean':
     case 'number':

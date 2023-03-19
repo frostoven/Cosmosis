@@ -1,27 +1,50 @@
 import _ from 'lodash';
 import React from 'react';
-import { CosmDbgRootUtils } from '../../../components/interfaces/CosmDbgRootUtils';
 import { TreeObject } from './interfaces/TreeObject';
 import { gameRuntime } from '../../../../plugins/gameRuntime';
-import ChangeTracker from 'change-tracker/src';
 import { guessTypeInfo } from '../../../debuggerUtils';
 
-interface RootUtils extends CosmDbgRootUtils {
-  rootState: {},
-  name: string,
-}
-
 export default class ObjectScanner extends React.Component<any, any>{
-  state = { objectTree: [] };
+  // If true, the whole object tree is (shallowly) rebuild on rerender. Note
+  // that mouse move events (intentionally) tend to cause rerenders.
+  static rebuildTreeAggressively = false;
+
+  state = {};
+
+  private _objectTreeCache: Array<any>;
+  // If the tree is currently rebuilding, this is true. Else false.
+  private _objectTreeCacheBuilding: boolean;
+
+  constructor(props) {
+    super(props);
+    this._objectTreeCache = [];
+    this._objectTreeCacheBuilding = false;
+  }
 
   componentDidMount() {
     console.log('-> ObjectScanner mounted.');
+    this.buildObjectTree(true);
+  }
+
+  componentWillUnmount() {
+    console.log('-> ObjectScanner unmounting.');
+  }
+
+  buildObjectTree(rerenderWhenDone = false) {
+    if (this._objectTreeCacheBuilding) {
+      return;
+    }
+
+    this._objectTreeCacheBuilding = true;
     const plugin = gameRuntime.tracked[this.props.name];
 
     if (!plugin || !plugin.getOnce) {
-      this.setState({
-        objectTree: [{ key: '[object cannot be probed]', value: {}, private: false }],
-      });
+      this._objectTreeCache = [{ key: '[object cannot be probed]', value: {}, private: false }];
+      this._objectTreeCacheBuilding = false;
+
+      if (rerenderWhenDone) {
+        this.setState({ forceRerender: Math.random() });
+      }
       return;
     }
 
@@ -45,22 +68,24 @@ export default class ObjectScanner extends React.Component<any, any>{
         privateVars.push({ key: '[no contents]', value: {}, private: false });
       }
 
-      this.setState({
-        objectTree: publicVars.concat(privateVars),
-      });
+      this._objectTreeCache = publicVars.concat(privateVars);
+      this._objectTreeCacheBuilding = false;
+
+      if (rerenderWhenDone) {
+        this.setState({ forceRerender: Math.random() });
+      }
     });
   }
 
-  componentWillUnmount() {
-    console.log('-> ObjectScanner unmounting.');
-  }
-
-  genTree() {
+  renderTree() {
     const list: Array<any> = [];
-    const objectTree = this.state.objectTree;
+    const objectTree = this._objectTreeCache;
     for (let i = 0, len = objectTree.length; i < len; i++) {
       const { key, value }: TreeObject = objectTree[i];
       let type = typeof value;
+      // Note: typeInfo does not mean 'type'. It's more like a human-readable
+      // hint, and takes some liberties such as calling null 'null' instead of
+      // 'object'.
       const typeInfo = guessTypeInfo(value);
 
       let style = {};
@@ -88,13 +113,17 @@ export default class ObjectScanner extends React.Component<any, any>{
   }
 
   render() {
-    if (!this.state.objectTree.length) {
+    if (!this._objectTreeCache.length) {
       return <div>Loading...</div>;
+    }
+
+    if (ObjectScanner.rebuildTreeAggressively) {
+      this.buildObjectTree();
     }
 
     return (
       <div>
-        {this.genTree()}
+        {this.renderTree()}
       </div>
     );
   }
