@@ -137,13 +137,13 @@ export default class CosmDbgMain extends React.Component {
             <div style={TITLE_BAR_BUTTONS}><Icon name='sort' onClick={this.handleCollapse}/></div>
             <div
               // @ts-ignore
-              style={{ ...TITLE_BAR_BUTTONS, paddingRight: 4, }}
+              style={{ ...TITLE_BAR_BUTTONS, paddingRight: 2, }}
             >
               <Icon name='terminal' size='small' onClick={this.handleShowDevTools}/>
             </div>
             <div
               // @ts-ignore
-              style={{ ...TITLE_BAR_BUTTONS, paddingRight: 7, }}
+              style={{ ...TITLE_BAR_BUTTONS, paddingRight: 6, }}
             >
               <Icon
                 name={this.state.confirmingReload ? 'exclamation triangle' : 'redo'}
