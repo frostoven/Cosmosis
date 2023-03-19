@@ -25,7 +25,7 @@ const TITLE_BAR_BUTTONS = {
 };
 
 export default class CosmDbgMain extends React.Component {
-  static defaultState = { rootActiveTab: 0, isCollapsed: false };
+  static defaultState = { rootActiveTab: 0, isCollapsed: false, confirmingReload: false };
   state: { [key: string]: any } = { ...CosmDbgMain.defaultState };
   private _iconTimer:  NodeJS.Timeout | null;
 
@@ -92,6 +92,20 @@ export default class CosmDbgMain extends React.Component {
     this.setPersistentState({ isCollapsed: !this.state.isCollapsed });
   };
 
+  handleReloadClick = () => {
+    if (!this.state.confirmingReload) {
+      this.setState({ confirmingReload: true });
+      // If the user doesn't confirm after 4 seconds, undo confirmation check.
+      setTimeout(() => {
+        this.setState({ confirmingReload: false });
+      }, 4000);
+    }
+    else {
+      // @ts-ignore
+      nw.Window.get().reloadIgnoringCache();
+    }
+  };
+
   render() {
     const rootUtils: CosmDbgRootUtils = {
       rootState: this.state,
@@ -116,6 +130,16 @@ export default class CosmDbgMain extends React.Component {
             <div style={TITLE_BAR_BUTTONS}><Icon name='close' onClick={this.handleClose}/></div>
             {/* @ts-ignore */}
             <div style={TITLE_BAR_BUTTONS}><Icon name='sort' onClick={this.handleCollapse}/></div>
+            <div
+              // @ts-ignore
+              style={{ ...TITLE_BAR_BUTTONS, paddingRight: 3, }}
+            >
+              <Icon
+                name={this.state.confirmingReload ? 'exclamation triangle' : 'redo'}
+                size='small'
+                onClick={this.handleReloadClick}
+              />
+            </div>
           </div>
           <Tab
             style={{ display: this.state.isCollapsed ? 'none' : 'block' }}
