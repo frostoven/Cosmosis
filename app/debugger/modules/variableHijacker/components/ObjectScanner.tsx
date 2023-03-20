@@ -3,6 +3,7 @@ import React from 'react';
 import { TreeObject } from './interfaces/TreeObject';
 import { gameRuntime } from '../../../../plugins/gameRuntime';
 import { guessTypeInfo } from '../../../debuggerUtils';
+import LiveTracker from './LiveTracker';
 
 export default class ObjectScanner extends React.Component<any, any>{
   // If true, the whole object tree is (shallowly) rebuild on rerender. Note
@@ -94,20 +95,15 @@ export default class ObjectScanner extends React.Component<any, any>{
         style = { fontStyle: 'italic' };
       }
 
-      if (typeInfo.stringCompatible) {
-        list.push(
-          <div key={this.props.name + '-item-' + i} style={style}>
-            [{type}] {key} {value}
-          </div>
-        );
-      }
-      else {
-        list.push(
-          <div key={this.props.name + '-item-' + i} style={style}>
-            [{type}] {key} [{typeInfo.friendlyName}]
-          </div>
-        );
-      }
+      const componentKey = this.props.name + '-item-' + i;
+      list.push(
+        <LiveTracker
+          key={componentKey}
+          type={type}
+          typeInfo={typeInfo}
+          treeObject={{ key, value }}
+        />
+      );
     }
     return list;
   }
