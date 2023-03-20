@@ -32,17 +32,16 @@ const icon = {
   Vector2: { img: `${iconPath}/Vector2.png`, backgroundColor: pink },
   Vector3: { img: `${iconPath}/Vector3.png`, backgroundColor: pink },
   // No icons yet, but still recognized as special types.
-  Quaternion: { img: `${iconPath}/Object.png`, backgroundColor: pink },
-  Euler: { img: `${iconPath}/Object.png`, backgroundColor: pink },
-  Matrix3: { img: `${iconPath}/Object.png`, backgroundColor: pink },
-  Matrix4: { img: `${iconPath}/Object.png`, backgroundColor: pink },
-  Layers: { img: `${iconPath}/Object.png`, backgroundColor: pink },
-  Clock: { img: `${iconPath}/Object.png`, backgroundColor: pink },
-  WebGLRenderer: { img: `${iconPath}/Object.png`, backgroundColor: pink },
+  Quaternion: { img: `${iconPath}/class.png`, backgroundColor: pink },
+  Euler: { img: `${iconPath}/class.png`, backgroundColor: pink },
+  Matrix3: { img: `${iconPath}/class.png`, backgroundColor: pink },
+  Matrix4: { img: `${iconPath}/class.png`, backgroundColor: pink },
+  Layers: { img: `${iconPath}/class.png`, backgroundColor: pink },
+  Clock: { img: `${iconPath}/class.png`, backgroundColor: pink },
+  WebGLRenderer: { img: `${iconPath}/class.png`, backgroundColor: pink },
   // General internal classes
   ChangeTracker: { img: `${iconPath}/ChangeTracker.png`, backgroundColor: darkAqua },
-  '[Internal]Location': { img: `${iconPath}/internalClass.png`, backgroundColor: darkAqua },
-
+  '[Internal]Location': { img: `${iconPath}/class.png`, backgroundColor: darkAqua },
 };
 
 export {
