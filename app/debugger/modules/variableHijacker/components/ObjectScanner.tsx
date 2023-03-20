@@ -67,7 +67,7 @@ export default class ObjectScanner extends React.Component<any, any>{
       });
 
       if (!varCount) {
-        privateVars.push({ key: '[no contents]', value: {}, private: false });
+        privateVars.push({ key: '[ no contents ]', value: {}, private: false });
       }
 
       this._objectTreeCache = publicVars.concat(privateVars);

@@ -1,30 +1,10 @@
 import React from 'react';
+import { icon } from './configs/theme';
 
 const ICON_STYLE = {
   marginLeft: -4,
   marginBottom: -4,
   marginRight: 12,
-};
-
-const iconPath = '/css/debuggerIcons';
-
-const icon = {
-  Array: `${iconPath}/Array.png`,
-  bigint: `${iconPath}/number.png`,
-  boolean: `${iconPath}/boolean.png`,
-  ChangeTracker: `${iconPath}/ChangeTracker.png`,
-  null: `${iconPath}/null.png`,
-  Mesh: `${iconPath}/Mesh.png`,
-  number: `${iconPath}/number.png`,
-  object: `${iconPath}/object.png`,
-  Object3D: `${iconPath}/Object3D.png`,
-  OrthographicCamera: `${iconPath}/aperture.png`,
-  PerspectiveCamera: `${iconPath}/aperture.png`,
-  Scene: `${iconPath}/Scene.png`,
-  string: `${iconPath}/string.png`,
-  undefined: `${iconPath}/undefined.png`,
-  Vector2: `${iconPath}/Vector2.png`,
-  Vector3: `${iconPath}/Vector3.png`,
 };
 
 // Further explanation:
@@ -41,9 +21,9 @@ export default class TypeImageIcon extends React.Component<Props>{
   }
 
   render() {
-    let iconUri = icon[this.props.name];
+    let iconUri = icon[this.props.name]?.img;
     if (!iconUri) {
-      iconUri = icon['object'];
+      iconUri = icon['Object'].img;
     }
 
     return (

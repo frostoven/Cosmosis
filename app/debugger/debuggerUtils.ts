@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import ChangeTracker from 'change-tracker/src';
+import { Location } from '../plugins/built-ins/Location';
 
 function pickIconByTime() {
   const date = new Date();
@@ -95,6 +96,30 @@ function guessTypeInfo(value): {
     else {
       result.friendlyName = 'Object3D';
     }
+  }
+  else if (value instanceof THREE.Quaternion) {
+    result.friendlyName = 'Quaternion';
+  }
+  else if (value instanceof THREE.Euler) {
+    result.friendlyName = 'Euler';
+  }
+  else if (value instanceof THREE.Matrix3) {
+    result.friendlyName = 'Matrix3';
+  }
+  else if (value instanceof THREE.Matrix4) {
+    result.friendlyName = 'Matrix4';
+  }
+  else if (value instanceof THREE.Layers) {
+    result.friendlyName = 'Layers';
+  }
+  else if (value instanceof THREE.Clock) {
+    result.friendlyName = 'Clock';
+  }
+  else if (value instanceof THREE.WebGLRenderer) {
+    result.friendlyName = 'WebGLRenderer';
+  }
+  else if (value instanceof Location) {
+    result.friendlyName = '[Internal]Location';
   }
   else {
     result.friendlyName = 'Object';
