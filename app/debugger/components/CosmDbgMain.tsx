@@ -52,13 +52,13 @@ export default class CosmDbgMain extends React.Component {
   grabInputOnHover = () => {
     const element = this.ref.current;
     element.addEventListener('mouseover', () => {
-      this.setState({ hoverActive: true });
+      this.state.hoverActive || this.setState({ hoverActive: true });
       gameRuntime.tracked.inputManager.getOnce((instance) => {
         instance.blockKbMouse();
       });
     }, false);
     element.addEventListener('mouseleave', () => {
-      this.setState({ hoverActive: false });
+      this.state.hoverActive && this.setState({ hoverActive: false });
       gameRuntime.tracked.inputManager.getOnce((instance) => {
         instance.blockKbMouse(false);
       });

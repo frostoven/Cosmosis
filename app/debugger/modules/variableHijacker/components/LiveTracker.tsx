@@ -26,7 +26,7 @@ export default class LiveTracker extends React.Component<Props>{
       text = `${key}: ${value}`;
     }
     else {
-      text = `[${typeInfo.friendlyName}]`;
+      text = `${key}`;
     }
 
     return (

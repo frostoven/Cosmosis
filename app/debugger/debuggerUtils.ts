@@ -73,6 +73,9 @@ function guessTypeInfo(value): {
   else if (value instanceof ChangeTracker) {
     result.friendlyName = 'ChangeTracker';
   }
+  else if (value instanceof THREE.Vector2) {
+    result.friendlyName = 'Vector2';
+  }
   else if (value instanceof THREE.Vector3) {
     result.friendlyName = 'Vector3';
   }

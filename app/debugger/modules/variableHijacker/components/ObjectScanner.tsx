@@ -4,6 +4,7 @@ import { TreeObject } from './interfaces/TreeObject';
 import { gameRuntime } from '../../../../plugins/gameRuntime';
 import { guessTypeInfo } from '../../../debuggerUtils';
 import LiveTracker from './LiveTracker';
+import PreventRender from '../../../components/PreventRender';
 
 export default class ObjectScanner extends React.Component<any, any>{
   // If true, the whole object tree is (shallowly) rebuild on rerender. Note
@@ -40,7 +41,7 @@ export default class ObjectScanner extends React.Component<any, any>{
     const plugin = gameRuntime.tracked[this.props.name];
 
     if (!plugin || !plugin.getOnce) {
-      this._objectTreeCache = [{ key: '[object cannot be probed]', value: {}, private: false }];
+      this._objectTreeCache = [{ key: '[ probe failed ]', value: {}, private: false }];
       this._objectTreeCacheBuilding = false;
 
       if (rerenderWhenDone) {
@@ -118,9 +119,9 @@ export default class ObjectScanner extends React.Component<any, any>{
     }
 
     return (
-      <div>
+      <PreventRender renderWhenChanging={this.props.name}>
         {this.renderTree()}
-      </div>
+      </PreventRender>
     );
   }
 }
