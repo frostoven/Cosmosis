@@ -1,8 +1,8 @@
 import React from 'react';
 import { Button, Icon } from 'semantic-ui-react';
-import NumericSlider from './NumericSlider';
-import NumericInput from './NumericInput';
-import NumberSliderRange from './NumberSliderRange';
+import NumericSlider from '../subcomponents/NumericSlider';
+import NumericInput from '../subcomponents/NumericInput';
+import NumberSliderRange from '../subcomponents/NumberSliderRange';
 
 const CONTAINER_STYLE = {
   fontFamily: 'Consolas, monospace, Lato, sans-serif',

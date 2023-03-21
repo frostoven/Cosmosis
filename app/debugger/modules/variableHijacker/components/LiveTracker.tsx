@@ -1,7 +1,7 @@
 import React from 'react';
 import TypeImageIcon from './TypeImageIcon';
 import { defaultColor, icon } from './configs/theme';
-import { gizmoMap } from './gizmos/gizmoMap';
+import { gizmoMap } from './variableControl/gizmoMap';
 import ThemedSegment from './ThemedSegment';
 
 const BUTTON_STYLE: { [key: string]: any } = {
