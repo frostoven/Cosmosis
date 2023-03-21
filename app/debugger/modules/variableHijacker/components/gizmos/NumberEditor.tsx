@@ -1,6 +1,8 @@
 import React from 'react';
-import { Button, Form, Icon } from 'semantic-ui-react';
-import GizmoInput from './GizmoInput';
+import { Button, Icon } from 'semantic-ui-react';
+import NumericSlider from './NumericSlider';
+import NumericInput from './NumericInput';
+import NumberSliderRange from './NumberSliderRange';
 
 const CONTAINER_STYLE = {
   fontFamily: 'Consolas, monospace, Lato, sans-serif',
@@ -27,7 +29,7 @@ const SLIDER_STYLE = {
 interface Props {
 }
 
-export default class NumberSlider extends React.Component<Props> {
+export default class NumberEditor extends React.Component<Props> {
   constructor(props) {
     super(props);
   }
@@ -37,26 +39,14 @@ export default class NumberSlider extends React.Component<Props> {
 
     return (
       <div style={CONTAINER_STYLE}>
-        <Button style={BUTTON_STYLE}>-</Button>
-        <GizmoInput defaultValue={'0x00'}/>
-        <Button style={BUTTON_STYLE}>+</Button>
+        <NumericInput/>
         &nbsp;
         <Button positive={false} style={{ width: 55 }}>
           <Icon name="unlock"/>
         </Button>
         <br/>
-        <input
-          type='range'
-          min={-1}
-          max={100}
-          value={24}
-          // onChange={this.handleSliderChange}
-          style={SLIDER_STYLE}
-        />
-
-        <div>
-          Min: [] | Max: []
-        </div>
+        <NumericSlider min={-1} max={100} value={24}/>
+        <NumberSliderRange/>
       </div>
     );
   }

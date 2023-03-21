@@ -8,7 +8,7 @@ const INPUT_STYLE = {
   marginTop: -1,
 };
 
-export default function GizmoInput(props) {
+export default function TextInput(props) {
   return (
     <div className='ui input'>
       <input defaultValue={props.defaultValue} style={INPUT_STYLE}/>
