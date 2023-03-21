@@ -27,6 +27,8 @@ const SLIDER_STYLE = {
 };
 
 interface Props {
+  target: string,
+  parent: object,
 }
 
 export default class NumberEditor extends React.Component<Props> {
@@ -35,7 +37,7 @@ export default class NumberEditor extends React.Component<Props> {
   }
 
   render() {
-    // const iconComponent = this.props.iconComponent;
+    console.log('=> target:', this.props.target, 'parent:', this.props.parent);
 
     return (
       <div style={CONTAINER_STYLE}>

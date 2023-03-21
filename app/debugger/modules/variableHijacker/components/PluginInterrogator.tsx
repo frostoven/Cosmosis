@@ -49,12 +49,10 @@ export default class PluginInterrogator extends React.Component<{ rootUtils: Roo
     // pluginLoader.onLoaded.cachedValue
     pluginLoader.onLoaded.getOnce(() => {
       this.setState({ allPluginsLoaded: true });
-      console.log('>>>>>>>>>>>>> pluginLoader.onLoaded triggered');
       this.setState({ forceRerender: Math.random() });
     });
 
     pluginLoader.onProgress.getEveryChange(({ name, loaded, shoved }) => {
-      console.log(`xxxxxxxxxxxxx pluginLoader.onProgress:`, { name, loaded, shoved });
       const entry = this.pluginInfo[name];
       entry.name = name;
       entry.loaded = loaded;

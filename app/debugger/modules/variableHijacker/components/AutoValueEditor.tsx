@@ -1,6 +1,5 @@
 import React from 'react';
 import TypeImageIcon from './TypeImageIcon';
-import { defaultColor, icon } from './configs/theme';
 import { gizmoMap } from './variableControl/gizmoMap';
 import ThemedSegment from './ThemedSegment';
 
@@ -16,17 +15,18 @@ interface Props {
   type: string,
   typeInfo: any,
   treeObject: any,
+  parent: object,
 }
 
-export default class LiveTracker extends React.Component<Props>{
+export default class AutoValueEditor extends React.Component<Props>{
   state = { inspecting: false };
 
   constructor(props) {
     super(props);
   }
 
-  onClick = () => {
-    this.setState({ inspecting: !this.state.inspecting });
+  onInspect = () => {
+    this.setState({ inspecting: true });
   };
 
   render() {
@@ -51,31 +51,23 @@ export default class LiveTracker extends React.Component<Props>{
 
     if (this.state.inspecting) {
       let Component = gizmoMap[typeInfo?.friendlyName];
-      if (!Component) {
-        return (
-          <ThemedSegment friendlyType={iconName}>
-            <TypeImageIcon name={iconName}/>
-            {text}
-          </ThemedSegment>
-        )
-      }
-      else {
+      if (Component)  {
+        const parent = this.props.parent;
         return (
           <ThemedSegment friendlyType={iconName}>
             <TypeImageIcon name={iconName}/>
             {key}
-            <Component/>
+            <Component target={key} parent={parent}/>
           </ThemedSegment>
         )
       }
     }
-    else {
-      return (
-        <ThemedSegment friendlyType={iconName} onClick={this.onClick}>
-          <TypeImageIcon name={iconName}/>
-          {text}
-        </ThemedSegment>
-      );
-    }
+
+    return (
+      <ThemedSegment friendlyType={iconName} onClick={this.onInspect}>
+        <TypeImageIcon name={iconName}/>
+        {text}
+      </ThemedSegment>
+    );
   }
 }

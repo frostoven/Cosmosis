@@ -3,12 +3,11 @@ import React from 'react';
 import { TreeObject } from './interfaces/TreeObject';
 import { gameRuntime } from '../../../../plugins/gameRuntime';
 import { guessTypeInfo } from '../../../debuggerUtils';
-import LiveTracker from './LiveTracker';
+import AutoValueEditor from './AutoValueEditor';
 import PreventRender from '../../../components/PreventRender';
 
 export default class ObjectScanner extends React.Component<any, any>{
-  // If true, the whole object tree is (shallowly) rebuild on rerender. Note
-  // that mouse move events (intentionally) tend to cause rerenders.
+  // If true, the whole object tree is (shallowly) rebuild on rerender.
   static rebuildTreeAggressively = false;
 
   state = {};
@@ -98,11 +97,12 @@ export default class ObjectScanner extends React.Component<any, any>{
 
       const componentKey = this.props.name + '-item-' + i;
       list.push(
-        <LiveTracker
+        <AutoValueEditor
           key={componentKey}
           type={type}
           typeInfo={typeInfo}
           treeObject={{ key, value }}
+          parent={gameRuntime.tracked[this.props.name].cachedValue}
         />
       );
     }
