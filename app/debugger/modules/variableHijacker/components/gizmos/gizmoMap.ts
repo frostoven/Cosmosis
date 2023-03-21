@@ -1,7 +1,7 @@
-import NumberSlider from './NumberSlider';
+import NumberEditor from './NumberEditor';
 
 const gizmoMap = {
-  number: NumberSlider,
+  number: NumberEditor,
 };
 
 export {

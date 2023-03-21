@@ -1,8 +1,8 @@
 import React from 'react';
-import { Button } from 'semantic-ui-react';
 import TypeImageIcon from './TypeImageIcon';
 import { defaultColor, icon } from './configs/theme';
 import { gizmoMap } from './gizmos/gizmoMap';
+import ThemedSegment from './ThemedSegment';
 
 const BUTTON_STYLE: { [key: string]: any } = {
   fontFamily: 'Consolas, monospace, Lato, sans-serif',
@@ -49,39 +49,32 @@ export default class LiveTracker extends React.Component<Props>{
       }
     }
 
-    const buttonStyle = { ...BUTTON_STYLE };
-    buttonStyle.backgroundColor = icon[iconName]?.backgroundColor;
-    if (!buttonStyle.backgroundColor) {
-      console.warn(`[LiveTracker] No theme entry for icon['${iconName}']`);
-      buttonStyle.backgroundColor = defaultColor;
-    }
-
     if (this.state.inspecting) {
       let Component = gizmoMap[typeInfo?.friendlyName];
       if (!Component) {
         return (
-          <Button fluid style={buttonStyle}>
+          <ThemedSegment friendlyType={iconName}>
             <TypeImageIcon name={iconName}/>
             {text}
-          </Button>
+          </ThemedSegment>
         )
       }
       else {
         return (
-          <Button fluid style={buttonStyle}>
+          <ThemedSegment friendlyType={iconName}>
             <TypeImageIcon name={iconName}/>
             {key}
             <Component/>
-          </Button>
+          </ThemedSegment>
         )
       }
     }
     else {
       return (
-        <Button fluid style={buttonStyle} onClick={this.onClick}>
+        <ThemedSegment friendlyType={iconName} onClick={this.onClick}>
           <TypeImageIcon name={iconName}/>
           {text}
-        </Button>
+        </ThemedSegment>
       );
     }
   }
