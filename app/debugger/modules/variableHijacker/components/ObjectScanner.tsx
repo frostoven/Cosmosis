@@ -3,7 +3,7 @@ import React from 'react';
 import { TreeObject } from './interfaces/TreeObject';
 import { gameRuntime } from '../../../../plugins/gameRuntime';
 import { guessTypeInfo } from '../../../debuggerUtils';
-import AutoValueEditor from './AutoValueEditor';
+import AutoValueEditor from './variableControl/AutoValueEditor';
 import PreventRender from '../../../components/PreventRender';
 
 export default class ObjectScanner extends React.Component<any, any>{

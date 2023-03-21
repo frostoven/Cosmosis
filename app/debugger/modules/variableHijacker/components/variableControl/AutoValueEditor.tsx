@@ -1,7 +1,7 @@
 import React from 'react';
-import TypeImageIcon from './TypeImageIcon';
-import { gizmoMap } from './variableControl/gizmoMap';
-import ThemedSegment from './ThemedSegment';
+import TypeImageIcon from '../TypeImageIcon';
+import { gizmoMap } from './gizmoMap';
+import ThemedSegment from '../ThemedSegment';
 
 const BUTTON_STYLE: { [key: string]: any } = {
   fontFamily: 'Consolas, monospace, Lato, sans-serif',
