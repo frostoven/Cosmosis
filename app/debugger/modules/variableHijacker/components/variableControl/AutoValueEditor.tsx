@@ -3,14 +3,6 @@ import TypeImageIcon from '../TypeImageIcon';
 import { gizmoMap } from './gizmoMap';
 import ThemedSegment from '../ThemedSegment';
 
-const BUTTON_STYLE: { [key: string]: any } = {
-  fontFamily: 'Consolas, monospace, Lato, sans-serif',
-  fontWeight: 'normal',
-  display: 'block',
-  textAlign: 'left',
-  marginBottom: -1,
-};
-
 interface Props {
   type: string,
   typeInfo: any,
@@ -57,7 +49,7 @@ export default class AutoValueEditor extends React.Component<Props>{
           <ThemedSegment friendlyType={iconName}>
             <TypeImageIcon name={iconName}/>
             {key}
-            <Component target={key} parent={parent}/>
+            <Component targetName={key} parent={parent}/>
           </ThemedSegment>
         )
       }

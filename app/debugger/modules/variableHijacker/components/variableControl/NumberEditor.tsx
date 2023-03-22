@@ -3,6 +3,7 @@ import { Button, Icon } from 'semantic-ui-react';
 import NumericSlider from '../subcomponents/NumericSlider';
 import NumericInput from '../subcomponents/NumericInput';
 import NumberSliderRange from '../subcomponents/NumberSliderRange';
+import Hijacker from '../../Hijacker';
 
 const CONTAINER_STYLE = {
   fontFamily: 'Consolas, monospace, Lato, sans-serif',
@@ -13,31 +14,58 @@ const CONTAINER_STYLE = {
   paddingLeft: 19,
 };
 
-const BUTTON_STYLE = {
-  margin: 0,
-};
-
-const INPUT_STYLE = {
-  color: '#ffffff',
-  backgroundColor: '#565b5d',
-};
-
-const SLIDER_STYLE = {
-  width: '100%',
-};
-
 interface Props {
-  target: string,
+  // The name of the variable you wish to control.
+  targetName: string,
+  // The parent object instance that your target is a child of.
   parent: object,
 }
 
 export default class NumberEditor extends React.Component<Props> {
-  constructor(props) {
-    super(props);
+  state = { targetIsViable: false };
+
+  private hijacker: Hijacker | undefined;
+
+  componentDidMount() {
+    this.hijackTarget();
   }
 
+  hijackTarget = () => {
+    const { parent, targetName } = this.props;
+    if (!parent || !targetName) {
+      return;
+    }
+
+    // TODO: rewrite this demo to be generic. Specifically tested against
+    //  shipPilot -> _throttlePosition.
+    const hijacker = new Hijacker(parent);
+    hijacker.override(
+      targetName,
+      ({ originalGet, reference }) => {
+        // console.log('-> getter:', reference.value);
+      },
+      ({ originalSet, reference }, newValue) => {
+        reference.value = Math.floor(newValue * 10) / 10;
+        // console.log('-> setter:', reference.value);
+        return false;
+      },
+    );
+
+    console.log({ hijacker, parent });
+
+    this.setState({ targetIsViable: true });
+  };
+
   render() {
-    console.log('=> target:', this.props.target, 'parent:', this.props.parent);
+    // console.log('=> targetName:', this.props.targetName, 'parent:', this.props.parent);
+    if (!this.state.targetIsViable) {
+      return (
+        <div style={{ display: 'inline' }}>
+          &nbsp;
+          [ target not viable ]
+        </div>
+      );
+    }
 
     return (
       <div style={CONTAINER_STYLE}>
