@@ -1,9 +1,18 @@
+type onGetSignature = (
+  data: { originalGet: any, reference: { value: any, originalName: string } },
+) => boolean | void;
+
+type onSetSignature = (
+  data: { originalSet: any, reference: { value: any, originalName: string } },
+  newValue: any,
+) => boolean | void;
+
 export default class Hijacker {
   private _target: any;
   private _descriptorBackup: any;
   private _targetIsInstance: boolean;
 
-  constructor(target = null, hijackPrototype = false) {
+  constructor(target: any = null, hijackPrototype = false) {
     this._target = null;
     this._descriptorBackup = null;
     this._targetIsInstance = true;
@@ -38,7 +47,11 @@ export default class Hijacker {
   // original as your first argument, followed by the actual passed arguments.
   // Return false from your callback to block the original get/set from being
   // called.
-  override(propertyName: string, onGet: Function | null, onSet: Function | null) {
+  override(
+    propertyName: string,
+    onGet: onGetSignature = () => {},
+    onSet: onSetSignature = () => {},
+  ) {
     if (this._target === null) {
       console.error(
         '[Hijacker] Define a target via setParent before overriding.'
@@ -53,24 +66,35 @@ export default class Hijacker {
       this._descriptorBackup = { ...descriptor };
     }
 
+    const reference = {
+      originalName: propertyName,
+      value: this._target[propertyName],
+    };
+
     if (onGet) {
-      property.get = (...args) => {
-        const originalGet = this._descriptorBackup?.get;
-        let stopExec = onGet({ originalGet }, ...args) === false;
-        if (!stopExec && typeof originalGet === 'function') {
-          // This is done in case the original getter has some write-related
-          // stuff that needs to happen.
-          originalGet();
+      const originalGet = this._descriptorBackup?.get;
+      const meta = { originalGet, reference };
+      property.get = () => {
+        let disableAutoGet = onGet(meta) === false;
+        if (!disableAutoGet && typeof originalGet === 'function') {
+            // This is done in case the original getter has some special logic
+            // that needs to run.
+            originalGet();
         }
+        return reference.value;
       };
     }
 
     if (onSet) {
       const originalSet = this._descriptorBackup?.set;
-      property.set = (...args) => {
-        let stopExec = onSet({ originalSet }, ...args) === false;
-        if (!stopExec && typeof originalSet === 'function') {
-          originalSet(...args);
+      const meta = { originalSet, reference };
+      property.set = (newValue) => {
+        let disableAutoSet = onSet(meta, newValue) === false;
+        if (!disableAutoSet) {
+          if (typeof originalSet === 'function') {
+            originalSet(newValue);
+          }
+          reference.value = newValue;
         }
       };
     }
