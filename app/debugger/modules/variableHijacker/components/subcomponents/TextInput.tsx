@@ -6,6 +6,7 @@ const INPUT_STYLE = {
   borderTop: 'thin solid black',
   borderBottom: 'thin solid black',
   marginTop: -1,
+  cursor: 'text',
 };
 
 export default function TextInput(props) {
