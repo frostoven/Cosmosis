@@ -16,6 +16,11 @@ export default class Actions extends React.Component<{ rootUtils: RootUtils }> {
     userProfile.navigateToDataDir();
   };
 
+  reloadApplication = () => {
+    // @ts-ignore
+    chrome.tabs.reload();
+  };
+
   render() {
     return (
       <div>
@@ -24,6 +29,10 @@ export default class Actions extends React.Component<{ rootUtils: RootUtils }> {
           <Form.Field>
             <label>Opens the user profile directory</label>
             <Button fluid onClick={this.openProfileDir}>Open profile directory</Button>
+          </Form.Field>
+          <Form.Field>
+            <label>Soft reload (same thing HMR does)</label>
+            <Button fluid onClick={this.reloadApplication}>Reload application</Button>
           </Form.Field>
         </Form>
       </div>
