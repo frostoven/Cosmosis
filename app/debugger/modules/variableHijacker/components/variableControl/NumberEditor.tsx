@@ -4,6 +4,7 @@ import NumericSlider from '../subcomponents/NumericSlider';
 import NumericInput from '../subcomponents/NumericInput';
 import NumberSliderRange from '../subcomponents/NumberSliderRange';
 import Hijacker from '../../Hijacker';
+import ChangeTracker from 'change-tracker/src';
 
 const CONTAINER_STYLE = {
   fontFamily: 'Consolas, monospace, Lato, sans-serif',
@@ -22,9 +23,16 @@ interface Props {
 }
 
 export default class NumberEditor extends React.Component<Props> {
-  state = { targetIsViable: false };
+  state = { targetIsViable: false, locked: false };
 
-  private hijacker: Hijacker | undefined;
+  private hijacker: Hijacker;
+  private readonly valueTracker: ChangeTracker;
+
+  constructor(props) {
+    super(props);
+    this.hijacker = new Hijacker();
+    this.valueTracker = new ChangeTracker();
+  }
 
   componentDidMount() {
     this.hijackTarget();
@@ -38,22 +46,32 @@ export default class NumberEditor extends React.Component<Props> {
 
     // TODO: rewrite this demo to be generic. Specifically tested against
     //  shipPilot -> _throttlePosition.
-    const hijacker = new Hijacker(parent);
-    hijacker.override(
+    this.hijacker.setParent(parent);
+    this.hijacker.override(
       targetName,
-      ({ originalGet, reference }) => {
-        // console.log('-> getter:', reference.value);
+      ({ originalGet, valueStore }) => {
+        // console.log('-> getter:', valueStore.value);
       },
-      ({ originalSet, reference }, newValue) => {
-        reference.value = Math.floor(newValue * 10) / 10;
-        // console.log('-> setter:', reference.value);
-        return false;
+      // ({ originalSet, valueStore }, newValue) => {
+      ({ originalSet, valueStore }, newValue) => {
+        // valueStore.value = Math.floor(newValue * 10) / 10;
+        // console.log('-> setter:', valueStore.value);
+        if (!this.state.locked) {
+          this.valueTracker.setValue({ valueStore, newValue });
+        }
+        else {
+          return false;
+        }
       },
     );
 
-    console.log({ hijacker, parent });
+    // console.log({ hijacker, parent });
 
     this.setState({ targetIsViable: true });
+  };
+
+  toggleLock = () => {
+    this.setState({ locked: !this.state.locked });
   };
 
   render() {
@@ -69,10 +87,10 @@ export default class NumberEditor extends React.Component<Props> {
 
     return (
       <div style={CONTAINER_STYLE}>
-        <NumericInput/>
+        <NumericInput valueTracker={this.valueTracker} valueStore={this.hijacker.valueStore}/>
         &nbsp;
-        <Button positive={false} style={{ width: 55 }}>
-          <Icon name="unlock"/>
+        <Button positive={false} style={{ width: 55 }} onClick={this.toggleLock}>
+          <Icon name={this.state.locked ? 'lock' : 'unlock'}/>
         </Button>
         <br/>
         <NumericSlider min={-1} max={100} value={24}/>

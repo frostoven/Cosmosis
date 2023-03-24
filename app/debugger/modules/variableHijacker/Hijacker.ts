@@ -1,9 +1,9 @@
 type onGetSignature = (
-  data: { originalGet: any, reference: { value: any, originalName: string } },
+  data: { originalGet: any, valueStore: { value: any, originalName: string | null } },
 ) => boolean | void;
 
 type onSetSignature = (
-  data: { originalSet: any, reference: { value: any, originalName: string } },
+  data: { originalSet: any, valueStore: { value: any, originalName: string | null } },
   newValue: any,
 ) => boolean | void;
 
@@ -11,11 +11,17 @@ export default class Hijacker {
   private _target: any;
   private _descriptorBackup: any;
   private _targetIsInstance: boolean;
+  public readonly valueStore: { originalName: string | null; value: any };
 
   constructor(target: any = null, hijackPrototype = false) {
     this._target = null;
     this._descriptorBackup = null;
     this._targetIsInstance = true;
+
+    this.valueStore = {
+      originalName: null,
+      value: undefined,
+    };
 
     if (target) {
       this.setParent(target, hijackPrototype);
@@ -66,14 +72,13 @@ export default class Hijacker {
       this._descriptorBackup = { ...descriptor };
     }
 
-    const reference = {
-      originalName: propertyName,
-      value: this._target[propertyName],
-    };
+    const valueStore = this.valueStore;
+    valueStore.originalName = propertyName;
+    valueStore.value = this._target[propertyName];
 
     if (onGet) {
       const originalGet = this._descriptorBackup?.get;
-      const meta = { originalGet, reference };
+      const meta = { originalGet, valueStore };
       property.get = () => {
         let disableAutoGet = onGet(meta) === false;
         if (!disableAutoGet && typeof originalGet === 'function') {
@@ -81,20 +86,20 @@ export default class Hijacker {
             // that needs to run.
             originalGet();
         }
-        return reference.value;
+        return valueStore.value;
       };
     }
 
     if (onSet) {
       const originalSet = this._descriptorBackup?.set;
-      const meta = { originalSet, reference };
+      const meta = { originalSet, valueStore };
       property.set = (newValue) => {
         let disableAutoSet = onSet(meta, newValue) === false;
         if (!disableAutoSet) {
           if (typeof originalSet === 'function') {
             originalSet(newValue);
           }
-          reference.value = newValue;
+          valueStore.value = newValue;
         }
       };
     }
