@@ -98,6 +98,15 @@ border: none !important;
     width: 100%;
 }
 
+.ui.button {
+    cursor: unset;
+}
+
+.ui.accordion .title, .ui.accordion .accordion .title {
+    cursor: unset;
+}
+
+
 .game-menu {
     padding: 24px !important;
 }
@@ -168,4 +177,12 @@ border: none !important;
     /*color: blue;*/
     right: 16px;
     position: absolute;
+}
+
+.ui.bottom.attached.segment.active.tab {
+    border: thin solid #45494b;
+}
+
+.ui.attached.tabular.menu {
+    border: none;
 }

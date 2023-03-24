@@ -57,7 +57,8 @@ export default class DebuggerTab extends React.Component<any, any> {
   render() {
     const tabStyle = { ...TAB_STYLE };
     if (cosmDbg.getState().uiState?.modalSize === HeightSetting.large) {
-      tabStyle.maxHeight = window.innerHeight - 92;
+      tabStyle.height = window.innerHeight - 79;
+      tabStyle.maxHeight = tabStyle.height;
     }
 
     return (

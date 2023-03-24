@@ -19,7 +19,6 @@ const INPUT_STYLE = {
   backgroundColor: '#565b5d',
   borderTop: 'thin solid black',
   borderBottom: 'thin solid black',
-  marginTop: -1,
   cursor: 'text',
 };
 
