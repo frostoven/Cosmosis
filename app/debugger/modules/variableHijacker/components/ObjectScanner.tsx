@@ -40,7 +40,9 @@ export default class ObjectScanner extends React.Component<any, any>{
     const plugin = gameRuntime.tracked[this.props.name];
 
     if (!plugin || !plugin.getOnce) {
-      this._objectTreeCache = [{ key: '[ probe failed ]', value: {}, private: false }];
+      this._objectTreeCache = [{
+        key: '[ probe failed ]', value: {}, isPrivate: false,
+      }];
       this._objectTreeCacheBuilding = false;
 
       if (rerenderWhenDone) {
@@ -52,24 +54,40 @@ export default class ObjectScanner extends React.Component<any, any>{
     plugin.getOnce((instance) => {
       const publicVars: Array<TreeObject> = [];
       const privateVars: Array<TreeObject> = [];
-      const methods: Array<any> = [];
+      const accessors: Array<TreeObject> = [];
+      // const methods: Array<any> = [];
 
       let varCount = 0;
       _.each(instance, (value, key) => {
         varCount++;
         if (key[0] === '_') {
-          privateVars.push({ key, value, private: true });
+          privateVars.push({ key, value, isPrivate: true });
         }
         else {
-          publicVars.push({ key, value, private: false });
+          publicVars.push({ key, value, isPrivate: false });
         }
       });
 
+      const descriptors = Object.entries(
+        Object.getOwnPropertyDescriptors(instance.__proto__),
+      );
+
+      const getters = descriptors.filter(([key, descriptor]) => {
+        return typeof descriptor.get === 'function';
+      });
+
+      _.each(getters, (getter) => {
+        const key = getter[0];
+        accessors.push({
+          key, value: instance[key], isPrivate: key[0] === '_', isAccessor: true,
+        });
+      });
+
       if (!varCount) {
-        privateVars.push({ key: '[ no contents ]', value: {}, private: false });
+        privateVars.push({ key: '[ no contents ]', value: {}, isPrivate: false });
       }
 
-      this._objectTreeCache = publicVars.concat(privateVars);
+      this._objectTreeCache = publicVars.concat(privateVars).concat(accessors);
       this._objectTreeCacheBuilding = false;
 
       if (rerenderWhenDone) {
@@ -80,20 +98,14 @@ export default class ObjectScanner extends React.Component<any, any>{
 
   renderTree() {
     const list: Array<any> = [];
-    const objectTree = this._objectTreeCache;
-    for (let i = 0, len = objectTree.length; i < len; i++) {
-      const { key, value }: TreeObject = objectTree[i];
-      let type = typeof value;
+    const objectTreeCache = this._objectTreeCache;
+    for (let i = 0, len = objectTreeCache.length; i < len; i++) {
+      const treeObject: TreeObject = objectTreeCache[i];
+      let type = typeof treeObject.value;
       // Note: typeInfo does not mean 'type'. It's more like a human-readable
       // hint, and takes some liberties such as calling null 'null' instead of
       // 'object'.
-      const typeInfo = guessTypeInfo(value);
-
-      let style = {};
-      let isPrivate = key[0] === '_';
-      if (isPrivate) {
-        style = { fontStyle: 'italic' };
-      }
+      const typeInfo = guessTypeInfo(treeObject.value);
 
       const componentKey = this.props.name + '-item-' + i;
       list.push(
@@ -101,8 +113,8 @@ export default class ObjectScanner extends React.Component<any, any>{
           key={componentKey}
           type={type}
           typeInfo={typeInfo}
-          treeObject={{ key, value }}
-          parent={gameRuntime.tracked[this.props.name].cachedValue}
+          treeObject={treeObject}
+          parent={gameRuntime.tracked[this.props.name]?.cachedValue}
         />
       );
     }

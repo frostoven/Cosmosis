@@ -7,6 +7,19 @@ type onSetSignature = (
   newValue: any,
 ) => boolean | void;
 
+// Add to docs when writing:
+// Beware of getters and setters on the target object. While the hijacker can
+// grab those, it'll only be able to intercept requests that directly target
+// those getters and setters. For example, if the getter is myVar but the class
+// internally uses _myVar, then requests to read and write _myVar won't be
+// noticed by the hijacker, while requests to read and write myVar will be
+// intercepted successfully. This can result in inconsistent behaviour
+// depending on your reason for hijacking the variable in the first place. On
+// the other hand, this is also useful for cases where you specifically want to
+// fool external code while keeping private vars clean. You can check if your
+// target is a getter or setter using the isGetterOrSetter command built into
+// this library's class.
+
 export default class Hijacker {
   private _target: any;
   private _descriptorBackup: any;
@@ -70,6 +83,14 @@ export default class Hijacker {
     const descriptor = this.dumpPropertyDescriptor(propertyName);
     if (descriptor) {
       this._descriptorBackup = { ...descriptor };
+
+      // Preserve instance context.
+      if (typeof this._descriptorBackup.get === 'function') {
+        this._descriptorBackup.get = this._descriptorBackup.get.bind(this._target);
+      }
+      if (typeof this._descriptorBackup.set === 'function') {
+        this._descriptorBackup.set = this._descriptorBackup.set.bind(this._target);
+      }
     }
 
     const valueStore = this.valueStore;
@@ -82,9 +103,7 @@ export default class Hijacker {
       property.get = () => {
         let disableAutoGet = onGet(meta) === false;
         if (!disableAutoGet && typeof originalGet === 'function') {
-            // This is done in case the original getter has some special logic
-            // that needs to run.
-            originalGet();
+            valueStore.value = originalGet();
         }
         return valueStore.value;
       };

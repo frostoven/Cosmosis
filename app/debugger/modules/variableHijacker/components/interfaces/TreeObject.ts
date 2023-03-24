@@ -1,7 +1,8 @@
 interface TreeObject {
   key: string,
   value: any,
-  private: boolean,
+  isPrivate: boolean,
+  isAccessor?: boolean,
 }
 
 export {

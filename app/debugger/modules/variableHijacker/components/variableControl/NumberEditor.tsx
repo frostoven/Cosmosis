@@ -51,6 +51,9 @@ export default class NumberEditor extends React.Component<Props> {
       targetName,
       ({ originalGet, valueStore }) => {
         // console.log('-> getter:', valueStore.value);
+        // if (typeof originalGet === 'function') {
+        //   this.valueTracker.setValue({ valueStore, newValue: originalGet() });
+        // }
       },
       // ({ originalSet, valueStore }, newValue) => {
       ({ originalSet, valueStore }, newValue) => {
