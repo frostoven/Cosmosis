@@ -3,8 +3,9 @@ import React from 'react';
 import { Tab } from 'semantic-ui-react';
 import { pluginLoader } from '../../plugins';
 import { cosmDbg } from '../index';
+import { HeightSetting } from './types/HeightSetting';
 
-const TAB_STYLE = {
+const TAB_STYLE: any = {
   maxHeight: 400,
   overflowX: 'hidden',
   overflowY: 'auto',
@@ -54,9 +55,14 @@ export default class DebuggerTab extends React.Component<any, any> {
   };
 
   render() {
+    const tabStyle = { ...TAB_STYLE };
+    if (cosmDbg.getState().uiState?.modalSize === HeightSetting.large) {
+      tabStyle.maxHeight = window.innerHeight - 92;
+    }
+
     return (
       // @ts-ignore
-      <div ref={this.ref} style={TAB_STYLE}>
+      <div ref={this.ref} style={tabStyle}>
         <Tab.Pane>
           {this.props.children}
         </Tab.Pane>

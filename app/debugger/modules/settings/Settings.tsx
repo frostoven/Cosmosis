@@ -16,6 +16,7 @@ const arrowAngle = {
   topLeft: 'rotate(315deg)',
 };
 
+const defaultPosition = 'left';
 const angleKeys = Object.keys(arrowAngle);
 
 interface RootUtils extends CosmDbgRootUtils {
@@ -58,7 +59,7 @@ export default class Settings extends React.Component<{ rootUtils: RootUtils }> 
 
   cycleDefaultPosition = () => {
     const { rootUtils: { rootState: { settingsDefaultPosition } } } = this.props;
-    let currentSetting = settingsDefaultPosition || 'topRight';
+    let currentSetting = settingsDefaultPosition || defaultPosition;
 
     const keyIndex = angleKeys.indexOf(currentSetting);
 
@@ -89,7 +90,7 @@ export default class Settings extends React.Component<{ rootUtils: RootUtils }> 
     const { rootUtils } = this.props;
 
     // Boot-time window position.
-    const currentSetting = rootUtils.rootState.settingsDefaultPosition || 'topRight';
+    const currentSetting = rootUtils.rootState.settingsDefaultPosition || defaultPosition;
     const defaultPosStyle = { transform: arrowTransform + ' ' + arrowAngle[currentSetting] };
 
     // Auto-reload on code change.
