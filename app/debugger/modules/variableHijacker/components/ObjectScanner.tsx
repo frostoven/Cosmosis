@@ -102,6 +102,11 @@ export default class ObjectScanner extends React.Component<any, any>{
       // hint, and takes some liberties such as calling null 'null' instead of
       // 'object'.
       const typeInfo = guessTypeInfo(treeObject.value);
+      if (typeInfo.friendlyName === 'function') {
+        // Functions may or may not show up here depending on whether or not
+        // they're defined as methods or properties.
+        continue;
+      }
 
       const componentKey = this.props.name + '-item-' + i;
       list.push(

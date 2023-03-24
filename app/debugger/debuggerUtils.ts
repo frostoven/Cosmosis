@@ -59,6 +59,10 @@ function guessTypeInfo(value): {
       return { friendlyName, stringCompatible: true };
   }
 
+  if (friendlyName === 'function') {
+    return { friendlyName, stringCompatible: false };
+  }
+
   if (value === null) {
     return { friendlyName: 'null', stringCompatible: true };
   }
