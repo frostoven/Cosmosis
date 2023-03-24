@@ -35,6 +35,19 @@ export default class Settings extends React.Component<{ rootUtils: RootUtils }> 
     this.applyHmr();
   }
 
+  componentWillUnmount() {
+    if (this.props.rootUtils.rootState.hmrDisabled) {
+      // This is here because of current difficulties in consistently applying
+      // this on start-up.
+      // @ts-ignore
+      window.hmrDisabled = false;
+      console.log('[Settings] HMR now re-enabled.');
+      this.props.rootUtils.setPersistentState({
+        hmrDisabled: false,
+      });
+    }
+  }
+
   // Resets all UI state.
   handleReset = () => {
     this.props.rootUtils.resetPersistentState(() => {
@@ -104,6 +117,7 @@ export default class Settings extends React.Component<{ rootUtils: RootUtils }> 
 
           <Form.Field>
             <label>Auto-reload if source code changes</label>
+            <label>(auto-enabled next change after leaving this tab)</label>
             <Button fluid onClick={this.toggleHmr}>HMR enabled: {hmrDisabled ? 'no' : 'yes'}</Button>
           </Form.Field>
         </Form>
