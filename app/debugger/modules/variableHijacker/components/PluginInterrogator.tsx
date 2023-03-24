@@ -5,6 +5,7 @@ import { pluginLoader } from '../../../../plugins';
 import { Accordion, Icon, List } from 'semantic-ui-react';
 import { CosmDbgRootUtils } from '../../../components/interfaces/CosmDbgRootUtils';
 import ObjectScanner from './ObjectScanner';
+import { gameRuntime } from '../../../../plugins/gameRuntime';
 
 const ROTATION_STYLE_FIX = {
   paddingRight: 0,
@@ -137,6 +138,7 @@ export default class PluginInterrogator extends React.Component<{ rootUtils: Roo
 
       const active = this.props.rootUtils.rootState.pluginInterrogatorActiveSections || [];
       const isActive = active.includes(accordionIndex);
+      const parent = gameRuntime.tracked[name]?.cachedValue;
       list.push(
         [
           <Accordion.Title
@@ -149,7 +151,7 @@ export default class PluginInterrogator extends React.Component<{ rootUtils: Roo
             {name}
           </Accordion.Title>,
           <Accordion.Content key={`interrogated-item-${name}`} active={isActive}>
-            {isActive && <ObjectScanner name={name}/>}
+            {isActive && <ObjectScanner name={name} parent={parent}/>}
           </Accordion.Content>
         ]
       );

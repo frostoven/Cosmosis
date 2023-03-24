@@ -15,6 +15,11 @@ const CONTAINER_STYLE = {
   paddingLeft: 19,
 };
 
+const LOCK_STYLE = {
+  backgroundColor: '#595e60',
+  width: 55,
+};
+
 interface Props {
   // The name of the variable you wish to control.
   targetName: string,
@@ -88,11 +93,14 @@ export default class NumberEditor extends React.Component<Props> {
       );
     }
 
+    const lockStyle = { ...LOCK_STYLE };
+    this.state.locked && (lockStyle.backgroundColor = '#485563');
+
     return (
       <div style={CONTAINER_STYLE}>
         <NumericInput valueTracker={this.valueTracker} valueStore={this.hijacker.valueStore}/>
         &nbsp;
-        <Button positive={false} style={{ width: 55 }} onClick={this.toggleLock}>
+        <Button positive={false} style={lockStyle} onClick={this.toggleLock}>
           <Icon name={this.state.locked ? 'lock' : 'unlock'}/>
         </Button>
         <br/>

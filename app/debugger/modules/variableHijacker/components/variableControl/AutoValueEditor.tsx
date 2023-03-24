@@ -2,8 +2,10 @@ import React from 'react';
 import TypeImageIcon from '../TypeImageIcon';
 import { gizmoMap } from './gizmoMap';
 import ThemedSegment from '../ThemedSegment';
+import ObjectScanner from '../ObjectScanner';
 
 const COLLAPSED_STYLE: any = {
+  fontFamily: 'inherit',
   display: 'inline',
   cursor: 'inherit',
 };
@@ -12,6 +14,7 @@ interface Props {
   type: string,
   typeInfo: any,
   treeObject: any,
+  name: string,
   parent: object,
 }
 
@@ -66,7 +69,24 @@ export default class AutoValueEditor extends React.Component<Props>{
             {key}
             <Component targetName={key} parent={parent}/>
           </ThemedSegment>
-        )
+        );
+      }
+      else if (!typeInfo.stringCompatible) {
+        return (
+          <ThemedSegment friendlyType={iconName}>
+            <TypeImageIcon name={iconName}/>
+            <div style={style}>
+              {this.props.treeObject.key}
+            </div>
+            <br/>
+            <br/>
+            {/* @ts-ignore */}
+              <ObjectScanner
+                parent={this.props.parent[this.props.treeObject.key]}
+                name={this.props.treeObject.key}
+              />
+          </ThemedSegment>
+        );
       }
     }
 
