@@ -27,6 +27,9 @@ const mouseFriendly = [
 // Mode: a logical group of controllers.
 // Controller: something capable of responding to key input.
 class InputManager {
+  private _blockAllInput: boolean;
+  private _blockKbMouse: boolean;
+
   private readonly _modes: Array<{ [key: string]: ModeController }>;
   private readonly _activeControllers: Array<string>;
   private readonly _allControllers: {};
@@ -42,6 +45,9 @@ class InputManager {
   private _prevControllerY: number;
 
   constructor() {
+    this._blockAllInput = false;
+    this._blockKbMouse = false;
+
     // Note: we divide by 2 because TS generates both an index and a key name
     // for each entry.
     const modeCount = Object.keys(ModeId).length / 2;
@@ -87,7 +93,7 @@ class InputManager {
   }
 
   _setupInputListeners() {
-    const listener = this._universalEventListener.bind(this);
+    const listener = this._kbMouseEventListener.bind(this);
     window.addEventListener('keydown', listener);
     window.addEventListener('keyup', listener);
     window.addEventListener('mousedown', listener, false);
@@ -101,7 +107,11 @@ class InputManager {
 
   // TODO: this method (and several others) were copy-pasted from previous
   //  very quick-and-dirty code that became important. It needs cleanup.
-  _universalEventListener(event) {
+  _kbMouseEventListener(event) {
+    if (this._blockKbMouse) {
+      return;
+    }
+
     // Note: code is retained for keyboard events, but modified for other event
     // types. For example, mouse click left will be stored as code=spMouseLeft
     // (sp is short for 'special').
@@ -212,6 +222,14 @@ class InputManager {
     }
   }
 
+  blockAllInput(enabled = true) {
+    this._blockAllInput = enabled;
+  }
+
+  blockKbMouse(enabled = true) {
+    this._blockKbMouse = enabled;
+  }
+
   /**
    * Returns spScrollDown or spScrollUp. Returns null if delta is 0.
    * @param {number} deltaY
@@ -306,6 +324,10 @@ class InputManager {
   }
 
   propagateInput({ key, value, analogData } : { key: string, value: number, analogData?: {} }) {
+    if (this._blockAllInput) {
+      return;
+    }
+
     const active = this._activeControllers;
     for (let i = 0, len = active.length; i < len; i++) {
       const controller: ModeController = this._allControllers[active[i]];

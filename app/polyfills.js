@@ -1,3 +1,5 @@
+import * as THREE from 'three';
+
 if (!window.requestPostAnimationFrame) {
   /**
    * Within this application, requestPostAnimationFrame is used to render
@@ -22,3 +24,7 @@ if (!window.requestPostAnimationFrame) {
     });
   }
 }
+
+// Needed by the load-bmfont library.
+// TODO: consider forking and fixing so we don't need a global import.
+window.THREE = THREE;

@@ -60,7 +60,7 @@ The below table details all NPM scripts currently available.
 HMR is enabled by default, though it currently causes a full application
 reload. To disable HMR, press F12 to open the dev terminal and run:
 ```javascript
-hmrEnabled = false;
+hmrDisabled = true;
 ```
 This will disable HMR until you restart the application.
 

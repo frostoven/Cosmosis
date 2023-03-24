@@ -17,7 +17,7 @@ html, body {
 
 * {
     font-family: Helvetica, Arial, sans-serif;
-    cursor: url(/potatoLqAssets/icons/cursor1_sharp_32.png) 3 3, auto !important;
+    cursor: url(/potatoLqAssets/icons/cursor1_sharp_32.png) 3 3, auto;
 }
 
 #far-object-canvas {
@@ -135,4 +135,24 @@ html, body {
     71.429% { opacity: 1; }
     85.715% { opacity: 0; }
     100% { opacity: 0; }
+}
+
+
+input[type='range'] {
+    appearance: none;
+    background-color: #3a3f41;
+    height: 12px;
+    margin-top: 8px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+}
+
+input[type='range']::-webkit-slider-thumb {
+    appearance: none;
+    background: #b2daab;
+    cursor: ew-resize;
+    width: 16px;
+    height: 16px;
+    margin-top: -1px;
+    border-radius: 8px;
 }

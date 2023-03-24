@@ -23,7 +23,7 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.(js|ts)?$/,
+        test: /\.(js|ts|tsx)?$/,
         loader: 'babel-loader',
         options: {
           compact: false,
@@ -60,7 +60,7 @@ module.exports = {
   },
 
   resolve: {
-    extensions: ['.js', '.ts', '.json', '.jsx']
+    extensions: ['.js', '.ts', '.json', '.jsx', '.tsx']
   },
 
   stats: {

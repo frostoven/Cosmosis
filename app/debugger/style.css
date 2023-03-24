@@ -1,0 +1,5 @@
+#cosm-dbg {
+  position: fixed;
+  z-index: 1800;
+  opacity: 0.96;
+}

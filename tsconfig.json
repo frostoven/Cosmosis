@@ -11,7 +11,8 @@
     "allowJs": true,
     "checkJs": false,
     "inlineSourceMap": true,
-    "incremental": true
+    "incremental": true,
+    "jsx": "react"
   },
   "rules": {
     "semicolon": [ true, "always" ]

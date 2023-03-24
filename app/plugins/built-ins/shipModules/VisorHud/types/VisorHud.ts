@@ -1,4 +1,3 @@
-import * as THREE from 'three';
 import ShipModule from '../../types/ShipModule';
 import PluginCacheTracker from '../../../../../emitters/PluginCacheTracker';
 import HudItem from '../../../ui/Hud3D/types/HudItem';
@@ -7,6 +6,7 @@ import HudPage from '../../../ui/Hud3D/types/HudPage';
 import { gameRuntime } from '../../../../gameRuntime';
 import { Hud3D } from '../../../ui/Hud3D';
 import Core from '../../../Core';
+import ChangeTracker from 'change-tracker/src';
 
 export default class VisorHud extends ShipModule {
   readonly friendlyName: string;
@@ -14,7 +14,8 @@ export default class VisorHud extends ShipModule {
 
   private _pluginCache: PluginCacheTracker;
   // @ts-ignore - item will be set before use.
-  private throttle: HudItem;
+  private _throttle: HudItem;
+  private _speedIndicator!: HudItem;
   private _uiLoaded: boolean;
 
   constructor() {
@@ -37,7 +38,7 @@ export default class VisorHud extends ShipModule {
   }
 
   _setupUi() {
-    this.throttle = new HudItem({
+    this._throttle = new HudItem({
       model: 'throttleStandard',
       align: HudAlign.right,
       offsetY: 0.001,
@@ -46,15 +47,24 @@ export default class VisorHud extends ShipModule {
       flipOnNegativeProgress: true,
     });
 
-    const page = new HudPage('visorHud', [ this.throttle ]);
+    this._speedIndicator = new HudItem({
+      text: 'TBA',
+      align: HudAlign.bottomRight,
+      offsetY: 0.001,
+      xRotation: 0.01,
+    });
+
+    const page = new HudPage('visorHud', [ this._throttle, this._speedIndicator ]);
     gameRuntime.tracked.hud3D.getOnce((hud3d: Hud3D) => {
       hud3d.setScreenPage(page, this._pluginCache.camera);
 
-      console.log('=> hud page:', page);
-      console.log('=> throttle ui:', this.throttle);
-
-      this.throttle.onMeshLoaded.getOnce(() => {
+      ChangeTracker.waitForAll([
+        this._throttle.onMeshLoaded,
+        this._speedIndicator.onMeshLoaded,
+      ]).getOnce(() => {
         this._uiLoaded = true;
+        // this._throttle._debugDetachFromFace();
+        // this._speedIndicator._debugDetachFromFace();
       });
     });
   }
@@ -69,8 +79,8 @@ export default class VisorHud extends ShipModule {
     }
 
     // TODO: on power dim, consider implementing this, it's very satisfying:
-    // this.throttle.progress.seek(Math.random());
+    // this.throttle.setProgress(Math.random(), true);
 
-    this.throttle.setProgress(-Core.unifiedView.throttlePrettyPosition);
+    this._throttle.setProgress(-Core.unifiedView.throttlePrettyPosition);
   }
 }
