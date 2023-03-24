@@ -27,12 +27,15 @@ const TITLE_BAR_BUTTONS = {
   float: 'right',
 };
 
+const draggableHandles = '.cosm-dbg-handle, .ui.attached.tabular.menu';
+
 export default class CosmDbgMain extends React.Component {
   static defaultState = {
     rootActiveTab: 0,
     modalSize: HeightSetting.small,
     confirmingReload: false,
     hoverActive: false,
+    allowDragging: true,
   };
   state: { [key: string]: any } = { ...CosmDbgMain.defaultState };
   private readonly ref: React.RefObject<any>;
@@ -111,11 +114,12 @@ export default class CosmDbgMain extends React.Component {
       newState[key] = undefined;
     });
 
+    cosmDbg.resetState();
     this.setState({
-      ...CosmDbgMain.defaultState,
       ...newState,
+      ...CosmDbgMain.defaultState,
     }, () => {
-      cosmDbg.resetState();
+      cosmDbg.setOption('uiState', this.state);
       callback();
     });
   };
@@ -187,7 +191,7 @@ export default class CosmDbgMain extends React.Component {
     this.state.hoverActive && (titleBarStyle.backgroundColor = '#344234');
 
     return (
-      <Draggable handle=".cosm-dbg-handle, .ui.attached.tabular.menu">
+      <Draggable disabled={!this.state.allowDragging} handle={draggableHandles}>
         <div style={containerStyle} ref={this.ref}>
           <div className="cosm-dbg-handle" style={titleBarStyle}>
             <Icon name={pickIconByTime()}/>

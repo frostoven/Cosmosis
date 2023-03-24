@@ -22,6 +22,7 @@ const angleKeys = Object.keys(arrowAngle);
 interface RootUtils extends CosmDbgRootUtils {
   rootState: {
     settingsDefaultPosition: string,
+    allowDragging: boolean,
     hmrDisabled: boolean | undefined,
   }
 }
@@ -69,6 +70,12 @@ export default class Settings extends React.Component<{ rootUtils: RootUtils }> 
     });
   };
 
+  toggleDebuggerDragging = () => {
+    this.props.rootUtils.setPersistentState({
+      allowDragging: !this.props.rootUtils.rootState.allowDragging,
+    });
+  };
+
   toggleHmr = () => {
     // @ts-ignore
     const newSetting = !window.hmrDisabled;
@@ -92,6 +99,9 @@ export default class Settings extends React.Component<{ rootUtils: RootUtils }> 
     // Boot-time window position.
     const currentSetting = rootUtils.rootState.settingsDefaultPosition || defaultPosition;
     const defaultPosStyle = { transform: arrowTransform + ' ' + arrowAngle[currentSetting] };
+
+    // Window dragging
+    const allowDragging = rootUtils.rootState.allowDragging;
 
     // Auto-reload on code change.
     const hmrDisabled = !!rootUtils.rootState.hmrDisabled;
@@ -117,9 +127,18 @@ export default class Settings extends React.Component<{ rootUtils: RootUtils }> 
           </Form.Field>
 
           <Form.Field>
+            <label>If disabled, the debug window cannot be dragged</label>
+            <Button fluid onClick={this.toggleDebuggerDragging}>
+              Window dragging: {allowDragging ? 'allowed' : 'disabled'}
+            </Button>
+          </Form.Field>
+
+          <Form.Field>
             <label>Auto-reload if source code changes</label>
             <label>(auto-enabled next change after leaving this tab)</label>
-            <Button fluid onClick={this.toggleHmr}>HMR enabled: {hmrDisabled ? 'no' : 'yes'}</Button>
+            <Button fluid onClick={this.toggleHmr}>
+              HMR enabled: {hmrDisabled ? 'no' : 'yes'}
+            </Button>
           </Form.Field>
         </Form>
       </div>
