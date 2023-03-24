@@ -47,6 +47,11 @@ export default class CosmDbgMain extends React.Component {
   componentDidMount() {
     this.advanceIcon();
     this.grabInputOnHover();
+    window.addEventListener('keyup', this.bindDevToolKey.bind(this));
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('keyup', this.bindDevToolKey.bind(this));
   }
 
   grabInputOnHover = () => {
@@ -90,6 +95,13 @@ export default class CosmDbgMain extends React.Component {
       callback();
     });
   };
+
+  bindDevToolKey(event) {
+    if (this.state.hoverActive && event.code === 'F12') {
+      // @ts-ignore
+      nw.Window.get().showDevTools();
+    }
+  }
 
   resetPersistentState = (callback = () => {}) => {
     const newState = {};
