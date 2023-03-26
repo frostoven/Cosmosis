@@ -80,7 +80,10 @@ export default class ObjectScanner extends React.Component<any, any>{
       });
     });
 
-    if (!varCount) {
+    if (typeof instance.createPart === 'function') {
+      privateVars.push({ key: '[ ship module - inspect via levelScene -> _electricalHousing ]', value: {}, isPrivate: false });
+    }
+    else if (!varCount) {
       privateVars.push({ key: '[ no contents ]', value: {}, isPrivate: false });
     }
 

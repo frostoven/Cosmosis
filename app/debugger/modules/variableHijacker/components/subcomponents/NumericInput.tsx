@@ -14,12 +14,17 @@ const BUTTON_STYLE = {
   margin: 0,
 };
 
+const BUTTON_INNER = {
+  fontWeight: 600,
+};
+
 const INPUT_STYLE = {
   color: '#ffffff',
   backgroundColor: '#565b5d',
   borderTop: 'thin solid black',
   borderBottom: 'thin solid black',
   cursor: 'text',
+  marginTop: -0.0125,
 };
 
 interface Props {
@@ -101,11 +106,21 @@ export default class NumericInput extends React.Component<Props> {
   render() {
     return (
       <div style={CONTAINER_STYLE}>
-        <Button style={BUTTON_STYLE} onClick={this.decrement}><b>-</b></Button>
+        <Button style={BUTTON_STYLE} onClick={this.decrement}>
+          <div style={BUTTON_INNER}>÷</div>
+        </Button>
         <div className='ui input'>
-          <input ref={this.inputRef} value={this.inputValue} onChange={this.onUserInput} style={INPUT_STYLE}/>
+          <input
+            ref={this.inputRef}
+            value={this.inputValue}
+            onChange={this.onUserInput}
+            type='number'
+            style={INPUT_STYLE}
+          />
         </div>
-        <Button style={BUTTON_STYLE} onClick={this.increment}><b>+</b></Button>
+        <Button style={BUTTON_STYLE} onClick={this.increment}>
+          <div style={BUTTON_INNER}>x</div>
+        </Button>
       </div>
     );
   }

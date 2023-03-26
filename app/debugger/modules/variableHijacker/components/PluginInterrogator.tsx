@@ -139,6 +139,7 @@ export default class PluginInterrogator extends React.Component<{ rootUtils: Roo
       const active = this.props.rootUtils.rootState.pluginInterrogatorActiveSections || [];
       const isActive = active.includes(accordionIndex);
       const parent = gameRuntime.tracked[name]?.cachedValue;
+      const isShipModule = typeof parent?.createPart === 'function';
       list.push(
         [
           <Accordion.Title
@@ -146,6 +147,7 @@ export default class PluginInterrogator extends React.Component<{ rootUtils: Roo
             index={accordionIndex}
             active={isActive}
             onClick={this.onClickSectionTitle}
+            style={{ opacity: isShipModule ? 0.5 : 1 }}
           >
             <Icon name="dropdown"/>
             {name}
