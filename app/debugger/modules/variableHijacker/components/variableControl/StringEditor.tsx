@@ -87,11 +87,11 @@ export default class StringEditor extends React.Component<Props> {
 
     return (
       <div style={CONTAINER_STYLE}>
-        <TextInput valueTracker={this.valueTracker} valueStore={this.hijacker.valueStore}/>
-        &nbsp;
-        <Button positive={false} style={lockStyle} onClick={this.toggleLock}>
-          <Icon name={this.state.locked ? 'lock' : 'unlock'}/>
-        </Button>
+        <TextInput valueTracker={this.valueTracker} valueStore={this.hijacker.valueStore}>
+          <Button positive={false} style={lockStyle} onClick={this.toggleLock}>
+            <Icon name={this.state.locked ? 'lock' : 'unlock'}/>
+          </Button>
+        </TextInput>
       </div>
     );
   }
