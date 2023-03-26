@@ -1,8 +1,6 @@
 import React from 'react';
-import { Button, Icon } from 'semantic-ui-react';
 import NumericSlider from '../subcomponents/NumericSlider';
 import NumericInput from '../subcomponents/NumericInput';
-import NumberSliderRange from '../subcomponents/NumberSliderRange';
 import Hijacker from '../../Hijacker';
 import ChangeTracker from 'change-tracker/src';
 import LockButton from '../subcomponents/LockButton';
@@ -82,6 +80,12 @@ export default class NumberEditor extends React.Component<Props> {
     this.setState({ locked: !this.state.locked });
   };
 
+  onSliderChange = (event) => {
+    this.hijacker.setValue(this.props.targetName, Number(event.target.value));
+    console.log(this.hijacker.valueStore.value);
+    this.setState({ forceRerender: Math.random() });
+  };
+
   render() {
     if (!this.state.targetIsViable) {
       return (
@@ -92,14 +96,24 @@ export default class NumberEditor extends React.Component<Props> {
       );
     }
 
+    const absStoreValue = Math.abs(this.hijacker.valueStore.value);
+
     return (
       <div style={CONTAINER_STYLE}>
         <NumericInput valueTracker={this.valueTracker} valueStore={this.hijacker.valueStore}/>
         &nbsp;
         <LockButton locked={this.state.locked} onClick={this.toggleLock}/>
         <br/>
-        <NumericSlider min={-1} max={100} value={24}/>
-        {/*<NumberSliderRange/>*/}
+
+        {/* Prevent factions by hiding component near zero (<input> doesn't support them) */}
+        {
+          absStoreValue < 1 && absStoreValue !== 0
+            ? null
+            : <NumericSlider
+                valueStore={this.hijacker.valueStore}
+                onChange={this.onSliderChange}
+              />
+        }
       </div>
     );
   }
