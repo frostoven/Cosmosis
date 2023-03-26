@@ -5,6 +5,8 @@ import { guessTypeInfo } from '../../../debuggerUtils';
 import AutoValueEditor from './variableControl/AutoValueEditor';
 import PreventRender from '../../../components/PreventRender';
 
+let _renderCount = 0;
+
 export default class ObjectScanner extends React.Component<any, any>{
   // If true, the whole object tree is (shallowly) rebuild on rerender.
   static rebuildTreeAggressively = false;
@@ -30,7 +32,7 @@ export default class ObjectScanner extends React.Component<any, any>{
     console.log('-> ObjectScanner unmounting.');
   }
 
-  buildObjectTree(rerenderWhenDone = false) {
+  buildObjectTree(rerenderWhenDone = false, onDone = () => {}) {
     if (this._objectTreeCacheBuilding) {
       return;
     }
@@ -39,7 +41,10 @@ export default class ObjectScanner extends React.Component<any, any>{
     const instance = this.props.parent;
     if (!instance) {
       if (rerenderWhenDone) {
-        this.setState({ forceRerender: Math.random() });
+        this.setState({ forceRerender: Math.random() }, onDone);
+      }
+      else {
+        onDone();
       }
       return;
     }
@@ -91,7 +96,10 @@ export default class ObjectScanner extends React.Component<any, any>{
     this._objectTreeCacheBuilding = false;
 
     if (rerenderWhenDone) {
-      this.setState({ forceRerender: Math.random() });
+      this.setState({ forceRerender: Math.random() }, onDone);
+    }
+    else {
+      onDone();
     }
   }
 
@@ -120,11 +128,16 @@ export default class ObjectScanner extends React.Component<any, any>{
           treeObject={treeObject}
           name={this.props.name}
           parent={this.props.parent}
+          invalidateObjectTree={(onDone) => this.invalidateObjectTree(onDone)}
         />
       );
     }
     return list;
   }
+
+  invalidateObjectTree = (onDone = () => {}) => {
+    this.buildObjectTree(true, onDone);
+  };
 
   render() {
     if (!this._objectTreeCache.length) {
@@ -136,7 +149,7 @@ export default class ObjectScanner extends React.Component<any, any>{
     }
 
     return (
-      <PreventRender renderWhenChanging={this.props.name}>
+      <PreventRender renderWhenChanging={this.props.name} tick={++_renderCount}>
         {this.renderTree()}
       </PreventRender>
     );

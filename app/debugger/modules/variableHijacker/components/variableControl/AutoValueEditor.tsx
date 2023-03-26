@@ -14,6 +14,7 @@ interface Props {
   type: string,
   typeInfo: any,
   treeObject: any,
+  invalidateObjectTree?: Function,
   name: string,
   parent: object,
 }
@@ -27,7 +28,14 @@ export default class AutoValueEditor extends React.Component<Props>{
 
   toggleInspection = (event) => {
     event.stopPropagation();
-    this.setState({ inspecting: !this.state.inspecting });
+    if (typeof this.props.invalidateObjectTree === 'function') {
+      this.props.invalidateObjectTree(() => {
+        this.setState({ inspecting: !this.state.inspecting });
+      });
+    }
+    else {
+      this.setState({ inspecting: !this.state.inspecting });
+    }
   };
 
   render() {
