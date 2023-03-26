@@ -5,6 +5,7 @@ import NumericInput from '../subcomponents/NumericInput';
 import NumberSliderRange from '../subcomponents/NumberSliderRange';
 import Hijacker from '../../Hijacker';
 import ChangeTracker from 'change-tracker/src';
+import LockButton from '../subcomponents/LockButton';
 
 const CONTAINER_STYLE = {
   fontFamily: 'Consolas, monospace, Lato, sans-serif',
@@ -13,12 +14,6 @@ const CONTAINER_STYLE = {
   marginLeft: 3,
   padding: 4,
   paddingLeft: 19,
-};
-
-const LOCK_STYLE = {
-  backgroundColor: '#595e60',
-  width: 53,
-  margin: 0,
 };
 
 interface Props {
@@ -100,9 +95,7 @@ export default class NumberEditor extends React.Component<Props> {
       <div style={CONTAINER_STYLE}>
         <NumericInput valueTracker={this.valueTracker} valueStore={this.hijacker.valueStore}/>
         &nbsp;
-        <Button positive={false} style={lockStyle} onClick={this.toggleLock}>
-          <Icon name={this.state.locked ? 'lock' : 'unlock'}/>
-        </Button>
+        <LockButton locked={this.state.locked} onClick={this.toggleLock}/>
         <br/>
         <NumericSlider min={-1} max={100} value={24}/>
         {/*<NumberSliderRange/>*/}
