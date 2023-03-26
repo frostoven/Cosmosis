@@ -1,10 +1,8 @@
 import React from 'react';
 import { Button, Icon } from 'semantic-ui-react';
-import NumericSlider from '../subcomponents/NumericSlider';
-import NumericInput from '../subcomponents/NumericInput';
-import NumberSliderRange from '../subcomponents/NumberSliderRange';
 import Hijacker from '../../Hijacker';
 import ChangeTracker from 'change-tracker/src';
+import TextInput from '../subcomponents/TextInput';
 
 const CONTAINER_STYLE = {
   fontFamily: 'Consolas, monospace, Lato, sans-serif',
@@ -18,7 +16,6 @@ const CONTAINER_STYLE = {
 const LOCK_STYLE = {
   backgroundColor: '#595e60',
   width: 53,
-  margin: 0,
 };
 
 interface Props {
@@ -28,7 +25,7 @@ interface Props {
   parent: object,
 }
 
-export default class NumberEditor extends React.Component<Props> {
+export default class StringEditor extends React.Component<Props> {
   state = { targetIsViable: false, locked: false };
 
   private hijacker: Hijacker;
@@ -53,16 +50,8 @@ export default class NumberEditor extends React.Component<Props> {
     this.hijacker.setParent(parent);
     this.hijacker.override(
       targetName,
-      ({ originalGet, valueStore }) => {
-        // console.log('-> getter:', valueStore.value);
-        // if (typeof originalGet === 'function') {
-        //   this.valueTracker.setValue({ valueStore, newValue: originalGet() });
-        // }
-      },
-      // ({ originalSet, valueStore }, newValue) => {
+      () => {},
       ({ originalSet, valueStore }, newValue) => {
-        // valueStore.value = Math.floor(newValue * 10) / 10;
-        // console.log('-> setter:', valueStore.value);
         if (!this.state.locked) {
           this.valueTracker.setValue({ valueStore, newValue });
         }
@@ -98,14 +87,11 @@ export default class NumberEditor extends React.Component<Props> {
 
     return (
       <div style={CONTAINER_STYLE}>
-        <NumericInput valueTracker={this.valueTracker} valueStore={this.hijacker.valueStore}/>
+        <TextInput valueTracker={this.valueTracker} valueStore={this.hijacker.valueStore}/>
         &nbsp;
         <Button positive={false} style={lockStyle} onClick={this.toggleLock}>
           <Icon name={this.state.locked ? 'lock' : 'unlock'}/>
         </Button>
-        <br/>
-        <NumericSlider min={-1} max={100} value={24}/>
-        {/*<NumberSliderRange/>*/}
       </div>
     );
   }
