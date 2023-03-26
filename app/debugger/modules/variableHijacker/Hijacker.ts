@@ -24,14 +24,14 @@ export default class Hijacker {
   private _target: any;
   private _descriptorBackup: any;
   private _targetIsInstance: boolean;
-  public readonly valueStore: { originalName: string | null; value: any };
+  private readonly _valueStore: { originalName: string | null; value: any };
 
   constructor(target: any = null, hijackPrototype = false) {
     this._target = null;
     this._descriptorBackup = null;
     this._targetIsInstance = true;
 
-    this.valueStore = {
+    this._valueStore = {
       originalName: null,
       value: undefined,
     };
@@ -39,6 +39,17 @@ export default class Hijacker {
     if (target) {
       this.setParent(target, hijackPrototype);
     }
+  }
+
+  get valueStore() {
+    return this._valueStore;
+  }
+
+  set valueStore(v) {
+    const message = '[Hijacker] valueStore is read-only, though you may ' +
+      'modify its children.';
+    console.error(message);
+    throw message;
   }
 
   // The object we'll be digging our tentacles into.
@@ -93,7 +104,7 @@ export default class Hijacker {
       }
     }
 
-    const valueStore = this.valueStore;
+    const valueStore = this._valueStore;
     valueStore.originalName = propertyName;
     valueStore.value = this._target[propertyName];
 
