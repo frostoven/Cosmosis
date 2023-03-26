@@ -102,9 +102,11 @@ export default class CosmDbgMain extends React.Component {
   };
 
   bindDevToolKey(event) {
-    if (this.state.hoverActive && event.code === 'F12') {
+    if (this.state.hoverActive) {
       // @ts-ignore
-      nw.Window.get().showDevTools();
+      (event.code === 'F11') && nw.Window.get().toggleFullscreen();
+      // @ts-ignore
+      (event.code === 'F12') && nw.Window.get().showDevTools();
     }
   }
 
