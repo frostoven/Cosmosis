@@ -1,17 +1,22 @@
 import React from 'react';
 import { Button } from 'semantic-ui-react';
-import TextInput from './TextInput';
 import ChangeTracker from 'change-tracker/src';
 
 const CONTAINER_STYLE = {
   fontFamily: 'Consolas, monospace, Lato, sans-serif',
   marginTop: 0,
   padding: 0,
-  display: 'inline',
+  display: 'inline-flex',
+  border: 'thin solid black',
+  height: 38,
+  width: 'fit-content',
+  backgroundColor: '#53585a',
 };
 
 const BUTTON_STYLE = {
   margin: 0,
+  borderTop: 'none',
+  borderBottom: 'none',
 };
 
 const BUTTON_INNER = {
@@ -21,16 +26,15 @@ const BUTTON_INNER = {
 const INPUT_STYLE = {
   color: '#ffffff',
   backgroundColor: '#565b5d',
-  borderTop: 'thin solid black',
-  borderBottom: 'thin solid black',
   cursor: 'text',
-  marginTop: -0.0125,
+  marginTop: 2,
 };
 
 interface Props {
   defaultValue?: 0,
   valueTracker: ChangeTracker,
   valueStore: { originalName: string | null; value: any },
+  children?: any,
 }
 
 export default class NumericInput extends React.Component<Props> {
@@ -116,7 +120,7 @@ export default class NumericInput extends React.Component<Props> {
   render() {
     return (
       <div style={CONTAINER_STYLE}>
-        <Button style={BUTTON_STYLE} onClick={this.decrement}>
+        <Button style={{ ...BUTTON_STYLE, borderLeft: 'none' }} onClick={this.decrement}>
           <div style={BUTTON_INNER}>÷</div>
         </Button>
         <div className='ui input'>
@@ -128,9 +132,10 @@ export default class NumericInput extends React.Component<Props> {
             style={INPUT_STYLE}
           />
         </div>
-        <Button style={BUTTON_STYLE} onClick={this.increment}>
+        <Button style={{ ...BUTTON_STYLE, borderRight: 'none' }} onClick={this.increment}>
           <div style={BUTTON_INNER}>x</div>
         </Button>
+        {this.props.children}
       </div>
     );
   }

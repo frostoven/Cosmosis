@@ -17,7 +17,7 @@ const INPUT_STYLE = {
   backgroundColor: '#565b5d',
   border: 'thin solid black',
   cursor: 'text',
-  marginTop: -0.0125,
+  marginTop: 2,
 };
 
 const maxSmallChars = 12;
