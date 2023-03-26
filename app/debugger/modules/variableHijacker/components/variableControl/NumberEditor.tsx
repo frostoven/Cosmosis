@@ -17,7 +17,8 @@ const CONTAINER_STYLE = {
 
 const LOCK_STYLE = {
   backgroundColor: '#595e60',
-  width: 55,
+  width: 53,
+  margin: 0,
 };
 
 interface Props {
@@ -49,8 +50,6 @@ export default class NumberEditor extends React.Component<Props> {
       return;
     }
 
-    // TODO: rewrite this demo to be generic. Specifically tested against
-    //  shipPilot -> _throttlePosition.
     this.hijacker.setParent(parent);
     this.hijacker.override(
       targetName,
@@ -73,8 +72,10 @@ export default class NumberEditor extends React.Component<Props> {
       },
     );
 
-    // console.log({ hijacker, parent });
-
+    this.valueTracker.setValue({
+      valueStore: this.hijacker.valueStore,
+      newValue: parent[targetName],
+    });
     this.setState({ targetIsViable: true });
   };
 
@@ -83,7 +84,6 @@ export default class NumberEditor extends React.Component<Props> {
   };
 
   render() {
-    // console.log('=> targetName:', this.props.targetName, 'parent:', this.props.parent);
     if (!this.state.targetIsViable) {
       return (
         <div style={{ display: 'inline' }}>
