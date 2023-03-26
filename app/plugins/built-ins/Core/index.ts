@@ -43,6 +43,7 @@ export default class Core {
   private _clock: Clock;
   private readonly _stats: any;
   private readonly _rendererHooks: Function[];
+  private animationData: { delta: number; bigDelta: number };
 
   constructor() {
     // Do not place game logic in pre-animate. It's meant for setup used by
@@ -56,6 +57,7 @@ export default class Core {
     this._maxFrameDelta = 0;
     this._frameLimitCount = 0;
     this._rendererHooks = [];
+    this.animationData = animationData;
 
     // @ts-ignore
     this._stats = new Stats();

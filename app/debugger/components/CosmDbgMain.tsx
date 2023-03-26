@@ -9,10 +9,12 @@ import { genSettings } from '../modules/settings';
 import { pickIconByTime } from '../debuggerUtils';
 import { CosmDbgRootUtils } from './interfaces/CosmDbgRootUtils';
 import { gameRuntime } from '../../plugins/gameRuntime';
+import { HeightSetting } from './types/HeightSetting';
 
 const CONTAINER_STYLE = {
   backgroundColor: '#282828',
   // borderRadius: '4px 4px 0 0',
+  minWidth: 420,
 };
 
 const TITLE_BAR_STYLE = {
@@ -25,12 +27,15 @@ const TITLE_BAR_BUTTONS = {
   float: 'right',
 };
 
+const draggableHandles = '.cosm-dbg-handle, .ui.attached.tabular.menu';
+
 export default class CosmDbgMain extends React.Component {
   static defaultState = {
     rootActiveTab: 0,
-    isCollapsed: false,
+    modalSize: HeightSetting.small,
     confirmingReload: false,
     hoverActive: false,
+    allowDragging: true,
   };
   state: { [key: string]: any } = { ...CosmDbgMain.defaultState };
   private readonly ref: React.RefObject<any>;
@@ -97,9 +102,11 @@ export default class CosmDbgMain extends React.Component {
   };
 
   bindDevToolKey(event) {
-    if (this.state.hoverActive && event.code === 'F12') {
+    if (this.state.hoverActive) {
       // @ts-ignore
-      nw.Window.get().showDevTools();
+      (event.code === 'F11') && nw.Window.get().toggleFullscreen();
+      // @ts-ignore
+      (event.code === 'F12') && nw.Window.get().showDevTools();
     }
   }
 
@@ -109,11 +116,12 @@ export default class CosmDbgMain extends React.Component {
       newState[key] = undefined;
     });
 
+    cosmDbg.resetState();
     this.setState({
-      ...CosmDbgMain.defaultState,
       ...newState,
+      ...CosmDbgMain.defaultState,
     }, () => {
-      cosmDbg.resetState();
+      cosmDbg.setOption('uiState', this.state);
       callback();
     });
   };
@@ -126,8 +134,20 @@ export default class CosmDbgMain extends React.Component {
     cosmDbg.hideUI();
   };
 
-  handleCollapse = () => {
-    this.setPersistentState({ isCollapsed: !this.state.isCollapsed });
+  handleSizeChange = () => {
+    let modalSize = this.state.modalSize;
+
+    if (modalSize === HeightSetting.small) {
+      modalSize = HeightSetting.large;
+    }
+    else if (modalSize === HeightSetting.large) {
+      modalSize = HeightSetting.collapsed;
+    }
+    else {
+      modalSize = HeightSetting.small;
+    }
+
+    this.setPersistentState({ modalSize });
   };
 
   handleShowDevTools = () => {
@@ -161,19 +181,27 @@ export default class CosmDbgMain extends React.Component {
       activeTab = 0;
     }
 
+    const containerStyle = { ...CONTAINER_STYLE };
+    if (this.state.modalSize === HeightSetting.large) {
+      containerStyle.minWidth = 600;
+    }
+    else if (this.state.modalSize === HeightSetting.collapsed) {
+      containerStyle.minWidth = 0;
+    }
+
     const titleBarStyle = { ...TITLE_BAR_STYLE };
     this.state.hoverActive && (titleBarStyle.backgroundColor = '#344234');
 
     return (
-      <Draggable handle=".cosm-dbg-handle">
-        <div style={CONTAINER_STYLE} ref={this.ref}>
+      <Draggable disabled={!this.state.allowDragging} handle={draggableHandles}>
+        <div style={containerStyle} ref={this.ref}>
           <div className="cosm-dbg-handle" style={titleBarStyle}>
             <Icon name={pickIconByTime()}/>
             &nbsp;CosmDbg&nbsp;&nbsp;
             {/* @ts-ignore */}
             <div style={TITLE_BAR_BUTTONS}><Icon name='close' onClick={this.handleClose}/></div>
             {/* @ts-ignore */}
-            <div style={TITLE_BAR_BUTTONS}><Icon name='sort' onClick={this.handleCollapse}/></div>
+            <div style={TITLE_BAR_BUTTONS}><Icon name='sort' onClick={this.handleSizeChange}/></div>
             <div
               // @ts-ignore
               style={{ ...TITLE_BAR_BUTTONS, paddingRight: 2, }}
@@ -192,7 +220,11 @@ export default class CosmDbgMain extends React.Component {
             </div>
           </div>
           <Tab
-            style={{ display: this.state.isCollapsed ? 'none' : 'block' }}
+            style={{
+              display: this.state.modalSize === HeightSetting.collapsed
+                ? 'none'
+                : 'block'
+          }}
             activeIndex={activeTab}
             // @ts-ignore - definition is wrong.
             onTabChange={this.handleTabChange}

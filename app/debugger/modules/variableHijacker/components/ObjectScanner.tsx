@@ -1,10 +1,11 @@
 import _ from 'lodash';
 import React from 'react';
 import { TreeObject } from './interfaces/TreeObject';
-import { gameRuntime } from '../../../../plugins/gameRuntime';
 import { guessTypeInfo } from '../../../debuggerUtils';
 import AutoValueEditor from './variableControl/AutoValueEditor';
 import PreventRender from '../../../components/PreventRender';
+
+let _renderCount = 0;
 
 export default class ObjectScanner extends React.Component<any, any>{
   // If true, the whole object tree is (shallowly) rebuild on rerender.
@@ -31,69 +32,75 @@ export default class ObjectScanner extends React.Component<any, any>{
     console.log('-> ObjectScanner unmounting.');
   }
 
-  buildObjectTree(rerenderWhenDone = false) {
+  buildObjectTree(rerenderWhenDone = false, onDone = () => {}) {
     if (this._objectTreeCacheBuilding) {
       return;
     }
 
     this._objectTreeCacheBuilding = true;
-    const plugin = gameRuntime.tracked[this.props.name];
-
-    if (!plugin || !plugin.getOnce) {
-      this._objectTreeCache = [{
-        key: '[ probe failed ]', value: {}, isPrivate: false,
-      }];
-      this._objectTreeCacheBuilding = false;
-
+    const instance = this.props.parent;
+    if (!instance) {
       if (rerenderWhenDone) {
-        this.setState({ forceRerender: Math.random() });
+        this.setState({ forceRerender: Math.random() }, onDone);
+      }
+      else {
+        onDone();
       }
       return;
     }
 
-    plugin.getOnce((instance) => {
-      const publicVars: Array<TreeObject> = [];
-      const privateVars: Array<TreeObject> = [];
-      const accessors: Array<TreeObject> = [];
-      // const methods: Array<any> = [];
+    const publicVars: Array<TreeObject> = [];
+    const privateVars: Array<TreeObject> = [];
+    const accessors: Array<TreeObject> = [];
+    // const methods: Array<any> = [];
 
-      let varCount = 0;
-      _.each(instance, (value, key) => {
-        varCount++;
-        if (key[0] === '_') {
-          privateVars.push({ key, value, isPrivate: true });
-        }
-        else {
-          publicVars.push({ key, value, isPrivate: false });
-        }
-      });
-
-      const descriptors = Object.entries(
-        Object.getOwnPropertyDescriptors(instance.__proto__),
-      );
-
-      const getters = descriptors.filter(([key, descriptor]) => {
-        return typeof descriptor.get === 'function';
-      });
-
-      _.each(getters, (getter) => {
-        const key = getter[0];
-        accessors.push({
-          key, value: instance[key], isPrivate: key[0] === '_', isAccessor: true,
-        });
-      });
-
-      if (!varCount) {
-        privateVars.push({ key: '[ no contents ]', value: {}, isPrivate: false });
+    let varCount = 0;
+    _.each(instance, (value, key) => {
+      varCount++;
+      if (key[0] === '_') {
+        privateVars.push({ key, value, isPrivate: true });
       }
-
-      this._objectTreeCache = publicVars.concat(privateVars).concat(accessors);
-      this._objectTreeCacheBuilding = false;
-
-      if (rerenderWhenDone) {
-        this.setState({ forceRerender: Math.random() });
+      else {
+        publicVars.push({ key, value, isPrivate: false });
       }
     });
+
+    const descriptors = Object.entries(
+      Object.getOwnPropertyDescriptors(instance.__proto__),
+    );
+
+    const getters = descriptors.filter(([key, descriptor]) => {
+      return typeof descriptor.get === 'function';
+    });
+
+    _.each(getters, (getter) => {
+      const key = getter[0];
+      if (key === '__proto__') {
+        // While cute to display, this breaks seriously hard if hijacked, and
+        // it seems silly to specially code support to make it not clickable.
+        return;
+      }
+      accessors.push({
+        key, value: instance[key], isPrivate: key[0] === '_', isAccessor: true,
+      });
+    });
+
+    if (typeof instance.createPart === 'function') {
+      privateVars.push({ key: '[ ship module - inspect via levelScene -> _electricalHousing ]', value: {}, isPrivate: false });
+    }
+    else if (!varCount) {
+      privateVars.push({ key: '[ no contents ]', value: {}, isPrivate: false });
+    }
+
+    this._objectTreeCache = publicVars.concat(privateVars).concat(accessors);
+    this._objectTreeCacheBuilding = false;
+
+    if (rerenderWhenDone) {
+      this.setState({ forceRerender: Math.random() }, onDone);
+    }
+    else {
+      onDone();
+    }
   }
 
   renderTree() {
@@ -106,6 +113,11 @@ export default class ObjectScanner extends React.Component<any, any>{
       // hint, and takes some liberties such as calling null 'null' instead of
       // 'object'.
       const typeInfo = guessTypeInfo(treeObject.value);
+      if (typeInfo.friendlyName === 'function') {
+        // Functions may or may not show up here depending on whether or not
+        // they're defined as methods or properties.
+        continue;
+      }
 
       const componentKey = this.props.name + '-item-' + i;
       list.push(
@@ -114,12 +126,18 @@ export default class ObjectScanner extends React.Component<any, any>{
           type={type}
           typeInfo={typeInfo}
           treeObject={treeObject}
-          parent={gameRuntime.tracked[this.props.name]?.cachedValue}
+          name={this.props.name}
+          parent={this.props.parent}
+          invalidateObjectTree={(onDone) => this.invalidateObjectTree(onDone)}
         />
       );
     }
     return list;
   }
+
+  invalidateObjectTree = (onDone = () => {}) => {
+    this.buildObjectTree(true, onDone);
+  };
 
   render() {
     if (!this._objectTreeCache.length) {
@@ -131,7 +149,7 @@ export default class ObjectScanner extends React.Component<any, any>{
     }
 
     return (
-      <PreventRender renderWhenChanging={this.props.name}>
+      <PreventRender renderWhenChanging={this.props.name} tick={++_renderCount}>
         {this.renderTree()}
       </PreventRender>
     );

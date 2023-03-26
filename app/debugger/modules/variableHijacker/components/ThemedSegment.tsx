@@ -11,16 +11,16 @@ const SEGMENT_STYLE: { [key: string]: any } = {
 
 interface Props {
   friendlyType: string,
-  onClick?: () => any,
+  onClick?: (event) => any,
   children: any,
 }
 
 export default class ThemedSegment extends React.Component<Props>{
   state = { inspecting: false };
 
-  onClick = () => {
+  onClick = (event) => {
     if (this.props.onClick) {
-      this.props.onClick();
+      this.props.onClick(event);
     }
   };
 

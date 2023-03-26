@@ -16,11 +16,13 @@ const arrowAngle = {
   topLeft: 'rotate(315deg)',
 };
 
+const defaultPosition = 'left';
 const angleKeys = Object.keys(arrowAngle);
 
 interface RootUtils extends CosmDbgRootUtils {
   rootState: {
     settingsDefaultPosition: string,
+    allowDragging: boolean,
     hmrDisabled: boolean | undefined,
   }
 }
@@ -58,13 +60,19 @@ export default class Settings extends React.Component<{ rootUtils: RootUtils }> 
 
   cycleDefaultPosition = () => {
     const { rootUtils: { rootState: { settingsDefaultPosition } } } = this.props;
-    let currentSetting = settingsDefaultPosition || 'topRight';
+    let currentSetting = settingsDefaultPosition || defaultPosition;
 
     const keyIndex = angleKeys.indexOf(currentSetting);
 
     const newPosition = angleKeys[(keyIndex + 1) % angleKeys.length];
     this.props.rootUtils.setPersistentState({
       settingsDefaultPosition: newPosition
+    });
+  };
+
+  toggleDebuggerDragging = () => {
+    this.props.rootUtils.setPersistentState({
+      allowDragging: !this.props.rootUtils.rootState.allowDragging,
     });
   };
 
@@ -89,8 +97,11 @@ export default class Settings extends React.Component<{ rootUtils: RootUtils }> 
     const { rootUtils } = this.props;
 
     // Boot-time window position.
-    const currentSetting = rootUtils.rootState.settingsDefaultPosition || 'topRight';
+    const currentSetting = rootUtils.rootState.settingsDefaultPosition || defaultPosition;
     const defaultPosStyle = { transform: arrowTransform + ' ' + arrowAngle[currentSetting] };
+
+    // Window dragging
+    const allowDragging = rootUtils.rootState.allowDragging;
 
     // Auto-reload on code change.
     const hmrDisabled = !!rootUtils.rootState.hmrDisabled;
@@ -116,9 +127,18 @@ export default class Settings extends React.Component<{ rootUtils: RootUtils }> 
           </Form.Field>
 
           <Form.Field>
+            <label>If disabled, the debug window cannot be dragged</label>
+            <Button fluid onClick={this.toggleDebuggerDragging}>
+              Window dragging: {allowDragging ? 'allowed' : 'disabled'}
+            </Button>
+          </Form.Field>
+
+          <Form.Field>
             <label>Auto-reload if source code changes</label>
             <label>(auto-enabled next change after leaving this tab)</label>
-            <Button fluid onClick={this.toggleHmr}>HMR enabled: {hmrDisabled ? 'no' : 'yes'}</Button>
+            <Button fluid onClick={this.toggleHmr}>
+              HMR enabled: {hmrDisabled ? 'no' : 'yes'}
+            </Button>
           </Form.Field>
         </Form>
       </div>

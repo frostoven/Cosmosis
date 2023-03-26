@@ -198,7 +198,7 @@ export default class CosmDbg {
     }
 
     const defaultPosString = this._configState.uiState?.settingsDefaultPosition;
-    let style = englishToCoords[defaultPosString] || englishToCoords.topRight;
+    let style = englishToCoords[defaultPosString] || englishToCoords.left;
 
     mainDiv.style.top = style.top || '';
     mainDiv.style.left = style.left || '';

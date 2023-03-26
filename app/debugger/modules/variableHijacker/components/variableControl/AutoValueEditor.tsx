@@ -2,8 +2,10 @@ import React from 'react';
 import TypeImageIcon from '../TypeImageIcon';
 import { gizmoMap } from './gizmoMap';
 import ThemedSegment from '../ThemedSegment';
+import ObjectScanner from '../ObjectScanner';
 
 const COLLAPSED_STYLE: any = {
+  fontFamily: 'inherit',
   display: 'inline',
   cursor: 'inherit',
 };
@@ -12,6 +14,8 @@ interface Props {
   type: string,
   typeInfo: any,
   treeObject: any,
+  invalidateObjectTree?: Function,
+  name: string,
   parent: object,
 }
 
@@ -22,8 +26,16 @@ export default class AutoValueEditor extends React.Component<Props>{
     super(props);
   }
 
-  onInspect = () => {
-    this.setState({ inspecting: true });
+  toggleInspection = (event) => {
+    event.stopPropagation();
+    if (typeof this.props.invalidateObjectTree === 'function') {
+      this.props.invalidateObjectTree(() => {
+        this.setState({ inspecting: !this.state.inspecting });
+      });
+    }
+    else {
+      this.setState({ inspecting: !this.state.inspecting });
+    }
   };
 
   render() {
@@ -61,17 +73,36 @@ export default class AutoValueEditor extends React.Component<Props>{
       if (Component)  {
         const parent = this.props.parent;
         return (
-          <ThemedSegment friendlyType={iconName}>
-            <TypeImageIcon name={iconName}/>
-            {key}
+          <ThemedSegment friendlyType={iconName} onClick={e => e.stopPropagation()}>
+            <div style={style} onClick={this.toggleInspection}>
+              <TypeImageIcon name={iconName}/>
+              {key}
+            </div>
             <Component targetName={key} parent={parent}/>
           </ThemedSegment>
-        )
+        );
+      }
+      else if (!typeInfo.stringCompatible) {
+        return (
+          <ThemedSegment friendlyType={iconName} onClick={this.toggleInspection}>
+            <TypeImageIcon name={iconName}/>
+            <div style={style}>
+              {text}
+            </div>
+            <br/>
+            <br/>
+            {/* @ts-ignore */}
+              <ObjectScanner
+                parent={this.props.parent[this.props.treeObject.key]}
+                name={this.props.treeObject.key}
+              />
+          </ThemedSegment>
+        );
       }
     }
 
     return (
-      <ThemedSegment friendlyType={iconName} onClick={this.onInspect}>
+      <ThemedSegment friendlyType={iconName} onClick={this.toggleInspection}>
         <TypeImageIcon name={iconName}/>
         <div style={style}>
           {text}

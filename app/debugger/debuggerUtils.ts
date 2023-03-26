@@ -1,6 +1,15 @@
 import * as THREE from 'three';
 import ChangeTracker from 'change-tracker/src';
 import { Location } from '../plugins/built-ins/Location';
+import ShipModule from '../plugins/built-ins/shipModules/types/ShipModule';
+import Generator from '../plugins/built-ins/shipModules/Generator/types/Generator';
+import VisorHud from '../plugins/built-ins/shipModules/VisorHud/types/VisorHud';
+import CockpitLights from '../plugins/built-ins/shipModules/CockpitLights/types/CockpitLights';
+import ExternalLights from '../plugins/built-ins/shipModules/ExternalLights/types/ExternalLights';
+import Multimeter from '../plugins/built-ins/shipModules/Multimeter/types/Multimeter';
+import ElectricalHousing from '../plugins/built-ins/shipModules/ElectricalHousing/types/ElectricalHousing';
+import PropulsionManager from '../plugins/built-ins/shipModules/PropulsionManager/types/PropulsionManager';
+import WarpDrive from '../plugins/built-ins/shipModules/WarpDrive/types/WarpDrive';
 
 function pickIconByTime() {
   const date = new Date();
@@ -59,6 +68,12 @@ function guessTypeInfo(value): {
       return { friendlyName, stringCompatible: true };
   }
 
+  if (friendlyName === 'function') {
+    return { friendlyName, stringCompatible: false };
+  }
+
+  // -- General types ------------------------------------------- //
+
   if (value === null) {
     return { friendlyName: 'null', stringCompatible: true };
   }
@@ -74,6 +89,9 @@ function guessTypeInfo(value): {
   else if (value instanceof ChangeTracker) {
     result.friendlyName = 'ChangeTracker';
   }
+
+  // -- Three.js ------------------------------------------------ //
+
   else if (value instanceof THREE.Vector2) {
     result.friendlyName = 'Vector2';
   }
@@ -118,9 +136,41 @@ function guessTypeInfo(value): {
   else if (value instanceof THREE.WebGLRenderer) {
     result.friendlyName = 'WebGLRenderer';
   }
+
+  // -- Internals and ship modules------------------------------- //
+
   else if (value instanceof Location) {
     result.friendlyName = '[Internal]Location';
   }
+  else if (value instanceof ShipModule) {
+    if (value instanceof VisorHud) {
+      result.friendlyName = '[Module] VisorHud';
+    }
+    else if (value instanceof CockpitLights) {
+      result.friendlyName = '[Module] CockpitLights';
+    }
+    else if (value instanceof ExternalLights) {
+      result.friendlyName = '[Module] ExternalLights';
+    }
+    else if (value instanceof Multimeter) {
+      result.friendlyName = '[Module] Multimeter';
+    }
+    else if (value instanceof PropulsionManager) {
+      result.friendlyName = '[Module] PropulsionManager';
+    }
+    else if (value instanceof WarpDrive) {
+      result.friendlyName = '[Module] WarpDrive';
+    }
+  }
+  else if (value instanceof ElectricalHousing) {
+    result.friendlyName = '[Module] ElectricalHousing';
+  }
+  else if (value instanceof Generator) {
+    result.friendlyName = '[Module] Generator';
+  }
+
+  // -- Fallthroughs -------------------------------------------- //
+
   else {
     result.friendlyName = 'Object';
   }

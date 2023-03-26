@@ -56,6 +56,7 @@ class LevelScene extends Scene {
   private _vehicleInventory: { [moduleHookName: string]: Array<any> };
 
   public onVehicleEntered: ChangeTracker;
+  private _electricalHousing: ElectricalHousing | null;
 
   constructor() {
     super();
@@ -65,6 +66,7 @@ class LevelScene extends Scene {
     // @ts-ignore
     this._vehicle = null;
     this._vehicleInventory = {};
+    this._electricalHousing = null;
     this.loadAndEnterLastVehicle();
 
     this._setupWatchers();
@@ -197,6 +199,8 @@ class LevelScene extends Scene {
       const cockpitLights: CockpitLights = hub.acquirePart({ name: 'cockpitLights', inventory });
       const externalLights: ExternalLights = hub.acquirePart({ name: 'externalLights', inventory });
       const multimeter: Multimeter = hub.acquirePart({ name: 'multimeter', inventory });
+      
+      this._electricalHousing = electricalHousing;
 
       const propulsionManager: PropulsionManager = hub.acquirePart({ name: 'propulsionManager', inventory });
       const warpDrive: WarpDrive = hub.acquirePart({ name: 'warpDrive', inventory });
