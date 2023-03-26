@@ -25,8 +25,9 @@ export default class AutoValueEditor extends React.Component<Props>{
     super(props);
   }
 
-  onInspect = () => {
-    this.setState({ inspecting: true });
+  toggleInspection = (event) => {
+    event.stopPropagation();
+    this.setState({ inspecting: !this.state.inspecting });
   };
 
   render() {
@@ -64,19 +65,21 @@ export default class AutoValueEditor extends React.Component<Props>{
       if (Component)  {
         const parent = this.props.parent;
         return (
-          <ThemedSegment friendlyType={iconName}>
-            <TypeImageIcon name={iconName}/>
-            {key}
+          <ThemedSegment friendlyType={iconName} onClick={e => e.stopPropagation()}>
+            <div style={style} onClick={this.toggleInspection}>
+              <TypeImageIcon name={iconName}/>
+              {key}
+            </div>
             <Component targetName={key} parent={parent}/>
           </ThemedSegment>
         );
       }
       else if (!typeInfo.stringCompatible) {
         return (
-          <ThemedSegment friendlyType={iconName}>
+          <ThemedSegment friendlyType={iconName} onClick={this.toggleInspection}>
             <TypeImageIcon name={iconName}/>
             <div style={style}>
-              {this.props.treeObject.key}
+              {text}
             </div>
             <br/>
             <br/>
@@ -91,7 +94,7 @@ export default class AutoValueEditor extends React.Component<Props>{
     }
 
     return (
-      <ThemedSegment friendlyType={iconName} onClick={this.onInspect}>
+      <ThemedSegment friendlyType={iconName} onClick={this.toggleInspection}>
         <TypeImageIcon name={iconName}/>
         <div style={style}>
           {text}
