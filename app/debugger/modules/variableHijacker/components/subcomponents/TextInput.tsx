@@ -9,10 +9,6 @@ const CONTAINER_STYLE = {
   display: 'inline',
 };
 
-const BUTTON_STYLE = {
-  margin: 0,
-};
-
 const INPUT_STYLE = {
   fontFamily: 'inherit',
   color: '#ffffff',
@@ -23,10 +19,7 @@ const INPUT_STYLE = {
   width: '100%',
 };
 
-const maxSmallChars = 12;
-
 interface Props {
-  defaultValue?: '',
   valueTracker: ChangeTracker,
   valueStore: { originalName: string | null; value: any },
   children: any,
@@ -40,23 +33,16 @@ export default class TextInput extends React.Component<Props> {
 
   private readonly inputRef: React.RefObject<any>;
   private inputValue: string;
-  private largeString: boolean;
-  private refUpdateFunction: OmitThisParameter<({
+  private readonly refUpdateFunction: OmitThisParameter<({
     valueStore,
     newValue,
   }: { valueStore: any; newValue: any }) => void>;
-  private lowTextSwitch: number;
-  private highTextSwitch: number;
 
   constructor(props) {
     super(props);
     this.inputValue = '';
     this.inputRef = React.createRef();
-    this.largeString = false;
     this.refUpdateFunction = this.updateRefValue.bind(this);
-
-    this.lowTextSwitch = 6;
-    this.highTextSwitch = 16;
   }
 
   componentDidMount() {
@@ -64,12 +50,10 @@ export default class TextInput extends React.Component<Props> {
   }
 
   componentWillUnmount() {
-    const removed = this.props.valueTracker.removeGetEveryChangeListener(
-      this.refUpdateFunction
-    );
+    this.props.valueTracker.removeGetEveryChangeListener(this.refUpdateFunction);
   }
 
-  updateRefValue = ({ valueStore, newValue }) => {
+  updateRefValue = ({ newValue }) => {
     this.inputRef.current.value = newValue;
     // This is intentional - we don't want to rerender now, but when we
     // eventually do, we want to have correct values.
@@ -122,7 +106,7 @@ export default class TextInput extends React.Component<Props> {
               ? (
                   <textarea
                     ref={this.inputRef}
-                    value={this.inputValue}
+                    value={value}
                     onChange={this.onUserInput}
                     style={{ ...INPUT_STYLE, padding: 14, }}
                   />
@@ -130,7 +114,7 @@ export default class TextInput extends React.Component<Props> {
               : (
                   <input
                     ref={this.inputRef}
-                    value={this.inputValue}
+                    value={value}
                     onChange={this.onUserInput}
                     style={INPUT_STYLE}
                   />
