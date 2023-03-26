@@ -39,6 +39,10 @@ export default class NumberEditor extends React.Component<Props> {
     this.hijackTarget();
   }
 
+  componentWillUnmount() {
+    this.hijacker.undoHijack(this.props.targetName, true);
+  }
+
   hijackTarget = () => {
     const { parent, targetName } = this.props;
     if (!parent || !targetName) {
@@ -87,9 +91,6 @@ export default class NumberEditor extends React.Component<Props> {
         </div>
       );
     }
-
-    const lockStyle = { ...LOCK_STYLE };
-    this.state.locked && (lockStyle.backgroundColor = '#485563');
 
     return (
       <div style={CONTAINER_STYLE}>

@@ -38,22 +38,32 @@ export default class NumericInput extends React.Component<Props> {
 
   private readonly inputRef: React.RefObject<any>;
   private inputValue: number;
+  private refUpdateFunction: OmitThisParameter<({
+    valueStore,
+    newValue,
+  }: { valueStore: any; newValue: any }) => void>;
 
   constructor(props) {
     super(props);
     this.inputValue = 0;
     this.inputRef = React.createRef();
+    this.refUpdateFunction = this.updateRefValue.bind(this);
   }
 
   componentDidMount() {
-    this.props.valueTracker.getEveryChange(this.updateRefValue.bind(this));
+    this.props.valueTracker.getEveryChange(this.refUpdateFunction);
   }
 
   componentWillUnmount() {
-    this.props.valueTracker.removeGetEveryChangeListener(this.updateRefValue);
+    const removed = this.props.valueTracker.removeGetEveryChangeListener(
+      this.refUpdateFunction
+    );
   }
 
   updateRefValue = ({ valueStore, newValue }) => {
+    if (!this.inputRef.current) {
+      return console.error('Invalid ref on NumericInput.');
+    }
     this.inputRef.current.value = newValue;
     // This is intentional - we don't want to rerender now, but when we
     // eventually do, we want to have correct values.

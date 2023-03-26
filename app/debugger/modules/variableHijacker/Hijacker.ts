@@ -8,6 +8,12 @@ type onSetSignature = (
 ) => boolean | void;
 
 // Add to docs when writing:
+//
+// Production warning: it's safe to use this library to debug production code,
+// however it is *not* safe to use it *within* your production code, because
+// we're not sure if we've tested all possible uses, and some objects don't
+// support undoing a hijack fully.
+//
 // Beware of getters and setters on the target object. While the hijacker can
 // grab those, it'll only be able to intercept requests that directly target
 // those getters and setters. For example, if the getter is myVar but the class
@@ -22,14 +28,21 @@ type onSetSignature = (
 
 export default class Hijacker {
   private _target: any;
-  private _descriptorBackup: any;
+  private readonly _descriptorBackup: { [propertyName: string]: any };
   private _targetIsInstance: boolean;
-  private readonly _valueStore: { originalName: string | null; value: any };
+  private _varsHijacked: { [propertyName: string]: boolean };
+  private readonly _valueStore: {
+    originalName: string | null,
+    value: any,
+    hasGetter?: boolean,
+    hasSetter?: boolean
+  };
 
   constructor(target: any = null, hijackPrototype = false) {
     this._target = null;
-    this._descriptorBackup = null;
+    this._descriptorBackup = {};
     this._targetIsInstance = true;
+    this._varsHijacked = {};
 
     this._valueStore = {
       originalName: null,
@@ -89,39 +102,57 @@ export default class Hijacker {
       return;
     }
 
-    const property: { [key: string]: any } = {};
+    const property: { [key: string]: any } = {
+      enumerable: true,
+      configurable: true,
+    };
 
     const descriptor = this.dumpPropertyDescriptor(propertyName);
     if (descriptor) {
-      this._descriptorBackup = { ...descriptor };
+      const descriptorBackup = descriptor;//{ ...descriptor };
 
       // Preserve instance context.
-      if (typeof this._descriptorBackup.get === 'function') {
-        this._descriptorBackup.get = this._descriptorBackup.get.bind(this._target);
+      if (typeof descriptorBackup.get === 'function') {
+        descriptorBackup.get = descriptorBackup.get.bind(this._target);
       }
-      if (typeof this._descriptorBackup.set === 'function') {
-        this._descriptorBackup.set = this._descriptorBackup.set.bind(this._target);
+      if (typeof descriptorBackup.set === 'function') {
+        descriptorBackup.set = descriptorBackup.set.bind(this._target);
       }
+
+      this._descriptorBackup[propertyName] = descriptorBackup;
     }
+    else {
+      console.log('----> no descriptor available.')
+    }
+
+    const descriptorBackup = this._descriptorBackup[propertyName];
 
     const valueStore = this._valueStore;
     valueStore.originalName = propertyName;
     valueStore.value = this._target[propertyName];
 
     if (onGet) {
-      const originalGet = this._descriptorBackup?.get;
+      const originalGet = descriptorBackup?.get;
+      if (originalGet) {
+        valueStore.hasGetter = true;
+      }
+
       const meta = { originalGet, valueStore };
       property.get = () => {
         let disableAutoGet = onGet(meta) === false;
         if (!disableAutoGet && typeof originalGet === 'function') {
-            valueStore.value = originalGet();
+          valueStore.value = originalGet();
         }
         return valueStore.value;
       };
     }
 
     if (onSet) {
-      const originalSet = this._descriptorBackup?.set;
+      const originalSet = descriptorBackup?.set;
+      if (originalSet) {
+        valueStore.hasSetter = true;
+      }
+
       const meta = { originalSet, valueStore };
       property.set = (newValue) => {
         let disableAutoSet = onSet(meta, newValue) === false;
@@ -135,6 +166,35 @@ export default class Hijacker {
     }
 
     Object.defineProperty(this._target, propertyName, property);
+    this._varsHijacked[propertyName] = true;
+  }
+
+  undoHijack(propertyName, silenceWarning = false) {
+    if (!this._varsHijacked[propertyName]) {
+      console.warn('Target hijacker is not overriding', { propertyName });
+      throw `This hijacker is not overriding ${propertyName}.`;
+    }
+
+    const valueStore = this._valueStore;
+
+    if (valueStore.hasGetter || valueStore.hasSetter) {
+      const oldDescriptor = this._descriptorBackup[propertyName];
+      Object.defineProperty(this._target, propertyName, { ...oldDescriptor, configurable: true });
+    }
+    else if (!silenceWarning) {
+      console.warn(
+        'Completely undoing variable hijacks are not currently possible for ' +
+        'all types, including this one. Your property should still function ' +
+        'correctly, but will retain hijacker intrinsics until restart.',
+      );
+
+      Object.defineProperty(this._target, propertyName, {
+        value: valueStore.value,
+        writable: true,
+        enumerable: true,
+        configurable: true,
+      });
+    }
   }
 
   dumpPropertyDescriptor(propertyName: string) {

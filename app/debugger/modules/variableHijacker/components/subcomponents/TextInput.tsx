@@ -34,20 +34,27 @@ export default class TextInput extends React.Component<Props> {
   private readonly inputRef: React.RefObject<any>;
   private inputValue: string;
   private largeString: boolean;
+  private refUpdateFunction: OmitThisParameter<({
+    valueStore,
+    newValue,
+  }: { valueStore: any; newValue: any }) => void>;
 
   constructor(props) {
     super(props);
     this.inputValue = '';
     this.inputRef = React.createRef();
     this.largeString = false;
+    this.refUpdateFunction = this.updateRefValue.bind(this);
   }
 
   componentDidMount() {
-    this.props.valueTracker.getEveryChange(this.updateRefValue.bind(this));
+    this.props.valueTracker.getEveryChange(this.refUpdateFunction);
   }
 
   componentWillUnmount() {
-    this.props.valueTracker.removeGetEveryChangeListener(this.updateRefValue);
+    const removed = this.props.valueTracker.removeGetEveryChangeListener(
+      this.refUpdateFunction
+    );
   }
 
   updateRefValue = ({ valueStore, newValue }) => {
