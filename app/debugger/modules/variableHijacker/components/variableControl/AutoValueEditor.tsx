@@ -51,8 +51,11 @@ export default class AutoValueEditor extends React.Component<Props>{
       text = `⇄ ${key} [accessor]`; // or maybe ● instead
       style.opacity = 0.5;
     }
-    else if (typeInfo?.stringCompatible) {
+    else if (typeInfo?.stringCompatible && typeInfo?.friendlyName !== 'bigint') {
       text = `${key}: ${value}`;
+    }
+    else if (typeInfo?.friendlyName === 'bigint') {
+      text = `${key}: ${value}n`;
     }
     else {
       text = `${key}: ${typeInfo?.friendlyName || 'Object'}`;
