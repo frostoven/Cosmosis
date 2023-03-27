@@ -32,7 +32,7 @@ const draggableHandles = '.cosm-dbg-handle, .ui.attached.tabular.menu';
 export default class CosmDbgMain extends React.Component {
   static defaultState = {
     rootActiveTab: 0,
-    modalSize: HeightSetting.small,
+    modalSize: HeightSetting.large,
     confirmingReload: false,
     hoverActive: false,
     allowDragging: true,

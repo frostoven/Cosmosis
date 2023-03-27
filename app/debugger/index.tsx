@@ -5,6 +5,7 @@ import React from 'react';
 import * as ReactDOM from 'react-dom';
 import CosmDbgMain from './components/CosmDbgMain';
 import { CosmDbgConfig } from './types/CosmDbgConfig';
+import { HeightSetting } from './components/types/HeightSetting';
 
 const CONFIG_FILE = 'cosmDbg.json';
 
@@ -90,6 +91,7 @@ export default class CosmDbg {
 
     fs.exists(this._storageLocation, (exists) => {
       if (!exists) {
+        this.resetState(false);
         // @ts-ignore.
         fs.writeFile(this._storageLocation, stringifyPretty({}), (error) => {
           if (error) {
@@ -167,9 +169,15 @@ export default class CosmDbg {
     return this._configState;
   }
 
-  resetState() {
-    this._configState = { debugUiVisible: this._configState.debugUiVisible };
-    this._saveConfig();
+  resetState(autoSave = true) {
+    this._configState = {
+      debugUiVisible: this._configState.debugUiVisible,
+      uiState: { modalSize: HeightSetting.large },
+    };
+
+    if (autoSave) {
+      this._saveConfig();
+    }
   }
 
   showUI() {

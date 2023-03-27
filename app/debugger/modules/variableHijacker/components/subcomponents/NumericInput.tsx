@@ -42,7 +42,7 @@ export default class NumericInput extends React.Component<Props> {
 
   private readonly inputRef: React.RefObject<any>;
   private inputValue: number;
-  private refUpdateFunction: OmitThisParameter<({
+  private readonly refUpdateFunction: OmitThisParameter<({
     valueStore,
     newValue,
   }: { valueStore: any; newValue: any }) => void>;
@@ -59,9 +59,7 @@ export default class NumericInput extends React.Component<Props> {
   }
 
   componentWillUnmount() {
-    const removed = this.props.valueTracker.removeGetEveryChangeListener(
-      this.refUpdateFunction
-    );
+    this.props.valueTracker.removeGetEveryChangeListener(this.refUpdateFunction);
   }
 
   updateRefValue = ({ valueStore, newValue }) => {
