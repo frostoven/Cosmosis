@@ -30,7 +30,7 @@ export default class ThemedSegment extends React.Component<Props>{
     const segmentStyle = { ...SEGMENT_STYLE };
     segmentStyle.backgroundColor = icon[friendlyType]?.backgroundColor;
     if (!segmentStyle.backgroundColor) {
-      console.warn(`[LiveTracker] No theme entry for icon['${friendlyType}']`);
+      // console.warn(`[LiveTracker] No theme entry for icon['${friendlyType}']`);
       segmentStyle.backgroundColor = defaultColor;
     }
 

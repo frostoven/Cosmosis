@@ -186,3 +186,20 @@ border: none !important;
 .ui.attached.tabular.menu {
     border: none;
 }
+
+textarea {
+    font-family: inherit;
+    cursor: text;
+    color: #ffffff;
+    background-color: #565b5d;
+    margin-top: 2px;
+    padding: 14px;
+    width: 100%;
+    border: thin solid black;
+}
+
+
+.ui.input > input::selection, textarea::selection {
+    color: #fff;
+    background: #6f9e77;
+}

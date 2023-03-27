@@ -24,12 +24,12 @@ export default class ObjectScanner extends React.Component<any, any>{
   }
 
   componentDidMount() {
-    console.log('-> ObjectScanner mounted.');
+    // console.log('-> ObjectScanner mounted.');
     this.buildObjectTree(true);
   }
 
   componentWillUnmount() {
-    console.log('-> ObjectScanner unmounting.');
+    // console.log('-> ObjectScanner unmounting.');
   }
 
   buildObjectTree(rerenderWhenDone = false, onDone = () => {}) {
@@ -141,7 +141,7 @@ export default class ObjectScanner extends React.Component<any, any>{
 
   render() {
     if (!this._objectTreeCache.length) {
-      return <div>Loading...</div>;
+      return <div>Probe result empty</div>;
     }
 
     if (ObjectScanner.rebuildTreeAggressively) {

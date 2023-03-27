@@ -108,7 +108,6 @@ export default class TextInput extends React.Component<Props> {
                     ref={this.inputRef}
                     value={value}
                     onChange={this.onUserInput}
-                    style={{ ...INPUT_STYLE, padding: 14, }}
                   />
                 )
               : (
