@@ -25,7 +25,7 @@ class Metadata {
   }
 }
 
-const metadataPlugin = new CosmosisPlugin('metaData', Metadata);
+const metadataPlugin = new CosmosisPlugin('metadata', Metadata);
 
 export {
   metadataPlugin,
