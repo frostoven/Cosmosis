@@ -13,6 +13,7 @@ type Keys = keyof typeof icon;
 
 interface Props {
   name: Keys | string,
+  onClick?: () => void,
 }
 
 export default class TypeImageIcon extends React.Component<Props>{
@@ -27,7 +28,7 @@ export default class TypeImageIcon extends React.Component<Props>{
     }
 
     return (
-      <img style={ICON_STYLE} alt='' src={iconUri} />
+      <img style={ICON_STYLE} alt='' src={iconUri} onClick={this.props.onClick}/>
     );
   }
 }

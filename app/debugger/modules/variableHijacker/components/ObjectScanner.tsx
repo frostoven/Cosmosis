@@ -7,7 +7,13 @@ import PreventRender from '../../../components/PreventRender';
 
 let _renderCount = 0;
 
-export default class ObjectScanner extends React.Component<any, any>{
+interface Props {
+  name: string,
+  parent: any,
+  fullPath?: string,
+}
+
+export default class ObjectScanner extends React.Component<Props>{
   // If true, the whole object tree is (shallowly) rebuild on rerender.
   static rebuildTreeAggressively = false;
 
@@ -69,7 +75,7 @@ export default class ObjectScanner extends React.Component<any, any>{
       Object.getOwnPropertyDescriptors(instance.__proto__),
     );
 
-    const getters = descriptors.filter(([key, descriptor]) => {
+    const getters = descriptors.filter(([_, descriptor]) => {
       return typeof descriptor.get === 'function';
     });
 
@@ -129,6 +135,7 @@ export default class ObjectScanner extends React.Component<any, any>{
           name={this.props.name}
           parent={this.props.parent}
           invalidateObjectTree={(onDone) => this.invalidateObjectTree(onDone)}
+          fullPath={this.props.fullPath}
         />
       );
     }

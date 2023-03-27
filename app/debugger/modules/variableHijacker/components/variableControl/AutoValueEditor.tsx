@@ -3,6 +3,7 @@ import TypeImageIcon from '../TypeImageIcon';
 import { gizmoMap } from './gizmoMap';
 import ThemedSegment from '../ThemedSegment';
 import ObjectScanner from '../ObjectScanner';
+import { concatVarPath } from '../../../../debuggerUtils';
 
 const COLLAPSED_STYLE: any = {
   fontFamily: 'inherit',
@@ -17,6 +18,7 @@ interface Props {
   invalidateObjectTree?: Function,
   name: string,
   parent: object,
+  fullPath?: string,
 }
 
 export default class AutoValueEditor extends React.Component<Props>{
@@ -43,6 +45,16 @@ export default class AutoValueEditor extends React.Component<Props>{
       this.toggleInspection()
     });
   }
+
+  onIconClick = () => {
+    const path = concatVarPath(this.props.fullPath, this.props.treeObject.key);
+    if (path) {
+      console.log(path);
+    }
+    else {
+      console.log('[AutoValueEditor: icon click] Full path not available.');
+    }
+  };
 
   render() {
     const {
@@ -84,7 +96,7 @@ export default class AutoValueEditor extends React.Component<Props>{
         return (
           <ThemedSegment friendlyType={iconName} onClick={e => e.stopPropagation()}>
             <div style={style} onClick={this.toggleInspection}>
-              <TypeImageIcon name={iconName}/>
+              <TypeImageIcon name={iconName} onClick={this.onIconClick}/>
               {key}
             </div>
             <Component targetName={key} parent={parent} repopulate={() => this.repopulate()}/>
@@ -94,7 +106,7 @@ export default class AutoValueEditor extends React.Component<Props>{
       else if (!typeInfo.stringCompatible) {
         return (
           <ThemedSegment friendlyType={iconName} onClick={this.toggleInspection}>
-            <TypeImageIcon name={iconName}/>
+            <TypeImageIcon name={iconName} onClick={this.onIconClick}/>
             <div style={style}>
               {text}
             </div>
@@ -102,8 +114,9 @@ export default class AutoValueEditor extends React.Component<Props>{
             <br/>
             {/* @ts-ignore */}
               <ObjectScanner
-                parent={this.props.parent[this.props.treeObject.key]}
-                name={this.props.treeObject.key}
+                parent={this.props.parent[key]}
+                name={key}
+                fullPath={concatVarPath(this.props.fullPath, key)}
               />
           </ThemedSegment>
         );
@@ -112,7 +125,7 @@ export default class AutoValueEditor extends React.Component<Props>{
 
     return (
       <ThemedSegment friendlyType={iconName} onClick={this.toggleInspection}>
-        <TypeImageIcon name={iconName}/>
+        <TypeImageIcon name={iconName} onClick={this.onIconClick}/>
         <div style={style}>
           {text}
         </div>
