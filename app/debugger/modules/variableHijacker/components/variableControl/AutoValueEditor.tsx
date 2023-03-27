@@ -26,17 +26,23 @@ export default class AutoValueEditor extends React.Component<Props>{
     super(props);
   }
 
-  toggleInspection = (event) => {
-    event.stopPropagation();
+  toggleInspection = (event: any = null,  onDone = () => {}) => {
+    event?.stopPropagation();
     if (typeof this.props.invalidateObjectTree === 'function') {
       this.props.invalidateObjectTree(() => {
-        this.setState({ inspecting: !this.state.inspecting });
+        this.setState({ inspecting: !this.state.inspecting }, onDone);
       });
     }
     else {
-      this.setState({ inspecting: !this.state.inspecting });
+      this.setState({ inspecting: !this.state.inspecting }, onDone);
     }
   };
+
+  repopulate(event = null) {
+    this.toggleInspection(event, () => {
+      this.toggleInspection()
+    });
+  }
 
   render() {
     const {
@@ -81,7 +87,7 @@ export default class AutoValueEditor extends React.Component<Props>{
               <TypeImageIcon name={iconName}/>
               {key}
             </div>
-            <Component targetName={key} parent={parent}/>
+            <Component targetName={key} parent={parent} repopulate={() => this.repopulate()}/>
           </ThemedSegment>
         );
       }
