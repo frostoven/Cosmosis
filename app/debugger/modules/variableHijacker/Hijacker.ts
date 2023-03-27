@@ -129,9 +129,6 @@ export default class Hijacker {
 
       this._descriptorBackup[propertyName] = descriptorBackup;
     }
-    else {
-      console.log('----> no descriptor available.')
-    }
 
     const descriptorBackup = this._descriptorBackup[propertyName];
 
