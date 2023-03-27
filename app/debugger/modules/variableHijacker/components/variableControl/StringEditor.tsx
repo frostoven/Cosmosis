@@ -1,8 +1,8 @@
 import React from 'react';
-import { Button, Icon } from 'semantic-ui-react';
 import Hijacker from '../../Hijacker';
 import ChangeTracker from 'change-tracker/src';
 import TextInput from '../subcomponents/TextInput';
+import LockButton from '../subcomponents/LockButton';
 
 const CONTAINER_STYLE = {
   fontFamily: 'Consolas, monospace, Lato, sans-serif',
@@ -11,11 +11,6 @@ const CONTAINER_STYLE = {
   marginLeft: 3,
   padding: 4,
   paddingLeft: 19,
-};
-
-const LOCK_STYLE = {
-  backgroundColor: '#595e60',
-  width: 53,
 };
 
 interface Props {
@@ -82,16 +77,11 @@ export default class StringEditor extends React.Component<Props> {
       );
     }
 
-    const lockStyle = { ...LOCK_STYLE };
-    this.state.locked && (lockStyle.backgroundColor = '#485563');
-
     return (
       <div style={CONTAINER_STYLE}>
-        <TextInput valueTracker={this.valueTracker} valueStore={this.hijacker.valueStore}/>
-        &nbsp;
-        <Button positive={false} style={lockStyle} onClick={this.toggleLock}>
-          <Icon name={this.state.locked ? 'lock' : 'unlock'}/>
-        </Button>
+        <TextInput valueTracker={this.valueTracker} valueStore={this.hijacker.valueStore}>
+          <LockButton locked={this.state.locked} onClick={this.toggleLock}/>
+        </TextInput>
       </div>
     );
   }

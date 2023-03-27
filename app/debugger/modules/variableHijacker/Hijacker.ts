@@ -30,7 +30,7 @@ export default class Hijacker {
   private _target: any;
   private readonly _descriptorBackup: { [propertyName: string]: any };
   private _targetIsInstance: boolean;
-  private _varsHijacked: { [propertyName: string]: boolean };
+  private readonly _varsHijacked: { [propertyName: string]: boolean };
   private readonly _valueStore: {
     originalName: string | null,
     value: any,
@@ -63,6 +63,14 @@ export default class Hijacker {
       'modify its children.';
     console.error(message);
     throw message;
+  }
+
+  setValue(propertyName, value) {
+    this._target[propertyName] = value;
+  }
+
+  getParent() {
+    return this._target;
   }
 
   // The object we'll be digging our tentacles into.
@@ -120,9 +128,6 @@ export default class Hijacker {
       }
 
       this._descriptorBackup[propertyName] = descriptorBackup;
-    }
-    else {
-      console.log('----> no descriptor available.')
     }
 
     const descriptorBackup = this._descriptorBackup[propertyName];
@@ -185,7 +190,9 @@ export default class Hijacker {
       console.warn(
         'Completely undoing variable hijacks are not currently possible for ' +
         'all types, including this one. Your property should still function ' +
-        'correctly, but will retain hijacker intrinsics until restart.',
+        'correctly, but will retain hijacker intrinsics until restart. You ' +
+        'can disable this warning by passing `true` as the second parameter ' +
+        'to this function.',
       );
 
       Object.defineProperty(this._target, propertyName, {

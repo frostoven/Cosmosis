@@ -15,7 +15,7 @@ const darkAqua = '#4e646b';
 
 const icon = {
   Array: { img: `${iconPath}/Array.png`, backgroundColor: defaultColor },
-  bigint: { img: `${iconPath}/number.png`, backgroundColor: blue },
+  bigint: { img: `${iconPath}/bigInt.png`, backgroundColor: blue },
   boolean: { img: `${iconPath}/boolean.png`, backgroundColor: darkOrange },
   booleanOn: { img: `${iconPath}/booleanOn.png`, backgroundColor: darkOrange },
   booleanOff: { img: `${iconPath}/booleanOff.png`, backgroundColor: darkOrange },
