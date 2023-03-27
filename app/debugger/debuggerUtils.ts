@@ -49,6 +49,29 @@ function pickIconByTime() {
   }
 }
 
+function concatVarPath(parent: string | undefined, nextItem: string) {
+  if (!parent) {
+    return '';
+  }
+  if (nextItem === '') {
+    return `parent['']`;
+  }
+
+  parent = `${parent}`;
+  nextItem = `${nextItem}`;
+
+  const char0 = nextItem.charAt(0);
+  const isNumber = `${Number(char0)}` === `${char0}`;
+  const isNonAlpha = !/^[_a-zA-Z]+$/i.test(char0);
+
+  if (isNumber || isNonAlpha) {
+    return `${parent}['${nextItem}']`
+  }
+  else {
+    return `${parent}.${nextItem}`;
+  }
+}
+
 // A tedious type guesser. Gives a human-readable guess on type information.
 function guessTypeInfo(value): {
   // Friendly name. Note that this is *not* a type (for example, null is
@@ -180,5 +203,6 @@ function guessTypeInfo(value): {
 
 export {
   pickIconByTime,
+  concatVarPath,
   guessTypeInfo,
 }
