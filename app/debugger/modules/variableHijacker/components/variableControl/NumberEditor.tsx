@@ -19,6 +19,8 @@ interface Props {
   targetName: string,
   // The parent object instance that your target is a child of.
   parent: object,
+  // If true, does not include spacing and slider.
+  simplified?: boolean,
 }
 
 export default class NumberEditor extends React.Component<Props> {
@@ -97,6 +99,16 @@ export default class NumberEditor extends React.Component<Props> {
     }
 
     const absStoreValue = Math.abs(this.hijacker.valueStore.value);
+
+    if (this.props.simplified) {
+      return (
+        <div key="NumberEditor-Simplified">
+          <NumericInput valueTracker={this.valueTracker} valueStore={this.hijacker.valueStore} compact/>
+            &nbsp;
+          <LockButton locked={this.state.locked} onClick={this.toggleLock}/>
+        </div>
+      );
+    }
 
     return (
       <div style={CONTAINER_STYLE}>

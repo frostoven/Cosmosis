@@ -23,7 +23,7 @@ const BUTTON_INNER = {
   fontWeight: 600,
 };
 
-const INPUT_STYLE = {
+const INPUT_STYLE: React.CSSProperties = {
   color: '#ffffff',
   backgroundColor: '#565b5d',
   cursor: 'text',
@@ -35,6 +35,7 @@ interface Props {
   valueTracker: ChangeTracker,
   valueStore: { originalName: string | null; value: any },
   children?: any,
+  compact?: boolean,
 }
 
 export default class NumericInput extends React.Component<Props> {
@@ -116,6 +117,11 @@ export default class NumericInput extends React.Component<Props> {
   };
 
   render() {
+    const inputStyle = { ...INPUT_STYLE };
+    if (this.props.compact) {
+      inputStyle.width = 140;
+    }
+
     return (
       <div style={CONTAINER_STYLE}>
         <Button style={{ ...BUTTON_STYLE, borderLeft: 'none' }} onClick={this.decrement}>
@@ -124,10 +130,10 @@ export default class NumericInput extends React.Component<Props> {
         <div className='ui input'>
           <input
             ref={this.inputRef}
-            value={this.inputValue}
+            value={this.inputValue || ''}
             onChange={this.onUserInput}
             type='number'
-            style={INPUT_STYLE}
+            style={inputStyle}
           />
         </div>
         <Button style={{ ...BUTTON_STYLE, borderRight: 'none' }} onClick={this.increment}>
