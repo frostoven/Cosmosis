@@ -55,6 +55,8 @@ export default class GimbalEditor extends React.Component<Props> {
   private world3d: { scene, camera, renderer, element, cube } | { [key: string]: any };
   private readonly canvasRef: React.RefObject<any>;
   private readonly renderSceneFunction: OmitThisParameter<({ delta }: { delta: any }) => void>;
+  private bootAnimDone: boolean;
+  private bootTimeout: number;
 
   static isTypeSupported(typeName) {
     return [ 'Quaternion', 'Vector3', 'Euler' ].includes(typeName);
@@ -65,6 +67,8 @@ export default class GimbalEditor extends React.Component<Props> {
     this.canvasRef = React.createRef();
     this.world3d = {};
     this.renderSceneFunction = this.renderScene.bind(this);
+    this.bootAnimDone = false;
+    this.bootTimeout = 0.5;
   }
 
   componentDidMount() {
@@ -86,10 +90,14 @@ export default class GimbalEditor extends React.Component<Props> {
     const height = 64;
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+    // scene.background
 
     const geometry = new THREE.BoxGeometry(1, 1, 1);
     const material = new THREE.MeshNormalMaterial();
     const cube = new THREE.Mesh(geometry, material);
+    cube.rotation.x = ((Math.random() * 4) + 3) * (Math.random() < 0.5 ? 1 : -1);
+    cube.rotation.y = ((Math.random() * 4) + 3) * (Math.random() < 0.5 ? 1 : -1);
+    cube.rotation.z = ((Math.random() * 4) + 3) * (Math.random() < 0.5 ? 1 : -1);
     scene.add(cube);
 
     camera.position.z = 2;
@@ -110,8 +118,42 @@ export default class GimbalEditor extends React.Component<Props> {
     }
   };
 
+  renderCubeBoot({ delta }) {
+    const { cube } = this.world3d;
+
+    const epsilon = 0.02;
+    const rotation: THREE.Euler = cube.rotation;
+    let allAxesReady = true;
+
+    [ 'x', 'y', 'z' ].forEach(axis => {
+      const distance = rotation[axis];
+      if (Math.abs(distance) > epsilon) {
+        const difference = distance - epsilon;
+        rotation[axis] -= difference * delta * 10;
+        allAxesReady = false;
+      }
+    });
+
+    this.bootTimeout -= delta;
+    if (this.bootTimeout < 0) {
+      this.bootAnimDone = true;
+      allAxesReady = true;
+    }
+
+    if (allAxesReady) {
+      rotation.set(0, 0, 0);
+      this.bootAnimDone = true;
+    }
+    else {
+      const { x, y, z } = rotation;
+    }
+  }
+
   renderScene = ({ delta }) => {
     const { scene, camera, renderer } = this.world3d;
+    if (!this.bootAnimDone) {
+      this.renderCubeBoot({ delta });
+    }
     renderer.render(scene, camera);
   };
 
