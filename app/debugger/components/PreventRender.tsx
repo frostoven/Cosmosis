@@ -2,7 +2,7 @@ import React from 'react';
 
 interface Props {
   children: any,
-  renderWhenChanging: any,
+  renderWhenChanging?: any,
   // If incremented, allows a rerender even if renderWhenChanging hasn't
   // updated.
   tick?: number,
@@ -18,6 +18,10 @@ export default class PreventRender extends React.Component<Props> {
   }
 
   shouldComponentUpdate() {
+    if (typeof this.props.renderWhenChanging === 'undefined') {
+      return false;
+    }
+
     if (this.props.tick !== this.renderCount) {
       this.renderCount = this.props.tick || 0;
       return true;
