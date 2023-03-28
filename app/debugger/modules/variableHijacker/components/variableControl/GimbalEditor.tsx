@@ -66,6 +66,13 @@ export default class GimbalEditor extends React.Component<Props> {
   // What the mouse position was before the user started interacting.
   private lastMouseX: number;
   private lastMouseY: number;
+  // Cumulative position. Obviously.
+  private fineControl: boolean;
+  // While the user holds x, y, or z, rotate the object along the held axis
+  // only.
+  private lockXAxis: boolean;
+  private lockYAxis: boolean;
+  private lockZAxis: boolean;
 
   static isTypeSupported(typeName) {
     return [ 'Quaternion', 'Vector3', 'Euler' ].includes(typeName);
@@ -82,6 +89,11 @@ export default class GimbalEditor extends React.Component<Props> {
     this.followingMouse = false;
     this.lastMouseX = 0;
     this.lastMouseY = 0;
+    this.fineControl = false;
+
+    this.lockXAxis = false;
+    this.lockYAxis = false;
+    this.lockZAxis = false;
   }
 
   componentDidMount() {
@@ -124,12 +136,27 @@ export default class GimbalEditor extends React.Component<Props> {
 
       const mouseUp = () => {
         this.followingMouse = false;
+        this.fineControl = false;
         document.removeEventListener('mouseup', mouseUp);
         document.removeEventListener('mousemove', mouseMouse);
       };
 
       document.addEventListener('mouseup', mouseUp);
     });
+
+    element.addEventListener('keydown', (event) => {
+      event.key === 'Shift' && (this.fineControl = true);
+      event.code === 'KeyX' && (this.lockXAxis = true);
+      event.code === 'KeyY' && (this.lockYAxis = true);
+      event.code === 'KeyZ' && (this.lockZAxis = true);
+    });
+
+    element.onkeyup = (event) => {
+      event.key === 'Shift' && (this.fineControl = false);
+      event.code === 'KeyX' && (this.lockXAxis = false);
+      event.code === 'KeyY' && (this.lockYAxis = false);
+      event.code === 'KeyZ' && (this.lockZAxis = false);
+    }
   };
 
   onMouseMove = (event) => {
@@ -141,10 +168,17 @@ export default class GimbalEditor extends React.Component<Props> {
       this.lastMouseY = screenY;
       const cube: THREE.Object3D = this.world3d.cube;
 
+      const factor = this.fineControl ? 0.001 : 0.07;
       const group = new THREE.Group;
       group.attach(cube);
-      group.rotateY(-deltaX * 0.07);
-      group.rotateX(-deltaY * 0.07);
+      if (this.lockZAxis) {
+        // Note z does not naturally activate, so logic is inverted.
+        this.lockZAxis && group.rotateZ(-deltaY * factor);
+      }
+      else {
+        !this.lockXAxis && group.rotateY(-deltaX * factor);
+        !this.lockYAxis && group.rotateX(-deltaY * factor);
+      }
       this.world3d.scene.attach(cube);
     }
   };
@@ -208,9 +242,6 @@ export default class GimbalEditor extends React.Component<Props> {
       this.bootAnimDone = true;
       this.setupMouseControls();
     }
-    else {
-      const { x, y, z } = rotation;
-    }
   }
 
   renderScene = ({ delta }) => {
@@ -223,7 +254,6 @@ export default class GimbalEditor extends React.Component<Props> {
 
   render() {
     const { parent, targetName } = this.props;
-    const { scene, camera, renderer, element } = this.world3d;
     return (
       <div style={CONTAINER_STYLE}>
         <div>
@@ -234,7 +264,7 @@ export default class GimbalEditor extends React.Component<Props> {
         <PreventRender>
           <div style={CANVAS_FRAME}>
             <div style={CANVAS_BACKGROUND}></div>
-            <canvas key="gimbal-canvas" ref={this.canvasRef} style={CANVAS_STYLE}/>
+            <canvas key="gimbal-canvas" ref={this.canvasRef} style={CANVAS_STYLE} tabIndex={1}/>
           </div>
         </PreventRender>
       </div>
