@@ -21,6 +21,8 @@ interface Props {
   parent: object,
   // If true, does not include spacing and slider.
   simplified?: boolean,
+  // Optional style overrides.
+  style?: React.CSSProperties,
 }
 
 export default class NumberEditor extends React.Component<Props> {
@@ -99,10 +101,11 @@ export default class NumberEditor extends React.Component<Props> {
     }
 
     const absStoreValue = Math.abs(this.hijacker.valueStore.value);
+    const containerStyle = { ...CONTAINER_STYLE, ...(this.props.style || {}) };
 
     if (this.props.simplified) {
       return (
-        <div key="NumberEditor-Simplified">
+        <div style={{...(this.props.style || {})}}>
           <NumericInput valueTracker={this.valueTracker} valueStore={this.hijacker.valueStore} compact/>
             &nbsp;
           <LockButton locked={this.state.locked} onClick={this.toggleLock}/>
@@ -111,7 +114,7 @@ export default class NumberEditor extends React.Component<Props> {
     }
 
     return (
-      <div style={CONTAINER_STYLE}>
+      <div style={containerStyle}>
         <NumericInput valueTracker={this.valueTracker} valueStore={this.hijacker.valueStore}/>
         &nbsp;
         <LockButton locked={this.state.locked} onClick={this.toggleLock}/>
