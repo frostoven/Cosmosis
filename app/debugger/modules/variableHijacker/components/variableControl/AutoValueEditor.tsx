@@ -148,7 +148,7 @@ export default class AutoValueEditor extends React.Component<Props>{
             <TypeImageIcon name={iconName} onClick={this.onIconClick}/>
             {text}
           </div>
-          <GimbalEditor/>
+          <GimbalEditor targetName={key} parent={parent}/>
         </ThemedSegment>
       )
     }

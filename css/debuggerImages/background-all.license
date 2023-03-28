@@ -1,0 +1,9 @@
+Images generated via a locally running copy of Stable Diffusion.
+License for the background images in this directory all follow the core Cosmosis license.
+
+Prompt: dark purple gothic floral pattern with, materpiece, perfection, cartoon, thick edges
+Sampling method: DPM++ 2M Karras
+Model: Liberty
+Batch: count=4, size=3
+CFG: 13.5
+Seed: 3778879125
