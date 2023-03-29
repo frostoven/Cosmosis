@@ -23,6 +23,10 @@ interface Props {
   simplified?: boolean,
   // Optional style overrides.
   style?: React.CSSProperties,
+  // Allows the parent to ask for the NumberEditor's value tracker. Useful if
+  // the parent needs values as the change. At time of writing, used by
+  // GimbalEditor its cube bidirectionally control ref values.
+  getChildValueTracker?: (ChangeTracker) => void,
 }
 
 export default class NumberEditor extends React.Component<Props> {
@@ -35,6 +39,10 @@ export default class NumberEditor extends React.Component<Props> {
     super(props);
     this.hijacker = new Hijacker();
     this.valueTracker = new ChangeTracker();
+
+    if (typeof this.props.getChildValueTracker === 'function') {
+      this.props.getChildValueTracker(this.valueTracker);
+    }
   }
 
   componentDidMount() {
