@@ -27,6 +27,12 @@ const TITLE_BAR_BUTTONS = {
   float: 'right',
 };
 
+const TAB_CONTENT_STYLE = {
+  display: 'block',
+  background: 'url(/css/debuggerImages/background-2.png)',
+  backgroundPosition: -12,
+};
+
 const draggableHandles = '.cosm-dbg-handle, .ui.attached.tabular.menu';
 
 export default class CosmDbgMain extends React.Component {
@@ -192,6 +198,11 @@ export default class CosmDbgMain extends React.Component {
     const titleBarStyle = { ...TITLE_BAR_STYLE };
     this.state.hoverActive && (titleBarStyle.backgroundColor = '#344234');
 
+    const tabStyle = { ...TAB_CONTENT_STYLE };
+    if (this.state.modalSize === HeightSetting.collapsed) {
+      tabStyle.display = 'none';
+    }
+
     return (
       <Draggable disabled={!this.state.allowDragging} handle={draggableHandles}>
         <div style={containerStyle} ref={this.ref}>
@@ -220,11 +231,7 @@ export default class CosmDbgMain extends React.Component {
             </div>
           </div>
           <Tab
-            style={{
-              display: this.state.modalSize === HeightSetting.collapsed
-                ? 'none'
-                : 'block'
-          }}
+            style={tabStyle}
             activeIndex={activeTab}
             // @ts-ignore - definition is wrong.
             onTabChange={this.handleTabChange}
