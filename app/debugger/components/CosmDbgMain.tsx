@@ -11,23 +11,31 @@ import { CosmDbgRootUtils } from './interfaces/CosmDbgRootUtils';
 import { gameRuntime } from '../../plugins/gameRuntime';
 import { HeightSetting } from './types/HeightSetting';
 
-const CONTAINER_STYLE = {
+const CONTAINER_STYLE: React.CSSProperties = {
   backgroundColor: '#282828',
   // borderRadius: '4px 4px 0 0',
   minWidth: 420,
 };
 
-const TITLE_BAR_STYLE = {
+const TITLE_BAR_STYLE: React.CSSProperties = {
   backgroundColor: '#343434',
   padding: 8,
   // borderRadius: '4px 4px 0 0',
 };
 
-const TITLE_BAR_BUTTONS = {
+const TITLE_BAR_STYLE_COLLAPSED: React.CSSProperties = {
+  background: 'url(/css/debuggerImages/background-2.png)',
+  backgroundPosition: 238,
+  backgroundPositionY: 54,
+  // @ts-ignore - needed to fix react complaint.
+  backgroundColor: null,
+};
+
+const TITLE_BAR_BUTTONS: React.CSSProperties = {
   float: 'right',
 };
 
-const TAB_CONTENT_STYLE = {
+const TAB_CONTENT_STYLE: React.CSSProperties = {
   display: 'block',
   background: 'url(/css/debuggerImages/background-2.png)',
   backgroundPosition: -12,
@@ -52,6 +60,7 @@ export default class CosmDbgMain extends React.Component {
     this.ref = React.createRef();
     this.state = cosmDbg.getState()?.uiState || {};
     this.state.hoverActive = false;
+    this.state.confirmingReload = false;
     this._iconTimer = null;
   }
 
@@ -195,12 +204,13 @@ export default class CosmDbgMain extends React.Component {
       containerStyle.minWidth = 0;
     }
 
-    const titleBarStyle = { ...TITLE_BAR_STYLE };
+    let titleBarStyle = { ...TITLE_BAR_STYLE };
     this.state.hoverActive && (titleBarStyle.backgroundColor = '#344234');
 
     const tabStyle = { ...TAB_CONTENT_STYLE };
     if (this.state.modalSize === HeightSetting.collapsed) {
       tabStyle.display = 'none';
+      titleBarStyle = { ...titleBarStyle, ...TITLE_BAR_STYLE_COLLAPSED };
     }
 
     return (
@@ -209,20 +219,12 @@ export default class CosmDbgMain extends React.Component {
           <div className="cosm-dbg-handle" style={titleBarStyle}>
             <Icon name={pickIconByTime()}/>
             &nbsp;CosmDbg&nbsp;&nbsp;
-            {/* @ts-ignore */}
             <div style={TITLE_BAR_BUTTONS}><Icon name='close' onClick={this.handleClose}/></div>
-            {/* @ts-ignore */}
             <div style={TITLE_BAR_BUTTONS}><Icon name='sort' onClick={this.handleSizeChange}/></div>
-            <div
-              // @ts-ignore
-              style={{ ...TITLE_BAR_BUTTONS, paddingRight: 2, }}
-            >
+            <div style={{ ...TITLE_BAR_BUTTONS, paddingRight: 2, }}>
               <Icon name='terminal' size='small' onClick={this.handleShowDevTools}/>
             </div>
-            <div
-              // @ts-ignore
-              style={{ ...TITLE_BAR_BUTTONS, paddingRight: 6, }}
-            >
+            <div style={{ ...TITLE_BAR_BUTTONS, paddingRight: 6, }}>
               <Icon
                 name={this.state.confirmingReload ? 'exclamation triangle' : 'redo'}
                 size='small'
