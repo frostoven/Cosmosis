@@ -108,6 +108,7 @@ export default class AutoValueEditor extends React.Component<Props>{
     const {
       type, treeObject: { key, value, isPrivate, isAccessor }, typeInfo
     } = this.props;
+    const parent = this.props.parent;
 
     const style: any = { ...COLLAPSED_STYLE };
     isPrivate && (style.fontStyle = 'italic');
@@ -156,7 +157,6 @@ export default class AutoValueEditor extends React.Component<Props>{
       // Standard variableControl components (mostly for primitives).
       let Component = gizmoMap[typeInfo?.friendlyName];
       if (Component)  {
-        const parent = this.props.parent;
         return (
           <ThemedSegment friendlyType={iconName} onClick={e => e.stopPropagation()}>
             <div className={divClass} style={style} onClick={this.toggleInspection}>
@@ -179,7 +179,7 @@ export default class AutoValueEditor extends React.Component<Props>{
             <br/>
             {/* @ts-ignore */}
               <ObjectScanner
-                parent={this.props.parent[key]}
+                parent={parent[key]}
                 name={key}
                 fullPath={concatVarPath(this.props.fullPath, key)}
               />

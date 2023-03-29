@@ -1,6 +1,6 @@
-// maybe:
-//   4 num input, pass a 'disableSlider' prop.
-//   static method: isTypeSupported(Vector3) - generate icon if true
+// TODO:
+//  * continue from here: hook cube values into quats and vice versa.
+//  * if starting vec/quat is not 0,0,0[,0] then make the cube spin into that (from its usual random start position).
 
 import React from 'react';
 import * as THREE from 'three';
@@ -8,6 +8,8 @@ import { gameRuntime } from '../../../../../plugins/gameRuntime';
 import Core from '../../../../../plugins/built-ins/Core';
 import PreventRender from '../../../../components/PreventRender';
 import NumberEditor from './NumberEditor';
+import { guessTypeInfo } from '../../../../debuggerUtils';
+import ChangeTracker from 'change-tracker/src';
 
 const INPUT_STYLE: React.CSSProperties = {
   marginTop: -1,
@@ -48,6 +50,37 @@ const CANVAS_FRAME: React.CSSProperties = {
   transform: 'translateY(-50%)',
 };
 
+type AxisName = 'x' | 'y' | 'z' | '_x' | '_y' | '_z' | '_w';
+
+interface SpatialDefinition {
+  controlVars: AxisName[],
+  copyToVec3: (source: any, target: THREE.Euler) => THREE.Euler,
+}
+
+interface SpatialDefinitions {
+  [key: string]: SpatialDefinition,
+}
+
+const typeDefinition: SpatialDefinitions = {
+  Vector3: {
+    controlVars: [ 'x', 'y', 'z' ],
+    copyToVec3: (sourceVec3: THREE.Vector3, targetVec3) =>
+      targetVec3.setFromVector3(sourceVec3),
+  },
+  Euler: {
+    controlVars: [ '_x', '_y', '_z' ],
+    copyToVec3: (sourceEuler: THREE.Euler, targetVec3) =>
+      targetVec3.setFromVector3(sourceEuler.toVector3()),
+  },
+  Quaternion: {
+    controlVars: [ '_x', '_y', '_z', '_w' ],
+    copyToVec3: (sourceQuaternion: THREE.Quaternion, targetVec3) =>
+      targetVec3.setFromVector3(
+        new THREE.Euler().setFromQuaternion(sourceQuaternion).toVector3(),
+      ),
+  },
+};
+
 interface Props {
   // The name of the variable you wish to control.
   targetName: string,
@@ -73,6 +106,8 @@ export default class GimbalEditor extends React.Component<Props> {
   private lockXAxis: boolean;
   private lockYAxis: boolean;
   private lockZAxis: boolean;
+  private axisNames: AxisName[];
+  private readonly axisValueTrackers: { [key: string]: ChangeTracker };
 
   static isTypeSupported(typeName) {
     return [ 'Quaternion', 'Vector3', 'Euler' ].includes(typeName);
@@ -90,6 +125,11 @@ export default class GimbalEditor extends React.Component<Props> {
     this.lastMouseX = 0;
     this.lastMouseY = 0;
     this.fineControl = false;
+
+    this.axisNames = [];
+    this.axisValueTrackers = {};
+    // this.updatingCube = false;
+    // this.
 
     this.lockXAxis = false;
     this.lockYAxis = false;
@@ -251,15 +291,70 @@ export default class GimbalEditor extends React.Component<Props> {
     }
     renderer.render(scene, camera);
   };
+  
+  genNumberEditors = () => {
+    let typeDef;
+    const target = this.props.parent[this.props.targetName];
+    if (this.axisNames.length === 0) {
+      const typeName = guessTypeInfo(target).friendlyName;
+      typeDef = typeDefinition[typeName];
+      if (!typeDef) {
+        console.error(`[GimbalEditor] ${typeName} not (yet) supported.`);
+        return null;
+      }
+      else {
+        this.axisNames = [ ...typeDef.controlVars ];
+      }
+    }
+
+    // We're working with the original target's children; make that target the
+    // new parent.
+    const parent = this.props.parent[this.props.targetName];
+
+    const components: Array<any> = [];
+    for (let i = 0, len = this.axisNames.length; i < len; i++) {
+      const axis = this.axisNames[i];
+      components.push(
+        <NumberEditor
+          key={`GimbalEditor-Input-${axis}`}
+          style={INPUT_STYLE}
+          targetName={axis}
+          parent={parent}
+          getChildValueTracker={(valueTracker) => {
+            this.axisValueTrackers[axis] = valueTracker;
+            valueTracker.getEveryChange((value) => {
+              // this.followVariable(axis, value);
+              this.followVariable(typeDef);
+            });
+          }}
+          simplified
+        />
+      );
+    }
+
+    return components;
+  };
+
+  followVariable = (typeDef: SpatialDefinition) => {
+    if (!this.followingMouse) {
+      // console.log({ axis, value });
+      const parent = this.props.parent[this.props.targetName];
+      // console.log('followVariable:', parent);
+      const { cube } = this.world3d;
+      if (!cube) {
+        return;
+      }
+      typeDef.copyToVec3(parent, cube.rotation);
+    }
+  };
 
   render() {
     const { parent, targetName } = this.props;
+    console.log('GimbalEditor ->', { parent, targetName });
     return (
       <div style={CONTAINER_STYLE}>
         <div>
-          <NumberEditor style={INPUT_STYLE} targetName={targetName} parent={parent} simplified/>
-          <NumberEditor style={INPUT_STYLE} targetName={targetName} parent={parent} simplified/>
-          <NumberEditor style={INPUT_STYLE} targetName={targetName} parent={parent} simplified/>
+          {this.genNumberEditors()}
         </div>
         <PreventRender>
           <div style={CANVAS_FRAME}>
