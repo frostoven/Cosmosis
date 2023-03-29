@@ -89,6 +89,9 @@ interface Props {
   parent: object,
 }
 
+// Dev note: we can create around 20 simultaneous renderers before we start
+// hurting the application. Exceeding that may cause the game (or other
+// canvases) to black-out for a second while it recovers context.
 export default class GimbalEditor extends React.Component<Props> {
   private world3d: { scene, camera, renderer, element, cube } | { [key: string]: any };
   private readonly canvasRef: React.RefObject<any>;
@@ -109,6 +112,7 @@ export default class GimbalEditor extends React.Component<Props> {
   private lockZAxis: boolean;
   private axisNames: AxisName[];
   private readonly axisValueTrackers: { [key: string]: ChangeTracker };
+  private startingPosition: THREE.Quaternion;
 
   static isTypeSupported(typeName) {
     return [ 'Quaternion', 'Vector3', 'Euler' ].includes(typeName);
@@ -130,7 +134,7 @@ export default class GimbalEditor extends React.Component<Props> {
     this.axisNames = [];
     this.axisValueTrackers = {};
     // this.updatingCube = false;
-    // this.
+    this.startingPosition = new THREE.Quaternion();
 
     this.lockXAxis = false;
     this.lockYAxis = false;
@@ -149,6 +153,15 @@ export default class GimbalEditor extends React.Component<Props> {
     gameRuntime.tracked.core.getOnce((core: Core) => {
       core.onAnimate.removeGetEveryChangeListener(this.renderSceneFunction);
     });
+
+    const renderer = this.world3d.renderer;
+    if (renderer) {
+      renderer.dispose();
+      // TODO: this causes a message to be logged: THREE.WebGLRenderer: Context
+      //  Lost. Maybe raise an issue with the Three.js community to silence the
+      //  message via some  mechanism.
+      renderer.forceContextLoss();
+    }
   }
 
   setupMouseControls = () => {
@@ -233,9 +246,9 @@ export default class GimbalEditor extends React.Component<Props> {
     const geometry = new THREE.BoxGeometry(1, 1, 1);
     const material = new THREE.MeshNormalMaterial();
     const cube = new THREE.Mesh(geometry, material);
-    cube.rotation.x = ((Math.random() * 4) + 3) * (Math.random() < 0.5 ? 1 : -1);
-    cube.rotation.y = ((Math.random() * 4) + 3) * (Math.random() < 0.5 ? 1 : -1);
-    cube.rotation.z = ((Math.random() * 4) + 3) * (Math.random() < 0.5 ? 1 : -1);
+    cube.rotation.x = ((Math.random() * 4) + 6.2) * (Math.random() < 0.5 ? 1 : -1);
+    cube.rotation.y = ((Math.random() * 4) + 6.2) * (Math.random() < 0.5 ? 1 : -1);
+    cube.rotation.z = ((Math.random() * 4) + 6.2) * (Math.random() < 0.5 ? 1 : -1);
     scene.add(cube);
 
     camera.position.z = 2;
@@ -259,18 +272,10 @@ export default class GimbalEditor extends React.Component<Props> {
   renderCubeBoot({ delta }) {
     const { cube } = this.world3d;
 
-    const epsilon = 0.02;
+    const epsilon = 0.005;
     const rotation: THREE.Euler = cube.rotation;
-    let allAxesReady = true;
-
-    [ 'x', 'y', 'z' ].forEach(axis => {
-      const distance = rotation[axis];
-      if (Math.abs(distance) > epsilon) {
-        const difference = distance - epsilon;
-        rotation[axis] -= difference * delta * 10;
-        allAxesReady = false;
-      }
-    });
+    let allAxesReady = false;
+    cube.quaternion.slerp(this.startingPosition, delta * 8);
 
     this.bootTimeout -= delta;
     if (this.bootTimeout < 0) {
@@ -279,7 +284,7 @@ export default class GimbalEditor extends React.Component<Props> {
     }
 
     if (allAxesReady) {
-      rotation.set(0, 0, 0);
+      cube.quaternion.copy(this.startingPosition);
       this.bootAnimDone = true;
       this.setupMouseControls();
     }
@@ -337,21 +342,27 @@ export default class GimbalEditor extends React.Component<Props> {
   };
 
   followVariable = (typeDef: SpatialDefinition) => {
+    const { cube } = this.world3d;
+    if (!cube) {
+      return;
+    }
+    const parent = this.props.parent[this.props.targetName];
+
+    if (!this.bootAnimDone) {
+      // this.startingPosition.copy(this.);
+      typeDef.copyToQuaternion(parent, this.startingPosition);
+      return;
+    }
+
     if (!this.followingMouse) {
       // console.log({ axis, value });
-      const parent = this.props.parent[this.props.targetName];
       // console.log('followVariable:', parent);
-      const { cube } = this.world3d;
-      if (!cube) {
-        return;
-      }
       typeDef.copyToQuaternion(parent, cube.quaternion);
     }
   };
 
   render() {
     const { parent, targetName } = this.props;
-    console.log('GimbalEditor ->', { parent, targetName });
     return (
       <div style={CONTAINER_STYLE}>
         <div>
