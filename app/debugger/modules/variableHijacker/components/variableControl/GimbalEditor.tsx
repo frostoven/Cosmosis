@@ -1,7 +1,3 @@
-// TODO:
-//  * continue from here: hook cube values into quats and vice versa.
-//  * if starting vec/quat is not 0,0,0[,0] then make the cube spin into that (from its usual random start position).
-
 import React from 'react';
 import * as THREE from 'three';
 import { gameRuntime } from '../../../../../plugins/gameRuntime';
@@ -53,8 +49,12 @@ const CANVAS_FRAME: React.CSSProperties = {
 type AxisName = 'x' | 'y' | 'z' | '_x' | '_y' | '_z' | '_w';
 
 interface SpatialDefinition {
+  // Axis variable names.
   controlVars: AxisName[],
-  copyToQuaternion: (source: any, target: THREE.Quaternion) => any,
+  // Convert variable being watched into a quaternion for easier processing.
+  copyToQuaternion: (source: any, local: THREE.Quaternion) => any,
+  // Convert local quaternion into a form compatible with the source.
+  copyToSource: (local: THREE.Quaternion, target: any) => any,
 }
 
 interface SpatialDefinitions {
@@ -68,17 +68,25 @@ const typeDefinition: SpatialDefinitions = {
     copyToQuaternion: (sourceVec3: THREE.Vector3, targetQuaternion) => {
       tempEuler.setFromVector3(sourceVec3);
       targetQuaternion.setFromEuler(tempEuler);
-    }
+    },
+    copyToSource: (local: THREE.Quaternion, target: THREE.Vector3) => {
+      tempEuler.setFromQuaternion(local);
+      target.copy(tempEuler.toVector3())
+    },
   },
   Euler: {
     controlVars: [ '_x', '_y', '_z' ],
     copyToQuaternion: (sourceEuler: THREE.Euler, targetQuaternion) =>
       targetQuaternion.setFromEuler(sourceEuler),
+    copyToSource: (local: THREE.Quaternion, target: THREE.Euler) =>
+      target.setFromQuaternion(local),
   },
   Quaternion: {
     controlVars: [ '_x', '_y', '_z', '_w' ],
     copyToQuaternion: (sourceQuaternion: THREE.Quaternion, targetQuaternion) =>
       targetQuaternion.copy(sourceQuaternion),
+    copyToSource: (local: THREE.Quaternion, target: THREE.Quaternion) =>
+      target.copy(local),
   },
 };
 
@@ -236,7 +244,18 @@ export default class GimbalEditor extends React.Component<Props> {
         !this.lockYAxis && group.rotateX(-deltaY * factor);
       }
       this.world3d.scene.attach(cube);
+      this.imposeCubeChanges();
     }
+  };
+
+  // While dragging the cube, send new values to children.
+  imposeCubeChanges = () => {
+    if (!this.followingMouse || !this.bootAnimDone || !this.targetTypeDef) {
+      return;
+    }
+
+    const parent = this.props.parent[this.props.targetName];
+    this.targetTypeDef.copyToSource(this.world3d.cube.quaternion, parent);
   };
 
   create3dWorld = () => {
@@ -274,8 +293,6 @@ export default class GimbalEditor extends React.Component<Props> {
   renderCubeBoot({ delta }) {
     const { cube } = this.world3d;
 
-    const epsilon = 0.005;
-    const rotation: THREE.Euler = cube.rotation;
     let allAxesReady = false;
     cube.quaternion.slerp(this.startingPosition, delta * 8);
 
@@ -321,7 +338,6 @@ export default class GimbalEditor extends React.Component<Props> {
 
     if (typeDef) {
       this.targetTypeDef = typeDef;
-      console.log('--> stored typeDef:', { typeDef });
       if (!this.bootAnimDone) {
         const parent = this.props.parent[this.props.targetName];
         typeDef.copyToQuaternion(parent, this.startingPosition);
@@ -355,7 +371,7 @@ export default class GimbalEditor extends React.Component<Props> {
 
   followVariable = () => {
     if (!this.targetTypeDef) {
-      console.log('targetTypeDef not ready');
+      console.warn('[GimbalEditor] targetTypeDef not ready.');
       return;
     }
 
@@ -376,7 +392,6 @@ export default class GimbalEditor extends React.Component<Props> {
   };
 
   render() {
-    const { parent, targetName } = this.props;
     return (
       <div style={CONTAINER_STYLE}>
         <div>
