@@ -3,12 +3,6 @@ import { Accordion, AccordionContent, Icon } from 'semantic-ui-react';
 import { CosmDbgRootUtils } from '../../components/interfaces/CosmDbgRootUtils';
 import PluginInterrogator from './components/PluginInterrogator';
 
-// TODO:
-//  Structure:
-//  * > Plugin interrogation [with intelligent parsing]
-//  * > Hook builder [manual path exec, basically. maybe separate object and key]
-//  * > External hooks [vars that prod code injects straight into var hacker]
-
 interface RootUtils extends CosmDbgRootUtils {
   rootState: {
     varHackActiveSection: number,
@@ -50,29 +44,29 @@ export default class VariableHijacker extends React.Component<{ rootUtils: RootU
             <PluginInterrogator rootUtils={this.props.rootUtils}/>
           </AccordionContent>
 
-          <Accordion.Title
-            active={active === 1}
-            index={1}
-            onClick={this.expandPluginInterrogation}
-          >
-            <Icon name="dropdown"/>
-            Hook builder
-          </Accordion.Title>
-          <AccordionContent active={active === 1}>
-            [Hook builder section TBD]
-          </AccordionContent>
+          {/*<Accordion.Title*/}
+          {/*  active={active === 1}*/}
+          {/*  index={1}*/}
+          {/*  onClick={this.expandPluginInterrogation}*/}
+          {/*>*/}
+          {/*  <Icon name="dropdown"/>*/}
+          {/*  Hook builder*/}
+          {/*</Accordion.Title>*/}
+          {/*<AccordionContent active={active === 1}>*/}
+          {/*  [Hook builder section TBD]*/}
+          {/*</AccordionContent>*/}
 
-          <Accordion.Title
-            active={active === 2}
-            index={2}
-            onClick={this.expandPluginInterrogation}
-          >
-            <Icon name="dropdown"/>
-            External hooks
-          </Accordion.Title>
-          <AccordionContent active={active === 2}>
-            [External hooks section TBD]
-          </AccordionContent>
+          {/*<Accordion.Title*/}
+          {/*  active={active === 2}*/}
+          {/*  index={2}*/}
+          {/*  onClick={this.expandPluginInterrogation}*/}
+          {/*>*/}
+          {/*  <Icon name="dropdown"/>*/}
+          {/*  External hooks*/}
+          {/*</Accordion.Title>*/}
+          {/*<AccordionContent active={active === 2}>*/}
+          {/*  [External hooks section TBD]*/}
+          {/*</AccordionContent>*/}
         </Accordion>
       </div>
     );
