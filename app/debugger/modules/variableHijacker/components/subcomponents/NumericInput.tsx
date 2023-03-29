@@ -75,12 +75,17 @@ export default class NumericInput extends React.Component<Props> {
 
   setValue(value) {
     let newValue = Number(value);
+    const valueStore = this.props.valueStore;
     if (!isNaN(newValue)) {
       // Only set the value if it's reasonable.
-      this.props.valueStore.value = newValue;
+      valueStore.value = newValue;
     }
     this.inputValue = value;
     this.setState({ forceRerender: this.state.forceRerender + 1 });
+    // TODO: actually setting the value as new is unnecessary - we should
+    //  probably implement a re-notify function in ChangeTracker and call it
+    //  here.
+    this.props.valueTracker.setValue({ valueStore, newValue });
   }
 
   onUserInput = (event) => {

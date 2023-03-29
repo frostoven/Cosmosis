@@ -112,7 +112,8 @@ export default class GimbalEditor extends React.Component<Props> {
   private lockZAxis: boolean;
   private axisNames: AxisName[];
   private readonly axisValueTrackers: { [key: string]: ChangeTracker };
-  private startingPosition: THREE.Quaternion;
+  private readonly startingPosition: THREE.Quaternion;
+  private targetTypeDef: SpatialDefinition | null;
 
   static isTypeSupported(typeName) {
     return [ 'Quaternion', 'Vector3', 'Euler' ].includes(typeName);
@@ -135,6 +136,7 @@ export default class GimbalEditor extends React.Component<Props> {
     this.axisValueTrackers = {};
     // this.updatingCube = false;
     this.startingPosition = new THREE.Quaternion();
+    this.targetTypeDef = null;
 
     this.lockXAxis = false;
     this.lockYAxis = false;
@@ -286,6 +288,10 @@ export default class GimbalEditor extends React.Component<Props> {
     if (allAxesReady) {
       cube.quaternion.copy(this.startingPosition);
       this.bootAnimDone = true;
+      if (this.targetTypeDef) {
+        const parent = this.props.parent[this.props.targetName];
+        this.targetTypeDef.copyToQuaternion(parent, cube.quaternion);
+      }
       this.setupMouseControls();
     }
   }
@@ -313,6 +319,15 @@ export default class GimbalEditor extends React.Component<Props> {
       }
     }
 
+    if (typeDef) {
+      this.targetTypeDef = typeDef;
+      console.log('--> stored typeDef:', { typeDef });
+      if (!this.bootAnimDone) {
+        const parent = this.props.parent[this.props.targetName];
+        typeDef.copyToQuaternion(parent, this.startingPosition);
+      }
+    }
+
     // We're working with the original target's children; make that target the
     // new parent.
     const parent = this.props.parent[this.props.targetName];
@@ -328,10 +343,7 @@ export default class GimbalEditor extends React.Component<Props> {
           parent={parent}
           getChildValueTracker={(valueTracker) => {
             this.axisValueTrackers[axis] = valueTracker;
-            valueTracker.getEveryChange((value) => {
-              // this.followVariable(axis, value);
-              this.followVariable(typeDef);
-            });
+            valueTracker.getEveryChange(() => this.followVariable());
           }}
           simplified
         />
@@ -341,7 +353,12 @@ export default class GimbalEditor extends React.Component<Props> {
     return components;
   };
 
-  followVariable = (typeDef: SpatialDefinition) => {
+  followVariable = () => {
+    if (!this.targetTypeDef) {
+      console.log('targetTypeDef not ready');
+      return;
+    }
+
     const { cube } = this.world3d;
     if (!cube) {
       return;
@@ -349,15 +366,12 @@ export default class GimbalEditor extends React.Component<Props> {
     const parent = this.props.parent[this.props.targetName];
 
     if (!this.bootAnimDone) {
-      // this.startingPosition.copy(this.);
-      typeDef.copyToQuaternion(parent, this.startingPosition);
+      this.targetTypeDef.copyToQuaternion(parent, this.startingPosition);
       return;
     }
 
     if (!this.followingMouse) {
-      // console.log({ axis, value });
-      // console.log('followVariable:', parent);
-      typeDef.copyToQuaternion(parent, cube.quaternion);
+      this.targetTypeDef.copyToQuaternion(parent, cube.quaternion);
     }
   };
 

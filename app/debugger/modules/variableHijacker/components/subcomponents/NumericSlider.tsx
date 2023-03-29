@@ -15,7 +15,7 @@ interface Props {
 }
 
 export default class NumericSlider extends React.Component<Props> {
-  private initialFraction: number;
+  private readonly initialFraction: number;
 
   constructor(props) {
     super(props);
