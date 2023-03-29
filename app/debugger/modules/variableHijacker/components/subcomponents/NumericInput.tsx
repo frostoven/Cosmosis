@@ -122,6 +122,11 @@ export default class NumericInput extends React.Component<Props> {
       inputStyle.width = 140;
     }
 
+    let value: number | string = this.inputValue;
+    if (isNaN(value)) {
+      value = '';
+    }
+
     return (
       <div style={CONTAINER_STYLE}>
         <Button style={{ ...BUTTON_STYLE, borderLeft: 'none' }} onClick={this.decrement}>
@@ -130,7 +135,7 @@ export default class NumericInput extends React.Component<Props> {
         <div className='ui input'>
           <input
             ref={this.inputRef}
-            value={this.inputValue || ''}
+            value={value}
             onChange={this.onUserInput}
             type='number'
             style={inputStyle}
