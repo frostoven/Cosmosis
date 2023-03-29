@@ -54,30 +54,31 @@ type AxisName = 'x' | 'y' | 'z' | '_x' | '_y' | '_z' | '_w';
 
 interface SpatialDefinition {
   controlVars: AxisName[],
-  copyToVec3: (source: any, target: THREE.Euler) => THREE.Euler,
+  copyToQuaternion: (source: any, target: THREE.Quaternion) => any,
 }
 
 interface SpatialDefinitions {
   [key: string]: SpatialDefinition,
 }
 
+const tempEuler = new THREE.Euler();
 const typeDefinition: SpatialDefinitions = {
   Vector3: {
     controlVars: [ 'x', 'y', 'z' ],
-    copyToVec3: (sourceVec3: THREE.Vector3, targetVec3) =>
-      targetVec3.setFromVector3(sourceVec3),
+    copyToQuaternion: (sourceVec3: THREE.Vector3, targetQuaternion) => {
+      tempEuler.setFromVector3(sourceVec3);
+      targetQuaternion.setFromEuler(tempEuler);
+    }
   },
   Euler: {
     controlVars: [ '_x', '_y', '_z' ],
-    copyToVec3: (sourceEuler: THREE.Euler, targetVec3) =>
-      targetVec3.setFromVector3(sourceEuler.toVector3()),
+    copyToQuaternion: (sourceEuler: THREE.Euler, targetQuaternion) =>
+      targetQuaternion.setFromEuler(sourceEuler),
   },
   Quaternion: {
     controlVars: [ '_x', '_y', '_z', '_w' ],
-    copyToVec3: (sourceQuaternion: THREE.Quaternion, targetVec3) =>
-      targetVec3.setFromVector3(
-        new THREE.Euler().setFromQuaternion(sourceQuaternion).toVector3(),
-      ),
+    copyToQuaternion: (sourceQuaternion: THREE.Quaternion, targetQuaternion) =>
+      targetQuaternion.copy(sourceQuaternion),
   },
 };
 
@@ -344,7 +345,7 @@ export default class GimbalEditor extends React.Component<Props> {
       if (!cube) {
         return;
       }
-      typeDef.copyToVec3(parent, cube.rotation);
+      typeDef.copyToQuaternion(parent, cube.quaternion);
     }
   };
 
