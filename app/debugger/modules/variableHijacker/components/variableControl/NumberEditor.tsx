@@ -126,21 +126,33 @@ export default class NumberEditor extends React.Component<Props> {
             disabled={readonly}
           />
             &nbsp;
-          <LockButton locked={this.state.locked} onClick={this.toggleLock} disabled={readonly}/>
+          <LockButton
+            locked={this.state.locked}
+            onClick={this.toggleLock}
+            disabled={readonly}
+          />
         </div>
       );
     }
 
     return (
       <div style={containerStyle}>
-        <NumericInput valueTracker={this.valueTracker} valueStore={this.hijacker.valueStore}/>
+        <NumericInput
+          valueTracker={this.valueTracker}
+          valueStore={this.hijacker.valueStore}
+          disabled={readonly}
+        />
         &nbsp;
-        <LockButton locked={this.state.locked} onClick={this.toggleLock}/>
+        <LockButton
+          locked={this.state.locked}
+          onClick={this.toggleLock}
+          disabled={readonly}
+        />
         <br/>
 
         {/* Prevent factions by hiding component near zero (<input> doesn't support them) */}
         {
-          absStoreValue < 1 && absStoreValue !== 0 && !readonly
+          (absStoreValue < 1 && absStoreValue !== 0) || readonly
             ? null
             : <NumericSlider
                 valueStore={this.hijacker.valueStore}

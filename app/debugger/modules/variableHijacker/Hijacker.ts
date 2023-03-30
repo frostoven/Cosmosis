@@ -187,8 +187,8 @@ export default class Hijacker {
 
   undoHijack(propertyName, silenceWarning = false) {
     if (!this._varsHijacked[propertyName]) {
-      console.warn('Target hijacker is not overriding', { propertyName });
-      throw `This hijacker is not overriding ${propertyName}.`;
+      console.warn('Hijacker is not currently overriding', { propertyName });
+      return;
     }
 
     const valueStore = this._valueStore;

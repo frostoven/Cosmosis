@@ -94,7 +94,7 @@ export default class HookChooser extends React.Component<{ rootUtils: CosmDbgRoo
     }, this.saveFormAfterDelay);
   };
 
-  onSubmit = (event) => {
+  onSubmit = () => {
     const parentPath = this.state.parentAreaText;
     if (parentPath.trim() === 'window') {
       return this.setState({
@@ -129,6 +129,7 @@ export default class HookChooser extends React.Component<{ rootUtils: CosmDbgRoo
     }
 
     this.setState({
+      evalError: '',
       targetParent: parent,
       targetChildName: childName,
     });
@@ -138,12 +139,19 @@ export default class HookChooser extends React.Component<{ rootUtils: CosmDbgRoo
     this.setState(this.defaultState, this.saveFormAfterDelay);
   };
 
+  backToForm = () => {
+    this.setState({
+      targetParent: null,
+      targetChildName: null,
+    });
+  };
+
   render() {
     const { targetParent, targetChildName } = this.state;
     if (targetParent && targetChildName) {
       return (
         <div>
-          <Button fluid onClick={this.resetForm}>Reset</Button>
+          <Button fluid onClick={this.backToForm}>Back</Button>
           <ObjectScanner name={targetChildName} parent={targetParent}/>
         </div>
       )

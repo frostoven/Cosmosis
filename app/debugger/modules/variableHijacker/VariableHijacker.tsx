@@ -57,6 +57,11 @@ export default class VariableHijacker extends React.Component<{ rootUtils: RootU
             <HookChooser rootUtils={this.props.rootUtils}/>
           </AccordionContent>
 
+          {/* TODO: implement this. This would basically work by feeding the
+               PluginInterrogator an arbitrary object. The PluginInterrogator
+               is currently hardcoded to work with gameRuntime, and would need
+               to be altered to accept parameters generically.
+          */}
           {/*<Accordion.Title*/}
           {/*  active={active === 2}*/}
           {/*  index={2}*/}
