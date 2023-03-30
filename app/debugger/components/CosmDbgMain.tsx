@@ -20,7 +20,7 @@ const CONTAINER_STYLE: React.CSSProperties = {
 const TITLE_BAR_STYLE: React.CSSProperties = {
   backgroundColor: '#343434',
   padding: 8,
-  // borderRadius: '4px 4px 0 0',
+  userSelect: 'none',
 };
 
 const TITLE_BAR_STYLE_COLLAPSED: React.CSSProperties = {

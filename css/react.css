@@ -198,6 +198,9 @@ textarea {
     border: thin solid black;
 }
 
+textarea::placeholder {
+    color: #adadad;
+}
 
 .ui.input > input::selection, textarea::selection {
     color: #fff;

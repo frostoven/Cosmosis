@@ -2,6 +2,7 @@ import React from 'react';
 import { Accordion, AccordionContent, Icon } from 'semantic-ui-react';
 import { CosmDbgRootUtils } from '../../components/interfaces/CosmDbgRootUtils';
 import PluginInterrogator from './components/PluginInterrogator';
+import HookChooser from './hookBuilder/HookChooser';
 
 interface RootUtils extends CosmDbgRootUtils {
   rootState: {
@@ -44,17 +45,17 @@ export default class VariableHijacker extends React.Component<{ rootUtils: RootU
             <PluginInterrogator rootUtils={this.props.rootUtils}/>
           </AccordionContent>
 
-          {/*<Accordion.Title*/}
-          {/*  active={active === 1}*/}
-          {/*  index={1}*/}
-          {/*  onClick={this.expandPluginInterrogation}*/}
-          {/*>*/}
-          {/*  <Icon name="dropdown"/>*/}
-          {/*  Hook builder*/}
-          {/*</Accordion.Title>*/}
-          {/*<AccordionContent active={active === 1}>*/}
-          {/*  [Hook builder section TBD]*/}
-          {/*</AccordionContent>*/}
+          <Accordion.Title
+            active={active === 1}
+            index={1}
+            onClick={this.expandPluginInterrogation}
+          >
+            <Icon name="dropdown"/>
+            Hook builder
+          </Accordion.Title>
+          <AccordionContent active={active === 1}>
+            <HookChooser rootUtils={this.props.rootUtils}/>
+          </AccordionContent>
 
           {/*<Accordion.Title*/}
           {/*  active={active === 2}*/}
