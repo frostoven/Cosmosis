@@ -36,6 +36,7 @@ interface Props {
   valueStore: { originalName: string | null; value: any },
   children?: any,
   compact?: boolean,
+  disabled?: boolean,
 }
 
 export default class NumericInput extends React.Component<Props> {
@@ -132,9 +133,13 @@ export default class NumericInput extends React.Component<Props> {
       value = '';
     }
 
+    const buttonSub = { ...BUTTON_STYLE, borderLeft: 'none' };
+    const buttonAdd = { ...BUTTON_STYLE, borderRight: 'none' };
+    const disabled = !!this.props.disabled;
+
     return (
       <div style={CONTAINER_STYLE}>
-        <Button style={{ ...BUTTON_STYLE, borderLeft: 'none' }} onClick={this.decrement}>
+        <Button style={buttonSub} onClick={this.decrement} disabled={disabled}>
           <div style={BUTTON_INNER}>÷</div>
         </Button>
         <div className='ui input'>
@@ -144,9 +149,10 @@ export default class NumericInput extends React.Component<Props> {
             onChange={this.onUserInput}
             type='number'
             style={inputStyle}
+            disabled={disabled}
           />
         </div>
-        <Button style={{ ...BUTTON_STYLE, borderRight: 'none' }} onClick={this.increment}>
+        <Button style={buttonAdd} onClick={this.increment} disabled={disabled}>
           <div style={BUTTON_INNER}>x</div>
         </Button>
         {this.props.children}

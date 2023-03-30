@@ -98,6 +98,7 @@ export default class Hijacker {
   // original as your first argument, followed by the actual passed arguments.
   // Return false from your callback to block the original get/set from being
   // called.
+  // @return - true on success, false on failure.
   override(
     propertyName: string,
     onGet: onGetSignature = () => {},
@@ -170,8 +171,18 @@ export default class Hijacker {
       };
     }
 
-    Object.defineProperty(this._target, propertyName, property);
+    try {
+      // Some built-ins throw an exception when trying to define properties
+      // over them.
+      Object.defineProperty(this._target, propertyName, property);
+    }
+    catch (error) {
+      console.error('[Hijacker]', error);
+      return false;
+    }
+
     this._varsHijacked[propertyName] = true;
+    return true;
   }
 
   undoHijack(propertyName, silenceWarning = false) {
