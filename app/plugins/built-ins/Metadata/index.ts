@@ -21,6 +21,8 @@ class Metadata {
       catch (error) {
         console.error('[MetaData Plugin]', error);
       }
+
+      Object.freeze(this);
     });
   }
 }

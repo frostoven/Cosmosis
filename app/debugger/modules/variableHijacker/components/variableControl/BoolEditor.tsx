@@ -61,6 +61,7 @@ export default class BoolEditor extends React.Component<Props> {
           return false;
         }
       },
+      true,
     );
 
     if (!overrideSuccessful) {
@@ -92,6 +93,7 @@ export default class BoolEditor extends React.Component<Props> {
 
     return (
       <div style={CONTAINER_STYLE}>
+        {readonly && <i>Variable is read-only and cannot be edited.</i>}
         <BoolToggle
           valueTracker={this.valueTracker}
           valueStore={this.hijacker.valueStore}

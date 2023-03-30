@@ -79,6 +79,7 @@ export default class NumberEditor extends React.Component<Props> {
           return false;
         }
       },
+      true,
     );
 
     if (!overrideSuccessful) {
@@ -119,6 +120,7 @@ export default class NumberEditor extends React.Component<Props> {
     if (this.props.simplified) {
       return (
         <div style={{...(this.props.style || {})}}>
+          {readonly && <i>Variable is read-only and cannot be edited.</i>}
           <NumericInput
             valueTracker={this.valueTracker}
             valueStore={this.hijacker.valueStore}
@@ -137,6 +139,7 @@ export default class NumberEditor extends React.Component<Props> {
 
     return (
       <div style={containerStyle}>
+        {readonly && <i>Variable is read-only and cannot be edited.</i>}
         <NumericInput
           valueTracker={this.valueTracker}
           valueStore={this.hijacker.valueStore}
