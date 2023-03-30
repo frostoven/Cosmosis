@@ -44,7 +44,7 @@ export default class DebuggerTab extends React.Component<any, any> {
   };
 
   removeScrollListener = () => {
-    this.ref.current.removeEventListener('scroll');
+    this.ref.current.removeEventListener('scroll', this.persistAfterDelay);
   };
 
   persistScrollPosition = () => {
