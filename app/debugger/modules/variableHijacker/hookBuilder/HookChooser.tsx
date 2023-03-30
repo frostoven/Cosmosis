@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import React from 'react';
 import { Button } from 'semantic-ui-react';
 import ChangeTracker from 'change-tracker/src';
@@ -56,26 +57,41 @@ export default class HookChooser extends React.Component<{ rootUtils: CosmDbgRoo
   state = { ...this.defaultState };
 
   private readonly valueTracker: ChangeTracker;
+  private readonly saveFormAfterDelay: () => void;
 
   constructor(props) {
     super(props);
     this.valueTracker = new ChangeTracker();
+    this.saveFormAfterDelay = _.debounce(this.saveFormInfo, 500);
+  }
+
+  componentDidMount() {
+    const oldState = cosmDbg.getState()?.hookChooserState;
+    if (oldState) {
+      this.setState({
+        parentAreaText: oldState.parentAreaText,
+        childAreaText: oldState.childAreaText,
+      });
+    }
   }
 
   saveFormInfo = () => {
-    cosmDbg.setOption('hookChooser', this.state);
+    const { parentAreaText, childAreaText } = this.state;
+    cosmDbg.setOption('hookChooserState', {
+      parentAreaText, childAreaText
+    });
   };
 
   onParentAreaChange = (event) => {
     this.setState({
       parentAreaText: event.target.value,
-    });
+    }, this.saveFormAfterDelay);
   };
 
   onChildAreaChange = (event) => {
     this.setState({
       childAreaText: event.target.value,
-    });
+    }, this.saveFormAfterDelay);
   };
 
   onSubmit = (event) => {
@@ -119,7 +135,7 @@ export default class HookChooser extends React.Component<{ rootUtils: CosmDbgRoo
   };
 
   resetForm = () => {
-    this.setState(this.defaultState)
+    this.setState(this.defaultState, this.saveFormAfterDelay);
   };
 
   render() {
