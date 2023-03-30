@@ -9,6 +9,7 @@ import { HeightSetting } from './components/types/HeightSetting';
 
 const CONFIG_FILE = 'cosmDbg.json';
 
+const defaultPosition = 'topLeft';
 const englishToCoords = {
   top: { top: '0', left: '50%', transform: 'translateX(-50%)' },
   topRight: { top: '0', right: '0' },
@@ -26,6 +27,7 @@ const stringifyPretty = (data: any) => {
 };
 
 export default class CosmDbg {
+  public firstTimeBoot: boolean;
   private _configState: CosmDbgConfig;
   private _packageJson: { [key: string]: any };
   private _storageDir: string | null;
@@ -33,6 +35,7 @@ export default class CosmDbg {
   private _mainDiv!: HTMLElement;
 
   constructor() {
+    this.firstTimeBoot = false;
     this._configState = {};
     this._packageJson = {};
     this._storageDir = null;
@@ -53,8 +56,17 @@ export default class CosmDbg {
         onDone(error);
       }
       else {
-        // @ts-ignore - parse does actually take buffers.
-        this._packageJson = JSON.parse(data);
+        try {
+          // @ts-ignore - parse does actually take buffers.
+          this._packageJson = JSON.parse(data);
+        }
+        catch (error) {
+          console.error('[debugger]', error);
+          // @ts-ignore - this is valid.
+          this._packageJson = {
+            error: error + '',
+          };
+        }
         onDone(null);
       }
     });
@@ -91,6 +103,7 @@ export default class CosmDbg {
 
     fs.exists(this._storageLocation, (exists) => {
       if (!exists) {
+        this.firstTimeBoot = true;
         this.resetState(false);
         // @ts-ignore.
         fs.writeFile(this._storageLocation, stringifyPretty({}), (error) => {
@@ -126,8 +139,18 @@ export default class CosmDbg {
         onDone(error);
       }
       else {
-        // @ts-ignore - parse does actually take buffers.
-        data = JSON.parse(data);
+        try {
+          // @ts-ignore - parse does actually take buffers.
+          data = JSON.parse(data);
+        }
+        catch (error) {
+          console.error('[debugger', error);
+          // @ts-ignore - this is valid.
+          data = {};
+        }
+        if (!Object.values(data).length) {
+          this.firstTimeBoot = true;
+        }
         Object.assign(this._configState, data);
         onDone(null);
       }
@@ -188,7 +211,10 @@ export default class CosmDbg {
       document.body.append(mainDiv);
       this._mainDiv = mainDiv;
       this.moveToDefaultPosition();
-      ReactDOM.render(<CosmDbgMain/>, mainDiv);
+      ReactDOM.render(
+        <CosmDbgMain firstTimeBoot={this.firstTimeBoot}/>,
+        mainDiv
+      );
     }
     this._mainDiv.style.display = 'block';
     this.setOption('debugUiVisible', true);
@@ -206,7 +232,7 @@ export default class CosmDbg {
     }
 
     const defaultPosString = this._configState.uiState?.settingsDefaultPosition;
-    let style = englishToCoords[defaultPosString] || englishToCoords.left;
+    let style = englishToCoords[defaultPosString] || englishToCoords[defaultPosition];
 
     mainDiv.style.top = style.top || '';
     mainDiv.style.left = style.left || '';

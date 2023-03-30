@@ -43,7 +43,11 @@ const TAB_CONTENT_STYLE: React.CSSProperties = {
 
 const draggableHandles = '.cosm-dbg-handle, .ui.attached.tabular.menu';
 
-export default class CosmDbgMain extends React.Component {
+interface Props {
+  firstTimeBoot: boolean,
+}
+
+export default class CosmDbgMain extends React.Component<Props> {
   static defaultState = {
     rootActiveTab: 0,
     modalSize: HeightSetting.large,
@@ -65,13 +69,25 @@ export default class CosmDbgMain extends React.Component {
   }
 
   componentDidMount() {
-    this.advanceIcon();
-    this.grabInputOnHover();
-    window.addEventListener('keyup', this.bindDevToolKey.bind(this));
+    if (this.props.firstTimeBoot) {
+      this.resetPersistentState(() => {
+        cosmDbg.firstTimeBoot = false;
+        this.init();
+      })
+    }
+    else {
+      this.init();
+    }
   }
 
   componentWillUnmount() {
     window.removeEventListener('keyup', this.bindDevToolKey.bind(this));
+  }
+
+  init() {
+    this.advanceIcon();
+    this.grabInputOnHover();
+    window.addEventListener('keyup', this.bindDevToolKey.bind(this));
   }
 
   grabInputOnHover = () => {
