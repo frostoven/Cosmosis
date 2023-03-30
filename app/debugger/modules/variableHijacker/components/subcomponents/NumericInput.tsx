@@ -23,7 +23,7 @@ const BUTTON_INNER = {
   fontWeight: 600,
 };
 
-const INPUT_STYLE = {
+const INPUT_STYLE: React.CSSProperties = {
   color: '#ffffff',
   backgroundColor: '#565b5d',
   cursor: 'text',
@@ -35,6 +35,8 @@ interface Props {
   valueTracker: ChangeTracker,
   valueStore: { originalName: string | null; value: any },
   children?: any,
+  compact?: boolean,
+  disabled?: boolean,
 }
 
 export default class NumericInput extends React.Component<Props> {
@@ -42,7 +44,7 @@ export default class NumericInput extends React.Component<Props> {
 
   private readonly inputRef: React.RefObject<any>;
   private inputValue: number;
-  private refUpdateFunction: OmitThisParameter<({
+  private readonly refUpdateFunction: OmitThisParameter<({
     valueStore,
     newValue,
   }: { valueStore: any; newValue: any }) => void>;
@@ -59,9 +61,7 @@ export default class NumericInput extends React.Component<Props> {
   }
 
   componentWillUnmount() {
-    const removed = this.props.valueTracker.removeGetEveryChangeListener(
-      this.refUpdateFunction
-    );
+    this.props.valueTracker.removeGetEveryChangeListener(this.refUpdateFunction);
   }
 
   updateRefValue = ({ valueStore, newValue }) => {
@@ -76,12 +76,17 @@ export default class NumericInput extends React.Component<Props> {
 
   setValue(value) {
     let newValue = Number(value);
+    const valueStore = this.props.valueStore;
     if (!isNaN(newValue)) {
       // Only set the value if it's reasonable.
-      this.props.valueStore.value = newValue;
+      valueStore.value = newValue;
     }
     this.inputValue = value;
     this.setState({ forceRerender: this.state.forceRerender + 1 });
+    // TODO: actually setting the value as new is unnecessary - we should
+    //  probably implement a re-notify function in ChangeTracker and call it
+    //  here.
+    this.props.valueTracker.setValue({ valueStore, newValue });
   }
 
   onUserInput = (event) => {
@@ -118,21 +123,36 @@ export default class NumericInput extends React.Component<Props> {
   };
 
   render() {
+    const inputStyle = { ...INPUT_STYLE };
+    if (this.props.compact) {
+      inputStyle.width = 140;
+    }
+
+    let value: number | string = this.inputValue;
+    if (isNaN(value)) {
+      value = '';
+    }
+
+    const buttonSub = { ...BUTTON_STYLE, borderLeft: 'none' };
+    const buttonAdd = { ...BUTTON_STYLE, borderRight: 'none' };
+    const disabled = !!this.props.disabled;
+
     return (
       <div style={CONTAINER_STYLE}>
-        <Button style={{ ...BUTTON_STYLE, borderLeft: 'none' }} onClick={this.decrement}>
+        <Button style={buttonSub} onClick={this.decrement} disabled={disabled}>
           <div style={BUTTON_INNER}>÷</div>
         </Button>
         <div className='ui input'>
           <input
             ref={this.inputRef}
-            value={this.inputValue}
+            value={value}
             onChange={this.onUserInput}
             type='number'
-            style={INPUT_STYLE}
+            style={inputStyle}
+            disabled={disabled}
           />
         </div>
-        <Button style={{ ...BUTTON_STYLE, borderRight: 'none' }} onClick={this.increment}>
+        <Button style={buttonAdd} onClick={this.increment} disabled={disabled}>
           <div style={BUTTON_INNER}>x</div>
         </Button>
         {this.props.children}

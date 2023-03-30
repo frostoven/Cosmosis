@@ -42,6 +42,8 @@ const icon = {
   // General internal classes
   ChangeTracker: { img: `${iconPath}/ChangeTracker.png`, backgroundColor: darkAqua },
   '[Internal]Location': { img: `${iconPath}/class.png`, backgroundColor: darkAqua },
+  // Icons not directly related to classes
+  sphere: { img: `${iconPath}/sphere.png`, backgroundColor: defaultColor },
 };
 
 export {

@@ -2,12 +2,7 @@ import React from 'react';
 import { Accordion, AccordionContent, Icon } from 'semantic-ui-react';
 import { CosmDbgRootUtils } from '../../components/interfaces/CosmDbgRootUtils';
 import PluginInterrogator from './components/PluginInterrogator';
-
-// TODO:
-//  Structure:
-//  * > Plugin interrogation [with intelligent parsing]
-//  * > Hook builder [manual path exec, basically. maybe separate object and key]
-//  * > External hooks [vars that prod code injects straight into var hacker]
+import HookChooser from './hookBuilder/HookChooser';
 
 interface RootUtils extends CosmDbgRootUtils {
   rootState: {
@@ -59,20 +54,25 @@ export default class VariableHijacker extends React.Component<{ rootUtils: RootU
             Hook builder
           </Accordion.Title>
           <AccordionContent active={active === 1}>
-            [Hook builder section TBD]
+            <HookChooser rootUtils={this.props.rootUtils}/>
           </AccordionContent>
 
-          <Accordion.Title
-            active={active === 2}
-            index={2}
-            onClick={this.expandPluginInterrogation}
-          >
-            <Icon name="dropdown"/>
-            External hooks
-          </Accordion.Title>
-          <AccordionContent active={active === 2}>
-            [External hooks section TBD]
-          </AccordionContent>
+          {/* TODO: implement this. This would basically work by feeding the
+               PluginInterrogator an arbitrary object. The PluginInterrogator
+               is currently hardcoded to work with gameRuntime, and would need
+               to be altered to accept parameters generically.
+          */}
+          {/*<Accordion.Title*/}
+          {/*  active={active === 2}*/}
+          {/*  index={2}*/}
+          {/*  onClick={this.expandPluginInterrogation}*/}
+          {/*>*/}
+          {/*  <Icon name="dropdown"/>*/}
+          {/*  External hooks*/}
+          {/*</Accordion.Title>*/}
+          {/*<AccordionContent active={active === 2}>*/}
+          {/*  [External hooks section TBD]*/}
+          {/*</AccordionContent>*/}
         </Accordion>
       </div>
     );

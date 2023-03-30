@@ -23,6 +23,7 @@ interface Props {
   valueTracker: ChangeTracker,
   valueStore: { originalName: string | null; value: any },
   children: any,
+  disabled?: boolean,
 }
 
 export default class TextInput extends React.Component<Props> {
@@ -91,10 +92,11 @@ export default class TextInput extends React.Component<Props> {
     }
 
     const value = this.inputValue || '';
+    const disabled = !!this.props.disabled;
 
     return (
       <div>
-        <Button onClick={this.toggleTextAreaSize}>
+        <Button onClick={this.toggleTextAreaSize} disabled={disabled}>
           Text input: {this.state.useLargeTextArea ? 'multiline' : 'single'}
         </Button>
         {this.props.children}
@@ -107,6 +109,7 @@ export default class TextInput extends React.Component<Props> {
                   <textarea
                     ref={this.inputRef}
                     value={value}
+                    disabled={disabled}
                     onChange={this.onUserInput}
                   />
                 )
@@ -115,6 +118,7 @@ export default class TextInput extends React.Component<Props> {
                     ref={this.inputRef}
                     value={value}
                     onChange={this.onUserInput}
+                    disabled={disabled}
                     style={INPUT_STYLE}
                   />
                 )

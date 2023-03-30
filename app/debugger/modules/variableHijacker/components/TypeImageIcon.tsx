@@ -2,9 +2,11 @@ import React from 'react';
 import { icon } from './configs/theme';
 
 const ICON_STYLE = {
-  marginLeft: -4,
-  marginBottom: -4,
-  marginRight: 12,
+  marginLeft: -12,
+  marginBottom: -12,
+  marginRight: 4,
+  marginTop: -8,
+  padding: 8,
 };
 
 // Further explanation:
@@ -13,7 +15,9 @@ type Keys = keyof typeof icon;
 
 interface Props {
   name: Keys | string,
-  onClick?: () => void,
+  onClick?: (event) => any,
+  style?: any,
+  className?: any,
 }
 
 export default class TypeImageIcon extends React.Component<Props>{
@@ -28,7 +32,9 @@ export default class TypeImageIcon extends React.Component<Props>{
     }
 
     return (
-      <img style={ICON_STYLE} alt='' src={iconUri} onClick={this.props.onClick}/>
+      <img className={this.props.className || ''} style={{
+        ...ICON_STYLE, ...(this.props.style || {})
+      }} alt='' src={iconUri} onClick={this.props.onClick}/>
     );
   }
 }

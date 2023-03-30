@@ -28,7 +28,7 @@ interface Props {
 }
 
 export default class BoolEditor extends React.Component<Props> {
-  state = { targetIsViable: false, locked: false };
+  state = { targetIsViable: false, locked: false, readonly: false };
 
   private hijacker: Hijacker;
   private readonly valueTracker: ChangeTracker;
@@ -50,7 +50,7 @@ export default class BoolEditor extends React.Component<Props> {
     }
 
     this.hijacker.setParent(parent);
-    this.hijacker.override(
+    const overrideSuccessful = this.hijacker.override(
       targetName,
       () => {},
       ({ originalSet, valueStore }, newValue) => {
@@ -62,6 +62,10 @@ export default class BoolEditor extends React.Component<Props> {
         }
       },
     );
+
+    if (!overrideSuccessful) {
+      this.setState({ readonly: true });
+    }
 
     this.valueTracker.setValue({
       valueStore: this.hijacker.valueStore,
@@ -84,10 +88,21 @@ export default class BoolEditor extends React.Component<Props> {
       );
     }
 
+    const readonly = this.state.readonly;
+
     return (
       <div style={CONTAINER_STYLE}>
-        <BoolToggle valueTracker={this.valueTracker} valueStore={this.hijacker.valueStore}>
-          <LockButton locked={this.state.locked} style={BUTTON_STYLE} onClick={this.toggleLock}/>
+        <BoolToggle
+          valueTracker={this.valueTracker}
+          valueStore={this.hijacker.valueStore}
+          disabled={readonly}
+        >
+          <LockButton
+            locked={this.state.locked}
+            style={BUTTON_STYLE}
+            disabled={readonly}
+            onClick={this.toggleLock}
+          />
         </BoolToggle>
       </div>
     );

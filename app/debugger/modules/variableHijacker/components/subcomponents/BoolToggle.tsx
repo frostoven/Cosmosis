@@ -13,6 +13,7 @@ interface Props {
   valueTracker: ChangeTracker,
   valueStore: { originalName: string | null; value: any },
   children?: any,
+  disabled?: boolean,
 }
 
 let _instanceCount = 0;
@@ -63,6 +64,7 @@ export default class BoolToggle extends React.Component<Props> {
 
   render() {
     const inputId = `CosmDbg-BoolToggle-${this.inputId}`;
+    const disabled = !!this.props.disabled;
 
     return (
       <div style={CONTAINER_STYLE}>
@@ -72,6 +74,7 @@ export default class BoolToggle extends React.Component<Props> {
             ref={this.inputRef}
             type="checkbox"
             checked={this.inputValue ? true : false}
+            disabled={disabled}
             onChange={this.toggleCheck}
           />
           <label htmlFor={inputId}/>

@@ -19,10 +19,18 @@ interface Props {
   targetName: string,
   // The parent object instance that your target is a child of.
   parent: object,
+  // If true, does not include spacing and slider.
+  simplified?: boolean,
+  // Optional style overrides.
+  style?: React.CSSProperties,
+  // Allows the parent to ask for the NumberEditor's value tracker. Useful if
+  // the parent needs values as the change. At time of writing, used by
+  // GimbalEditor its cube bidirectionally control ref values.
+  getChildValueTracker?: (ChangeTracker) => void,
 }
 
 export default class NumberEditor extends React.Component<Props> {
-  state = { targetIsViable: false, locked: false };
+  state = { targetIsViable: false, locked: false, readonly: false };
 
   private hijacker: Hijacker;
   private readonly valueTracker: ChangeTracker;
@@ -31,6 +39,10 @@ export default class NumberEditor extends React.Component<Props> {
     super(props);
     this.hijacker = new Hijacker();
     this.valueTracker = new ChangeTracker();
+
+    if (typeof this.props.getChildValueTracker === 'function') {
+      this.props.getChildValueTracker(this.valueTracker);
+    }
   }
 
   componentDidMount() {
@@ -48,7 +60,7 @@ export default class NumberEditor extends React.Component<Props> {
     }
 
     this.hijacker.setParent(parent);
-    this.hijacker.override(
+    const overrideSuccessful = this.hijacker.override(
       targetName,
       ({ originalGet, valueStore }) => {
         // console.log('-> getter:', valueStore.value);
@@ -68,6 +80,10 @@ export default class NumberEditor extends React.Component<Props> {
         }
       },
     );
+
+    if (!overrideSuccessful) {
+      this.setState({ readonly: true });
+    }
 
     this.valueTracker.setValue({
       valueStore: this.hijacker.valueStore,
@@ -97,17 +113,46 @@ export default class NumberEditor extends React.Component<Props> {
     }
 
     const absStoreValue = Math.abs(this.hijacker.valueStore.value);
+    const containerStyle = { ...CONTAINER_STYLE, ...(this.props.style || {}) };
+    const readonly = this.state.readonly;
+
+    if (this.props.simplified) {
+      return (
+        <div style={{...(this.props.style || {})}}>
+          <NumericInput
+            valueTracker={this.valueTracker}
+            valueStore={this.hijacker.valueStore}
+            compact
+            disabled={readonly}
+          />
+            &nbsp;
+          <LockButton
+            locked={this.state.locked}
+            onClick={this.toggleLock}
+            disabled={readonly}
+          />
+        </div>
+      );
+    }
 
     return (
-      <div style={CONTAINER_STYLE}>
-        <NumericInput valueTracker={this.valueTracker} valueStore={this.hijacker.valueStore}/>
+      <div style={containerStyle}>
+        <NumericInput
+          valueTracker={this.valueTracker}
+          valueStore={this.hijacker.valueStore}
+          disabled={readonly}
+        />
         &nbsp;
-        <LockButton locked={this.state.locked} onClick={this.toggleLock}/>
+        <LockButton
+          locked={this.state.locked}
+          onClick={this.toggleLock}
+          disabled={readonly}
+        />
         <br/>
 
         {/* Prevent factions by hiding component near zero (<input> doesn't support them) */}
         {
-          absStoreValue < 1 && absStoreValue !== 0
+          (absStoreValue < 1 && absStoreValue !== 0) || readonly
             ? null
             : <NumericSlider
                 valueStore={this.hijacker.valueStore}

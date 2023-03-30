@@ -16,7 +16,7 @@ const arrowAngle = {
   topLeft: 'rotate(315deg)',
 };
 
-const defaultPosition = 'left';
+const defaultPosition = 'topLeft';
 const angleKeys = Object.keys(arrowAngle);
 
 interface RootUtils extends CosmDbgRootUtils {
