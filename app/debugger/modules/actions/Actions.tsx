@@ -1,12 +1,18 @@
+import _ from 'lodash';
 import React from 'react';
 import PropTypes from 'prop-types';
 import * as THREE from 'three';
 import { Button, Form } from 'semantic-ui-react';
-import { CosmDbgRootUtils } from '../../components/interfaces/CosmDbgRootUtils';
+import {
+  CosmDbgRootUtils,
+} from '../../components/interfaces/CosmDbgRootUtils';
 import userProfile from '../../../userProfile';
 import { gameRuntime } from '../../../plugins/gameRuntime';
+import finder from '../../../local/AssetFinder';
 
-function createSphereAheadOfPlayer(diameter, color) {
+const textureLoader = new THREE.TextureLoader();
+
+function createSphereAheadOfPlayer(name, diameter, color, image: string = '') {
   const radius = diameter * 0.5;
   // 256x128 makes it very difficult to see angles, but they do exist. Reduces
   //   FPS 10% for a second on spawn.
@@ -15,6 +21,24 @@ function createSphereAheadOfPlayer(diameter, color) {
   const geometry = new THREE.SphereGeometry(radius, 512, 256);
   const material = new THREE.MeshBasicMaterial({ color });
   const sphere = new THREE.Mesh(geometry, material);
+  sphere.name = name || '';
+
+  if (image) {
+    _.defer(() => {
+      finder.getPlanetImg({
+        name: image,
+        // @ts-ignore
+        callback: (error, fileName, parentDir) => {
+          error && console.error(error);
+          if (!error) {
+            textureLoader.load(`${parentDir}/${fileName}`, (texture) => {
+              sphere.material = new THREE.MeshBasicMaterial({ map: texture });
+            });
+          }
+        }
+      });
+    });
+  }
 
   gameRuntime.tracked.player.getOnce((player) => {
     gameRuntime.tracked.spaceScene.getOnce((scene: THREE.Scene) => {
@@ -24,6 +48,9 @@ function createSphereAheadOfPlayer(diameter, color) {
       // position.
       camera.add(sphere);
       sphere.translateZ(diameter * -2);
+      sphere.rotation.x = -2.5581483017135023;
+      sphere.rotation.y = 0.7781981609672939;
+      sphere.rotation.z = 3.097822463446898;
       scene.attach(sphere);
     });
   });
@@ -42,15 +69,15 @@ export default class Actions extends React.Component<{ rootUtils: CosmDbgRootUti
   };
 
   createEarthSizedOrb = () => {
-    createSphereAheadOfPlayer(12_742, 0x4b749e);
+    createSphereAheadOfPlayer('12k', 12_742, 0x4b749e, 'Land_ocean_ice_cloud_hires');
   };
 
   createJupiterSizedOrb = () => {
-    createSphereAheadOfPlayer(139_820, 0xf8be7e);
+    createSphereAheadOfPlayer('139k', 139_820, 0xf8be7e);
   };
 
   createSunSizedOrb = () => {
-    createSphereAheadOfPlayer(1_392_680, 0xfff98b);
+    createSphereAheadOfPlayer('1.3m', 1_392_680, 0xfff98b, 'sun_euvi_aia304_2012_carrington');
   };
 
   render() {
