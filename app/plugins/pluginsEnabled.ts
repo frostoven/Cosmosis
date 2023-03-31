@@ -23,6 +23,7 @@ import { propulsionManagerModulePlugin } from './built-ins/shipModules/Propulsio
 import { warpDriveModulePlugin } from './built-ins/shipModules/WarpDrive';
 import { gamepadDriverPlugin } from './built-ins/GamepadDriver';
 import { visorHudModulePlugin } from './built-ins/shipModules/VisorHud';
+import { generatePluginCompletion } from './generatePluginCompletion';
 
 const builtInPluginsEnabled: PluginEntry[] = [
   // General
@@ -71,6 +72,8 @@ const builtInPluginsEnabled: PluginEntry[] = [
   // all ship modules.
   { name: 'shipModuleHub', pluginInstance: shipModuleHubPlugin, dependencies: [ '*' ] },
 ];
+
+generatePluginCompletion(builtInPluginsEnabled, 'PluginNames');
 
 export {
   builtInPluginsEnabled,
