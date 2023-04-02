@@ -37,4 +37,5 @@ if (process.env && process.env.NODE_ENV !== 'production') {
   const fs = require('fs');
   fs.watch('./build/game.js', reload);
   fs.watch('./build/offscreenSkybox.js', reload);
+  fs.watch('./build/offscreenGalaxy.js', reload);
 }

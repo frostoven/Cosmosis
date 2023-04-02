@@ -8,6 +8,7 @@ module.exports = {
   entry: {
     game: './app/index.js',
     offscreenSkybox: './app/webWorkers/offscreenSkybox.js',
+    offscreenGalaxy: './app/webWorkers/offscreenGalaxy.ts',
     // physicsWorker: './app/webWorkers/physicsWorker.js',
   },
   output: {
