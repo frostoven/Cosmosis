@@ -7,7 +7,7 @@ import ChangeTracker from 'change-tracker/src';
  * each frame.
  *
  * Example 1:
- * const pluginTracker = new PluginTracker([
+ * const pluginTracker = new PluginCacheTracker([
  *  'core',
  *  'player',
  * ]);

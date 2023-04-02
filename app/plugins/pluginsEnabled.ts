@@ -39,7 +39,7 @@ const builtInPluginsEnabled: PluginEntry[] = [
   { name: 'spaceScene', pluginInstance: spaceScenePlugin, dependencies: [ 'core', 'location' ] },
 
   // HUD and control visuals
-  { name: 'hud3d', pluginInstance: hud3DPlugin, dependencies: [ 'nodeOps', 'spaceScene', 'player' ] },
+  { name: 'hud3D', pluginInstance: hud3DPlugin, dependencies: [ 'nodeOps', 'spaceScene', 'player' ] },
 
   // Input
   { name: 'mouseDriver', pluginInstance: mouseDriverPlugin, dependencies: [ 'core' ] },

@@ -31,12 +31,11 @@ type PluginCompletion = PluginCacheTracker & {
 class ShipPilot extends ModeController {
   private _prettyPosition: number;
   private _throttlePosition: number;
-  private _pluginCache: PluginCompletion;
+  private _pluginCache: PluginCacheTracker | PluginCompletion;
 
   constructor() {
     super('shipPilot', ModeId.playerControl, shipPilotControls);
 
-    // @ts-ignore - better contextual completion.
     this._pluginCache = new PluginCacheTracker(
       [ 'player', 'core', 'inputManager' ],
       { player: { camera: 'camera' } },

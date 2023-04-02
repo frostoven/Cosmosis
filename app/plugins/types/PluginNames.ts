@@ -12,7 +12,7 @@ type PluginNames =
   'navigation' | 
   'levelScene' | 
   'spaceScene' | 
-  'hud3d' | 
+  'hud3D' | 
   'mouseDriver' | 
   'gamepadDriver' | 
   'inputManager' | 
