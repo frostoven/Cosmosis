@@ -11,17 +11,19 @@ export default class MilkyWayGen {
     this.particlesPerArm = particlesPerArm;
   }
 
-  createGalaxy(): THREE.Group {
+  createGalaxy(includeOrbitLines = false): THREE.Group {
     const fastRngInstance = this._fastRng;
     const count = this.particlesPerArm;
     const group = new THREE.Group();
     const size = 0.0005; // particle size
 
-    const points = createLoopedPointPattern(500, 50, 10, 100.5, 1.5);
-    const geometry = new THREE.BufferGeometry().setFromPoints(points);
-    const material = new THREE.PointsMaterial({ color: 0xffffff, size: 0.5 });
-    const spiral = new THREE.Points(geometry, material);
-    group.add(spiral);
+    if (includeOrbitLines) {
+      const points = createLoopedPointPattern(500, 50, 10, 100.5, 1.5);
+      const geometry = new THREE.BufferGeometry().setFromPoints(points);
+      const material = new THREE.PointsMaterial({ color: 0xffffff, size: 0.5 });
+      const spiral = new THREE.Points(geometry, material);
+      group.add(spiral);
+    }
 
     const arm1 = createSpiralArm({ count, rotation: 0, fastRngInstance});
     const spiralGeometry1 = new THREE.BufferGeometry().setFromPoints(arm1);

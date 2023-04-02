@@ -1,6 +1,6 @@
 import { Vector3 } from 'three';
 import { randFloatSpreadDt, randomBiasDt } from '../random/randomUtils';
-import { zAxis } from '../local/mathUtils';
+import { xAxis, zAxis } from '../local/mathUtils';
 
 // The functions in this file are used for galaxy generation. This means
 // they're called in bursts of up to tens of millions of times. Dereferencing
@@ -77,6 +77,7 @@ function createSpiralArm({
 
     // Apply rotation to the spiral point.
     spiralPoint.applyAxisAngle(zAxis, rotation);
+    spiralPoint.applyAxisAngle(xAxis, Math.PI / 2);
 
     points.push(spiralPoint);
   }

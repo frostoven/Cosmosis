@@ -83,14 +83,14 @@ export default class Actions extends React.Component<{ rootUtils: CosmDbgRootUti
   };
 
   creatMicroMilkyWay = () => {
-    const galaxy = new MilkyWayGen().createGalaxy();
+    const start = performance.now();
+    const galaxy = new MilkyWayGen().createGalaxy(true);
+    console.log(`[Actions] Milky Way took ${performance.now() - start}ms to create.`);
     const cache = new PluginCacheTracker([ 'player', 'levelScene' ]);
     cache.onAllPluginsLoaded.getOnce(() => {
       cache.player.camera.add(galaxy);
       galaxy.translateZ(-200);
-      // galaxy.scale.setScalar(0.001);
       cache.levelScene.attach(galaxy);
-      // galaxy.rotateZ(3);
     });
   };
 
