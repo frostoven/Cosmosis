@@ -24,11 +24,13 @@ import { warpDriveModulePlugin } from './built-ins/shipModules/WarpDrive';
 import { gamepadDriverPlugin } from './built-ins/GamepadDriver';
 import { visorHudModulePlugin } from './built-ins/shipModules/VisorHud';
 import { generatePluginCompletion } from './generatePluginCompletion';
+import { offscreenGalaxyWorkerPlugin } from './built-ins/OffscreenGalaxyWorker';
 
 const builtInPluginsEnabled: PluginEntry[] = [
   // General
   { name: 'metadata', pluginInstance: metadataPlugin },
   { name: 'core', pluginInstance: corePlugin },
+  { name: 'offscreenGalaxyWorker', pluginInstance: offscreenGalaxyWorkerPlugin },
   { name: 'nodeOps', pluginInstance: nodeOpsPlugin },
   { name: 'player', pluginInstance: playerPlugin, dependencies: [ 'core' ] },
 

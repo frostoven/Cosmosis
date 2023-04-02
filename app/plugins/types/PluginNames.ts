@@ -6,6 +6,7 @@
 type PluginNames =
   'metadata' | 
   'core' | 
+  'offscreenGalaxyWorker' | 
   'nodeOps' | 
   'player' | 
   'location' | 
