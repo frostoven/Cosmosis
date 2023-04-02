@@ -9,6 +9,8 @@ import {
 import userProfile from '../../../userProfile';
 import { gameRuntime } from '../../../plugins/gameRuntime';
 import finder from '../../../local/AssetFinder';
+import MilkyWayGen from '../../../universeFactory/MilkyWayGen';
+import PluginCacheTracker from '../../../emitters/PluginCacheTracker';
 
 const textureLoader = new THREE.TextureLoader();
 
@@ -80,6 +82,18 @@ export default class Actions extends React.Component<{ rootUtils: CosmDbgRootUti
     createSphereAheadOfPlayer('1.3m', 1_392_680, 0xfff98b, 'sun_euvi_aia304_2012_carrington');
   };
 
+  creatMicroMilkyWay = () => {
+    const galaxy = new MilkyWayGen().createGalaxy();
+    const cache = new PluginCacheTracker([ 'player', 'levelScene' ]);
+    cache.onAllPluginsLoaded.getOnce(() => {
+      cache.player.camera.add(galaxy);
+      galaxy.translateZ(-200);
+      // galaxy.scale.setScalar(0.001);
+      cache.levelScene.attach(galaxy);
+      // galaxy.rotateZ(3);
+    });
+  };
+
   render() {
     return (
       <div>
@@ -112,6 +126,11 @@ export default class Actions extends React.Component<{ rootUtils: CosmDbgRootUti
           <Form.Field>
             <label>Creates a sphere 1.3927 million km in diameter</label>
             <Button fluid onClick={this.createSunSizedOrb}>Spawn Sun-sized orb</Button>
+          </Form.Field>
+
+          <Form.Field>
+            <label>Creates floating Milky Way prop (takes time)</label>
+            <Button fluid onClick={this.creatMicroMilkyWay}>Spawn micro Milky Way</Button>
           </Form.Field>
         </Form>
       </div>
