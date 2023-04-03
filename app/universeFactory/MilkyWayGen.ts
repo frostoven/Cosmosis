@@ -1,6 +1,16 @@
 import * as THREE from 'three';
 import { createLoopedPointPattern, createSpiralArm } from './galaxyUtils';
 import FastDeterministicRandom from '../random/FastDeterministicRandom';
+import { createShaderMaterial, shader } from '../shaders';
+
+// @ts-ignore - typescript gets very angry when it's a filthy peasant js
+// function. Let's just ignore the fact that the function already has default
+// fucking inline values for the 'missing' parameters it's complaining about.
+// I'll rewrite the js as ts when its current structure is obsolete. I won't
+// rewrite it just because of ill-conceived bureaucratic process.
+const galaxyMaterial = createShaderMaterial({
+  shader: shader.milkyWay,
+});
 
 export default class MilkyWayGen {
   public particlesPerArm: number;
@@ -27,26 +37,22 @@ export default class MilkyWayGen {
 
     const arm1 = createSpiralArm({ count, rotation: 0, fastRngInstance});
     const spiralGeometry1 = new THREE.BufferGeometry().setFromPoints(arm1);
-    const spiralMaterial1 = new THREE.PointsMaterial({ size, color: 0x535049 });
-    const spiralPoints1 = new THREE.Points(spiralGeometry1, spiralMaterial1);
+    const spiralPoints1 = new THREE.Points(spiralGeometry1, galaxyMaterial);
     group.add(spiralPoints1);
 
     const arm2 = createSpiralArm({ count, rotation: 1.5, fastRngInstance });
     const spiralGeometry2 = new THREE.BufferGeometry().setFromPoints(arm2);
-    const spiralMaterial2 = new THREE.PointsMaterial({ size, color: 0x33312a });
-    const spiralPoints2 = new THREE.Points(spiralGeometry2, spiralMaterial2);
+    const spiralPoints2 = new THREE.Points(spiralGeometry2, galaxyMaterial);
     group.add(spiralPoints2);
 
     const arm3 = createSpiralArm({ count, rotation: 3.14, fastRngInstance });
     const spiralGeometry3 = new THREE.BufferGeometry().setFromPoints(arm3);
-    const spiralMaterial3 = new THREE.PointsMaterial({ size, color: 0x636963 });
-    const spiralPoints3 = new THREE.Points(spiralGeometry3, spiralMaterial3);
+    const spiralPoints3 = new THREE.Points(spiralGeometry3, galaxyMaterial);
     group.add(spiralPoints3);
 
     const arm4 = createSpiralArm({ count, rotation: 4.71, fastRngInstance });
     const spiralGeometry4 = new THREE.BufferGeometry().setFromPoints(arm4);
-    const spiralMaterial4 = new THREE.PointsMaterial({ size, color: 0x2b3639 });
-    const spiralPoints4 = new THREE.Points(spiralGeometry4, spiralMaterial4);
+    const spiralPoints4 = new THREE.Points(spiralGeometry4, galaxyMaterial);
     group.add(spiralPoints4);
 
     return group;

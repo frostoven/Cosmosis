@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import airyGlow from './airyGlow.glsl';
 import example from './example.glsl';
+import milkyWay from './milkyWay.glsl';
 import starfieldBlackbody from './starfieldBlackbody.glsl';
 import wisp from './wisp.glsl';
 
@@ -8,6 +9,7 @@ import wisp from './wisp.glsl';
 const shader = {
   airyGlow,
   example,
+  milkyWay,
   starfieldBlackbody,
   wisp,
 };

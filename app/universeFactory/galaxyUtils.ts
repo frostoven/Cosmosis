@@ -56,6 +56,7 @@ function createLoopedPointPattern(numPoints, radius, height, armFactor, swirlFac
  * @param angleFactor
  * @param angleOffset
  * @param rotation
+ * @param fastRngInstance
  */
 function createSpiralArm({
   count, growthRate = 0.2, radius = 6, angleFactor = 2.0, angleOffset = 0,
@@ -70,8 +71,8 @@ function createSpiralArm({
 
     const x = (radialDistance * sin(theta)) + randFloatSpreadDt(25, rng) * randomBiasDt(-1, 1, 2, 1, rng);
     const y = (radialDistance * cos(theta)) + randFloatSpreadDt(25, rng) * randomBiasDt(-1, 1, 2, 1, rng);
-    // const z = randFloatSpread(10000); // tunnel
-    const z = randFloatSpreadDt(10, rng) * randomBiasDt(-0.3, 0.3, 0, 1, rng) * 5;
+    // const z = randFloatSpreadDt(10, rng) * randomBiasDt(-0.3, 0.3, 0, 1, rng) * 5;
+    const z = randFloatSpreadDt(10, rng) * randomBiasDt(-1.3, 1.3, 0, 1, rng) * 15;
 
     const spiralPoint = new Vector3(x, y, z);
 
