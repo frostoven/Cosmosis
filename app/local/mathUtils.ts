@@ -1,4 +1,10 @@
-import { Euler, Quaternion, Vector3 } from 'three';
+import {
+  BufferAttribute,
+  BufferGeometry,
+  Euler,
+  Quaternion,
+  Vector3,
+} from 'three';
 
 const xAxis = new Vector3(1, 0, 0);
 const yAxis = new Vector3(0, 1, 0);
@@ -102,6 +108,21 @@ function chaseValue(stepSize, current: number, target: number) {
   return current;
 }
 
+function extractVertsFromGeo(object3d: any): Vector3[] {
+  const geo: BufferGeometry = object3d.geometry;
+  // @ts-ignore
+  const vertices: BufferAttribute = geo.attributes.position;
+  console.log('--> Spiral vertices:', vertices);
+
+  const vertPositions: Vector3[] = [];
+  for (let i = 0, len = vertices.count; i < len; i++) {
+    const vector = new Vector3();
+    vector.fromBufferAttribute(vertices, i);
+    vertPositions.push(vector);
+  }
+  return vertPositions;
+}
+
 export {
   xAxis,
   yAxis,
@@ -115,4 +136,5 @@ export {
   easeIntoExp,
   clamp,
   chaseValue,
+  extractVertsFromGeo,
 }
