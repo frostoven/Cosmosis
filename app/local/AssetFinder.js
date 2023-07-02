@@ -55,7 +55,7 @@ const assetDefaults = {
   },
   starCatalogs: {
     dir: 'starCatalogs',
-    extensions: [ 'json' ],
+    extensions: [ 'json', 'glb', 'gltf' ],
   },
   voicePacks: {
     dir: 'voicePacks',
