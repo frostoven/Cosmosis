@@ -6,8 +6,8 @@
   "window": {
     "title": "Cosmosis",
     "toolbar": false,
-    "width": 1104,
-    "height": 621,
+    "width": 1230,
+    "height": 700,
     "icon": "icon.png"
   },
   "js-flags": "--focus=true",
