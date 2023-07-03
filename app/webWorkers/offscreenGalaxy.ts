@@ -1,3 +1,8 @@
+// TODO:
+//  * Test if an additively blended sprite can produce a glow for the galaxy.
+//    Fade it out as the player moves further away from Y-zero.
+//  * Create noise billboards. Use many billboards to shape each structure.
+
 import * as THREE from 'three';
 import MilkyWayGen from '../universeFactory/MilkyWayGen';
 import {
@@ -43,7 +48,11 @@ function init(canvas, width, height, pixelRatio, path) {
   camera.position.set(50, 0, 60);
 
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x000f15);
+
+  // Struggling to decide between blue-black and the grey-black. The blue is no
+  // doubt less realistic, but artistic impression does matter.
+  // scene.background = new THREE.Color(0x000f15);
+  scene.background = new THREE.Color(0x010101);
 
   const galaxy = new MilkyWayGen().createGalaxy();
   scene.add(galaxy);

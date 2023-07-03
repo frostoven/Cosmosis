@@ -132,6 +132,95 @@ function extractVertsFromGeo(geo: BufferGeometry): Vector3[] {
   return vertPositions;
 }
 
+// The purpose of this function is to ensure that curves do not have large
+// areas of no points. For example, along a galaxy arm, we don't necessarily
+// want gas / dust density decreasing as the arm straightens out. Extended
+// version of extractVertsFromGeo.
+//
+// Technical description:
+// Extracts vertices and stores them as a Vector3 array. While extracting
+// verts, this function also find the smallest distance between two connected
+// points. After vertex extraction, it then runs along the line again,
+// artificially producing verts along each path matching that smallest
+// distance.
+function extractAndPopulateVerts(geo: BufferGeometry, /* distReduction=0 */) {
+  let smallestDistance = Infinity;
+  // @ts-ignore
+  const vertices: BufferAttribute = geo.attributes.position;
+  const vertPositions: Vector3[] = [];
+  for (let i = 0, len = vertices.count; i < len; i++) {
+    const vector = new Vector3();
+    vector.fromBufferAttribute(vertices, i);
+    vertPositions.push(vector);
+    if (i === 0) {
+      continue;
+    }
+    let previousVector = vertPositions[i - 1];
+    const distance = vector.distanceToSquared(previousVector);
+    if (distance < smallestDistance) {
+      smallestDistance = distance;
+    }
+  }
+
+  console.log('--> smallestDistance:', smallestDistance);
+
+  if (vertPositions.length < 3) {
+    return vertPositions;
+  }
+
+  let lastInsertedIndex: number | null = null;
+
+  for (let i = 0, len = vertPositions.length; i < len; i++) {
+    if (i === 0) {
+    // if (i < 20) {
+      continue;
+    }
+    const vertex = vertPositions[i];
+    const previousVertex = vertPositions[i - 1];
+    const distance = vertex.distanceToSquared(previousVertex);
+    if (distance > smallestDistance) {
+      console.log(`-> ${distance} is greater than ${smallestDistance}; inserting vert.`);
+    }
+    else {
+      // console.log(`-> ${distance} is LESS THAN ${smallestDistance}; skipping.`, {vertex, previousVertex});
+      //
+      // // if (previousIsSynthetic) {
+      //   // When a sequence of synthetic verts suddenly stops, it creates a
+      //   // jarring gap. This attempts to fix that.
+      // vertex.y -= 0.1;
+      // // }
+      // previousIsSynthetic = false;
+      continue;
+      // console.log(`${distance} > ${minDistSquared} ? ${distance > minDistSquared}`)
+      // console.group('skip');
+      // console.log(`distance=${distance}`);
+      // console.log(`minDistance=${smallestDistance}`);
+      // console.groupEnd();
+    }
+    // if (Math.random() < 0.5) {
+    //   previousVertex.y -= 0.1;
+    // }
+
+    const childVertex = previousVertex.clone();
+    childVertex.lerp(vertex, 0.5);
+    lastInsertedIndex = i;
+    vertPositions.splice(i++, 0, childVertex);
+  }
+
+  // When a sequence of synthetic verts suddenly stops, it creates a jarring
+  // gap. This attempts to fix that.
+  if (lastInsertedIndex !== null) {
+    const positionToAdjust = lastInsertedIndex + 1;
+    if (positionToAdjust < vertPositions.length + 1) {
+      const postSynthetic = vertPositions[positionToAdjust];
+      const target = vertPositions[positionToAdjust + 1];
+      postSynthetic.lerp(target, 0.25);
+    }
+  }
+
+  return vertPositions;
+}
+
 export {
   xAxis,
   yAxis,
@@ -146,4 +235,5 @@ export {
   clamp,
   chaseValue,
   extractVertsFromGeo,
+  extractAndPopulateVerts,
 }
