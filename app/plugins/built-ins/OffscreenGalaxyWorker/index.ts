@@ -26,8 +26,8 @@ class OffscreenGalaxyWorker extends Worker {
     // is located at: app/webWorkers/offscreenGalaxy.ts
     super('./build/offscreenGalaxy.js', { type: 'module' });
 
-    // // const loader = new MeshLoader('getStarCatalog', 'milky_way', {
-    // const loader = new MeshLoader('getStarCatalog', 'milky_way_mesh_test', {
+    // // const loader = new MeshLoader('milky_way', 'getStarCatalog', {
+    // const loader = new MeshLoader('milky_way_mesh_test', 'getStarCatalog', {
     //   ...MeshLoader.defaultNodeOpts,
     //   castShadow: false,
     //   receiveShadow: false,
