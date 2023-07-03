@@ -6,18 +6,27 @@ import {
   Vector3,
 } from 'three';
 
+const acos = Math.acos;
+const floor = Math.floor;
+const max = Math.max;
+const min = Math.min;
+const pi = Math.PI;
+const pow = Math.pow;
+const sign = Math.sign;
+const sqrt = Math.sqrt;
+
 const xAxis = new Vector3(1, 0, 0);
 const yAxis = new Vector3(0, 1, 0);
 const zAxis = new Vector3(0, 0, 1);
 
 const _aprEuler = new Euler(0, 0, 0, 'YXZ');
-function applyPolarRotation(x, y, observerQuaternion, minPolarAngle = 0, maxPolarAngle = Math.PI) {
-  const PI_2 = Math.PI / 2;
+function applyPolarRotation(x, y, observerQuaternion, minPolarAngle = 0, maxPolarAngle = pi) {
+  const halfPi = pi / 2;
 
   _aprEuler.setFromQuaternion(observerQuaternion);
   _aprEuler.y = x * -0.002;
   _aprEuler.x = y * -0.002;
-  _aprEuler.x = Math.max(PI_2 - maxPolarAngle, Math.min(PI_2 - minPolarAngle, _aprEuler.x));
+  _aprEuler.x = max(halfPi - maxPolarAngle, min(halfPi - minPolarAngle, _aprEuler.x));
   observerQuaternion.setFromEuler(_aprEuler);
 }
 
@@ -27,12 +36,12 @@ function getQuatAxis(quat: Quaternion) {
     // As we approach zero, we can substitute an effective division-by-1.
     return new Vector3(quat.x, quat.y, quat.z);
   }
-  const squared = Math.sqrt(radicand);
+  const squared = sqrt(radicand);
   return new Vector3(quat.x / squared, quat.y / squared, quat.z / squared);
 }
 
 function getQuatAngle(quaternion: Quaternion) {
-  return Math.acos(quaternion.w) * 2;
+  return acos(quaternion.w) * 2;
 }
 
 // Returns a max relative to the amount's sign. Acts like Math.max if amount
@@ -78,12 +87,12 @@ function lerpToZero(number, stepAmount) {
 }
 
 // x^2 / max
-function easeIntoExp(step, max) {
-  return (Math.pow(step, 2) / max) * Math.sign(step);
+function easeIntoExp(step, maxValue) {
+  return (pow(step, 2) / maxValue) * sign(step);
 }
 
-function clamp(n, min, max) {
-  return Math.min(Math.max(n, min), max);
+function clamp(n, low, high) {
+  return min(max(n, low), high);
 }
 
 // Moves toward a target value at a set speed.
@@ -108,15 +117,15 @@ function chaseValue(stepSize, current: number, target: number) {
   return current;
 }
 
-function extractVertsFromGeo(object3d: any): Vector3[] {
-  const geo: BufferGeometry = object3d.geometry;
+// Extract vertices and return them as a Vector3 array.
+// The purpose of this function is simply to convert geometry to points in CPU.
+function extractVertsFromGeo(geo: BufferGeometry): Vector3[] {
   // @ts-ignore
   const vertices: BufferAttribute = geo.attributes.position;
-  console.log('--> Spiral vertices:', vertices);
-
+  // console.log('--> Vertices:', vertices);
   const vertPositions: Vector3[] = [];
   for (let i = 0, len = vertices.count; i < len; i++) {
-    const vector = new Vector3();
+    let vector = new Vector3();
     vector.fromBufferAttribute(vertices, i);
     vertPositions.push(vector);
   }
