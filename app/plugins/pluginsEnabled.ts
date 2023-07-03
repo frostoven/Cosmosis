@@ -25,6 +25,7 @@ import { gamepadDriverPlugin } from './built-ins/GamepadDriver';
 import { visorHudModulePlugin } from './built-ins/shipModules/VisorHud';
 import { generatePluginCompletion } from './generatePluginCompletion';
 import { offscreenGalaxyWorkerPlugin } from './built-ins/OffscreenGalaxyWorker';
+import { devGimbalPlugin } from './built-ins/DevGimbal';
 
 const builtInPluginsEnabled: PluginEntry[] = [
   // General
@@ -73,6 +74,11 @@ const builtInPluginsEnabled: PluginEntry[] = [
   // Always place this last. The module hub should have programmatic access to
   // all ship modules.
   { name: 'shipModuleHub', pluginInstance: shipModuleHubPlugin, dependencies: [ '*' ] },
+
+  // ------------------------------------------------------------ //
+
+  // Dev plugins
+  { name: 'devGimbalPlugin', pluginInstance: devGimbalPlugin, dependencies: [ 'core', 'player' ] },
 ];
 
 generatePluginCompletion(builtInPluginsEnabled, 'PluginNames');
