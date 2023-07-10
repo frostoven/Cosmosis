@@ -40,6 +40,9 @@ const vertexShader = `
       percentage = 0.0;
     }
     
+    // Randomize:
+    percentage += fract(sin(percentage) * 10000.0) * 0.1;
+    
     vColor = mix(bright, dark, percentage);
     // vColor = mix(mix(bright, dark, percentage), darkerOrange, 0.3);
   }
