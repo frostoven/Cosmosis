@@ -6,12 +6,12 @@ import Player from '../Player';
 import {
   SBA_LENGTH, ROT_W, ROT_X, ROT_Y, ROT_Z, BUFFER_TYPE, TYPE_POSITIONAL_DATA,
 } from '../../../webWorkers/sharedBufferArrayConstants';
-// import MeshLoader from '../NodeOps/types/MeshLoader';
-// import { gameRuntime } from '../../gameRuntime';
-// import {
-//   extractAndPopulateVerts,
-//   extractVertsFromGeo,
-// } from '../../../local/mathUtils';
+import MeshLoader from '../NodeOps/types/MeshLoader';
+import { gameRuntime } from '../../gameRuntime';
+import {
+  extractAndPopulateVerts,
+  extractVertsFromGeo,
+} from '../../../local/mathUtils';
 
 type PluginCompletion = PluginCacheTracker & {
   player: Player, core: Core,
@@ -26,46 +26,59 @@ class OffscreenGalaxyWorker extends Worker {
     // is located at: app/webWorkers/offscreenGalaxy.ts
     super('./build/offscreenGalaxy.js', { type: 'module' });
 
-    // // const loader = new MeshLoader('milky_way', 'getStarCatalog', {
-    // const loader = new MeshLoader('milky_way_mesh_test', 'getStarCatalog', {
-    //   ...MeshLoader.defaultNodeOpts,
-    //   castShadow: false,
-    //   receiveShadow: false,
-    // });
-    // loader.trackedMesh.getOnce((mesh) => {
-    //   console.log('--> galaxy:', mesh);
-    //
-    //   gameRuntime.tracked.levelScene.getOnce((scene) => {
-    //     const gltfScene: THREE.Scene = mesh.gltf.scene;
-    //     // @ts-ignore
-    //     const lineSegments: THREE.LineSegments = gltfScene.children[2];
-    //     const vertPositions = extractAndPopulateVerts(lineSegments.geometry);
-    //     console.log('==> Spiral vertex positions:', vertPositions);
-    //
-    //     // extractAndPopulateVerts(lineSegments.geometry);
-    //
-    //     const group = new THREE.Group();
-    //     for (let i = 0, len = vertPositions.length; i < len; i++) {
-    //       const v3: THREE.Vector3 = vertPositions[i];
-    //       const geometry = new THREE.BoxGeometry(0.005, 0.005, 0.005);
-    //       const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-    //       const cube = new THREE.Mesh(geometry, material);
-    //       group.add(cube);
-    //       cube.position.set(v3.x, v3.y, v3.z);
-    //     }
-    //     scene.add(group);
-    //
-    //     // @ts-ignore
-    //     window.debug.group = group;
-    //
-    //     scene.add(gltfScene);
-    //     // vertices: geometry.attributes.position
-    //     // can probably extract vertices with:
-    //     // geometry.attributes.position.copyVector3sArray
-    //   });
-    // });
-    //
-    // return;
+    // const loader = new MeshLoader('milky_way', 'getStarCatalog', {
+    const loader = new MeshLoader('milky_way', 'getStarCatalog', {
+      ...MeshLoader.defaultNodeOpts,
+      castShadow: false,
+      receiveShadow: false,
+    });
+    loader.trackedMesh.getOnce((mesh) => {
+      console.log('--> galaxy:', mesh);
+
+      gameRuntime.tracked.levelScene.getOnce((scene) => {
+        const gltfScene: THREE.Scene = mesh.gltf.scene;
+        // @ts-ignore
+        const lineSegments1: THREE.LineSegments = gltfScene.children[2];
+        // @ts-ignore
+        const lineSegments2: THREE.LineSegments = gltfScene.children[3];
+        console.log({ lineSegments1 });
+        console.log({ lineSegments2 });
+
+        // scene.attach(lineSegments1);
+        // scene.attach(lineSegments2);
+
+        // const vertPositions1 = extractVertsFromGeo(lineSegments1.geometry);
+        const vertPositions1 = extractAndPopulateVerts(lineSegments1.geometry);
+        // const vertPositions2 = extractVertsFromGeo(lineSegments2.geometry);
+        const vertPositions2 = extractAndPopulateVerts(lineSegments2.geometry);
+
+        // extractAndPopulateVerts(lineSegments1.geometry);
+
+        function genCubes(vertPositions, parent) {
+          const group = new THREE.Group();
+          for (let i = 0, len = vertPositions.length; i < len; i++) {
+            const v3: THREE.Vector3 = vertPositions[i];
+            const geometry = new THREE.BoxGeometry(0.005, 0.005, 0.005);
+            const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+            const cube = new THREE.Mesh(geometry, material);
+            group.add(cube);
+            cube.position.set(v3.x, v3.y, v3.z);
+          }
+          // group.scale.copy(lineSegments1.scale);
+          // scene.add(group);
+          parent.add(group);
+        }
+        genCubes(vertPositions1, lineSegments1);
+        genCubes(vertPositions2, lineSegments2);
+
+        scene.add(gltfScene);
+        // vertices: geometry.attributes.position
+        // can probably extract vertices with:
+        // geometry.attributes.position.copyVector3sArray
+      });
+    });
+
+    return;
 
     this.addEventListener('message', this.receiveMessage.bind(this));
     this._init();
