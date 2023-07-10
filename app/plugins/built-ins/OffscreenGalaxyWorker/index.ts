@@ -32,51 +32,38 @@ class OffscreenGalaxyWorker extends Worker {
       castShadow: false,
       receiveShadow: false,
     });
-    loader.trackedMesh.getOnce((mesh) => {
-      console.log('--> galaxy:', mesh);
-
+    loader.trackedMesh.getOnce((galaxy) => {
       gameRuntime.tracked.levelScene.getOnce((scene) => {
-        const gltfScene: THREE.Scene = mesh.gltf.scene;
-        // @ts-ignore
-        const lineSegments1: THREE.LineSegments = gltfScene.children[2];
-        // @ts-ignore
-        const lineSegments2: THREE.LineSegments = gltfScene.children[3];
-        console.log({ lineSegments1 });
-        console.log({ lineSegments2 });
+        const gltfScene: THREE.Scene = galaxy.gltf.scene;
 
-        // scene.attach(lineSegments1);
-        // scene.attach(lineSegments2);
+        gltfScene.traverse((node) => {
+          if (node.type !== 'LineSegments') {
+            return;
+          }
 
-        // const vertPositions1 = extractVertsFromGeo(lineSegments1.geometry);
-        const vertPositions1 = extractAndPopulateVerts(lineSegments1.geometry);
-        // const vertPositions2 = extractVertsFromGeo(lineSegments2.geometry);
-        const vertPositions2 = extractAndPopulateVerts(lineSegments2.geometry);
+          // @ts-ignore
+          const lineSegments: THREE.LineSegments = node;
+          console.log({ lineSegments });
 
-        // extractAndPopulateVerts(lineSegments1.geometry);
+          const vertPositions = extractAndPopulateVerts(lineSegments.geometry);
+          const { x: sx, y: sy, z: sz } = lineSegments.scale;
 
-        function genCubes(vertPositions, parent) {
           const group = new THREE.Group();
           for (let i = 0, len = vertPositions.length; i < len; i++) {
             const v3: THREE.Vector3 = vertPositions[i];
-            const geometry = new THREE.BoxGeometry(0.005, 0.005, 0.005);
+            const geometry = new THREE.BoxGeometry(0.001 / sx, 0.001 / sy, 0.001 / sz);
             const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
             const cube = new THREE.Mesh(geometry, material);
             group.add(cube);
             cube.position.set(v3.x, v3.y, v3.z);
           }
-          // group.scale.copy(lineSegments1.scale);
-          // scene.add(group);
-          parent.add(group);
-        }
-        genCubes(vertPositions1, lineSegments1);
-        genCubes(vertPositions2, lineSegments2);
+          lineSegments.add(group);
+        });
 
         scene.add(gltfScene);
-        // vertices: geometry.attributes.position
-        // can probably extract vertices with:
-        // geometry.attributes.position.copyVector3sArray
       });
     });
+
 
     return;
 
