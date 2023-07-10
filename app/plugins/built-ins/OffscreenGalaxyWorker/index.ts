@@ -13,6 +13,19 @@ import {
   extractVertsFromGeo,
 } from '../../../local/mathUtils';
 
+const smokeSprites = [
+  new THREE.TextureLoader().load('potatoLqAssets/smokeImg/smoke1.png'),
+  new THREE.TextureLoader().load('potatoLqAssets/smokeImg/smoke2.png'),
+  new THREE.TextureLoader().load('potatoLqAssets/smokeImg/smoke3.png'),
+  new THREE.TextureLoader().load('potatoLqAssets/smokeImg/smoke3b.png'),
+];
+
+for (let i = 0, len = smokeSprites.length; i < len; i++) {
+  const sprite = smokeSprites[i];
+  // TODO: Upgrade three.js to gain access to this.
+  // sprite.colorSpace = THREE.SRGBColorSpace;
+}
+
 type PluginCompletion = PluginCacheTracker & {
   player: Player, core: Core,
 };
@@ -35,6 +48,8 @@ class OffscreenGalaxyWorker extends Worker {
     loader.trackedMesh.getOnce((galaxy) => {
       gameRuntime.tracked.levelScene.getOnce((scene) => {
         const gltfScene: THREE.Scene = galaxy.gltf.scene;
+        const galaxyGeo = new THREE.BufferGeometry();
+        const galaxyPoints: number[] = [];
 
         gltfScene.traverse((node) => {
           if (node.type !== 'LineSegments') {
@@ -43,24 +58,37 @@ class OffscreenGalaxyWorker extends Worker {
 
           // @ts-ignore
           const lineSegments: THREE.LineSegments = node;
-          console.log({ lineSegments });
-
           const vertPositions = extractAndPopulateVerts(lineSegments.geometry);
           const { x: sx, y: sy, z: sz } = lineSegments.scale;
 
-          const group = new THREE.Group();
+          // const group = new THREE.Group();
           for (let i = 0, len = vertPositions.length; i < len; i++) {
             const v3: THREE.Vector3 = vertPositions[i];
             const geometry = new THREE.BoxGeometry(0.001 / sx, 0.001 / sy, 0.001 / sz);
             const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
             const cube = new THREE.Mesh(geometry, material);
-            group.add(cube);
+            lineSegments.add(cube);
             cube.position.set(v3.x, v3.y, v3.z);
+            scene.attach(cube);
+            const position = cube.position;
+            galaxyPoints.push(position.x, position.y, position.z);
+            scene.remove(cube);
           }
-          lineSegments.add(group);
+          // lineSegments.add(group);
         });
 
-        scene.add(gltfScene);
+        // scene.add(gltfScene);
+        galaxyGeo.setAttribute('position', new THREE.Float32BufferAttribute(galaxyPoints, 3));
+        const material = new THREE.PointsMaterial({
+          size: 0.025,
+          sizeAttenuation: true,
+          map: smokeSprites[0],
+          alphaTest: 0.5,
+          transparent: true
+        });
+
+        const particles = new THREE.Points(galaxyGeo, material);
+        scene.add(particles);
       });
     });
 
