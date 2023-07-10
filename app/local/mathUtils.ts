@@ -162,8 +162,6 @@ function extractAndPopulateVerts(geo: BufferGeometry, /* distReduction=0 */) {
     }
   }
 
-  console.log('--> smallestDistance:', smallestDistance);
-
   if (vertPositions.length < 3) {
     return vertPositions;
   }
@@ -179,27 +177,11 @@ function extractAndPopulateVerts(geo: BufferGeometry, /* distReduction=0 */) {
     const previousVertex = vertPositions[i - 1];
     const distance = vertex.distanceToSquared(previousVertex);
     if (distance > smallestDistance) {
-      console.log(`-> ${distance} is greater than ${smallestDistance}; inserting vert.`);
+      // console.log(`-> ${distance} is greater than ${smallestDistance}; inserting vert.`);
     }
     else {
-      // console.log(`-> ${distance} is LESS THAN ${smallestDistance}; skipping.`, {vertex, previousVertex});
-      //
-      // // if (previousIsSynthetic) {
-      //   // When a sequence of synthetic verts suddenly stops, it creates a
-      //   // jarring gap. This attempts to fix that.
-      // vertex.y -= 0.1;
-      // // }
-      // previousIsSynthetic = false;
       continue;
-      // console.log(`${distance} > ${minDistSquared} ? ${distance > minDistSquared}`)
-      // console.group('skip');
-      // console.log(`distance=${distance}`);
-      // console.log(`minDistance=${smallestDistance}`);
-      // console.groupEnd();
     }
-    // if (Math.random() < 0.5) {
-    //   previousVertex.y -= 0.1;
-    // }
 
     const childVertex = previousVertex.clone();
     childVertex.lerp(vertex, 0.5);

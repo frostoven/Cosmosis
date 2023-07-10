@@ -89,13 +89,16 @@ export default class MeshLoader {
 
   getHudModel = () => {
     this._loadMesh('getHudModel');
+    return this;
   };
 
   getStarCatalog = () => {
     this._loadMesh('getHudModel');
+    return this;
   };
 
   getSpaceship = () => {
     this._loadMesh('getSpaceship');
+    return this;
   };
 }
