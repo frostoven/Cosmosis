@@ -13,15 +13,18 @@ import { randomInt } from './randomUtils';
  */
 export default class FastDeterministicRandom {
   private _index: number;
+  private _customSeed: number;
 
   static _staticRandomIndex = randomInt(0, lookupTableLength);
-  private _interceptMapRandom: { [key: string]: Function[] };
-  private _interceptMapValue: { [key: string]: Function[] };
+  private readonly _interceptMapRandom: { [key: string]: Function[] };
+  private readonly _interceptMapValue: { [key: string]: Function[] };
 
   constructor(randomizeIndex = false) {
     // TODO: perf-test this with a 0 | 0 and see if there's a measurable
     //  difference.
     this._index = 0;
+    this._customSeed = 0;
+
     this._interceptMapRandom = {};
     this._interceptMapValue = {};
     if (randomizeIndex) {
@@ -29,8 +32,24 @@ export default class FastDeterministicRandom {
     }
   }
 
+  get seed() {
+    return this._index;
+  }
+
+  set seed(value) {
+    if (value >= lookupTableLength) {
+      const newValue = value % lookupTableLength;
+      console.warn(
+        `[FastDeterministicRandom] '${value}' out of bounds ` +
+        `(max: ${lookupTableLength - 1}). Overflowing to ${newValue}.`
+      );
+      value = newValue;
+    }
+    this._index = this._customSeed = value;
+  }
+
   reset() {
-    this._index = 0;
+    this._index = this._customSeed;
   }
 
   /**
