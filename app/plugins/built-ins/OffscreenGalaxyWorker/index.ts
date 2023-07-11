@@ -12,6 +12,7 @@ import {
   extractAndPopulateVerts,
   extractVertsFromGeo,
 } from '../../../local/mathUtils';
+import SpaceClouds from './types/SpaceClouds';
 
 const smokeSprites = [
   new THREE.TextureLoader().load('potatoLqAssets/smokeImg/smoke1.png'),
@@ -40,58 +41,7 @@ class OffscreenGalaxyWorker extends Worker {
     super('./build/offscreenGalaxy.js', { type: 'module' });
 
     // const loader = new MeshLoader('milky_way', 'getStarCatalog', {
-    const loader = new MeshLoader('milky_way', 'getStarCatalog', {
-      ...MeshLoader.defaultNodeOpts,
-      castShadow: false,
-      receiveShadow: false,
-    });
-    loader.trackedMesh.getOnce((galaxy) => {
-      gameRuntime.tracked.levelScene.getOnce((scene) => {
-        const gltfScene: THREE.Scene = galaxy.gltf.scene;
-        const galaxyGeo = new THREE.BufferGeometry();
-        const galaxyPoints: number[] = [];
-
-        gltfScene.traverse((node) => {
-          if (node.type !== 'LineSegments') {
-            return;
-          }
-
-          // @ts-ignore
-          const lineSegments: THREE.LineSegments = node;
-          const vertPositions = extractAndPopulateVerts(lineSegments.geometry);
-          const { x: sx, y: sy, z: sz } = lineSegments.scale;
-
-          // const group = new THREE.Group();
-          for (let i = 0, len = vertPositions.length; i < len; i++) {
-            const v3: THREE.Vector3 = vertPositions[i];
-            const geometry = new THREE.BoxGeometry(0.001 / sx, 0.001 / sy, 0.001 / sz);
-            const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-            const cube = new THREE.Mesh(geometry, material);
-            lineSegments.add(cube);
-            cube.position.set(v3.x, v3.y, v3.z);
-            scene.attach(cube);
-            const position = cube.position;
-            galaxyPoints.push(position.x, position.y, position.z);
-            scene.remove(cube);
-          }
-          // lineSegments.add(group);
-        });
-
-        // scene.add(gltfScene);
-        galaxyGeo.setAttribute('position', new THREE.Float32BufferAttribute(galaxyPoints, 3));
-        const material = new THREE.PointsMaterial({
-          size: 0.025,
-          sizeAttenuation: true,
-          map: smokeSprites[0],
-          alphaTest: 0.5,
-          transparent: true
-        });
-
-        const particles = new THREE.Points(galaxyGeo, material);
-        scene.add(particles);
-      });
-    });
-
+    new SpaceClouds();
 
     return;
 
