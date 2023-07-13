@@ -3,6 +3,7 @@ import MeshLoader from '../../NodeOps/types/MeshLoader';
 import { gameRuntime } from '../../../gameRuntime';
 import { extractAndPopulateVerts } from '../../../../local/mathUtils';
 import FastDeterministicRandom from '../../../../random/FastDeterministicRandom';
+import { galaxyDust } from '../shaders/galaxyDust.glsl';
 
 const smokeSprites = [
   new THREE.TextureLoader().load('potatoLqAssets/smokeImg/smoke1.png'),
@@ -118,15 +119,26 @@ export default class SpaceClouds {
 
         const sprite = smokeSprites[smokeModIndex++ % smokeLength];
 
+        const material = new THREE.ShaderMaterial({
+          glslVersion: THREE.GLSL3,
+          defines: { USE_MAP: '' },
+          // new THREE.MeshBasicMaterial({
+          vertexShader: galaxyDust.vertex,
+          fragmentShader: galaxyDust.fragment,
+          transparent: true,
+          uniforms: {
+            texture1: { value: smokeSprites[ 0 ] },
+            texture2: { value: smokeSprites[ 0 ] },
+            alphaTest: { value: 0.5 },
+          }
+        });
+
+        // material.uniforms.map.value = sprite;
+        // material.map = sprite;
+
         const instancedPlane = new THREE.InstancedMesh(
           new THREE.PlaneBufferGeometry(0.025, 0.025),
-          new THREE.MeshBasicMaterial({
-            color: 0xeeeeee,
-            side: THREE.DoubleSide,
-            map: sprite,
-            transparent: true,
-            alphaTest: 0.1,
-          }),
+          material,
           galaxyPoints.length,
         );
 
@@ -140,6 +152,8 @@ export default class SpaceClouds {
           instancedPlane.setMatrixAt(i, dummy.matrix);
         }
         instancedPlane.instanceMatrix.needsUpdate = true;
+
+        console.log('instancedPlane:', instancedPlane);
 
         scene.add(instancedPlane);
       });
