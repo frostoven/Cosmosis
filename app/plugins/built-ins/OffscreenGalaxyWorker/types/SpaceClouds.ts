@@ -4,6 +4,7 @@ import { gameRuntime } from '../../../gameRuntime';
 import { extractAndPopulateVerts } from '../../../../local/mathUtils';
 import FastDeterministicRandom from '../../../../random/FastDeterministicRandom';
 import { galaxyDust } from '../shaders/galaxyDust.glsl';
+import Core from '../../Core';
 
 const smokeSprites = [
   new THREE.TextureLoader().load('potatoLqAssets/smokeImg/smoke1.png'),
@@ -39,7 +40,7 @@ export default class SpaceClouds {
     });
 
     meshLoader.trackedMesh.getOnce((galaxy) => {
-      gameRuntime.tracked.levelScene.getOnce((scene) => {
+      gameRuntime.tracked.levelScene.getOnce((scene: THREE.Scene) => {
         const gltfScene: THREE.Scene = galaxy.gltf.scene;
         const galaxyPoints: any[] = [];
 
@@ -120,16 +121,19 @@ export default class SpaceClouds {
         const sprite = smokeSprites[smokeModIndex++ % smokeLength];
 
         const material = new THREE.ShaderMaterial({
-          glslVersion: THREE.GLSL3,
           defines: { USE_MAP: '' },
           // new THREE.MeshBasicMaterial({
           vertexShader: galaxyDust.vertex,
           fragmentShader: galaxyDust.fragment,
           transparent: true,
           uniforms: {
-            texture1: { value: smokeSprites[ 0 ] },
-            texture2: { value: smokeSprites[ 0 ] },
+            texture1: { value: smokeSprites[0] },
+            texture2: { value: smokeSprites[0] },
             alphaTest: { value: 0.5 },
+            lookTarget: { value: new THREE.Vector3() },
+            modelMatrixInverse: { value: new THREE.Matrix4() },
+            rotation: { value: 0 },
+            center: { value: new THREE.Vector2(0.5, 0.5) },
           }
         });
 
@@ -156,6 +160,24 @@ export default class SpaceClouds {
         console.log('instancedPlane:', instancedPlane);
 
         scene.add(instancedPlane);
+
+        const rotationTracker = new THREE.Object3D();
+        rotationTracker.position.copy(instancedPlane.position);
+        scene.add(rotationTracker);
+        gameRuntime.tracked.player.getOnce(({ camera }) => {
+          gameRuntime.tracked.core.getOnce((core: Core) => {
+            core.onAnimate.getEveryChange(() => {
+              // rotationTracker.lookAt(camera.position);
+              // material.uniforms.lookTarget.value = rotationTracker.position;
+              // material.uniformsNeedUpdate = true;
+
+              const uniforms = material.uniforms;
+              uniforms.modelMatrixInverse.value.copy(camera.matrixWorld);
+              material.uniformsNeedUpdate = true;
+              // console.log(uniforms.modelMatrixInverse.value)
+            });
+          })
+        });
       });
     });
   }
