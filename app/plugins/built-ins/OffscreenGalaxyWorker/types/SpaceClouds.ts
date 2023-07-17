@@ -74,57 +74,15 @@ export default class SpaceClouds {
               ),
             );
 
-            // for (let i = 0, len = galaxyPoints.length; i < len; i++) {
-            //   const pointSegment = galaxyPoints[i];
-            //   pointSegment.push(
-            //     new THREE.Vector3(
-            //       position.x + xRng,
-            //       position.y + yRng,
-            //       position.z + zRng,
-            //     )
-            //   );
-            // }
-
             scene.remove(point);
           }
-          // lineSegments.add(group);
         });
-
-        // scene.add(gltfScene);
-        // for (let i = 0, len = galaxyPoints.length; i < len; i++) {
-        //   const spriteIndex = i % this.smokeSprites.length;
-        //   const point = galaxyPoints[i];
-        //
-        //   // const geoPart = galaxyGeo[i];
-        //   // geoPart.setAttribute('position', new THREE.Float32BufferAttribute(galaxyPoints[i], 3));
-        //   // const material = new THREE.PointsMaterial({
-        //   //   size: 0.025,
-        //   //   sizeAttenuation: true,
-        //   //   map: smokeSprites[0],
-        //   //   alphaTest: 0.5,
-        //   //   transparent: true
-        //   // });
-        //   //
-        //   // const particles = new THREE.Points(geoPart, material);
-        //   // scene.add(particles);
-        //
-        //   const geometry = new THREE.PlaneBufferGeometry(0.025, 0.025);
-        //   const material = new THREE.MeshBasicMaterial({
-        //     color: 0xeeeeee,
-        //     side: THREE.DoubleSide,
-        //   });
-        //   const plane = new THREE.Mesh(geometry, material);
-        //   plane.position.copy(point);
-        //   scene.add(plane);
-        // }
 
         const sprite = smokeSprites[smokeModIndex++ % smokeLength];
         sprite.wrapS = THREE.RepeatWrapping;
         sprite.wrapT = THREE.RepeatWrapping;
 
         const material = new THREE.ShaderMaterial({
-          defines: { USE_MAP: '' },
-          // new THREE.MeshBasicMaterial({
           vertexShader: galaxyDust.vertex,
           fragmentShader: galaxyDust.fragment,
           transparent: true,
@@ -132,22 +90,8 @@ export default class SpaceClouds {
             texture1: { value: smokeSprites[0] },
             texture2: { value: smokeSprites[0] },
             alphaTest: { value: 0.5 },
-            lookTarget: { value: new THREE.Vector3() },
-            modelMatrixInverse: { value: new THREE.Matrix4() },
-            quaternion: { value: new THREE.Quaternion() },
-            rotationX: { value: 0 },
-            rotationY: { value: 0 },
-            angle: { value: 0 },
-            center: { value: new THREE.Vector2(0.5, 0.5) },
-            xx: { value: 0 },
-            yy: { value: 0 },
-            zz: { value: 1 },
-            ww: { value: 1 },
           }
         });
-
-        // material.uniforms.map.value = sprite;
-        // material.map = sprite;
 
         const instancedPlane = new THREE.InstancedMesh(
           new THREE.PlaneBufferGeometry(0.025, 0.025),
@@ -169,47 +113,6 @@ export default class SpaceClouds {
         console.log('instancedPlane:', instancedPlane);
 
         scene.add(instancedPlane);
-
-        const rotationTracker = new THREE.Object3D();
-        rotationTracker.position.copy(instancedPlane.position);
-        scene.add(rotationTracker);
-        gameRuntime.tracked.player.getOnce((player) => {
-          const camera: THREE.PerspectiveCamera = player.camera;
-          debug.camera = camera;
-          debug.uniforms = material.uniforms;
-
-          const uniformRotation = camera.rotation.clone();
-          // uniformRotation.reorder('XYZ'); // fail
-          uniformRotation.reorder('XZY');
-          // uniformRotation.reorder('ZYX'); // fail
-          // uniformRotation.reorder('ZXY');
-          // uniformRotation.reorder('YZX');
-
-          gameRuntime.tracked.core.getOnce((core: Core) => {
-            core.onAnimate.getEveryChange(() => {
-              // rotationTracker.lookAt(camera.position);
-              // material.uniforms.lookTarget.value = rotationTracker.position;
-              // material.uniformsNeedUpdate = true;
-
-              const uniforms = material.uniforms;
-              uniforms.modelMatrixInverse.value.copy(camera.matrixWorld);
-              uniforms.quaternion.value.copy(camera.quaternion);
-              // uniforms.rotation.value = camera.rotation.z;
-
-              uniformRotation.setFromQuaternion(camera.quaternion);
-              // uniformRotation.x = 0;
-              // uniformRotation.y = 0;
-
-              const { x, y, z } = uniformRotation;
-              const rotation = camera.rotation.clone();
-              const angle = -z;
-              uniforms.angle.value = angle;
-
-              material.uniformsNeedUpdate = true;
-              // console.log(uniforms.modelMatrixInverse.value)
-            });
-          })
-        });
       });
     });
   }

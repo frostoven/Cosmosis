@@ -1,9 +1,11 @@
 // language=glsl
 const vertex = `
   uniform sampler2D texture1;
-
+  
   varying vec2 vUv;
   varying float distToCamera;
+
+   #define cullDist 0.0275
 
   mat3 calculateLookAtMatrix(in vec3 cameraPosition, in vec3 targetPosition, in float rollAngle) {
     vec3 forwardVector = normalize(targetPosition - cameraPosition);
@@ -14,21 +16,27 @@ const vertex = `
 
   void main() {
     vUv = uv;
-    
+
     vec4 mvPosition = vec4(position, 1.0);
+
     vec3 cameraRelativePosition = (mvPosition.xyz + instanceMatrix[3].xyz) - cameraPosition;
     vec3 cameraTarget = mvPosition.xyz + normalize(cameraRelativePosition);
-    
+
     mat3 lookAtMatrix = calculateLookAtMatrix(mvPosition.xyz, cameraTarget, 0.0);
     mvPosition.xyz = lookAtMatrix * mvPosition.xyz;
     mvPosition = instanceMatrix * mvPosition;
 
-    vec4 modelViewPosition = modelViewMatrix * mvPosition;
-    gl_Position = projectionMatrix * modelViewPosition;
+    distToCamera = distance(cameraPosition, mvPosition.xyz);
 
-    // Camera space position.
-    vec4 csPosition = modelViewPosition * gl_Position;
-    distToCamera = distance(csPosition, gl_Position);
+    if (distToCamera < cullDist) {
+      distToCamera = 0.0;
+      gl_Position = vec4(0.0);
+    }
+    else {
+
+      vec4 modelViewPosition = modelViewMatrix * mvPosition;
+      gl_Position = projectionMatrix * modelViewPosition;
+    }
   }
 `;
 
@@ -45,6 +53,10 @@ const fragment = `
   #define fadeMultiplier 0.5
 
   void main() {
+    if (distToCamera == 0.0) {
+      discard;
+    }
+    
     vec4 color1 = texture2D(texture1, vUv);
     vec4 color2 = texture2D(texture2, vUv);
 
