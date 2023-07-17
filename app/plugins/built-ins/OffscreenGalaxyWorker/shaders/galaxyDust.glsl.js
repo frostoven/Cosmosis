@@ -1,62 +1,34 @@
 // language=glsl
-const vertex =`
+const vertex = `
   uniform sampler2D texture1;
-  uniform vec3 lookTarget;
-  uniform mat4 modelMatrixInverse;
-  
-  uniform float rotation;
-  uniform vec2 center;
-
-  attribute vec3 aPosition;
 
   varying vec2 vUv;
   varying float distToCamera;
 
-  float lengthSq(vec3 vector) {
-    return vector.x * vector.x + vector.y * vector.y + vector.z * vector.z;
-  }
-
-  float findAngle(vec3 v1, vec3 v2) {
-    return acos(
-      dot(
-        normalize(v1), normalize(v2)
-      )
-    );
-  }
-
-  vec3 rotate(vec4 quaternion, vec3 position) {
-    vec3 temp = cross(quaternion.xyz, position) + quaternion.w * position;
-    vec3 rotated = position + 2.0 * cross(quaternion.xyz, temp);
-    return rotated;
+  mat3 calculateLookAtMatrix(in vec3 cameraPosition, in vec3 targetPosition, in float rollAngle) {
+    vec3 forwardVector = normalize(targetPosition - cameraPosition);
+    vec3 rightVector = normalize(cross(forwardVector, vec3(sin(rollAngle), cos(rollAngle), 0.0)));
+    vec3 upVector = normalize(cross(rightVector, forwardVector));
+    return mat3(rightVector, upVector, -forwardVector);
   }
 
   void main() {
-
     vUv = uv;
+    
+    vec4 mvPosition = vec4(position, 1.0);
+    vec3 cameraRelativePosition = (mvPosition.xyz + instanceMatrix[3].xyz) - cameraPosition;
+    vec3 cameraTarget = mvPosition.xyz + normalize(cameraRelativePosition);
+    
+    mat3 lookAtMatrix = calculateLookAtMatrix(mvPosition.xyz, cameraTarget, 0.0);
+    mvPosition.xyz = lookAtMatrix * mvPosition.xyz;
+    mvPosition = instanceMatrix * mvPosition;
 
-    vec4 mvPosition = viewMatrix * instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0);
-
-    vec2 scale;
-    scale.x = length(vec3(instanceMatrix[0].x, instanceMatrix[0].y, instanceMatrix[0].z));
-    scale.y = length(vec3(instanceMatrix[1].x, instanceMatrix[1].y, instanceMatrix[1].z));
-
-    vec2 alignedPosition = (position.xy - (center - vec2(0.5))) * scale;
-
-    vec2 rotatedPosition;
-    rotatedPosition.x = cos(rotation) * alignedPosition.x - sin(rotation) * alignedPosition.y;
-    rotatedPosition.y = sin(rotation) * alignedPosition.x + cos(rotation) * alignedPosition.y;
-
-    mvPosition.xy += rotatedPosition;
-
-    gl_Position = projectionMatrix * mvPosition;
-
-    // Get position relative to camera.
-    vec4 modelViewPosition = modelViewMatrix * instanceMatrix * vec4( position, 1.0 );
-    vec4 newPosition = projectionMatrix * modelViewPosition;
+    vec4 modelViewPosition = modelViewMatrix * mvPosition;
+    gl_Position = projectionMatrix * modelViewPosition;
 
     // Camera space position.
-    vec4 csPosition = modelViewPosition * newPosition;
-    distToCamera = distance(csPosition, newPosition);
+    vec4 csPosition = modelViewPosition * gl_Position;
+    distToCamera = distance(csPosition, gl_Position);
   }
 `;
 
@@ -67,7 +39,7 @@ const fragment = `
   uniform float alphaTest;
   varying vec2 vUv;
   varying float distToCamera;
-  
+
   #define fadeDist 0.05
   #define fadeReciprocal (1.0/fadeDist)
   #define fadeMultiplier 0.5
@@ -75,31 +47,23 @@ const fragment = `
   void main() {
     vec4 color1 = texture2D(texture1, vUv);
     vec4 color2 = texture2D(texture2, vUv);
-    
+
     if (color1.a < alphaTest && color2.a < alphaTest) {
       discard;
     }
-   
+
     float opacity = 1.0;
     if (distToCamera < fadeDist) {
       opacity = (distToCamera / fadeDist);
       opacity *= opacity * opacity * opacity;
     }
-    
-    vec4 color = vec4(0.0);
-    
-    //vec4 fColor = mix(color1, color2, vUv.y);
-    //fColor.a = 1.0;
-    // color = color1;
-    // color = color = vec4(1.0, 0, 0, 1.0);
-    color = mix(color1, color2, 0.5);
-    color = mix(color, vec4(color.rgb, 0.0), 0.5);
-    
+
+    gl_FragColor = mix(color1, color2, 0.5);
+    gl_FragColor = mix(gl_FragColor, vec4(gl_FragColor.rgb, 0.0), 0.5);
+
     // Fade as we get closer
-    vec4 invisible = vec4(vec3(color), 0.0);
-    color = mix(invisible, color, opacity - 0.1);
-    
-    gl_FragColor = color;
+    vec4 invisible = vec4(vec3(gl_FragColor), 0.0);
+    gl_FragColor = mix(invisible, gl_FragColor, opacity - 0.1);
   }
 `;
 
@@ -108,6 +72,4 @@ const galaxyDust = {
   fragment,
 };
 
-export {
-  galaxyDust
-};
+export { galaxyDust };

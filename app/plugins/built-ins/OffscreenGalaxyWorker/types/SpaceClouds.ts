@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import MeshLoader from '../../NodeOps/types/MeshLoader';
 import { gameRuntime } from '../../../gameRuntime';
-import { extractAndPopulateVerts } from '../../../../local/mathUtils';
+import { clamp, extractAndPopulateVerts } from '../../../../local/mathUtils';
 import FastDeterministicRandom from '../../../../random/FastDeterministicRandom';
 import { galaxyDust } from '../shaders/galaxyDust.glsl';
 import Core from '../../Core';
@@ -119,6 +119,8 @@ export default class SpaceClouds {
         // }
 
         const sprite = smokeSprites[smokeModIndex++ % smokeLength];
+        sprite.wrapS = THREE.RepeatWrapping;
+        sprite.wrapT = THREE.RepeatWrapping;
 
         const material = new THREE.ShaderMaterial({
           defines: { USE_MAP: '' },
@@ -132,8 +134,15 @@ export default class SpaceClouds {
             alphaTest: { value: 0.5 },
             lookTarget: { value: new THREE.Vector3() },
             modelMatrixInverse: { value: new THREE.Matrix4() },
-            rotation: { value: 0 },
+            quaternion: { value: new THREE.Quaternion() },
+            rotationX: { value: 0 },
+            rotationY: { value: 0 },
+            angle: { value: 0 },
             center: { value: new THREE.Vector2(0.5, 0.5) },
+            xx: { value: 0 },
+            yy: { value: 0 },
+            zz: { value: 1 },
+            ww: { value: 1 },
           }
         });
 
@@ -164,7 +173,18 @@ export default class SpaceClouds {
         const rotationTracker = new THREE.Object3D();
         rotationTracker.position.copy(instancedPlane.position);
         scene.add(rotationTracker);
-        gameRuntime.tracked.player.getOnce(({ camera }) => {
+        gameRuntime.tracked.player.getOnce((player) => {
+          const camera: THREE.PerspectiveCamera = player.camera;
+          debug.camera = camera;
+          debug.uniforms = material.uniforms;
+
+          const uniformRotation = camera.rotation.clone();
+          // uniformRotation.reorder('XYZ'); // fail
+          uniformRotation.reorder('XZY');
+          // uniformRotation.reorder('ZYX'); // fail
+          // uniformRotation.reorder('ZXY');
+          // uniformRotation.reorder('YZX');
+
           gameRuntime.tracked.core.getOnce((core: Core) => {
             core.onAnimate.getEveryChange(() => {
               // rotationTracker.lookAt(camera.position);
@@ -173,6 +193,18 @@ export default class SpaceClouds {
 
               const uniforms = material.uniforms;
               uniforms.modelMatrixInverse.value.copy(camera.matrixWorld);
+              uniforms.quaternion.value.copy(camera.quaternion);
+              // uniforms.rotation.value = camera.rotation.z;
+
+              uniformRotation.setFromQuaternion(camera.quaternion);
+              // uniformRotation.x = 0;
+              // uniformRotation.y = 0;
+
+              const { x, y, z } = uniformRotation;
+              const rotation = camera.rotation.clone();
+              const angle = -z;
+              uniforms.angle.value = angle;
+
               material.uniformsNeedUpdate = true;
               // console.log(uniforms.modelMatrixInverse.value)
             });
