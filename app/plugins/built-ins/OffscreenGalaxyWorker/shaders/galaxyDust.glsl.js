@@ -56,7 +56,7 @@ const fragment = `
     if (distToCamera == 0.0) {
       discard;
     }
-    
+
     vec4 color1 = texture2D(texture1, vUv);
     vec4 color2 = texture2D(texture2, vUv);
 
@@ -70,12 +70,18 @@ const fragment = `
       opacity *= opacity * opacity * opacity;
     }
 
-    gl_FragColor = mix(color1, color2, 0.5);
-    gl_FragColor = mix(gl_FragColor, vec4(gl_FragColor.rgb, 0.0), 0.5);
+    vec4 color;
+    color = mix(color1, color2, 0.5);
+    color = mix(color, vec4(color.rgb, 0.0), 0.5);
 
-    // Fade as we get closer
-    vec4 invisible = vec4(vec3(gl_FragColor), 0.0);
-    gl_FragColor = mix(invisible, gl_FragColor, opacity - 0.1);
+    if (opacity != 1.0) {
+      // Fade as we get closer
+      vec4 invisible = vec4(vec3(gl_FragColor), 0.0);
+      gl_FragColor = mix(invisible, color, opacity - 0.1);
+    }
+    else {
+      gl_FragColor = color;
+    }
   }
 `;
 
