@@ -88,8 +88,8 @@ export default class SpaceClouds {
           transparent: true,
           uniforms: {
             texture1: { value: smokeSprites[0] },
-            texture2: { value: smokeSprites[0] },
-            alphaTest: { value: 0.5 },
+            texture2: { value: smokeSprites[2] },
+            alphaTest: { value: 0.1 },
           }
         });
 
