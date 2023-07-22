@@ -13,6 +13,10 @@ const smokeSprites = [
   new THREE.TextureLoader().load('potatoLqAssets/smokeImg/smoke3b.png'),
 ];
 
+const smokeMasks = [
+  new THREE.TextureLoader().load('potatoLqAssets/smokeImg/smokeMask1.png'),
+];
+
 let smokeModIndex = 0;
 const smokeLength = smokeSprites.length;
 
@@ -88,8 +92,8 @@ export default class SpaceClouds {
           transparent: true,
           uniforms: {
             texture1: { value: smokeSprites[0] },
-            texture2: { value: smokeSprites[2] },
-            alphaTest: { value: 0.1 },
+            alphaMask: { value: smokeMasks[0] },
+            alphaTest: { value: 0.5 },
           }
         });
 
