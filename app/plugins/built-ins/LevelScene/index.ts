@@ -154,10 +154,10 @@ class LevelScene extends Scene {
     });
     let ship = playerInfo?.vehicleInfo?.piloting;
     if (typeof ship === 'undefined') {
-      console.error('Could get read ship info from configs. Defaulting to DS69F.');
+      ship = 'DS69F';
+      console.error(`Could get read ship info from configs. Defaulting to ${ship}.`);
       // TODO: if this happens, we should actually offer a save rollback
       //  option, and/or go to ship selector.
-      ship = 'DS69F';
     }
 
     this.loadVehicle(ship, this.enterVehicle);
