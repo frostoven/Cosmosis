@@ -8,6 +8,8 @@ import { InputManager } from '../../../InputManager';
 import { applyPolarRotation, clamp, zAxis } from '../../../../../local/mathUtils';
 import Speed from '../../../../../local/Speed';
 
+const SPEED_FACTOR = 1;
+
 class FreeCam extends ModeController {
   // @ts-ignore
   private _cachedCamera: Camera;
@@ -66,7 +68,7 @@ class FreeCam extends ModeController {
     const moveUpDown = clamp(this.state.moveUpDown + this.activeState.moveUpDown, -1, 1);
     const moveForwardBackward = clamp(this.state.moveForwardBackward + this.activeState.moveForwardBackward, -1, 1);
 
-    let speedFactor = 1;
+    let speedFactor = SPEED_FACTOR;
     this.state.halfSpeed && (speedFactor = 0.5);
     this.state.doubleSpeed && (speedFactor = 2);
 
