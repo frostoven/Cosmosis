@@ -66,6 +66,8 @@ const fragment = `
   #define THIN 0
   #define THICK 1
   #define GALAXY_CENTER 2
+  
+  #define BROWN 0.164, 0.082, 0.0
 
   float inverseLerp(float v, float minValue, float maxValue) {
     return (v - minValue) / (maxValue - minValue);
@@ -303,6 +305,10 @@ const fragment = `
       gl_FragColor.b = clamp(pow(gl_FragColor.b, 1.5), 0., 1.0);
       return;
     }
+    else if (ioDustType == GALAXY_CENTER) {
+      gl_FragColor = texture2D(thinDust, vUv) * vec4(1., .891, 0.0, 0.2);
+      return;
+    }
 //    return;
 
     // This pattern causes individual dust clouds to flow into their neighbors. 
@@ -359,6 +365,8 @@ const fragment = `
     // vec4 mask = texture2D(alphaMask, vUv);
     // color4.w = min(color4.a, mask.r);
 
+    color4 *= vec4(BROWN, 1.0);
+    
     if (opacity != 1.0) {
       // Fade as we get closer
       vec4 invisible = vec4(vec3(gl_FragColor), 0.0);

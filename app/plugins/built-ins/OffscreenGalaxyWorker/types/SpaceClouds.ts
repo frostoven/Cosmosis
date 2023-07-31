@@ -52,60 +52,15 @@ export default class SpaceClouds {
       gameRuntime.tracked.levelScene.getOnce((scene: THREE.Scene) => {
         const gltfScene: THREE.Scene = galaxy.gltf.scene;
 
-        const dustPoints: any[] = [];
         const dustTypes: any[] = [];
+        const dustPoints: any[] = [];
 
         gltfScene.traverse((node) => {
           if (node.type === 'Object3D' && node.name === 'SagA_str') {
-            return this.setupGalacticCenter(node);
+            return this.createGalacticCenterPositions(scene, node, dustTypes, dustPoints);
           }
-          else if (node.type !== 'LineSegments') {
-            return;
-          }
-
-          // @ts-ignore
-          const lineSegments: THREE.LineSegments = node;
-          const vertPositions = extractVertsFromGeo(lineSegments.geometry);
-          // const vertPositions = extractAndPopulateVerts(lineSegments.geometry);
-
-          // const group = new THREE.Group();
-          for (let i = 0, len = vertPositions.length; i < len; i++) {
-            const v3: THREE.Vector3 = vertPositions[i];
-            const point = new THREE.Object3D();
-            lineSegments.add(point);
-            point.position.set(v3.x, v3.y, v3.z);
-            scene.attach(point);
-            const position = point.position;
-
-            let xRng = ((this.rng.next() - 0.5) * 0.05) * this.rng.next();
-            let yRng = ((this.rng.next() - 0.5) * 0.05) * this.rng.next();
-            let zRng = ((this.rng.next() - 0.5) * 0.05) * this.rng.next();
-
-            dustPoints.push(
-              new THREE.Vector3(
-                position.x + xRng,
-                position.y + yRng,
-                position.z + zRng,
-              ),
-            );
-            dustTypes.push(DustType.thick);
-
-            // Thin dust within thick dust.
-            for (let i = 0; i < 25; i++) {
-              xRng = ((this.rng.next() - 0.5) * 0.25) * this.rng.next();
-              yRng = ((this.rng.next() - 0.5) * 0.01) * this.rng.next();
-              zRng = ((this.rng.next() - 0.5) * 0.25) * this.rng.next();
-              dustPoints.push(
-                new THREE.Vector3(
-                  position.x + xRng,
-                  position.y + yRng,
-                  position.z + zRng,
-                )
-              );
-              dustTypes.push(DustType.thin);
-            }
-
-            scene.remove(point);
+          else if (node.type === 'LineSegments') {
+            this.createGalacticArmPositions(scene, node, dustTypes, dustPoints);
           }
         });
 
@@ -115,6 +70,97 @@ export default class SpaceClouds {
         );
       });
     });
+  }
+
+  createGalacticCenterPositions(
+    scene: THREE.Scene, node: THREE.Object3D, dustTypes: any[], dustPoints: any[],
+  ) {
+    const empty: THREE.Object3D = node;
+    const position = empty.position;
+
+    let maxY = 0.25;
+    let maxXZ = 0.4;
+    const r = 0.05;
+    const phi = 0.4;
+
+    for (let i = 0; i < 1000; i++) {
+      // let xRng = ((this.rng.next() - 0.5) * 0.2);
+      // let yRng = ((this.rng.next() - 0.5) * 0.2);
+      // let zRng = ((this.rng.next() - 0.5) * 0.2);
+      let xRng = r * Math.sin(i * THREE.MathUtils.DEG2RAD) * Math.sin(i) * 1.5;
+      let yRng = r * Math.cos(i * THREE.MathUtils.DEG2RAD) * 0.5;
+      let zRng = r * Math.sin(i * THREE.MathUtils.DEG2RAD) * Math.cos(i) * 1.5;
+
+      // if (xRng > maxXZ) {
+      //   xRng = maxXZ;
+      // }
+      // if (yRng > maxY) {
+      //   yRng = maxY;
+      // }
+      // if (zRng > maxXZ) {
+      //   zRng = maxXZ;
+      // }
+
+      dustPoints.push(
+        new THREE.Vector3(
+          position.x + xRng,
+          position.y + yRng,
+          position.z + zRng,
+        ),
+      );
+      dustTypes.push(DustType.galaxyCenter);
+    }
+
+    console.log('=> max galactic center:', maxXZ);
+  }
+
+  createGalacticArmPositions(
+    scene: THREE.Scene, node: THREE.Object3D, dustTypes: any[], dustPoints: any[],
+  ) {
+    // @ts-ignore
+    const lineSegments: THREE.LineSegments = node;
+    const vertPositions = extractVertsFromGeo(lineSegments.geometry);
+    // const vertPositions = extractAndPopulateVerts(lineSegments.geometry);
+
+    // const group = new THREE.Group();
+    for (let i = 0, len = vertPositions.length; i < len; i++) {
+      const v3: THREE.Vector3 = vertPositions[i];
+      const point = new THREE.Object3D();
+      lineSegments.add(point);
+      point.position.set(v3.x, v3.y, v3.z);
+      scene.attach(point);
+      const position = point.position;
+
+      let xRng = ((this.rng.next() - 0.5) * 0.05) * this.rng.next();
+      let yRng = ((this.rng.next() - 0.5) * 0.05) * this.rng.next();
+      let zRng = ((this.rng.next() - 0.5) * 0.05) * this.rng.next();
+
+      dustPoints.push(
+        new THREE.Vector3(
+          position.x + xRng,
+          position.y + yRng,
+          position.z + zRng,
+        ),
+      );
+      dustTypes.push(DustType.thick);
+
+      // Thin dust within thick dust.
+      for (let i = 0; i < 25; i++) {
+        xRng = ((this.rng.next() - 0.5) * 0.25) * this.rng.next();
+        yRng = ((this.rng.next() - 0.5) * 0.01) * this.rng.next();
+        zRng = ((this.rng.next() - 0.5) * 0.25) * this.rng.next();
+        dustPoints.push(
+          new THREE.Vector3(
+            position.x + xRng,
+            position.y + yRng,
+            position.z + zRng,
+          )
+        );
+        dustTypes.push(DustType.thin);
+      }
+
+      scene.remove(point);
+    }
   }
 
   setupGalacticCenter(node: THREE.Object3D) {
