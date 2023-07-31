@@ -3,15 +3,20 @@ const varyingsHeader = `
   varying vec2 vUv;
   varying float vDistToCamera;
   varying vec2 vCoords;
+//  varying int vDustType;
 `;
 
 // language=glsl
 const vertex = `
-  uniform sampler2D texture1;
-  
   ${varyingsHeader}
 
-  #define cullDist 0.0275
+  attribute int aDustType;
+
+  #define CULL_DIST 0.0275
+  
+  #define THIN 0
+  #define THICK 1
+  #define GALAXY_CENTER 2
 
   mat3 calculateLookAtMatrix(in vec3 cameraPosition, in vec3 targetPosition, in float rollAngle) {
     vec3 forwardVector = normalize(targetPosition - cameraPosition);
@@ -20,10 +25,13 @@ const vertex = `
     return mat3(rightVector, upVector, -forwardVector);
   }
 
+  flat out int vDustType;
   void main() {
     vUv = uv;
 
     vec4 mvPosition = vec4(position, 1.0);
+
+    vDustType = aDustType;
 
     vec3 cameraRelativePosition = (mvPosition.xyz + instanceMatrix[3].xyz) - cameraPosition;
     vec3 cameraTarget = mvPosition.xyz + normalize(cameraRelativePosition);
@@ -35,7 +43,7 @@ const vertex = `
     vDistToCamera = distance(cameraPosition, mvPosition.xyz);
     vCoords.xy = mvPosition.xz;
 
-    if (vDistToCamera < cullDist) {
+    if (vDistToCamera < CULL_DIST) {
       vDistToCamera = 0.0;
       gl_Position = vec4(0.0);
     }
@@ -48,15 +56,17 @@ const vertex = `
 
 // language=glsl
 const fragment = `
-  uniform sampler2D texture1;
-  uniform sampler2D alphaMask;
-  uniform float alphaTest;
-  
+  uniform sampler2D thinDust;
+
   ${varyingsHeader}
 
   #define fadeDist 0.05
   #define fadeReciprocal (1.0/fadeDist)
   #define fadeMultiplier 0.5
+
+  #define THIN 0
+  #define THICK 1
+  #define GALAXY_CENTER 2
 
   float inverseLerp(float v, float minValue, float maxValue) {
     return (v - minValue) / (maxValue - minValue);
@@ -271,10 +281,30 @@ const fragment = `
     return 1.0 - vignettAmount;
   }
 
+
+  flat in int vDustType;
   void main() {
     if (vDistToCamera == 0.0) {
       discard;
     }
+
+    // thin=0, thick=1, galacticCenter=2
+    if (vDustType == THIN) {
+//      gl_FragColor = texture2D(thinDust, vUv) * vec4(.184, .569, .78, 0.01);
+//      gl_FragColor = texture2D(thinDust, vUv) * vec4(.184, .569, .78, 0.05);
+//      gl_FragColor = texture2D(thinDust, vUv) * vec4(.671, .883, 1., 0.01);
+//      gl_FragColor = texture2D(thinDust, vUv) * vec4(.671, .883, 1., 0.05);
+//      gl_FragColor = texture2D(thinDust, vUv) * vec4(.7, .9, 1., 0.01);
+//      gl_FragColor = texture2D(thinDust, vUv) * vec4(.7, .9, 1., 0.05);
+//      gl_FragColor = texture2D(thinDust, vUv) * vec4(.173, .247, .26, 0.05);
+      gl_FragColor = texture2D(thinDust, vUv) * vec4(.295, .446, .53, 0.05);
+      
+      gl_FragColor.r = clamp(pow(gl_FragColor.r, 1.5), 0., 1.0);
+      gl_FragColor.g = clamp(pow(gl_FragColor.g, 1.5), 0., 1.0);
+      gl_FragColor.b = clamp(pow(gl_FragColor.b, 1.5), 0., 1.0);
+      return;
+    }
+//    return;
 
     // This pattern causes individual dust clouds to flow into their neighbors. 
     vec3 coords = vec3(vUv * 0.5, vCoords.x * vCoords.y * 0.5);
