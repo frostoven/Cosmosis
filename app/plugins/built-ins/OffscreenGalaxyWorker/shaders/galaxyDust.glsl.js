@@ -3,7 +3,6 @@ const varyingsHeader = `
   varying vec2 vUv;
   varying float vDistToCamera;
   varying vec2 vCoords;
-//  varying int vDustType;
 `;
 
 // language=glsl
@@ -25,13 +24,13 @@ const vertex = `
     return mat3(rightVector, upVector, -forwardVector);
   }
 
-  flat out int vDustType;
+  flat out int ioDustType;
   void main() {
     vUv = uv;
 
     vec4 mvPosition = vec4(position, 1.0);
 
-    vDustType = aDustType;
+    ioDustType = aDustType;
 
     vec3 cameraRelativePosition = (mvPosition.xyz + instanceMatrix[3].xyz) - cameraPosition;
     vec3 cameraTarget = mvPosition.xyz + normalize(cameraRelativePosition);
@@ -282,14 +281,14 @@ const fragment = `
   }
 
 
-  flat in int vDustType;
+  flat in int ioDustType;
   void main() {
     if (vDistToCamera == 0.0) {
       discard;
     }
 
     // thin=0, thick=1, galacticCenter=2
-    if (vDustType == THIN) {
+    if (ioDustType == THIN) {
 //      gl_FragColor = texture2D(thinDust, vUv) * vec4(.184, .569, .78, 0.01);
 //      gl_FragColor = texture2D(thinDust, vUv) * vec4(.184, .569, .78, 0.05);
 //      gl_FragColor = texture2D(thinDust, vUv) * vec4(.671, .883, 1., 0.01);

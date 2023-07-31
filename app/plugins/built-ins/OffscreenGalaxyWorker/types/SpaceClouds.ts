@@ -2,56 +2,12 @@ import * as THREE from 'three';
 import MeshLoader from '../../NodeOps/types/MeshLoader';
 import { gameRuntime } from '../../../gameRuntime';
 import {
-  clamp,
   extractAndPopulateVerts,
   extractVertsFromGeo,
 } from '../../../../local/mathUtils';
 import FastDeterministicRandom from '../../../../random/FastDeterministicRandom';
-import { galaxyCenter } from '../shaders/galaxyCenter.glsl';
 import { galaxyDust } from '../shaders/galaxyDust.glsl';
-import { galaxyDustSprite } from '../shaders/galaxyDustSprite.glsl';
 import { DustType } from './DustType';
-
-// THREE.ShaderChunk.fog_fragment = `
-//   #ifdef USE_FOG
-//     vec3 fogOrigin = vec3(0.0, 0.0, 0.0);
-//     vec3 fogDirection = normalize(vWorldPosition - fogOrigin);
-//     float fogDepth = distance(vWorldPosition, fogOrigin);
-//
-//     float heightFactor = 0.05;
-//     float fogFactor =
-//       heightFactor * exp(-fogOrigin.y * fogDensity) *
-//       (1.0 - exp(-fogDepth * fogDirection.y * fogDensity) / fogDirection.y);
-//       fogFactor = saturate(fogFactor);
-//
-//     gl_FragColor.rgb = mix(gl_FragColor.rgb, fogColor, fogFactor);
-//   #endif
-// `;
-//
-// THREE.ShaderChunk.fog_pars_fragment = `
-//   #ifdef USE_FOG
-//     uniform vec3 fogColor;
-//     varying vec3 vWorldPosition;
-//     #ifdef FOG_EXP2
-//       uniform float fogDensity;
-//     #else
-//       uniform float fogNear;
-//       uniform float fogFar;
-//     #endif
-//   #endif
-// `;
-//
-// THREE.ShaderChunk.fog_vertex = `
-//   #ifdef USE_FOG
-//     vWorldPosition = transformed;
-//   #endif
-// `;
-//
-// THREE.ShaderChunk.fog_pars_vertex = `
-//   #ifdef USE_FOG
-//     varying vec3 vWorldPosition;
-//   #endif
-// `;
 
 const smokeSprites = [
   new THREE.TextureLoader().load('potatoLqAssets/smokeImg/smoke1.png'),
