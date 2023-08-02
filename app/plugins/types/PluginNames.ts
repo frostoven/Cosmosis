@@ -28,7 +28,8 @@ type PluginNames =
   'cockpitLightsModule' | 
   'externalLightsModule' | 
   'multimeterModule' | 
-  'shipModuleHub';
+  'shipModuleHub' | 
+  'devGimbalPlugin';
 
 export {
   PluginNames,
