@@ -20,6 +20,7 @@ const smokeMasks = [
   new THREE.TextureLoader().load('potatoLqAssets/smokeImg/smokeMask1.png'),
   new THREE.TextureLoader().load('potatoLqAssets/smokeImg/fakeNoise.png'),
   new THREE.TextureLoader().load('potatoLqAssets/smokeImg/fakeNoise2.png'),
+  new THREE.TextureLoader().load('potatoLqAssets/smokeImg/fakeNoise3.png'),
 ];
 
 let smokeModIndex = 0;
@@ -57,7 +58,7 @@ export default class SpaceClouds {
 
         gltfScene.traverse((node) => {
           if (node.type === 'Object3D' && node.name === 'SagA_str') {
-            return this.createGalacticCenterPositions(scene, node, dustTypes, dustPoints);
+            // return this.createGalacticCenterPositions(scene, node, dustTypes, dustPoints);
           }
           else if (node.type === 'LineSegments') {
             this.createGalacticArmPositions(scene, node, dustTypes, dustPoints);
@@ -196,7 +197,7 @@ export default class SpaceClouds {
         color: 0x2f91c7,
         side: THREE.DoubleSide,
         transparent: true,
-        map: smokeMasks[2],
+        map: smokeMasks[0],
       });
       const dust = new THREE.Mesh(geometry, material);
       scene.add(dust);

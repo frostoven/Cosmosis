@@ -1,8 +1,11 @@
+// const BRIGHTNESS = '1.0';
+
 // language=glsl
 const varyingsHeader = `
   varying vec2 vUv;
   varying float vDistToCamera;
   varying vec2 vCoords;
+  varying float vGalacticY;
 `;
 
 // language=glsl
@@ -40,6 +43,7 @@ const vertex = `
     mvPosition = instanceMatrix * mvPosition;
 
     vDistToCamera = distance(cameraPosition, mvPosition.xyz);
+    vGalacticY = cameraPosition.y;
     vCoords.xy = mvPosition.xz;
 
     if (vDistToCamera < CULL_DIST) {
@@ -298,11 +302,35 @@ const fragment = `
 //      gl_FragColor = texture2D(thinDust, vUv) * vec4(.7, .9, 1., 0.01);
 //      gl_FragColor = texture2D(thinDust, vUv) * vec4(.7, .9, 1., 0.05);
 //      gl_FragColor = texture2D(thinDust, vUv) * vec4(.173, .247, .26, 0.05);
-      gl_FragColor = texture2D(thinDust, vUv) * vec4(.295, .446, .53, 0.05);
+//      gl_FragColor = texture2D(thinDust, vUv) * vec4(.295, .446, .53, 0.05);
+      gl_FragColor = texture2D(thinDust, vUv) * vec4(.795, .875, .926, 0.05);
       
       gl_FragColor.r = clamp(pow(gl_FragColor.r, 1.5), 0., 1.0);
       gl_FragColor.g = clamp(pow(gl_FragColor.g, 1.5), 0., 1.0);
       gl_FragColor.b = clamp(pow(gl_FragColor.b, 1.5), 0., 1.0);
+
+      // // Fade in alpha; more altitude = more opacity.
+      // gl_FragColor.a *= clamp((abs(vGalacticY) + 0.08) * 10.0, 0.0, 1.0);
+      
+      // 0.01 is very close to the galactic plane. Start clipping far-away fog.
+//      if (vGalacticY < 0.01) {
+//        gl_FragColor.r = 1.0;
+        // * near galactic plane, 
+//        gl_FragColor.a *= clamp(vDistToCamera, 0.0, 1.0);
+//        float y = clamp(abs(vGalacticY * 50.0), 0.0, 1.0);
+//        gl_FragColor.a = (clamp(pow((vDistToCamera), 2.8 * y), 0.0, 1.0));
+//        gl_FragColor.a = clamp(gl_FragColor.a, 0.0, 0.1);
+      
+      
+//      float relativeDist = remap(vDistToCamera, 0.0, 1.0, 0.1, 0.0);
+//      gl_FragColor.a = min(relativeDist, gl_FragColor.a);
+
+      float relativeDist = remap(vDistToCamera, 0.0, 1.0, 0.025, 0.0);
+      float relativeHeight = remap(abs(vGalacticY), 0.0, 1.0, 0.0, 0.75);
+      gl_FragColor.a = min((relativeDist + relativeHeight) * 0.5, gl_FragColor.a);
+      
+      
+//      }
       return;
     }
     else if (ioDustType == GALAXY_CENTER) {
