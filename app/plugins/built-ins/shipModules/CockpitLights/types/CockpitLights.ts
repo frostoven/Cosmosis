@@ -50,6 +50,10 @@ export default class CockpitLights extends ShipModule {
     // console.log(`==> _changeSwitchState: Number(${this._switchedOn} && ${this._hasPower}) * ${this._ratioMet}`);
     gameRuntime.tracked.nodeOps.getOnce((nodeOps: NodeOps) => {
       const inventory = this._inventory;
+      if (!inventory) {
+        // Dev ships can lack inventory.
+        return;
+      }
       for (let i = 0, len = inventory.length; i < len; i++) {
         const { node, userData } = inventory[i];
         nodeOps.switchLights(
