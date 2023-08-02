@@ -179,7 +179,7 @@ export default class SpaceClouds {
     //
     // const icoSphereGeo = new THREE.IcosahedronGeometry(0.02, 32);
     // // const galacticCenter = new THREE.Mesh(icoSphereGeo, material);
-    // const galacticCenter = new THREE.Mesh(new THREE.PlaneBufferGeometry(5, 5), material);
+    // const galacticCenter = new THREE.Mesh(new THREE.PlaneGeometry(5, 5), material);
     // galacticCenter.rotateX(Math.PI / 2);
     //
     // gameRuntime.tracked.levelScene.getOnce((scene: THREE.Scene) => {
@@ -192,7 +192,7 @@ export default class SpaceClouds {
 
     for (let i = 0, len = dustPoints.length; i < len; i++) {
       const point: THREE.Vector3 = dustPoints[i];
-      const geometry = new THREE.PlaneBufferGeometry(0.025, 0.025);
+      const geometry = new THREE.PlaneGeometry(0.025, 0.025);
       const material = new THREE.MeshBasicMaterial({
         color: 0x2f91c7,
         side: THREE.DoubleSide,
@@ -236,7 +236,7 @@ export default class SpaceClouds {
       }
     });
 
-    const bufferGeometry = new THREE.PlaneBufferGeometry(0.025, 0.025);
+    const bufferGeometry = new THREE.PlaneGeometry(0.025, 0.025);
     bufferGeometry.setAttribute('aDustType', new THREE.InstancedBufferAttribute(
       new Int32Array(dustTypes), 1)
     );

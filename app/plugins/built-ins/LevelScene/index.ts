@@ -103,13 +103,14 @@ export default class LevelScene extends Scene {
       antialias: false,
     });
 
+    renderer.useLegacyLights = false;
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.shadowMap.enabled = !!graphics.enableShadows;
     renderer.shadowMap.type = graphics.shadowType;
     renderer.toneMapping = display.toneMapping;
 
-    renderer.outputEncoding = sRGBEncoding;
+    // renderer.outputEncoding = sRGBEncoding;
 
     this._renderer = renderer;
 

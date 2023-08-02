@@ -10,7 +10,7 @@ import { MeshLoaderOpts } from '../interfaces/MeshLoaderOpts';
 const gltfLoader = new GLTFLoader();
 const dracoLoader = new DRACOLoader();
 
-dracoLoader.setDecoderPath('./node_modules/three/examples/js/libs/draco/');
+dracoLoader.setDecoderPath('./node_modules/three/examples/jsm/libs/draco/');
 dracoLoader.setDecoderConfig({ type: 'js' });
 dracoLoader.preload();
 gltfLoader.setDRACOLoader(dracoLoader);
