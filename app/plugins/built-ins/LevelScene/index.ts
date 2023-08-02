@@ -1,13 +1,4 @@
-import {
-  BoxGeometry,
-  MeshBasicMaterial,
-  Mesh,
-  PerspectiveCamera,
-  Scene,
-  WebGLRenderer,
-  Vector3,
-  sRGBEncoding,
-} from 'three';
+import { PerspectiveCamera, Scene, WebGLRenderer } from 'three';
 import { RectAreaLightUniformsLib } from 'three/examples/jsm/lights/RectAreaLightUniformsLib.js';
 import CosmosisPlugin from '../../types/CosmosisPlugin';
 import { gameRuntime } from '../../gameRuntime';
@@ -28,7 +19,6 @@ import PropulsionManager
 import { Location } from '../Location';
 import VisorHud from '../shipModules/VisorHud/types/VisorHud';
 
-
 // TODO:
 //  The space scene can load a vehicle. The player can be attached to the
 //  vehicle, which effectively means that the camera is a child of the vehicle.
@@ -45,7 +35,7 @@ import VisorHud from '../shipModules/VisorHud/types/VisorHud';
 //  ship while the player's original ship is now just a prop in the hangar,
 //  which they may later interact with to reenter.
 
-class LevelScene extends Scene {
+export default class LevelScene extends Scene {
   moduleHub: ShipModuleHub | undefined;
 
   // @ts-ignore
@@ -155,6 +145,7 @@ class LevelScene extends Scene {
     let ship = playerInfo?.vehicleInfo?.piloting;
     if (typeof ship === 'undefined') {
       ship = 'DS69F';
+      // ship = 'minimal scene';
       console.error(`Could get read ship info from configs. Defaulting to ${ship}.`);
       // TODO: if this happens, we should actually offer a save rollback
       //  option, and/or go to ship selector.

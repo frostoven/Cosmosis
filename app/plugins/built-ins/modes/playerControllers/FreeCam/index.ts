@@ -9,6 +9,7 @@ import { applyPolarRotation, clamp, zAxis } from '../../../../../local/mathUtils
 import Speed from '../../../../../local/Speed';
 
 const SPEED_FACTOR = 1;
+// const SPEED_FACTOR = 1 * 0.05;
 
 class FreeCam extends ModeController {
   // @ts-ignore
