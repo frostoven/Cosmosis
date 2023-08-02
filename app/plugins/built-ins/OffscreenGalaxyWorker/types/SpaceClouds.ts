@@ -53,17 +53,31 @@ export default class SpaceClouds {
       gameRuntime.tracked.levelScene.getOnce((scene: THREE.Scene) => {
         const gltfScene: THREE.Scene = galaxy.gltf.scene;
 
-        const dustTypes: any[] = [];
-        const dustPoints: any[] = [];
+        const thickDustPoints: any[] = [];
+        const thickDustTypes: any[] = [];
+
+        const thinDustPoints: any[] = [];
+        const thinDustTypes: any[] = [];
+
+        const galacticPoints: any[] = [];
+        const galacticTypes: any[] = [];
 
         gltfScene.traverse((node) => {
           if (node.type === 'Object3D' && node.name === 'SagA_str') {
-            // return this.createGalacticCenterPositions(scene, node, dustTypes, dustPoints);
+            return this.createGalacticCenterPositions(scene, node, galacticTypes, galacticPoints);
           }
           else if (node.type === 'LineSegments') {
-            this.createGalacticArmPositions(scene, node, dustTypes, dustPoints);
+            this.createGalacticArmPositions(scene, node, thickDustTypes, thickDustPoints, thinDustTypes, thinDustPoints);
           }
         });
+
+        // Note: this controls the render order. Changing the order in which
+        // dust is rendered drastically effects visuals.
+        const dustPoints = [ thinDustPoints, galacticPoints, thickDustPoints ].flat();
+
+        // This order needs to match dustPoints order, else the shader will
+        // assign the wrong lighting to the wrong particles.
+        const dustTypes = [ thinDustTypes, galacticTypes, thickDustTypes ].flat();
 
         // this.setupGalacticArmsNonInstanced(scene, dustPoints);
         this.setupGalacticArmsInstanced(
@@ -84,23 +98,11 @@ export default class SpaceClouds {
     const r = 0.05;
     const phi = 0.4;
 
-    for (let i = 0; i < 1000; i++) {
-      // let xRng = ((this.rng.next() - 0.5) * 0.2);
-      // let yRng = ((this.rng.next() - 0.5) * 0.2);
-      // let zRng = ((this.rng.next() - 0.5) * 0.2);
+    for (let i = 0; i < 500; i++) {
       let xRng = r * Math.sin(i * THREE.MathUtils.DEG2RAD) * Math.sin(i) * 1.5;
       let yRng = r * Math.cos(i * THREE.MathUtils.DEG2RAD) * 0.5;
       let zRng = r * Math.sin(i * THREE.MathUtils.DEG2RAD) * Math.cos(i) * 1.5;
 
-      // if (xRng > maxXZ) {
-      //   xRng = maxXZ;
-      // }
-      // if (yRng > maxY) {
-      //   yRng = maxY;
-      // }
-      // if (zRng > maxXZ) {
-      //   zRng = maxXZ;
-      // }
 
       dustPoints.push(
         new THREE.Vector3(
@@ -116,7 +118,7 @@ export default class SpaceClouds {
   }
 
   createGalacticArmPositions(
-    scene: THREE.Scene, node: THREE.Object3D, dustTypes: any[], dustPoints: any[],
+    scene: THREE.Scene, node: THREE.Object3D, thickDustTypes: any[], thickDustPoints: any[], thinDustTypes: any[], thinDustPoints: any[],
   ) {
     // @ts-ignore
     const lineSegments: THREE.LineSegments = node;
@@ -136,28 +138,28 @@ export default class SpaceClouds {
       let yRng = ((this.rng.next() - 0.5) * 0.05) * this.rng.next();
       let zRng = ((this.rng.next() - 0.5) * 0.05) * this.rng.next();
 
-      dustPoints.push(
+      thickDustPoints.push(
         new THREE.Vector3(
           position.x + xRng,
           position.y + yRng,
           position.z + zRng,
         ),
       );
-      dustTypes.push(DustType.thick);
+      thickDustTypes.push(DustType.thick);
 
       // Thin dust within thick dust.
       for (let i = 0; i < 25; i++) {
         xRng = ((this.rng.next() - 0.5) * 0.25) * this.rng.next();
         yRng = ((this.rng.next() - 0.5) * 0.01) * this.rng.next();
         zRng = ((this.rng.next() - 0.5) * 0.25) * this.rng.next();
-        dustPoints.push(
+        thinDustPoints.push(
           new THREE.Vector3(
             position.x + xRng,
             position.y + yRng,
             position.z + zRng,
           )
         );
-        dustTypes.push(DustType.thin);
+        thinDustTypes.push(DustType.thin);
       }
 
       scene.remove(point);

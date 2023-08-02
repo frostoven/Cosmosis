@@ -71,7 +71,7 @@ const fragment = `
   #define THICK 1
   #define GALAXY_CENTER 2
   
-  #define BROWN 0.164, 0.082, 0.0
+  #define BROWN 0.0164, 0.0082, 0.0
 
   float inverseLerp(float v, float minValue, float maxValue) {
     return (v - minValue) / (maxValue - minValue);
@@ -84,6 +84,19 @@ const fragment = `
   
   float saturate(float value) {
     return clamp(value, 0.0, 1.0);
+  }
+
+  vec3 linearTosRGB(vec3 value ) {
+    vec3 lt = vec3(lessThanEqual(value.rgb, vec3(0.0031308)));
+
+    vec3 v1 = value * 12.92;
+    vec3 v2 = pow(value.xyz, vec3(0.41666)) * 1.055 - vec3(0.055);
+
+    return mix(v2, v1, lt);
+  }
+
+  vec3 linearTosRGB(float r, float g, float b) {
+    return linearTosRGB(vec3(r, g, b));
   }
 
   // The MIT License
@@ -303,11 +316,20 @@ const fragment = `
 //      gl_FragColor = texture2D(thinDust, vUv) * vec4(.7, .9, 1., 0.05);
 //      gl_FragColor = texture2D(thinDust, vUv) * vec4(.173, .247, .26, 0.05);
 //      gl_FragColor = texture2D(thinDust, vUv) * vec4(.295, .446, .53, 0.05);
-      gl_FragColor = texture2D(thinDust, vUv) * vec4(.795, .875, .926, 0.05);
+//      gl_FragColor = texture2D(thinDust, vUv) * vec4(.795, .875, .926, 0.0001);
+//      gl_FragColor = texture2D(thinDust, vUv) * vec4(.795, .875, .926, 0.0001);
       
-      gl_FragColor.r = clamp(pow(gl_FragColor.r, 1.5), 0., 1.0);
-      gl_FragColor.g = clamp(pow(gl_FragColor.g, 1.5), 0., 1.0);
-      gl_FragColor.b = clamp(pow(gl_FragColor.b, 1.5), 0., 1.0);
+      
+      // For the final product, we probably want one of these two depending on
+      // how expore levels work out.
+      gl_FragColor = texture2D(thinDust, vUv) * vec4(.512, .588, .635, 0.0001);
+      // gl_FragColor = texture2D(thinDust, vUv) * vec4(.512, .588, .635, 0.001);
+      
+      
+//      gl_FragColor.r = clamp(pow(gl_FragColor.r, 1.5), 0., 1.0);
+//      gl_FragColor.g = clamp(pow(gl_FragColor.g, 1.5), 0., 1.0);
+//      gl_FragColor.b = clamp(pow(gl_FragColor.b, 1.5), 0., 1.0);
+//      gl_FragColor.a = 0.01;
 
       // // Fade in alpha; more altitude = more opacity.
       // gl_FragColor.a *= clamp((abs(vGalacticY) + 0.08) * 10.0, 0.0, 1.0);
@@ -325,16 +347,25 @@ const fragment = `
 //      float relativeDist = remap(vDistToCamera, 0.0, 1.0, 0.1, 0.0);
 //      gl_FragColor.a = min(relativeDist, gl_FragColor.a);
 
-      float relativeDist = remap(vDistToCamera, 0.0, 1.0, 0.025, 0.0);
-      float relativeHeight = remap(abs(vGalacticY), 0.0, 1.0, 0.0, 0.75);
-      gl_FragColor.a = min((relativeDist + relativeHeight) * 0.5, gl_FragColor.a);
-      
+//      float relativeDist = remap(vDistToCamera, 0.0, 1.0, 0.025, 0.0);
+//      float relativeHeight = remap(abs(vGalacticY), 0.0, 1.0, 0.0, 0.75);
+//      gl_FragColor.a = min((relativeDist + relativeHeight) * 0.5, gl_FragColor.a);
+
+//      float relativeDist = remap(vDistToCamera, 0.0, 1.0, 0.025, 0.0);
+//      float relativeHeight = remap(abs(vGalacticY), 0.0, 1.0, 0.0, 0.75);
+//      float value = min((relativeDist + relativeHeight) * 0.5, gl_FragColor.a);
+//      if (value < 0.01) {
+//        discard;
+//      }
+//      else {
+//        gl_FragColor = vec4(value * 0.8);
+//      }
       
 //      }
       return;
     }
     else if (ioDustType == GALAXY_CENTER) {
-      gl_FragColor = texture2D(thinDust, vUv) * vec4(1., .891, 0.0, 0.2);
+      gl_FragColor = texture2D(thinDust, vUv) * vec4(1., 0.967, .336, 0.2);
       return;
     }
 //    return;
@@ -394,6 +425,16 @@ const fragment = `
     // color4.w = min(color4.a, mask.r);
 
     color4 *= vec4(BROWN, 1.0);
+//    if (color4.r > 0.25 || color4.g > 0.25 || color4.b > 0.25) {
+//      color4.r = clamp(color4.r - 0.25, 0.0, 0.25);
+//      color4.g = clamp(color4.g - 0.25, 0.0, 0.25);
+//      color4.b = clamp(color4.b - 0.25, 0.0, 0.25);
+//    }
+
+//    color4.r = abs(1.0 - color4.r);
+//    color4.g = abs(1.0 - color4.g);
+//    color4.b = abs(1.0 - color4.b);
+//    color4.a = abs(1.0 - color4.a);
     
     if (opacity != 1.0) {
       // Fade as we get closer
