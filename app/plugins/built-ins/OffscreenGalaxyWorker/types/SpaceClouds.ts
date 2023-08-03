@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import ChangeTracker from 'change-tracker/src';
 import MeshLoader from '../../NodeOps/types/MeshLoader';
 import { gameRuntime } from '../../../gameRuntime';
 import {
@@ -15,11 +16,14 @@ const fogTexture = new THREE.TextureLoader().load(
 
 export default class SpaceClouds {
   public rng: FastDeterministicRandom;
+  public onSolPosition: ChangeTracker;
 
   constructor() {
     this.rng = new FastDeterministicRandom();
     // Chosen with: Math.floor(Math.random() * 16384)
     this.rng.seed = 8426;
+
+    this.onSolPosition = new ChangeTracker();
 
     const meshLoader = new MeshLoader('milky_way', 'getStarCatalog', {
       ...MeshLoader.defaultNodeOpts,
@@ -42,8 +46,15 @@ export default class SpaceClouds {
 
         gltfScene.traverse((node) => {
           // let reduceDensity = node.name === 'inner_arm_1' || node.name === 'inner_arm_2';
-          if (node.type === 'Object3D' && node.name === 'SagA_str') {
-            return this.createGalacticCenterPositions(scene, node, galacticTypes, galacticPoints);
+          if (node.type === 'Object3D') {
+            if (node.name === 'SagA_str') {
+              return this.createGalacticCenterPositions(
+                scene, node, galacticTypes, galacticPoints
+              );
+            }
+            else if (node.name === 'Sol') {
+              this.onSolPosition.setValue(node.position);
+            }
           }
           else if (node.type === 'LineSegments') {
             this.createGalacticArmPositions(
