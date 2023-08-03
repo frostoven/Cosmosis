@@ -111,7 +111,8 @@ export default class SpaceClouds {
           position.z + zRng,
         ),
       );
-      dustTypes.push(DustType.galaxyCenter);
+      // dustTypes.push(DustType.galaxyCenter);
+      dustTypes.push(DustType.thin);
     }
 
     console.log('=> max galactic center:', maxXZ);

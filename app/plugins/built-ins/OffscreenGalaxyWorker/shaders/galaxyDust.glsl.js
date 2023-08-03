@@ -4,8 +4,10 @@
 const varyingsHeader = `
   varying vec2 vUv;
   varying float vDistToCamera;
+  varying float vDistToCenter;
   varying vec2 vCoords;
   varying float vGalacticY;
+  varying float vCloudY;
 `;
 
 // language=glsl
@@ -44,7 +46,9 @@ const vertex = `
 
     vDistToCamera = distance(cameraPosition, mvPosition.xyz);
     vGalacticY = cameraPosition.y;
-    vCoords.xy = mvPosition.xz;
+    vCoords.xy = mvPosition.xy;
+    // Note: this assumes the galaxy will always have a world position of 0.
+    vDistToCenter = distance(mvPosition.xyz, vec3(0.0, 0.0, 0.0));
 
     if (vDistToCamera < CULL_DIST) {
       vDistToCamera = 0.0;
@@ -71,6 +75,7 @@ const fragment = `
   #define THICK 1
   #define GALAXY_CENTER 2
   
+  #define HAPPY 1.0, 0.967, 0.336
   #define BROWN 0.0164, 0.0082, 0.0
 
   float inverseLerp(float v, float minValue, float maxValue) {
@@ -324,7 +329,26 @@ const fragment = `
       // how expore levels work out.
       gl_FragColor = texture2D(thinDust, vUv) * vec4(.512, .588, .635, 0.0001);
       // gl_FragColor = texture2D(thinDust, vUv) * vec4(.512, .588, .635, 0.001);
+      //
+      // This is also quite pretty if we ever wanted some additional effects:
+      // gl_FragColor.r = 0.275;
+      // gl_FragColor.a *= 20.0;
       
+      
+//      gl_FragColor.r = vCoords.y * 10.0;
+//      gl_FragColor.b = vDistToCenter;
+//      gl_FragColor.a *= 50.0;
+
+//      float dist = clamp(pow(dist, 2.0), 0.0, 1.0)
+//      float dist = remap(vDistToCenter, -1.0, 0.0, 1.0, 0.0);
+      float dist = clamp(pow(vDistToCenter, 0.25), 0.5, 1.0);
+      float alphaMax = pow(gl_FragColor.a, dist);
+      
+      gl_FragColor = mix(
+        vec4(HAPPY, alphaMax),
+        gl_FragColor,
+        dist
+      );
       
 //      gl_FragColor.r = clamp(pow(gl_FragColor.r, 1.5), 0., 1.0);
 //      gl_FragColor.g = clamp(pow(gl_FragColor.g, 1.5), 0., 1.0);
@@ -413,7 +437,6 @@ const fragment = `
     if (antiCorner < 0.4/** || alpha < 0.1*/) {
       discard;
     }
-
 
     float opacity = 1.0;
     if (vDistToCamera < fadeDist) {
