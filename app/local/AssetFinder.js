@@ -131,47 +131,47 @@ AssetFinder.prototype.getRes = function getRes(name, options={}, callback) {
   });
 };
 
-AssetFinder.prototype.getHudModel = function getHudModel({ name, options={}, callback=()=>{} }) {
+AssetFinder.prototype.getHudModel = function getHudModel({ name, options={}, callback }) {
   this.getRes(name, { ...assetDefaults.hudModel, ...options }, callback);
 };
 
-AssetFinder.prototype.getIcon = function getIcon({ name, options={}, callback=()=>{} }) {
+AssetFinder.prototype.getIcon = function getIcon({ name, options={}, callback }) {
   this.getRes(name, { ...assetDefaults.icons, ...options }, callback);
 };
 
-AssetFinder.prototype.getModel = function getModel({ name, options={}, callback=()=>{} }) {
+AssetFinder.prototype.getModel = function getModel({ name, options={}, callback }) {
   this.getRes(name, { ...assetDefaults.models, ...options }, callback);
 };
 
-AssetFinder.prototype.getMusic = function getMusic({ name, options={}, callback=()=>{} }) {
+AssetFinder.prototype.getMusic = function getMusic({ name, options={}, callback }) {
   this.getRes(name, { ...assetDefaults.music, ...options }, callback);
 };
 
-AssetFinder.prototype.getPlanetImg = function getPlanetImg({ name, options={}, callback=()=>{} }) {
+AssetFinder.prototype.getPlanetImg = function getPlanetImg({ name, options={}, callback }) {
   this.getRes(name, { ...assetDefaults.planetImg, ...options }, callback);
 };
 
-AssetFinder.prototype.getSfx = function getSfx({ name, options={}, callback=()=>{} }) {
+AssetFinder.prototype.getSfx = function getSfx({ name, options={}, callback }) {
   this.getRes(name, { ...assetDefaults.sfx, ...options }, callback);
 };
 
-// AssetFinder.prototype.getSkybox = function getSkybox({ name, options={}, callback=()=>{} }) {
+// AssetFinder.prototype.getSkybox = function getSkybox({ name, options={}, callback }) {
 //   this.getRes(name, { ...assetDefaults.skyboxes, ...options }, callback);
 // };
 
-AssetFinder.prototype.getSpaceship = function getSpaceship({ name, options={}, callback=()=>{} }) {
+AssetFinder.prototype.getSpaceship = function getSpaceship({ name, options={}, callback }) {
   this.getRes(name, { ...assetDefaults.spaceships, ...options }, callback);
 };
 
-AssetFinder.prototype.getStarCatalog = function getStarCatalog({ name, options={}, callback=()=>{} }) {
+AssetFinder.prototype.getStarCatalog = function getStarCatalog({ name, options={}, callback }) {
   this.getRes(name, { ...assetDefaults.starCatalogs, ...options }, callback);
 };
 
-AssetFinder.prototype.getJsonFont = function getJsonFont({ name, options={}, callback=()=>{} }) {
+AssetFinder.prototype.getJsonFont = function getJsonFont({ name, options={}, callback }) {
   this.getRes(name, { ...assetDefaults.jsonFonts, ...options }, callback);
 };
 
-AssetFinder.prototype.getStarCatalogWFallback = function getStarCatalog({ name, fallbackName, options={}, callback=()=>{} }) {
+AssetFinder.prototype.getStarCatalogWFallback = function getStarCatalog({ name, fallbackName, options={}, callback }) {
   this.getRes(
     name, {
       ...assetDefaults.starCatalogs,
@@ -192,7 +192,7 @@ AssetFinder.prototype.getStarCatalogWFallback = function getStarCatalog({ name, 
   );
 };
 
-AssetFinder.prototype.getVoiceFile = function getVoiceFile({ name, options={}, callback=()=>{} }) {
+AssetFinder.prototype.getVoiceFile = function getVoiceFile({ name, options={}, callback }) {
   this.getRes(name, { ...assetDefaults.voicePacks, ...options }, callback);
 };
 
