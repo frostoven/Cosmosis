@@ -9,39 +9,17 @@ import FastDeterministicRandom from '../../../../random/FastDeterministicRandom'
 import { galaxyDust } from '../shaders/galaxyDust.glsl';
 import { DustType } from './DustType';
 
-const smokeSprites = [
-  new THREE.TextureLoader().load('potatoLqAssets/smokeImg/smoke1.png'),
-  new THREE.TextureLoader().load('potatoLqAssets/smokeImg/smoke2.png'),
-  new THREE.TextureLoader().load('potatoLqAssets/smokeImg/smoke3.png'),
-  new THREE.TextureLoader().load('potatoLqAssets/smokeImg/smoke3b.png'),
-];
-
-const smokeMasks = [
-  new THREE.TextureLoader().load('potatoLqAssets/smokeImg/smokeMask1.png'),
-  new THREE.TextureLoader().load('potatoLqAssets/smokeImg/fakeNoise.png'),
-  new THREE.TextureLoader().load('potatoLqAssets/smokeImg/fakeNoise2.png'),
-  new THREE.TextureLoader().load('potatoLqAssets/smokeImg/fakeNoise3.png'),
-];
-
-let smokeModIndex = 0;
-const smokeLength = smokeSprites.length;
-
-for (let i = 0, len = smokeSprites.length; i < len; i++) {
-  const sprite = smokeSprites[i];
-  // TODO: Upgrade three.js to gain access to this.
-  // sprite.colorSpace = THREE.SRGBColorSpace;
-}
+const fogTexture = new THREE.TextureLoader().load(
+  'potatoLqAssets/smokeImg/fogColumn.png'
+);
 
 export default class SpaceClouds {
-  public smokeSprites: THREE.Texture[];
   public rng: FastDeterministicRandom;
 
   constructor() {
     this.rng = new FastDeterministicRandom();
     // Chosen with: Math.floor(Math.random() * 16384)
     this.rng.seed = 8426;
-
-    this.smokeSprites = smokeSprites;
 
     const meshLoader = new MeshLoader('milky_way', 'getStarCatalog', {
       ...MeshLoader.defaultNodeOpts,
@@ -63,11 +41,15 @@ export default class SpaceClouds {
         const galacticTypes: any[] = [];
 
         gltfScene.traverse((node) => {
+          // let reduceDensity = node.name === 'inner_arm_1' || node.name === 'inner_arm_2';
           if (node.type === 'Object3D' && node.name === 'SagA_str') {
             return this.createGalacticCenterPositions(scene, node, galacticTypes, galacticPoints);
           }
           else if (node.type === 'LineSegments') {
-            this.createGalacticArmPositions(scene, node, thickDustTypes, thickDustPoints, thinDustTypes, thinDustPoints);
+            this.createGalacticArmPositions(
+              scene, node,
+              thickDustTypes, thickDustPoints, thinDustTypes, thinDustPoints
+            );
           }
         });
 
@@ -79,29 +61,19 @@ export default class SpaceClouds {
         // assign the wrong lighting to the wrong particles.
         const dustTypes = [ thinDustTypes, galacticTypes, thickDustTypes ].flat();
 
-        // this.setupGalacticArmsNonInstanced(scene, dustPoints);
-        this.setupGalacticArmsInstanced(
-          scene, dustTypes, dustPoints,
-        );
+        this.setupGalacticArmsInstanced(scene, dustTypes, dustPoints);
       });
     });
   }
 
-  createGalacticCenterPositions(
-    scene: THREE.Scene, node: THREE.Object3D, dustTypes: any[], dustPoints: any[],
-  ) {
-    const empty: THREE.Object3D = node;
-    const position = empty.position;
+  generateSemiSphere(amount, position, direction, r=0.05, dustTypes: any[], dustPoints: any[]) {
+    let yFactor = 0.25 * direction;
+    let xzFactor = 1.75 * direction;
 
-    let maxY = 0.25;
-    let maxXZ = 0.4;
-    const r = 0.05;
-    const phi = 0.4;
-
-    for (let i = 0; i < 500; i++) {
-      let xRng = r * Math.sin(i * THREE.MathUtils.DEG2RAD) * Math.sin(i) * 1.5;
-      let yRng = r * Math.cos(i * THREE.MathUtils.DEG2RAD) * 0.5;
-      let zRng = r * Math.sin(i * THREE.MathUtils.DEG2RAD) * Math.cos(i) * 1.5;
+    for (let i = 0; i < amount; i++) {
+      let xRng = r * Math.sin(i * THREE.MathUtils.DEG2RAD) * Math.sin(i) * xzFactor;
+      let yRng = r * Math.cos(i * THREE.MathUtils.DEG2RAD) * yFactor;
+      let zRng = r * Math.sin(i * THREE.MathUtils.DEG2RAD) * Math.cos(i) * xzFactor;
 
 
       dustPoints.push(
@@ -114,19 +86,35 @@ export default class SpaceClouds {
       // dustTypes.push(DustType.galaxyCenter);
       dustTypes.push(DustType.thin);
     }
+  }
 
-    console.log('=> max galactic center:', maxXZ);
+  createGalacticCenterPositions(
+    scene: THREE.Scene, node: THREE.Object3D, dustTypes: any[], dustPoints: any[],
+  ) {
+    const empty: THREE.Object3D = node;
+    const position = empty.position;
+
+    // Inner glow.
+    this.generateSemiSphere(170, position, 1, 0.035, dustTypes, dustPoints);
+    this.generateSemiSphere(170, position, -1, 0.035, dustTypes, dustPoints);
+
+    // Mid glow.
+    this.generateSemiSphere(300, position, 1, 0.06, dustTypes, dustPoints);
+    this.generateSemiSphere(300, position, -1, 0.06, dustTypes, dustPoints);
   }
 
   createGalacticArmPositions(
-    scene: THREE.Scene, node: THREE.Object3D, thickDustTypes: any[], thickDustPoints: any[], thinDustTypes: any[], thinDustPoints: any[],
+    scene: THREE.Scene, node: THREE.Object3D,
+    thickDustTypes: any[], thickDustPoints: any[], thinDustTypes: any[], thinDustPoints: any[],
   ) {
     // @ts-ignore
     const lineSegments: THREE.LineSegments = node;
+    // TODO: add graphics option: Galactic Dust Density: normal | excessive.
+    //  Add a note: There are barely any visual differences, but the
+    //  differences in GPU requirements are huge.
     const vertPositions = extractVertsFromGeo(lineSegments.geometry);
     // const vertPositions = extractAndPopulateVerts(lineSegments.geometry);
 
-    // const group = new THREE.Group();
     for (let i = 0, len = vertPositions.length; i < len; i++) {
       const v3: THREE.Vector3 = vertPositions[i];
       const point = new THREE.Object3D();
@@ -167,75 +155,15 @@ export default class SpaceClouds {
     }
   }
 
-  setupGalacticCenter(node: THREE.Object3D) {
-    // const material = new THREE.ShaderMaterial({
-    //   vertexShader: galaxyCenter.vertex,
-    //   fragmentShader: galaxyCenter.fragment,
-    //   glslVersion: THREE.GLSL3,
-    //   transparent: true,
-    //   side: THREE.BackSide, // THREE.BackSide,
-    //   uniforms: {
-    //     texture1: { value: smokeMasks[1] },
-    //     alphaMask: { value: smokeMasks[0] },
-    //   }
-    // });
-    //
-    // const icoSphereGeo = new THREE.IcosahedronGeometry(0.02, 32);
-    // // const galacticCenter = new THREE.Mesh(icoSphereGeo, material);
-    // const galacticCenter = new THREE.Mesh(new THREE.PlaneGeometry(5, 5), material);
-    // galacticCenter.rotateX(Math.PI / 2);
-    //
-    // gameRuntime.tracked.levelScene.getOnce((scene: THREE.Scene) => {
-    //   scene.add(galacticCenter);
-    // });
-  }
-
-  setupGalacticArmsNonInstanced(scene: THREE.Scene, dustPoints: any[]) {
-    const allClouds: any[] = [];
-
-    for (let i = 0, len = dustPoints.length; i < len; i++) {
-      const point: THREE.Vector3 = dustPoints[i];
-      const geometry = new THREE.PlaneGeometry(0.025, 0.025);
-      const material = new THREE.MeshBasicMaterial({
-        color: 0x2f91c7,
-        side: THREE.DoubleSide,
-        transparent: true,
-        map: smokeMasks[0],
-      });
-      const dust = new THREE.Mesh(geometry, material);
-      scene.add(dust);
-      dust.position.copy(point);
-      allClouds.push(dust);
-    }
-
-    const tmpLookAt = new THREE.Vector3();
-    gameRuntime.tracked.player.getOnce((player) => {
-      const camera: THREE.PerspectiveCamera = player.camera;
-      gameRuntime.tracked.core.getOnce((core) => {
-        core.onAnimate.getEveryChange(() => {
-          for (let i = 0, len = allClouds.length; i < len; i++) {
-            const dust: THREE.Mesh = allClouds[i];
-            camera.getWorldPosition(tmpLookAt);
-            dust.lookAt(camera.position);
-          }
-        });
-      });
-    });
-  }
-
   setupGalacticArmsInstanced(
     scene: THREE.Scene, dustTypes : any[], dustPoints : any[],
   ) {
-    const sprite = smokeSprites[smokeModIndex++ % smokeLength];
-    sprite.wrapS = THREE.RepeatWrapping;
-    sprite.wrapT = THREE.RepeatWrapping;
-
     const material = new THREE.ShaderMaterial({
       vertexShader: galaxyDust.vertex,
       fragmentShader: galaxyDust.fragment,
       transparent: true,
       uniforms: {
-        thinDust: { value: smokeMasks[2] },
+        thinDust: { value: fogTexture },
       }
     });
 
