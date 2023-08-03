@@ -172,8 +172,13 @@ export default class LevelScene extends Scene {
       const mixPass = new ShaderPass(
         new ShaderMaterial( {
           uniforms: {
+            // 0.18 is quite realistic, assuming you're inside one of the outer
+            // galactic arms and there's no ambient light. 1.0 is really pretty
+            // probably useful for special effects and being inside the
+            // galactic center.
+            brightness: { value: 0.18 },
             baseTexture: { value: null },
-            bloomTexture: { value: null }
+            // bloomTexture: { value: null }
           },
           vertexShader: `
             varying vec2 vUv;
@@ -184,17 +189,20 @@ export default class LevelScene extends Scene {
             }
           `,
           fragmentShader: `
+          uniform float brightness;
           uniform sampler2D baseTexture;
-          uniform sampler2D bloomTexture;
+          // uniform sampler2D bloomTexture;
           
           varying vec2 vUv;
           
           void main() {
             vec4 base_color = texture2D(baseTexture, vUv);
-            vec4 bloom_color = texture2D(bloomTexture, vUv);
+            vec4 bloom_color = vec4(0.0);//texture2D(bloomTexture, vUv);
             
-            float lum = 0.21 * bloom_color.r + 0.71 * bloom_color.g + 0.07 * bloom_color.b;
-            gl_FragColor = vec4(base_color.rgb + bloom_color.rgb, max(base_color.a, lum));
+            // float lum = 0.21 * bloom_color.r + 0.71 * bloom_color.g + 0.07 * bloom_color.b;
+            // vec4 color4 = vec4(base_color.rgb + bloom_color.rgb, max(base_color.a, 1.0));
+            vec4 color4 = vec4(base_color.rgb * brightness, 1.0);
+            gl_FragColor = color4;
           }
           `,
           defines: {}
@@ -281,7 +289,7 @@ export default class LevelScene extends Scene {
       const cockpitLights: CockpitLights = hub.acquirePart({ name: 'cockpitLights', inventory });
       const externalLights: ExternalLights = hub.acquirePart({ name: 'externalLights', inventory });
       const multimeter: Multimeter = hub.acquirePart({ name: 'multimeter', inventory });
-      
+
       this._electricalHousing = electricalHousing;
 
       const propulsionManager: PropulsionManager = hub.acquirePart({ name: 'propulsionManager', inventory });
