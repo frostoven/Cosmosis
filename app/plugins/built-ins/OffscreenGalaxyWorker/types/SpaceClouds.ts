@@ -136,7 +136,7 @@ export default class SpaceClouds {
       const position = point.position;
 
       let xRng = ((this.rng.next() - 0.5) * 0.05) * this.rng.next();
-      let yRng = ((this.rng.next() - 0.5) * 0.05) * this.rng.next();
+      let yRng = ((this.rng.next() - 0.5) * 0.1) * this.rng.next();
       let zRng = ((this.rng.next() - 0.5) * 0.05) * this.rng.next();
 
       thickDustPoints.push(
@@ -151,7 +151,7 @@ export default class SpaceClouds {
       // Thin dust within thick dust.
       for (let i = 0; i < 25; i++) {
         xRng = ((this.rng.next() - 0.5) * 0.25) * this.rng.next();
-        yRng = ((this.rng.next() - 0.5) * 0.01) * this.rng.next();
+        yRng = ((this.rng.next() - 0.5) * 0.02) * this.rng.next();
         zRng = ((this.rng.next() - 0.5) * 0.25) * this.rng.next();
         thinDustPoints.push(
           new THREE.Vector3(
