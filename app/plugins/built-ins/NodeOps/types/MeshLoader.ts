@@ -46,7 +46,6 @@ export default class MeshLoader {
   }
 
   _loadMesh = (assetFunctionName) => {
-    console.log('===========>', assetFunctionName);
     const { assetName, nodeOpts } = this;
 
     const find = AssetFinder[assetFunctionName].bind(AssetFinder);

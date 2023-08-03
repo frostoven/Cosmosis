@@ -6,26 +6,7 @@ import Player from '../Player';
 import {
   SBA_LENGTH, ROT_W, ROT_X, ROT_Y, ROT_Z, BUFFER_TYPE, TYPE_POSITIONAL_DATA,
 } from '../../../webWorkers/sharedBufferArrayConstants';
-import MeshLoader from '../NodeOps/types/MeshLoader';
-import { gameRuntime } from '../../gameRuntime';
-import {
-  extractAndPopulateVerts,
-  extractVertsFromGeo,
-} from '../../../local/mathUtils';
 import SpaceClouds from './types/SpaceClouds';
-
-const smokeSprites = [
-  new THREE.TextureLoader().load('potatoLqAssets/smokeImg/smoke1.png'),
-  new THREE.TextureLoader().load('potatoLqAssets/smokeImg/smoke2.png'),
-  new THREE.TextureLoader().load('potatoLqAssets/smokeImg/smoke3.png'),
-  new THREE.TextureLoader().load('potatoLqAssets/smokeImg/smoke3b.png'),
-];
-
-for (let i = 0, len = smokeSprites.length; i < len; i++) {
-  const sprite = smokeSprites[i];
-  // TODO: Upgrade three.js to gain access to this.
-  // sprite.colorSpace = THREE.SRGBColorSpace;
-}
 
 type PluginCompletion = PluginCacheTracker & {
   player: Player, core: Core,
