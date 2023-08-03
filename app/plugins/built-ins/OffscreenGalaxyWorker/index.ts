@@ -7,6 +7,7 @@ import {
   SBA_LENGTH, ROT_W, ROT_X, ROT_Y, ROT_Z, BUFFER_TYPE, TYPE_POSITIONAL_DATA,
 } from '../../../webWorkers/sharedBufferArrayConstants';
 import SpaceClouds from './types/SpaceClouds';
+import StarGenerator from './types/StarGenerator';
 
 type PluginCompletion = PluginCacheTracker & {
   player: Player, core: Core,
@@ -22,7 +23,10 @@ class OffscreenGalaxyWorker extends Worker {
     super('./build/offscreenGalaxy.js', { type: 'module' });
 
     // const loader = new MeshLoader('milky_way', 'getStarCatalog', {
-    new SpaceClouds();
+    const clouds = new SpaceClouds();
+    clouds.onSolPosition.getOnce((position) => {
+      new StarGenerator({ solPosition: position });
+    });
 
     return;
 
