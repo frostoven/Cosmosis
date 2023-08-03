@@ -6,8 +6,8 @@ const varyingsHeader = `
   varying float vDistToCamera;
   varying float vDistToCenter;
   varying vec2 vCoords;
-  varying float vGalacticY;
-  varying float vCloudY;
+  // Camera Y coordrinate relative to the galactic plane.
+  varying float vCameraY;
 `;
 
 // language=glsl
@@ -45,7 +45,7 @@ const vertex = `
     mvPosition = instanceMatrix * mvPosition;
 
     vDistToCamera = distance(cameraPosition, mvPosition.xyz);
-    vGalacticY = cameraPosition.y;
+    vCameraY = cameraPosition.y;
     vCoords.xy = mvPosition.xy;
     // Note: this assumes the galaxy will always have a world position of 0.
     vDistToCenter = distance(mvPosition.xyz, vec3(0.0, 0.0, 0.0));
@@ -304,7 +304,6 @@ const fragment = `
     return 1.0 - vignettAmount;
   }
 
-
   flat in int ioDustType;
   void main() {
     if (vDistToCamera == 0.0) {
@@ -356,14 +355,14 @@ const fragment = `
 //      gl_FragColor.a = 0.01;
 
       // // Fade in alpha; more altitude = more opacity.
-      // gl_FragColor.a *= clamp((abs(vGalacticY) + 0.08) * 10.0, 0.0, 1.0);
+      // gl_FragColor.a *= clamp((abs(vCameraY) + 0.08) * 10.0, 0.0, 1.0);
       
       // 0.01 is very close to the galactic plane. Start clipping far-away fog.
-//      if (vGalacticY < 0.01) {
+//      if (vCameraY < 0.01) {
 //        gl_FragColor.r = 1.0;
         // * near galactic plane, 
 //        gl_FragColor.a *= clamp(vDistToCamera, 0.0, 1.0);
-//        float y = clamp(abs(vGalacticY * 50.0), 0.0, 1.0);
+//        float y = clamp(abs(vCameraY * 50.0), 0.0, 1.0);
 //        gl_FragColor.a = (clamp(pow((vDistToCamera), 2.8 * y), 0.0, 1.0));
 //        gl_FragColor.a = clamp(gl_FragColor.a, 0.0, 0.1);
       
@@ -372,11 +371,11 @@ const fragment = `
 //      gl_FragColor.a = min(relativeDist, gl_FragColor.a);
 
 //      float relativeDist = remap(vDistToCamera, 0.0, 1.0, 0.025, 0.0);
-//      float relativeHeight = remap(abs(vGalacticY), 0.0, 1.0, 0.0, 0.75);
+//      float relativeHeight = remap(abs(vCameraY), 0.0, 1.0, 0.0, 0.75);
 //      gl_FragColor.a = min((relativeDist + relativeHeight) * 0.5, gl_FragColor.a);
 
 //      float relativeDist = remap(vDistToCamera, 0.0, 1.0, 0.025, 0.0);
-//      float relativeHeight = remap(abs(vGalacticY), 0.0, 1.0, 0.0, 0.75);
+//      float relativeHeight = remap(abs(vCameraY), 0.0, 1.0, 0.0, 0.75);
 //      float value = min((relativeDist + relativeHeight) * 0.5, gl_FragColor.a);
 //      if (value < 0.01) {
 //        discard;
@@ -438,10 +437,10 @@ const fragment = `
       discard;
     }
 
-    float opacity = 1.0;
+    float nearClipOpacity = 1.0;
     if (vDistToCamera < fadeDist) {
-      opacity = (vDistToCamera / fadeDist);
-      opacity *= opacity * opacity * opacity;
+      nearClipOpacity = (vDistToCamera / fadeDist);
+      nearClipOpacity *= nearClipOpacity * nearClipOpacity * nearClipOpacity;
     }
 
     // vec4 mask = texture2D(alphaMask, vUv);
@@ -459,12 +458,27 @@ const fragment = `
 //    color4.b = abs(1.0 - color4.b);
 //    color4.a = abs(1.0 - color4.a);
     
-    if (opacity != 1.0) {
+
+    if (nearClipOpacity != 1.0) {
       // Fade as we get closer
       vec4 invisible = vec4(vec3(gl_FragColor), 0.0);
-      gl_FragColor = mix(invisible, color4, opacity * 0.5 - 0.1);
+      gl_FragColor = mix(invisible, color4, nearClipOpacity * 0.5 - 0.1);
     }
     else {
+      // We don't want clouds to be too visible on the other side of the galaxy.
+      // We need to do two things:
+      // * As player y approaches zero, clouds opposite the bludge have more transparancy.
+      // * As camera distance to center increases, the previous effect decreases.
+      // This will not only make the buldge more realistic, but also give the
+      // appearance of more dust as we approach the center.
+      // TOOD: try get these to work. They currently drastically reduce fog
+      //  beauty. We may need to restrict the effect to dust specifically
+      //  opposite the galactic buldge.
+      // float camY = abs(vCameraY);
+      // float farDustAlpha = clamp(pow(camY, 0.3), 0.0, 1.0);
+      // float distanceFactor = clamp(pow(1.0 - vDistToCamera * 2.0, 0.1), 0.0, 1.0);
+      // color4.a *= max(distanceFactor, farDustAlpha);
+    
       gl_FragColor = color4;
       // gl_FragColor = vec4(color4.rgb, pow(color4.w, 12.0));
     }
