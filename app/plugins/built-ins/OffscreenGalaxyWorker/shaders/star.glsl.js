@@ -29,25 +29,49 @@ const vertex = `
 
     vec4 mvPosition = vec4(position, 1.0);
 
-    vec3 cameraRelativePosition = (mvPosition.xyz + instanceMatrix[3].xyz) - cameraPosition;
-    vec3 cameraTarget = mvPosition.xyz + normalize(cameraRelativePosition);
+    // -------------------------------------------------------------
 
-    mat3 lookAtMatrix = calculateLookAtMatrix(mvPosition.xyz, cameraTarget, 0.0);
-    mvPosition.xyz = lookAtMatrix * mvPosition.xyz;
-    mvPosition = instanceMatrix * mvPosition;
+    // Get position relative to camera.
+    vec4 modelViewPosition = modelViewMatrix * instanceMatrix * vec4(position, 1.0);
+    vec4 projectedModelViewPosition = projectionMatrix * modelViewPosition;
 
-    vDistToCamera = distance(cameraPosition, mvPosition.xyz);
-    vCameraY = cameraPosition.y;
-    vCoords.xy = mvPosition.xy;
+    // Camera space position.
+    vec4 csPosition = modelViewPosition * projectedModelViewPosition;
+    vDistToCamera = distance(csPosition, projectedModelViewPosition);
 
-    if (vDistToCamera < CULL_DIST) {
-      vDistToCamera = 0.0;
-      gl_Position = vec4(0.0);
-    }
-    else {
-      vec4 modelViewPosition = modelViewMatrix * mvPosition;
-      gl_Position = projectionMatrix * modelViewPosition;
-    }
+    // -------------------------------------------------------------
+
+    mvPosition = viewMatrix * instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0);
+
+    //    vec2 scale;
+    //    scale.x = length(vec3(instanceMatrix[0].x, instanceMatrix[0].y, instanceMatrix[0].z));
+    //    scale.y = length(vec3(instanceMatrix[1].x, instanceMatrix[1].y, instanceMatrix[1].z));
+
+    vec2 scale;
+    mat4 target = inverse(modelMatrix);
+    scale.x = length(vec3(target[0].x, target[0].y, target[0].z));
+    scale.y = length(vec3(target[1].x, target[1].y, target[1].z));
+
+    vec2 center = vec2(0.5);
+    vec2 alignedPosition = (position.xy - (center - vec2(0.5))) * scale;
+
+    vec2 rotatedPosition;
+    //    rotatedPosition.x = cos(rotation) * position.x - sin(rotation) * position.y;
+    //    rotatedPosition.y = sin(rotation) * position.x + cos(rotation) * position.y;
+    //    rotatedPosition.x = cos(0.0) * position.x;
+    //    rotatedPosition.y = cos(1.0) * position.y;
+
+    //    vec4 camDirection = modelMatrixInverse * vec4(xx, yy, zz, ww);
+    //    camDirection.xyz /= camDirection.w;
+    float rotation = 0.0;
+
+    rotatedPosition.x = cos(rotation) * alignedPosition.x - sin(rotation) * alignedPosition.y;
+    rotatedPosition.y = sin(rotation) * alignedPosition.x + cos(rotation) * alignedPosition.y;
+
+    mvPosition.xy += rotatedPosition;
+
+    //    gl_Position = projectionMatrix * mvPosition;
+    gl_Position = projectionMatrix * mvPosition;
   }
 `;
 
@@ -99,7 +123,7 @@ const fragment = `
     // combined alphas producing black stars with bright rims. This fix does
     // not prevent the problem, but it drastically reduces the glitchiness and
     // makes the effect far less obvious for far-away stars.
-    if (glow.r > 0.75 && glow.g > 0.75 && glow.b > 0.75) {
+    if (/**vDistToCamera > 0.000025 && */glow.r > 0.75 && glow.g > 0.75 && glow.b > 0.75) {
       glow.a = 1.0;
     }
     
