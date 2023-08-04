@@ -10,17 +10,24 @@ import { rotateAboutPoint, xAxis } from '../../../../local/mathUtils';
 
 const unitFactor = 0.000001;
 const parsecToMLy = Unit.parsecToLy * unitFactor;
+const pi = Math.PI;
+const floor = Math.floor;
 
 export default class StarGenerator {
   public rng: FastDeterministicRandom;
+
+  private _binaryCheckCache: {};
 
   constructor({ solPosition }) {
     this.rng = new FastDeterministicRandom();
     // Chosen with: Math.floor(Math.random() * 16384)
     this.rng.seed = 8426;
 
+    this._binaryCheckCache = {};
+
     AssetFinder.getStarCatalog({
       name: 'bsc5p_3d_min',
+      // name: 'constellation_test',
       callback: (error, fileName, parentDir, extension) => {
         console.log({ error, fileName, parentDir, extension });
         if (error) {
@@ -45,7 +52,35 @@ export default class StarGenerator {
         });
       }
     });
+  }
 
+  // This is a fast (O(n)) proximity checker. It's used to ensure we don't
+  // render all the stars in a binary (or triple) system while they're far
+  // away. We do this because, to my knowledge, there's no way to render
+  // close-proximity stars in a way that's both glitch-free and performant.
+  // Note that this function wastes a lot of RAM, so its cache needs to be
+  // cleared with clearBinaryCache once the load process is complete.<br><br>
+  //
+  // Returns true if there's already another star to be rendered less than 3.26
+  // light years away, false if not.
+  checkIfBinary(x, y, z) {
+    [x, y, z] = [floor(x), floor(y), floor(z)];
+    const cache = this._binaryCheckCache;
+
+    const xHit = cache[x];
+    const yHit = xHit && cache[x][y];
+    const zHit = yHit && cache[x][y][z];
+
+    if (!xHit) cache[x] = {};
+    if (!yHit) cache[x][y] = {};
+    if (!zHit) cache[x][y][z] = true;
+
+    return xHit && yHit && zHit;
+  }
+
+  // Frees RAM used to check star proximity.
+  clearBinaryCache() {
+    this._binaryCheckCache = {};
   }
 
   setupStars(scene: THREE.Scene, starObjects: any[], solPosition: THREE.Vector3) {
@@ -77,8 +112,6 @@ export default class StarGenerator {
       bufferGeometry, material, starObjects.length,
     );
 
-
-
     const dummy = new THREE.Object3D();
 
     // The default catalog uses coordinates that result in an incorrect
@@ -95,6 +128,12 @@ export default class StarGenerator {
         i: index, n: name, x, y, z, N: luminosity, K: color,
       } = starObjects[i];
 
+      const isBinary = this.checkIfBinary(x, y, z);
+      if (isBinary) {
+        // console.log(`-> Skipping ${name} as its neighbor will be rendered.`);
+        continue;
+      }
+
       // Transform coords to match game scale.
       dummy.position.set(x * parsecToMLy, y * parsecToMLy, z * parsecToMLy);
 
@@ -108,6 +147,8 @@ export default class StarGenerator {
       dummy.updateMatrix();
       instancedPlane.setMatrixAt(i, dummy.matrix);
     }
+    this.clearBinaryCache();
+
     // instancedPlane.position.copy(solPosition);
     instancedPlane.instanceMatrix.needsUpdate = true;
 
