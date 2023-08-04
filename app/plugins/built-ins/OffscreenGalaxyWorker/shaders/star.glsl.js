@@ -87,20 +87,23 @@ const fragment = `
     vec2 position = vUv;
     position.x -= 0.5;
     position.y -= 0.5;
+
+    // Airy disk calculation.
+    // https://en.wikipedia.org/wiki/Airy_disk
+    float diskScale = length(position) * invRadius;
+    vec4 spectrum = scale * vec4(0.349, 0.493, 1.0, 1.0);
+
+    vec4 glow = spectrum / pow(diskScale, invGlowRadius);
     
-    if (abs(position.x) < 0.01 && abs(position.y) < 0.01) {
-      gl_FragColor = vec4(1.0);
+    // Blending between stars tends to look really terrible, and can result in
+    // combined alphas producing black stars with bright rims. This fix does
+    // not prevent the problem, but it drastically reduces the glitchiness and
+    // makes the effect far less obvious for far-away stars.
+    if (glow.r > 0.75 && glow.g > 0.75 && glow.b > 0.75) {
+      glow.a = 1.0;
     }
-    else {
-      // Airy disk calculation.
-      // https://en.wikipedia.org/wiki/Airy_disk
-      float diskScale = length(position) * invRadius;
-      vec4 spectrum = scale * vec4(0.349, 0.493, 1.0, 1.0);
-
-      vec4 glow = spectrum / pow(diskScale, invGlowRadius);
-
-      gl_FragColor = vec4(glow);
-    }
+    
+    gl_FragColor = vec4(glow);
   }
 `;
 
