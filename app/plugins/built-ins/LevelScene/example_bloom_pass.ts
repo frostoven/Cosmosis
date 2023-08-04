@@ -173,9 +173,10 @@ export default class LevelScene extends Scene {
         new ShaderMaterial( {
           uniforms: {
             // 0.18 is quite realistic, assuming you're inside one of the outer
-            // galactic arms and there's no ambient light. 1.0 is really pretty
-            // probably useful for special effects and being inside the
-            // galactic center.
+            // galactic arms and there's no ambient light. 1.0 is really
+            // pretty. It's probably useful for special effects and being
+            // inside the galactic center.
+            // brightness: { value: 0.18 },
             brightness: { value: 0.18 },
             baseTexture: { value: null },
             // bloomTexture: { value: null }
@@ -214,8 +215,6 @@ export default class LevelScene extends Scene {
       this.finalComposer.addPass( renderScene );
       this.finalComposer.addPass( mixPass );
       this.finalComposer.addPass( outputPass );
-
-
     });
   }
 
