@@ -18,7 +18,11 @@ export default class SpaceClouds {
   public rng: FastDeterministicRandom;
   public onSolPosition: ChangeTracker;
 
-  constructor() {
+  /**
+   * @param datasetMode - If true, nothing will be rendered, but positions will
+   *                      still be processed.
+   */
+  constructor({ datasetMode } = { datasetMode: false }) {
     this.rng = new FastDeterministicRandom();
     // Chosen with: Math.floor(Math.random() * 16384)
     this.rng.seed = 8426;
@@ -72,7 +76,9 @@ export default class SpaceClouds {
         // assign the wrong lighting to the wrong particles.
         const dustTypes = [ thinDustTypes, galacticTypes, thickDustTypes ].flat();
 
-        this.setupGalacticArmsInstanced(scene, dustTypes, dustPoints);
+        if (!datasetMode) {
+          this.setupGalacticArmsInstanced(scene, dustTypes, dustPoints);
+        }
       });
     });
   }
