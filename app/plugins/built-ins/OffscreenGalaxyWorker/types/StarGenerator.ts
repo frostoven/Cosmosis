@@ -7,6 +7,7 @@ import AssetFinder from '../../../../local/AssetFinder';
 import Unit from '../../../../local/Unit';
 import { star } from '../shaders/star.glsl';
 import { rotateAboutPoint, xAxis } from '../../../../local/mathUtils';
+import { Vector3 } from 'three';
 
 const unitFactor = 0.000001;
 const parsecToMLy = Unit.parsecToLy * unitFactor;
@@ -98,18 +99,38 @@ export default class StarGenerator {
       fragmentShader: star.fragment,
       transparent: true,
       uniforms: {
-        // thinDust: { value: fogTexture },
+        unitFactor: { value: unitFactor },
+        // testA: { value: 0.1 },
+        // testB: { value: 0.0001 },
+        // testC: { value: 0.001 },
+        testA: { value: 1.0 },
+        testB: { value: 100.0 },
+        testC: { value: 1.0 },
+        testD: { value: 100.0 },
       }
     });
+    window.debug.uniforms = material.uniforms;
 
-    const bufferGeometry = new THREE.PlaneGeometry(0.00001, 0.00001);
+    const visibleStars: any[] = [];
+
+    // Prevent binary star glitches by trimming out near-proximity stars. I'd
+    // have preferred combining this with the for loop after this one, but we
+    // need to have a total size before can create and loop the instanced
+    // plane.
+    for (let i = 0, len = starObjects.length; i < len; i++) {
+      const { x, y, z } = starObjects[i];
+      const isBinary = this.checkIfBinary(x, y, z);
+      if (!isBinary) {
+        visibleStars.push(starObjects[i]);
+      }
+    }
+
+    const bufferGeometry = new THREE.PlaneGeometry(unitFactor, unitFactor);
     // const bufferGeometry = new THREE.PlaneGeometry(0.0001, 0.0001);
-    // bufferGeometry.setAttribute('aDustType', new THREE.InstancedBufferAttribute(
-    //   new Int32Array(dustTypes), 1)
-    // );
+    // const bufferGeometry = new THREE.PlaneGeometry(0.000000001, 0.000000001);
 
     const instancedPlane = new THREE.InstancedMesh(
-      bufferGeometry, material, starObjects.length,
+      bufferGeometry, material, visibleStars.length,
     );
 
     const dummy = new THREE.Object3D();
@@ -118,21 +139,16 @@ export default class StarGenerator {
     // rotation in Three.js. Create a rotated version.
     const pivotObject = new THREE.Object3D();
     const transferObject = new THREE.Object3D();
-    // for (let i = 0, len = starObjects.length; i < len; i++) {
-    //   rotationObject
-    // }
+
+    const luminosities: number[] = [];
 
     // Create instanced plane.
-    for (let i = 0, len = starObjects.length; i < len; i++) {
+    for (let i = 0, len = visibleStars.length; i < len; i++) {
       const {
         i: index, n: name, x, y, z, N: luminosity, K: color,
-      } = starObjects[i];
+      } = visibleStars[i];
 
-      const isBinary = this.checkIfBinary(x, y, z);
-      if (isBinary) {
-        // console.log(`-> Skipping ${name} as its neighbor will be rendered.`);
-        continue;
-      }
+      luminosities.push(luminosity);
 
       // Transform coords to match game scale.
       dummy.position.set(x * parsecToMLy, y * parsecToMLy, z * parsecToMLy);
@@ -148,6 +164,10 @@ export default class StarGenerator {
       instancedPlane.setMatrixAt(i, dummy.matrix);
     }
     this.clearBinaryCache();
+
+    bufferGeometry.setAttribute('aLuminosity', new THREE.InstancedBufferAttribute(
+      new Float32Array(luminosities), 1,
+    ));
 
     // instancedPlane.position.copy(solPosition);
     instancedPlane.instanceMatrix.needsUpdate = true;

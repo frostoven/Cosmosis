@@ -1,3 +1,5 @@
+import { import_log10 } from '../../../../shaders/shaderMath';
+
 // language=glsl
 const varyingsHeader = `
   varying vec2 vUv;
@@ -9,7 +11,20 @@ const varyingsHeader = `
 
 // language=glsl
 const vertex = `
+  uniform float unitFactor;
+  uniform float testA;
+  uniform float testB;
+  uniform float testC;
+  uniform float testD;
+  
+  attribute float aLuminosity;
+  
   ${varyingsHeader}
+    
+  ${import_log10} 
+      
+  #define PI ${Math.PI}
+  #define REALISM_FACTOR 0.25
 
   #define CULL_DIST 0.000001
   
@@ -27,12 +42,13 @@ const vertex = `
   void main() {
     vUv = uv;
 
-    vec4 mvPosition = vec4(position, 1.0);
+    // Local space position.
+    vec3 localPosition = position;
 
     // -------------------------------------------------------------
 
     // Get position relative to camera.
-    vec4 modelViewPosition = modelViewMatrix * instanceMatrix * vec4(position, 1.0);
+    vec4 modelViewPosition = modelViewMatrix * instanceMatrix * vec4(localPosition, 1.0);
     vec4 projectedModelViewPosition = projectionMatrix * modelViewPosition;
 
     // Camera space position.
@@ -40,37 +56,76 @@ const vertex = `
     vDistToCamera = distance(csPosition, projectedModelViewPosition);
 
     // -------------------------------------------------------------
+    
+    float luminosity = aLuminosity;
 
-    mvPosition = viewMatrix * instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0);
+    // Dev note: for the BSC5P alone, luminosities can range from
+    // 0.08198708 to 205705980.57173166.
+    // Some test values:
+    // * Math.log(0.08) = -2.5257286443082556
+    // Math.log10(0.08) = -1.0969100130080565
+    // Math.log(205705980) = 19.141958425663915
+    // Math.log10(205705980) = 8.313246917087296
+    float l10Luminosity = abs(log10(luminosity));
+//    if (l10Luminosity == 0.0 || isinf(l10Luminosity) || isnan(l10Luminosity)) {
+//        l10Luminosity = 0.0001;
+//    }
+    
+//    float distLimit = clamp(vDistToCamera, 1.0, 100.0);
+//    float luminosityLimit = clamp(luminosityLimit, 1.0, 100.0);
+//    float luminosityLimit = luminosity;
+//    float luminosityLimit = pow(luminosity, 0.75) * pow(100.0, 0.25);
+    
+    // Claculate brightness based on the inverse square law.
+    float brightness = aLuminosity / (4.0 * PI * pow(vDistToCamera, 2.0));
+    float scale;
+    
+    // Multiplying a number by local space position effectively scales the
+    // object.
+    // Dev note: best way to test this is with Andromeda (between X an Z),
+    // Sirius, and Orion's belt. The belt stars should all share the same size,
+    // Sirius should be slightly larger, and Andromeda should be visible.
+//    scale = [scale];
+//    scale = clamp(log10(brightness), 0.1, 10.0);
+//    scale = pow(brightness, 0.000001);
+//    scale = REALISM_FACTOR * log10(brightness * testA) + (log((brightness * testB)) * testC);
+//    scale = log(aLuminosity) * log10(brightness * 2.5);
+//    scale = log(aLuminosity * 2.5) * log10(brightness * 5.0); // <-- size example.
+//    scale = log(aLuminosity * testA) * log10(brightness * testB);
+//    scale = REALISM_FACTOR * log10(aLuminosity * testA) * vDistToCamera * testC;
+    
+    float lumLimit = aLuminosity * 10.15;
+    float distLimit = vDistToCamera * 50000.0;
+    scale = REALISM_FACTOR 
+      * log10(clamp(lumLimit, testA, testB))
+      * clamp(distLimit, testC, testD);
+    
+    if (vDistToCamera > 5100.0 * unitFactor) {
+      vDistToCamera = 0.0;
+      gl_Position = vec4(0.0);
+      return;
+    }
+    
+    localPosition *= scale;
+    
+    vec4 mvPosition = viewMatrix * instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0);
 
-    //    vec2 scale;
-    //    scale.x = length(vec3(instanceMatrix[0].x, instanceMatrix[0].y, instanceMatrix[0].z));
-    //    scale.y = length(vec3(instanceMatrix[1].x, instanceMatrix[1].y, instanceMatrix[1].z));
-
-    vec2 scale;
+    vec2 spriteScale;
     mat4 target = inverse(modelMatrix);
-    scale.x = length(vec3(target[0].x, target[0].y, target[0].z));
-    scale.y = length(vec3(target[1].x, target[1].y, target[1].z));
+    spriteScale.x = length(vec3(target[0].x, target[0].y, target[0].z));
+    spriteScale.y = length(vec3(target[1].x, target[1].y, target[1].z));
 
     vec2 center = vec2(0.5);
-    vec2 alignedPosition = (position.xy - (center - vec2(0.5))) * scale;
+    vec2 alignedPosition = (localPosition.xy - (center - vec2(0.5))) * spriteScale;
 
     vec2 rotatedPosition;
-    //    rotatedPosition.x = cos(rotation) * position.x - sin(rotation) * position.y;
-    //    rotatedPosition.y = sin(rotation) * position.x + cos(rotation) * position.y;
-    //    rotatedPosition.x = cos(0.0) * position.x;
-    //    rotatedPosition.y = cos(1.0) * position.y;
-
-    //    vec4 camDirection = modelMatrixInverse * vec4(xx, yy, zz, ww);
-    //    camDirection.xyz /= camDirection.w;
     float rotation = 0.0;
 
     rotatedPosition.x = cos(rotation) * alignedPosition.x - sin(rotation) * alignedPosition.y;
     rotatedPosition.y = sin(rotation) * alignedPosition.x + cos(rotation) * alignedPosition.y;
 
     mvPosition.xy += rotatedPosition;
-
-    //    gl_Position = projectionMatrix * mvPosition;
+    
     gl_Position = projectionMatrix * mvPosition;
   }
 `;
@@ -123,7 +178,10 @@ const fragment = `
     // combined alphas producing black stars with bright rims. This fix does
     // not prevent the problem, but it drastically reduces the glitchiness and
     // makes the effect far less obvious for far-away stars.
-    if (/**vDistToCamera > 0.000025 && */glow.r > 0.75 && glow.g > 0.75 && glow.b > 0.75) {
+    if (vDistToCamera > 0.000025 && glow.r > 0.75 && glow.g > 0.75 && glow.b > 0.75) {
+      glow.a = 1.0;
+    }
+    else if (glow.r > 0.95 && glow.g > 0.95 && glow.b > 0.95) {
       glow.a = 1.0;
     }
     
