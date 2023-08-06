@@ -13,10 +13,10 @@ const varyingsHeader = `
 // language=glsl
 const vertex = `
   uniform float unitFactor;
-  uniform float testA;
-  uniform float testB;
-  uniform float testC;
-  uniform float testD;
+  uniform float generalEvenness;
+  uniform float falloffSensitivity;
+  uniform float nearStarLumMultiplier;
+  uniform float nearFarRatio;
   
   attribute vec3 aColor;
   attribute float aLuminosity;
@@ -70,14 +70,6 @@ const vertex = `
     // Math.log(205705980) = 19.141958425663915
     // Math.log10(205705980) = 8.313246917087296
     float l10Luminosity = abs(log10(luminosity));
-//    if (l10Luminosity == 0.0 || isinf(l10Luminosity) || isnan(l10Luminosity)) {
-//        l10Luminosity = 0.0001;
-//    }
-    
-//    float distLimit = clamp(vDistToCamera, 1.0, 100.0);
-//    float luminosityLimit = clamp(luminosityLimit, 1.0, 100.0);
-//    float luminosityLimit = luminosity;
-//    float luminosityLimit = pow(luminosity, 0.75) * pow(100.0, 0.25);
     
     // Claculate brightness based on the inverse square law.
     float brightness = aLuminosity / (4.0 * PI * pow(vDistToCamera, 2.0));
@@ -88,20 +80,12 @@ const vertex = `
     // Dev note: best way to test this is with Andromeda (between X an Z),
     // Sirius, and Orion's belt. The belt stars should all share the same size,
     // Sirius should be slightly larger, and Andromeda should be visible.
-//    scale = [scale];
-//    scale = clamp(log10(brightness), 0.1, 10.0);
-//    scale = pow(brightness, 0.000001);
-//    scale = REALISM_FACTOR * log10(brightness * testA) + (log((brightness * testB)) * testC);
-//    scale = log(aLuminosity) * log10(brightness * 2.5);
-//    scale = log(aLuminosity * 2.5) * log10(brightness * 5.0); // <-- size example.
-//    scale = log(aLuminosity * testA) * log10(brightness * testB);
-//    scale = REALISM_FACTOR * log10(aLuminosity * testA) * vDistToCamera * testC;
-    
+
     float lumLimit = aLuminosity * 10.15;
     float distLimit = vDistToCamera * 50000.0;
     scale = REALISM_FACTOR 
-      * log10(clamp(lumLimit, testA, testB))
-      * clamp(distLimit, testC, testD);
+      * log10(clamp(lumLimit, generalEvenness, falloffSensitivity))
+      * clamp(distLimit, nearStarLumMultiplier, nearFarRatio);
     
     if (vDistToCamera > 5100.0 * unitFactor) {
       vDistToCamera = 0.0;

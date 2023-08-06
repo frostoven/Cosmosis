@@ -1,4 +1,10 @@
-import { PerspectiveCamera, Scene, WebGLRenderer } from 'three';
+import {
+  Layers,
+  PerspectiveCamera,
+  Scene,
+  ShaderMaterial,
+  WebGLRenderer,
+} from 'three';
 import { RectAreaLightUniformsLib } from 'three/examples/jsm/lights/RectAreaLightUniformsLib.js';
 import CosmosisPlugin from '../../types/CosmosisPlugin';
 import { gameRuntime } from '../../gameRuntime';
@@ -18,6 +24,17 @@ import PropulsionManager
   from '../shipModules/PropulsionManager/types/PropulsionManager';
 import { Location } from '../Location';
 import VisorHud from '../shipModules/VisorHud/types/VisorHud';
+
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
+
+
+const BLOOM_SCENE = 1;
+const bloomLayer = new Layers();
+bloomLayer.set( BLOOM_SCENE );
 
 // TODO:
 //  The space scene can load a vehicle. The player can be attached to the
@@ -52,6 +69,7 @@ export default class LevelScene extends Scene {
     super();
     this._cachedCamera = new PerspectiveCamera();
     this._cachedLocation = gameRuntime.tracked.location.cachedValue;
+    // this.fog = new FogExp2(0xDFE9F3, 0.0000005);
 
     // @ts-ignore
     this._vehicle = null;
@@ -67,11 +85,11 @@ export default class LevelScene extends Scene {
     });
 
     // --------------------------------------------------------------------- //
-    const geometry = new BoxGeometry(1, 1, 1);
-    const material = new MeshBasicMaterial({ color: 0x00ff00 });
-    const cube = new Mesh(geometry, material);
-    this.add(cube);
-    cube.position.copy(new Vector3(-1.5, 0.25, -6));
+    // const geometry = new BoxGeometry(1, 1, 1);
+    // const material = new MeshBasicMaterial({ color: 0x00ff00 });
+    // const cube = new Mesh(geometry, material);
+    // this.add(cube);
+    // cube.position.copy(new Vector3(-1.5, 0.25, -6));
     // --------------------------------------------------------------------- //
 
     this.onVehicleEntered = new ChangeTracker();
@@ -100,7 +118,7 @@ export default class LevelScene extends Scene {
       // @ts-ignore
       canvas: nearObjectCanvas,
       powerPreference: "high-performance",
-      antialias: false,
+      antialias: true,
     });
 
     renderer.useLegacyLights = false;
@@ -114,11 +132,90 @@ export default class LevelScene extends Scene {
 
     this._renderer = renderer;
 
+    const MIN_EXT = 0x8007;
+    const MAX_EXT = 0x8008;
+
+
     // Allows for crazy-good fast rectangle area lights. Note that these
     // unfortunately don't case shadows, so only use them for wall lighting
     // where shadows wouldn't naturally form anyway (we can probably
     // investigate stenciling at some point).
     RectAreaLightUniformsLib.init();
+
+    const gl = renderer.getContext();
+    const ext = gl.getExtension('EXT_blend_minmax');
+    window.debug.gl = gl;
+    window.debug.ext = ext;
+    //
+    gl.disable(gl.DEPTH_TEST);
+    // gl.enable(gl.BLEND);
+    // gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_DST_COLOR);
+    // gl.blendEquation(MAX_EXT);
+    // // gl.blendEquationSeparate(gl.FUNC_ADD, gl.MAX_COMBINED_TEXTURE_IMAGE_UNITS);
+    // gl.blendFunc(gl.ONE, gl.ONE);
+    //
+    gameRuntime.tracked.player.getOnce(({ camera }) => {
+      const renderScene = new RenderPass(this, camera);
+
+      const bloomPass = new UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 1.5, 0.4, 0.85 );
+      bloomPass.threshold = 0; // 0-1. 0 = give all meshes bloom, 1 = no bloom.
+      bloomPass.strength = 1; // 0-3 - how fuzzy the bloom is.
+      bloomPass.radius = 0; // 0-1 - how blurred the bloom is.
+
+      const outputPass = new OutputPass();
+
+      this.bloomComposer = new EffectComposer( renderer );
+      this.bloomComposer.addPass( renderScene );
+      // this.bloomComposer.addPass( bloomPass );
+      // this.bloomComposer.addPass( outputPass );
+
+      const mixPass = new ShaderPass(
+        new ShaderMaterial( {
+          uniforms: {
+            // 0.18 is quite realistic, assuming you're inside one of the outer
+            // galactic arms and there's no ambient light. 1.0 is really
+            // pretty. It's probably useful for special effects and being
+            // inside the galactic center.
+            // brightness: { value: 0.18 },
+            brightness: { value: 1.0 },
+            baseTexture: { value: null },
+            // bloomTexture: { value: null }
+          },
+          vertexShader: `
+            varying vec2 vUv;
+            
+            void main() {
+              vUv = uv;
+              gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);      
+            }
+          `,
+          fragmentShader: `
+          uniform float brightness;
+          uniform sampler2D baseTexture;
+          // uniform sampler2D bloomTexture;
+          
+          varying vec2 vUv;
+          
+          void main() {
+            vec4 base_color = texture2D(baseTexture, vUv);
+            vec4 bloom_color = vec4(0.0);//texture2D(bloomTexture, vUv);
+            
+            // float lum = 0.21 * bloom_color.r + 0.71 * bloom_color.g + 0.07 * bloom_color.b;
+            // vec4 color4 = vec4(base_color.rgb + bloom_color.rgb, max(base_color.a, 1.0));
+            vec4 color4 = vec4(base_color.rgb * brightness, 1.0);
+            gl_FragColor = color4;
+          }
+          `,
+          defines: {}
+        } ), 'baseTexture'
+      );
+      mixPass.needsSwap = true;
+
+      this.finalComposer = new EffectComposer( renderer );
+      this.finalComposer.addPass( renderScene );
+      this.finalComposer.addPass( mixPass );
+      this.finalComposer.addPass( outputPass );
+    });
   }
 
   onWindowResize() {
@@ -145,8 +242,8 @@ export default class LevelScene extends Scene {
     });
     let ship = playerInfo?.vehicleInfo?.piloting;
     if (typeof ship === 'undefined') {
-      ship = 'DS69F';
-      // ship = 'minimal scene';
+      // ship = 'DS69F';
+      ship = 'minimal scene';
       console.error(`Could get read ship info from configs. Defaulting to ${ship}.`);
       // TODO: if this happens, we should actually offer a save rollback
       //  option, and/or go to ship selector.
@@ -241,7 +338,9 @@ export default class LevelScene extends Scene {
 
   render() {
     this.step();
-    this._renderer.render(this, this._cachedCamera);
+    // this._renderer.render(this, this._cachedCamera);
+    // this.bloomComposer.render();
+    this.finalComposer.render();
   }
 }
 

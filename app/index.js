@@ -20,6 +20,9 @@ import * as CANNON from 'cannon';
 import { startupEvent, getStartupEmitter } from './emitters';
 import userProfile from './userProfile';
 
+// THREE.ShaderLib.basic.vertexShader = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx ' + THREE.ShaderLib.basic.fragmentShader;
+// THREE.ShaderLib.basic.fragmentShader = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx ' + THREE.ShaderLib.basic.fragmentShader;
+
 const startupEmitter = getStartupEmitter();
 
 // Debug reference to three.

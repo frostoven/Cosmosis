@@ -18,7 +18,6 @@ export default class StarGenerator {
   public rng: FastDeterministicRandom;
 
   private _binaryCheckCache: {};
-  private material!: THREE.ShaderMaterial;
 
   constructor({ solPosition }) {
     this.rng = new FastDeterministicRandom();
@@ -54,8 +53,6 @@ export default class StarGenerator {
         });
       }
     });
-
-    window.addEventListener('resize', this.handleResize.bind(this), false);
   }
 
   // This is a fast (O(n)) proximity checker. It's used to ensure we don't
@@ -103,13 +100,12 @@ export default class StarGenerator {
       transparent: true,
       uniforms: {
         unitFactor: { value: unitFactor },
-        testA: { value: 1.0 },
-        testB: { value: 3000.0 },
-        testC: { value: 2.0 },
-        testD: { value: 100.0 },
+        generalEvenness: { value: 1.0 },
+        falloffSensitivity: { value: 100000.0 },
+        nearStarLumMultiplier: { value: 2.0 },
+        nearFarRatio: { value: 100.0 },
       }
     });
-    window.debug.uniforms = material.uniforms;
 
     const visibleStars: any[] = [];
 
@@ -185,8 +181,5 @@ export default class StarGenerator {
     console.log('instanced star plane:', instancedPlane);
 
     scene.add(instancedPlane);
-  }
-
-  addArm(parent: THREE.LineSegments) {
   }
 }

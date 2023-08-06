@@ -23,6 +23,7 @@ class OffscreenGalaxyWorker extends Worker {
     super('./build/offscreenGalaxy.js', { type: 'module' });
 
     // const loader = new MeshLoader('milky_way', 'getStarCatalog', {
+    // const clouds = new SpaceClouds({ datasetMode: false });
     const clouds = new SpaceClouds({ datasetMode: true });
     clouds.onSolPosition.getOnce((position) => {
       new StarGenerator({ solPosition: position });
