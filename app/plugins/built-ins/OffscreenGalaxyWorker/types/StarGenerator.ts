@@ -18,6 +18,7 @@ export default class StarGenerator {
   public rng: FastDeterministicRandom;
 
   private _binaryCheckCache: {};
+  private material!: THREE.ShaderMaterial;
 
   constructor({ solPosition }) {
     this.rng = new FastDeterministicRandom();
@@ -53,6 +54,8 @@ export default class StarGenerator {
         });
       }
     });
+
+    window.addEventListener('resize', this.handleResize.bind(this), false);
   }
 
   // This is a fast (O(n)) proximity checker. It's used to ensure we don't
@@ -100,12 +103,9 @@ export default class StarGenerator {
       transparent: true,
       uniforms: {
         unitFactor: { value: unitFactor },
-        // testA: { value: 0.1 },
-        // testB: { value: 0.0001 },
-        // testC: { value: 0.001 },
         testA: { value: 1.0 },
-        testB: { value: 100.0 },
-        testC: { value: 1.0 },
+        testB: { value: 3000.0 },
+        testC: { value: 2.0 },
         testD: { value: 100.0 },
       }
     });
@@ -140,6 +140,7 @@ export default class StarGenerator {
     const pivotObject = new THREE.Object3D();
     const transferObject = new THREE.Object3D();
 
+    const colors: number[] = [];
     const luminosities: number[] = [];
 
     // Create instanced plane.
@@ -148,6 +149,12 @@ export default class StarGenerator {
         i: index, n: name, x, y, z, N: luminosity, K: color,
       } = visibleStars[i];
 
+      if (color) {
+        colors.push(color.r, color.g, color.b);
+      }
+      else {
+        colors.push(1.0, 0.0, 0.0);
+      }
       luminosities.push(luminosity);
 
       // Transform coords to match game scale.
@@ -165,6 +172,9 @@ export default class StarGenerator {
     }
     this.clearBinaryCache();
 
+    bufferGeometry.setAttribute('aColor', new THREE.InstancedBufferAttribute(
+      new Float32Array(colors), 3,
+    ));
     bufferGeometry.setAttribute('aLuminosity', new THREE.InstancedBufferAttribute(
       new Float32Array(luminosities), 1,
     ));

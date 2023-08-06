@@ -7,6 +7,7 @@ const varyingsHeader = `
   varying vec2 vCoords;
   // Camera Y coordrinate relative to the galactic plane.
   varying float vCameraY;
+  varying vec3 vColor;
 `;
 
 // language=glsl
@@ -17,6 +18,7 @@ const vertex = `
   uniform float testC;
   uniform float testD;
   
+  attribute vec3 aColor;
   attribute float aLuminosity;
   
   ${varyingsHeader}
@@ -24,7 +26,7 @@ const vertex = `
   ${import_log10} 
       
   #define PI ${Math.PI}
-  #define REALISM_FACTOR 0.25
+  #define REALISM_FACTOR 0.1
 
   #define CULL_DIST 0.000001
   
@@ -41,6 +43,7 @@ const vertex = `
 
   void main() {
     vUv = uv;
+    vColor = aColor;
 
     // Local space position.
     vec3 localPosition = position;
@@ -170,7 +173,7 @@ const fragment = `
     // Airy disk calculation.
     // https://en.wikipedia.org/wiki/Airy_disk
     float diskScale = length(position) * invRadius;
-    vec4 spectrum = scale * vec4(0.349, 0.493, 1.0, 1.0);
+    vec4 spectrum = scale * vec4(vec3(vColor), 1.0);
 
     vec4 glow = spectrum / pow(diskScale, invGlowRadius);
     
