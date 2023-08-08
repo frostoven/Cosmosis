@@ -61,8 +61,6 @@ const vertex = `
 
     // -------------------------------------------------------------
     
-    float luminosity = aLuminosity;
-
     float distanceScale = vDistToCamera * 2500.0;
     
     // Calculate brightness based on the inverse square law of distance.
@@ -131,6 +129,8 @@ const fragment = `
     vec2 position = vUv;
     position.x -= 0.5;
     position.y -= 0.5;
+    
+    vec4 transparent = vec4(0.0);
 
     // Airy disk calculation.
     // https://en.wikipedia.org/wiki/Airy_disk
@@ -153,11 +153,12 @@ const fragment = `
     else if (abs(color4.r) > 0.95 && abs(color4.g) > 0.95 && abs(color4.b) > 0.95) {
       color4.a = color4.a >= 0.0 ? 1.0 : -1.0;
     }
-    
-    // 0 to 1, where 0 is 0% plane diameter and 1 is 100% plane diameter. 
+
+    // 0 to 1, where 0 is 0% plane diameter and 1 is 100% plane diameter.
     // float glowSize = 0.5;
     float glowSize = clamp(glowAmount, 0.0, 1.0);
     vec4 glow = vec4(pow(1.0 - distance(vUv, vec2(0.5)), 4.0)) * vec4(vColor, 1.0) * -glowSize;
+    glow = mix(glow, transparent, 0.5);
     
     // Dev note: mix is *probably* less realistic but far prettier. We should
     // consider trying to use min instead and make it pretty.
@@ -165,8 +166,8 @@ const fragment = `
     gl_FragColor = mix(color4, glow, 0.5);
     
     // Fade out stars according to their brightness.
-    float fade = pow(1.0 - glowSize, 3.0);
-    gl_FragColor = mix(gl_FragColor, vec4(0.0), fade);
+    float fadeAggression = pow(1.0 - glowSize, 3.0);
+    gl_FragColor = mix(gl_FragColor, transparent, fadeAggression);
   }
 `;
 
