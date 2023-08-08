@@ -9,7 +9,7 @@ import { star } from '../shaders/star.glsl';
 import { rotateAboutPoint, xAxis } from '../../../../local/mathUtils';
 import { Vector3 } from 'three';
 
-const unitFactor = 0.000001;
+const unitFactor = 0.00001;
 const parsecToMLy = Unit.parsecToLy * unitFactor;
 const pi = Math.PI;
 const floor = Math.floor;
@@ -27,8 +27,9 @@ export default class StarGenerator {
     this._binaryCheckCache = {};
 
     AssetFinder.getStarCatalog({
-      name: 'bsc5p_3d_min',
+      // name: 'bsc5p_3d_min',
       // name: 'constellation_test',
+      name: 'bubble_min',
       callback: (error, fileName, parentDir, extension) => {
         console.log({ error, fileName, parentDir, extension });
         if (error) {
@@ -119,6 +120,11 @@ export default class StarGenerator {
         falloffSensitivity: { value: 100000.0 },
         nearStarLumMultiplier: { value: 2.0 },
         nearFarRatio: { value: 100.0 },
+        //
+        scale: { value: -500.0 },
+        invRadius: { value: 100.0 },
+        invGlowRadius: { value: 3.0 },
+        glowFactor: { value: 3.0 },
       }
     });
 

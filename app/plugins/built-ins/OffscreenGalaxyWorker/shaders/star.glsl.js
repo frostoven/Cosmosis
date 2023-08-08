@@ -81,17 +81,19 @@ const vertex = `
     // Sirius, and Orion's belt. The belt stars should all share the same size,
     // Sirius should be slightly larger, and Andromeda should be visible.
 
-    float lumLimit = aLuminosity * 10.15;
-    float distLimit = vDistToCamera * 50000.0;
-    scale = REALISM_FACTOR 
-      * log10(clamp(lumLimit, generalEvenness, falloffSensitivity))
-      * clamp(distLimit, nearStarLumMultiplier, nearFarRatio);
+//    float lumLimit = aLuminosity * 10.15;
+//    float distLimit = vDistToCamera * 50000.0;
+//    scale = REALISM_FACTOR 
+//      * log10(clamp(lumLimit, generalEvenness, falloffSensitivity))
+//      * clamp(distLimit, nearStarLumMultiplier, nearFarRatio);
+//    
+//    if (vDistToCamera > 5100.0 * unitFactor) {
+//      vDistToCamera = 0.0;
+//      gl_Position = vec4(0.0);
+//      return;
+//    }
     
-    if (vDistToCamera > 5100.0 * unitFactor) {
-      vDistToCamera = 0.0;
-      gl_Position = vec4(0.0);
-      return;
-    }
+    scale = vDistToCamera * 2500.0;
     
     localPosition *= scale;
     
@@ -121,6 +123,11 @@ const vertex = `
 const fragment = `
   ${varyingsHeader}
 
+  uniform float scale;
+  uniform float invRadius;
+  uniform float invGlowRadius;
+  uniform float glowFactor;
+
   #define fadeDist 0.05
   #define fadeReciprocal (1.0/fadeDist)
   #define fadeMultiplier 0.5
@@ -144,10 +151,6 @@ const fragment = `
     if (vDistToCamera == 0.0) {
       discard;
     }
-    
-    float scale  = 500.0;
-    float invRadius = 200.0;
-    float invGlowRadius = 3.0;
 
     // Get position relative to center.
     vec2 position = vUv;
@@ -157,22 +160,38 @@ const fragment = `
     // Airy disk calculation.
     // https://en.wikipedia.org/wiki/Airy_disk
     float diskScale = length(position) * invRadius;
+    
+    float glowScale = 3000.0;
+    
     vec4 spectrum = scale * vec4(vec3(vColor), 1.0);
+    vec4 glowSpectrum = glowScale * vec4(vec3(vColor), 1.0);
 
-    vec4 glow = spectrum / pow(diskScale, invGlowRadius);
+    vec4 color4 = spectrum / pow(diskScale, invGlowRadius);
     
     // Blending between stars tends to look really terrible, and can result in
     // combined alphas producing black stars with bright rims. This fix does
     // not prevent the problem, but it drastically reduces the glitchiness and
     // makes the effect far less obvious for far-away stars.
-    if (vDistToCamera > 0.000025 && glow.r > 0.75 && glow.g > 0.75 && glow.b > 0.75) {
-      glow.a = 1.0;
+    if (vDistToCamera > 0.000025 && abs(color4.r) > 0.75 && abs(color4.g) > 0.75 && abs(color4.b) > 0.75) {
+      color4.a = color4.a >= 0.0 ? 1.0 : -1.0;
     }
-    else if (glow.r > 0.95 && glow.g > 0.95 && glow.b > 0.95) {
-      glow.a = 1.0;
+    else if (abs(color4.r) > 0.95 && abs(color4.g) > 0.95 && abs(color4.b) > 0.95) {
+      color4.a = color4.a >= 0.0 ? 1.0 : -1.0;
     }
     
-    gl_FragColor = vec4(glow);
+//    color4.r =s clamp(abs(color4.r), 0.0, 1.0);
+//    color4.g = clamp(abs(color4.g), 0.0, 1.0);
+//    color4.b = clamp(abs(color4.b), 0.0, 1.0);
+//    color4.a = clamp(abs(color4.a), 0.0, 1.0);
+
+    // 0 to 1, where 0 is 0% plane diameter and 1 is 100% plane diameter. 
+    float glowSize = 0.5;
+    vec4 glow = vec4(pow(1.0 - distance(vUv, vec2(0.5)), 4.0)) * vec4(vColor, 1.0) * -glowSize;
+    
+    // Dev note: mix is foggier, but changes the particle size; min is arguably
+    // harder to make look nice, but has a consistent particle size.
+    gl_FragColor = min(color4, glow);
+    // gl_FragColor = mix(color4, glow, 0.5);
   }
 `;
 
