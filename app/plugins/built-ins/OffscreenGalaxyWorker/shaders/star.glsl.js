@@ -8,6 +8,7 @@ const varyingsHeader = `
   // Camera Y coordrinate relative to the galactic plane.
   varying float vCameraY;
   varying vec3 vColor;
+  varying float glowAmount;
 `;
 
 // language=glsl
@@ -62,40 +63,15 @@ const vertex = `
     
     float luminosity = aLuminosity;
 
-    // Dev note: for the BSC5P alone, luminosities can range from
-    // 0.08198708 to 205705980.57173166.
-    // Some test values:
-    // * Math.log(0.08) = -2.5257286443082556
-    // Math.log10(0.08) = -1.0969100130080565
-    // Math.log(205705980) = 19.141958425663915
-    // Math.log10(205705980) = 8.313246917087296
-    float l10Luminosity = abs(log10(luminosity));
+    float distanceScale = vDistToCamera * 2500.0;
     
-    // Claculate brightness based on the inverse square law.
-    float brightness = aLuminosity / (4.0 * PI * pow(vDistToCamera, 2.0));
-    float scale;
+    // Calculate brightness based on the inverse square law of distance.
+    float brightness = aLuminosity / (4.0 * PI * pow(distanceScale, 2.0));
+    glowAmount = brightness;
     
-    // Multiplying a number by local space position effectively scales the
-    // object.
-    // Dev note: best way to test this is with Andromeda (between X an Z),
-    // Sirius, and Orion's belt. The belt stars should all share the same size,
-    // Sirius should be slightly larger, and Andromeda should be visible.
-
-//    float lumLimit = aLuminosity * 10.15;
-//    float distLimit = vDistToCamera * 50000.0;
-//    scale = REALISM_FACTOR 
-//      * log10(clamp(lumLimit, generalEvenness, falloffSensitivity))
-//      * clamp(distLimit, nearStarLumMultiplier, nearFarRatio);
-//    
-//    if (vDistToCamera > 5100.0 * unitFactor) {
-//      vDistToCamera = 0.0;
-//      gl_Position = vec4(0.0);
-//      return;
-//    }
+    localPosition *= distanceScale;
     
-    scale = vDistToCamera * 2500.0;
-    
-    localPosition *= scale;
+    // -------------------------------------------------------------
     
     vec4 mvPosition = viewMatrix * instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0);
 
@@ -126,7 +102,6 @@ const fragment = `
   uniform float scale;
   uniform float invRadius;
   uniform float invGlowRadius;
-  uniform float glowFactor;
 
   #define fadeDist 0.05
   #define fadeReciprocal (1.0/fadeDist)
@@ -179,19 +154,19 @@ const fragment = `
       color4.a = color4.a >= 0.0 ? 1.0 : -1.0;
     }
     
-//    color4.r =s clamp(abs(color4.r), 0.0, 1.0);
-//    color4.g = clamp(abs(color4.g), 0.0, 1.0);
-//    color4.b = clamp(abs(color4.b), 0.0, 1.0);
-//    color4.a = clamp(abs(color4.a), 0.0, 1.0);
-
     // 0 to 1, where 0 is 0% plane diameter and 1 is 100% plane diameter. 
-    float glowSize = 0.5;
+    // float glowSize = 0.5;
+    float glowSize = clamp(glowAmount, 0.0, 1.0);
     vec4 glow = vec4(pow(1.0 - distance(vUv, vec2(0.5)), 4.0)) * vec4(vColor, 1.0) * -glowSize;
     
-    // Dev note: mix is foggier, but changes the particle size; min is arguably
-    // harder to make look nice, but has a consistent particle size.
-    gl_FragColor = min(color4, glow);
-    // gl_FragColor = mix(color4, glow, 0.5);
+    // Dev note: mix is *probably* less realistic but far prettier. We should
+    // consider trying to use min instead and make it pretty.
+    // gl_FragColor = min(color4, glow);
+    gl_FragColor = mix(color4, glow, 0.5);
+    
+    // Fade out stars according to their brightness.
+    float fade = pow(1.0 - glowSize, 3.0);
+    gl_FragColor = mix(gl_FragColor, vec4(0.0), fade);
   }
 `;
 

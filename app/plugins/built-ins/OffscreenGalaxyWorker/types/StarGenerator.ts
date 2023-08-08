@@ -27,9 +27,9 @@ export default class StarGenerator {
     this._binaryCheckCache = {};
 
     AssetFinder.getStarCatalog({
-      // name: 'bsc5p_3d_min',
+      name: 'bsc5p_3d_min',
       // name: 'constellation_test',
-      name: 'bubble_min',
+      // name: 'bubble_min',
       callback: (error, fileName, parentDir, extension) => {
         console.log({ error, fileName, parentDir, extension });
         if (error) {
@@ -124,7 +124,6 @@ export default class StarGenerator {
         scale: { value: -500.0 },
         invRadius: { value: 100.0 },
         invGlowRadius: { value: 3.0 },
-        glowFactor: { value: 3.0 },
       }
     });
 
