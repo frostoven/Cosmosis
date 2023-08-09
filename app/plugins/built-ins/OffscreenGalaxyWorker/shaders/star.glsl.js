@@ -58,7 +58,7 @@ const vertex = `
     float brightness = aLuminosity / (4.0 * PI * pow(distanceScale, 2.0));
     vGlowAmount = brightness;
     
-    localPosition *= distanceScale;
+    localPosition *= max(distanceScale, min(brightness * 0.01, 0.75));
     
     // -------------------------------------------------------------
     
@@ -142,12 +142,12 @@ const fragment = `
     // combined alphas producing black stars with bright rims. This fix does
     // not prevent the problem, but it drastically reduces the glitchiness and
     // makes the effect far less obvious for far-away stars.
-    if (vDistToCamera > 0.000025 && abs(color4.r) > 0.75 && abs(color4.g) > 0.75 && abs(color4.b) > 0.75) {
+    if (vDistToCamera > 0.0025 && abs(color4.r) > 0.75 && abs(color4.g) > 0.75 && abs(color4.b) > 0.75) {
       color4.a = color4.a >= 0.0 ? 1.0 : -1.0;
     }
-    else if (abs(color4.r) > 0.95 && abs(color4.g) > 0.95 && abs(color4.b) > 0.95) {
-      color4.a = color4.a >= 0.0 ? 1.0 : -1.0;
-    }
+    // else if (abs(color4.r) > 0.95 && abs(color4.g) > 0.95 && abs(color4.b) > 0.95) {
+    //   color4.a = color4.a >= 0.0 ? 1.0 : -1.0;
+    // }
     
     // Dev note: mix is *probably* less realistic but far prettier. We should
     // consider trying to use min instead and make it pretty.
