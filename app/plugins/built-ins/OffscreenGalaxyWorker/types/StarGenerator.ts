@@ -61,45 +61,6 @@ export default class StarGenerator {
     });
   }
 
-  // This is a fast (O(n)) proximity checker. It's used to ensure we don't
-  // render all the stars in a binary (or triple) system while they're far
-  // away. We do this because, to my knowledge, there's no way to render
-  // close-proximity stars in a way that's both glitch-free and performant.
-  // Note that this function wastes a lot of RAM, so its cache needs to be
-  // cleared with clearBinaryCache once the load process is complete.<br><br>
-  //
-  // Returns true if there's already another star to be rendered less than 3.26
-  // light years away, false if not.
-  // checkIfBinary(starObject) {
-  //   let { x, y, z, N } = starObject;
-  //   [x, y, z] = [floor(x), floor(y), floor(z)];
-  //   const cache = this._binaryCheckCache;
-  //
-  //   const xHit = cache[x];
-  //   const yHit = xHit && cache[x][y];
-  //   const zHit = yHit && cache[x][y][z];
-  //
-  //   if (!xHit) cache[x] = {};
-  //   if (!yHit) cache[x][y] = {};
-  //   if (!zHit) cache[x][y][z] = starObject;
-  //
-  //   const starNearby = xHit && yHit && zHit;
-  //
-  //   if (starNearby) {
-  //     // Check if this star is more luminous than the cached copy. Replace it
-  //     // if it is. This ensures we render the brighter version.
-  //     const nearbyStar = cache[x][y][z];
-  //     if (N > nearbyStar.N) {
-  //       // console.log(`Replacing cached ${nearbyStar.n} with ${starObject.n} due to higher luminosity.`);
-  //       cache[x][y][z] = starObject;
-  //     }
-  //     return true;
-  //   }
-  //   else {
-  //     return false;
-  //   }
-  // }
-
   // Frees RAM used to check star proximity.
   clearBinaryCache() {
     this._binaryCheckCache = {};
@@ -109,23 +70,11 @@ export default class StarGenerator {
     console.log('solPosition:', solPosition);
     console.log('starPositions:', starObjects);
 
-    // const solAdjusted = new THREE.Vector3(
-    //   solPosition.x * unitFactor,
-    //   solPosition.x * unitFactor,
-    //   solPosition.x * unitFactor,
-    // );
-
     const material = new THREE.ShaderMaterial({
       vertexShader: star.vertex,
       fragmentShader: star.fragment,
       transparent: true,
       uniforms: {
-        unitFactor: { value: unitFactor },
-        generalEvenness: { value: 1.0 },
-        falloffSensitivity: { value: 100000.0 },
-        nearStarLumMultiplier: { value: 2.0 },
-        nearFarRatio: { value: 100.0 },
-        //
         scale: { value: -500.0 },
         invRadius: { value: 100.0 },
         invGlowRadius: { value: 3.0 },
@@ -140,15 +89,10 @@ export default class StarGenerator {
     // plane.
     for (let i = 0, len = starObjects.length; i < len; i++) {
       const starObject = starObjects[i];
-      // const isBinary = this.checkIfBinary(starObject);
-      // if (!isBinary) {
       visibleStars.push(starObject);
-      // }
     }
 
     const bufferGeometry = new THREE.PlaneGeometry(unitFactor, unitFactor);
-    // const bufferGeometry = new THREE.PlaneGeometry(0.0001, 0.0001);
-    // const bufferGeometry = new THREE.PlaneGeometry(0.000000001, 0.000000001);
 
     const instancedPlane = new THREE.InstancedMesh(
       bufferGeometry, material, visibleStars.length,
@@ -215,7 +159,7 @@ export default class StarGenerator {
     // const material2 = new THREE.MeshBasicMaterial({ color: 0xffffff });
     // const cube = new THREE.Mesh(geometry, material2);
     // scene.add(cube);
-    window.sol = solPosition;
-
+    window.debug.sol = solPosition;
+    window.debug.uniforms = material.uniforms;
   }
 }

@@ -4,21 +4,12 @@ import { import_log10 } from '../../../../shaders/shaderMath';
 const varyingsHeader = `
   varying vec2 vUv;
   varying float vDistToCamera;
-  varying vec2 vCoords;
-  // Camera Y coordrinate relative to the galactic plane.
-  varying float vCameraY;
   varying vec3 vColor;
-  varying float glowAmount;
+  varying float vGlowAmount;
 `;
 
 // language=glsl
 const vertex = `
-  uniform float unitFactor;
-  uniform float generalEvenness;
-  uniform float falloffSensitivity;
-  uniform float nearStarLumMultiplier;
-  uniform float nearFarRatio;
-  
   attribute vec3 aColor;
   attribute float aLuminosity;
   
@@ -65,7 +56,7 @@ const vertex = `
     
     // Calculate brightness based on the inverse square law of distance.
     float brightness = aLuminosity / (4.0 * PI * pow(distanceScale, 2.0));
-    glowAmount = brightness;
+    vGlowAmount = brightness;
     
     localPosition *= distanceScale;
     
@@ -132,15 +123,18 @@ const fragment = `
     
     vec4 transparent = vec4(0.0);
 
+    // 0 to 1, where 0 is 0% plane diameter and 1 is 100% plane diameter.
+    // float glowSize = 0.5;
+    float glowSize = clamp(vGlowAmount, 0.0, 1.0);
+    float halo = 1.0 - distance(vUv, vec2(0.5));
+    vec4 glow = vec4(pow(halo, 4.0)) * vec4(vColor, 1.0) * -glowSize;
+    glow = mix(glow, transparent, 0.5);
+
     // Airy disk calculation.
     // https://en.wikipedia.org/wiki/Airy_disk
     float diskScale = length(position) * invRadius;
-    
-    float glowScale = 3000.0;
-    
+    // Dev note: devide spectrum by glowSize for easier debugging.
     vec4 spectrum = scale * vec4(vec3(vColor), 1.0);
-    vec4 glowSpectrum = glowScale * vec4(vec3(vColor), 1.0);
-
     vec4 color4 = spectrum / pow(diskScale, invGlowRadius);
     
     // Blending between stars tends to look really terrible, and can result in
@@ -153,12 +147,6 @@ const fragment = `
     else if (abs(color4.r) > 0.95 && abs(color4.g) > 0.95 && abs(color4.b) > 0.95) {
       color4.a = color4.a >= 0.0 ? 1.0 : -1.0;
     }
-
-    // 0 to 1, where 0 is 0% plane diameter and 1 is 100% plane diameter.
-    // float glowSize = 0.5;
-    float glowSize = clamp(glowAmount, 0.0, 1.0);
-    vec4 glow = vec4(pow(1.0 - distance(vUv, vec2(0.5)), 4.0)) * vec4(vColor, 1.0) * -glowSize;
-    glow = mix(glow, transparent, 0.5);
     
     // Dev note: mix is *probably* less realistic but far prettier. We should
     // consider trying to use min instead and make it pretty.
