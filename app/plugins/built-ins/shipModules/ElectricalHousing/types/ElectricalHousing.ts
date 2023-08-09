@@ -20,10 +20,15 @@ export default class ElectricalHousing {
 
     if (Array.isArray(oneOrMoreModules)) {
       for (let i = 0, len = oneOrMoreModules.length; i < len; i++) {
+        const mod = oneOrMoreModules[i];
+        if (mod === null) {
+          console.error('Attempted to attach null module. Missing mod?');
+          continue;
+        }
         this._modules.push(oneOrMoreModules[i]);
       }
     }
-    else {
+    else if (oneOrMoreModules !== null) {
       this._modules.push(oneOrMoreModules);
     }
   }
