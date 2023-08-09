@@ -6,13 +6,18 @@ import { galaxyDust } from '../shaders/galaxyDust.glsl';
 import AssetFinder from '../../../../local/AssetFinder';
 import Unit from '../../../../local/Unit';
 import { star } from '../shaders/star.glsl';
-import { rotateAboutPoint, xAxis } from '../../../../local/mathUtils';
-import { Vector3 } from 'three';
+import {
+  rotateAboutPoint,
+  xAxis,
+  yAxis,
+  zAxis,
+} from '../../../../local/mathUtils';
 
 const unitFactor = 0.00001;
 const parsecToMLy = Unit.parsecToLy * unitFactor;
 const pi = Math.PI;
 const floor = Math.floor;
+const equatorialTilt = 23.44 * THREE.MathUtils.DEG2RAD;
 
 export default class StarGenerator {
   public rng: FastDeterministicRandom;
@@ -181,7 +186,9 @@ export default class StarGenerator {
 
       // The default catalog uses coordinates that result in an incorrect
       // rotation in Three.js. Correct the rotation.
-      // rotateAboutPoint(dummy, solPosition, xAxis, Math.PI * 0.5, false);
+      rotateAboutPoint(dummy, solPosition, yAxis, pi * -0.5, false);
+      rotateAboutPoint(dummy, solPosition, xAxis, pi * -0.5 + equatorialTilt, false);
+      rotateAboutPoint(dummy, solPosition, zAxis, pi * 0.25 + (equatorialTilt * 0.5), false);
 
       dummy.updateMatrix();
       instancedPlane.setMatrixAt(i, dummy.matrix);
@@ -201,5 +208,14 @@ export default class StarGenerator {
     console.log('instanced star plane:', instancedPlane);
 
     scene.add(instancedPlane);
+
+    // Galaxy center marker. Used to double-check star placement.
+    // const size = 0.00125;
+    // const geometry = new THREE.BoxGeometry(size, size * 64, size);
+    // const material2 = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    // const cube = new THREE.Mesh(geometry, material2);
+    // scene.add(cube);
+    window.sol = solPosition;
+
   }
 }
