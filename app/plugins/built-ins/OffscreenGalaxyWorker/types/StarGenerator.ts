@@ -65,35 +65,35 @@ export default class StarGenerator {
   //
   // Returns true if there's already another star to be rendered less than 3.26
   // light years away, false if not.
-  checkIfBinary(starObject) {
-    let { x, y, z, N } = starObject;
-    [x, y, z] = [floor(x), floor(y), floor(z)];
-    const cache = this._binaryCheckCache;
-
-    const xHit = cache[x];
-    const yHit = xHit && cache[x][y];
-    const zHit = yHit && cache[x][y][z];
-
-    if (!xHit) cache[x] = {};
-    if (!yHit) cache[x][y] = {};
-    if (!zHit) cache[x][y][z] = starObject;
-
-    const starNearby = xHit && yHit && zHit;
-
-    if (starNearby) {
-      // Check if this star is more luminous than the cached copy. Replace it
-      // if it is. This ensures we render the brighter version.
-      const nearbyStar = cache[x][y][z];
-      if (N > nearbyStar.N) {
-        // console.log(`Replacing cached ${nearbyStar.n} with ${starObject.n} due to higher luminosity.`);
-        cache[x][y][z] = starObject;
-      }
-      return true;
-    }
-    else {
-      return false;
-    }
-  }
+  // checkIfBinary(starObject) {
+  //   let { x, y, z, N } = starObject;
+  //   [x, y, z] = [floor(x), floor(y), floor(z)];
+  //   const cache = this._binaryCheckCache;
+  //
+  //   const xHit = cache[x];
+  //   const yHit = xHit && cache[x][y];
+  //   const zHit = yHit && cache[x][y][z];
+  //
+  //   if (!xHit) cache[x] = {};
+  //   if (!yHit) cache[x][y] = {};
+  //   if (!zHit) cache[x][y][z] = starObject;
+  //
+  //   const starNearby = xHit && yHit && zHit;
+  //
+  //   if (starNearby) {
+  //     // Check if this star is more luminous than the cached copy. Replace it
+  //     // if it is. This ensures we render the brighter version.
+  //     const nearbyStar = cache[x][y][z];
+  //     if (N > nearbyStar.N) {
+  //       // console.log(`Replacing cached ${nearbyStar.n} with ${starObject.n} due to higher luminosity.`);
+  //       cache[x][y][z] = starObject;
+  //     }
+  //     return true;
+  //   }
+  //   else {
+  //     return false;
+  //   }
+  // }
 
   // Frees RAM used to check star proximity.
   clearBinaryCache() {
@@ -135,10 +135,10 @@ export default class StarGenerator {
     // plane.
     for (let i = 0, len = starObjects.length; i < len; i++) {
       const starObject = starObjects[i];
-      const isBinary = this.checkIfBinary(starObject);
-      if (!isBinary) {
-        visibleStars.push(starObject);
-      }
+      // const isBinary = this.checkIfBinary(starObject);
+      // if (!isBinary) {
+      visibleStars.push(starObject);
+      // }
     }
 
     const bufferGeometry = new THREE.PlaneGeometry(unitFactor, unitFactor);
