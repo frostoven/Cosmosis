@@ -78,6 +78,8 @@ export default class StarGenerator {
         scale: { value: -500.0 },
         invRadius: { value: 100.0 },
         invGlowRadius: { value: 3.0 },
+        // 0-1: industrial light pollution. 9: small telescope.
+        invFadeAggression: { value: 3.0 },
       }
     });
 

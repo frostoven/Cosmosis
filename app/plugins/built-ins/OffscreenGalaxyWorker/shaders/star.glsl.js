@@ -91,6 +91,7 @@ const fragment = `
   uniform float scale;
   uniform float invRadius;
   uniform float invGlowRadius;
+  uniform float invFadeAggression;
 
   #define fadeDist 0.05
   #define fadeReciprocal (1.0/fadeDist)
@@ -154,8 +155,8 @@ const fragment = `
     gl_FragColor = mix(color4, glow, 0.5);
     
     // Fade out stars according to their brightness.
-    float fadeAggression = pow(1.0 - glowSize, 3.0);
-    gl_FragColor = mix(gl_FragColor, transparent, fadeAggression);
+    float fade = pow(1.0 - glowSize, invFadeAggression);
+    gl_FragColor = mix(gl_FragColor, transparent, fade);
   }
 `;
 
