@@ -192,7 +192,7 @@ function initAstrometrics() {
       fogTexture: inbound.starFogTexture,
       galaxyMeshUrl: inbound.galaxyModel,
     });
-    onReceiveStarFogTexture.getOnce(() => {
+    onReceiveRealStarData.getOnce(() => {
       clouds.onSolPosition.getOnce((position) => {
         new StarGenerator({
           scene,
