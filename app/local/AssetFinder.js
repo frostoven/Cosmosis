@@ -26,6 +26,10 @@ const assetDefaults = {
     dir: 'icons',
     extensions: [ 'jpg', 'png', 'gif' ],
   },
+  smokeImg: {
+    dir: 'smokeImg',
+    extensions: [ 'png' ],
+  },
   models: {
     dir: 'models',
     extensions: [ 'glb', 'gltf' ],
@@ -137,6 +141,10 @@ AssetFinder.prototype.getHudModel = function getHudModel({ name, options={}, cal
 
 AssetFinder.prototype.getIcon = function getIcon({ name, options={}, callback }) {
   this.getRes(name, { ...assetDefaults.icons, ...options }, callback);
+};
+
+AssetFinder.prototype.getSmokeImage = function getSmokeImage({ name, options={}, callback }) {
+  this.getRes(name, { ...assetDefaults.smokeImg, ...options }, callback);
 };
 
 AssetFinder.prototype.getModel = function getModel({ name, options={}, callback }) {
