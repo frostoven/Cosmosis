@@ -1,4 +1,8 @@
+// -- Misc vars --//
+
 let _index = 0;
+
+const RUNTIME_BRIDGE = 'BridgeRequest';
 
 // -- Array index info --//
 
@@ -26,6 +30,8 @@ const TYPE_POSITIONAL_DATA = _index++;
 // -- Constant exports --//
 
 export {
+  RUNTIME_BRIDGE,
+  // ------------------- //
   BUFFER_TYPE,
   POS_X,
   POS_Y,
