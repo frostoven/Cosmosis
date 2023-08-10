@@ -17,7 +17,10 @@ const NEAR = 0.000001, FAR = 1e27;
 
 // THREE.ColorManagement.enabled = true;
 
-let camera, scene, renderer, renderScene, bloomPass, bloomComposer, mixPass, finalComposer;
+let camera: THREE.PerspectiveCamera, scene: THREE.Scene,
+  renderer: THREE.WebGLRenderer, renderScene: RenderPass,
+  bloomPass: UnrealBloomPass, bloomComposer: EffectComposer,
+  mixPass: ShaderPass, finalComposer: EffectComposer;
 
 let inbound = {
   realStarData: null as any,
@@ -126,9 +129,27 @@ function init({ data }) {
 
   initAstrometrics();
 
+  self.postMessage({
+    rpc: RUNTIME_BRIDGE,
+    replyTo: 'receiveWindowSize',
+    options: { fn: 'onWindowResize' },
+  });
+
   animate();
   console.log('xxx end of init reached. animate() has been invoked.');
 }
+
+function animate() {
+  // renderer.render(scene, camera);
+  // // this.bloomComposer.render();
+  finalComposer.render();
+
+  if (self.requestAnimationFrame) {
+    self.requestAnimationFrame(animate);
+  }
+}
+
+// -------------------------------------------------------------- //
 
 function initAstrometrics() {
   self.postMessage({
@@ -230,16 +251,14 @@ function receivePositionalInfo({ data }) {
   // self.postMessage(bufferArray, [ bufferArray.buffer ]);
 }
 
-function animate() {
-  // TODO: delete me; just here for testing purposes.
-  // camera.position.z -= 0.0002;
-  // renderer.render(scene, camera);
-  // // this.bloomComposer.render();
-  finalComposer.render();
-
-  if (self.requestAnimationFrame) {
-    self.requestAnimationFrame(animate);
-  }
+function receiveWindowSize({ data }) {
+  const { width, height, devicePixelRatio } = data.serialData;
+  renderer.setSize(width, height, false);
+  bloomComposer.setSize(width, height);
+  finalComposer.setSize(width, height);
+  renderer.setPixelRatio(devicePixelRatio);
+  camera.aspect = width / height;
+  camera.updateProjectionMatrix();
 }
 
 // -------------------------------------------------------------- //
@@ -250,6 +269,7 @@ const endpoints = {
   receiveRealStarData: receiveRealStarData,
   receiveMilkyWayModel: receiveMilkyWayModel,
   receiveMilkyWayFogTexture: receiveMilkyWayFogTexture,
+  receiveWindowSize: receiveWindowSize,
 };
 
 // Processes incoming messages. Supports serialized endpoints and shared buffer

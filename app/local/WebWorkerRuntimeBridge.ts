@@ -26,7 +26,11 @@ export default class WebWorkerRuntimeBridge {
   _setupListeners() {
     window.addEventListener('resize', () => {
       this._resizeWatchers.setValue({
-        width: window.innerWidth, height: window.innerHeight,
+        serialData: {
+          width: window.innerWidth,
+          height: window.innerHeight,
+          devicePixelRatio: window.devicePixelRatio,
+        }
       });
     });
   }
@@ -77,7 +81,7 @@ export default class WebWorkerRuntimeBridge {
     });
   }
 
-  onWindowResize(callback) {
-    this._resizeWatchers.getNext(callback);
+  onWindowResize(_, callback) {
+    this._resizeWatchers.getEveryChange(data => callback(null, data));
   }
 }
