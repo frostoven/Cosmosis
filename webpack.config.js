@@ -1,5 +1,6 @@
 const webpack = require('webpack');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const pluginManifest = require('./app/plugins/pluginWebWorkersEnabled.json');
 
 module.exports = {
   mode: "production",
@@ -7,9 +8,7 @@ module.exports = {
   target: 'node-webkit',
   entry: {
     game: './app/index.js',
-    offscreenSkybox: './app/webWorkers/offscreenSkybox.js',
-    offscreenGalaxy: './app/webWorkers/offscreenGalaxy.ts',
-    // physicsWorker: './app/webWorkers/physicsWorker.js',
+    ...pluginManifest.pluginWorkers,
   },
   output: {
     path: __dirname + '/build',
