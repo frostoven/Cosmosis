@@ -10,8 +10,14 @@ import {
   ROT_Y,
   ROT_Z,
   API_BRIDGE_REQUEST,
-  SBA_LENGTH, SEND_SKYBOX,
+  SBA_LENGTH,
+  SEND_SKYBOX,
   TYPE_POSITIONAL_DATA,
+  FRONT_SIDE,
+  RIGHT_SIDE,
+  BACK_SIDE,
+  TOP_SIDE,
+  BOTTOM_SIDE, LEFT_SIDE,
 } from './webWorker/sharedBufferArrayConstants';
 import WebWorkerRuntimeBridge from '../../../local/WebWorkerRuntimeBridge';
 import { bufferToPng } from './webWorker/workerUtils';
@@ -40,12 +46,6 @@ class OffscreenGalaxyWorker extends Worker {
 
     this._pluginTracker = new PluginCacheTracker([ 'core', 'player' ]);
     this._pluginTracker.onAllPluginsLoaded.getOnce(() => {
-      this._pluginTracker.core.onAnimate.getEveryChange(() => {
-        const cam: THREE.PerspectiveCamera = this._pluginTracker.player.camera;
-        if (!cam) {
-          return;
-        }
-        this.sendPositionalInfo(cam);
       if (this.debugLiveAnimation) {
         this.postMessage({ endpoint: 'actionStartDebugAnimation' });
         this._pluginTracker.core.onAnimate.getEveryChange(() => {
@@ -58,6 +58,10 @@ class OffscreenGalaxyWorker extends Worker {
         // TODO: disable space skybox when doing this.
         return;
       }
+
+      this.postMessage({
+        endpoint: 'mainRequestsSkyboxSide',
+        options: { side: BACK_SIDE },
       });
     });
   }
@@ -99,7 +103,7 @@ class OffscreenGalaxyWorker extends Worker {
     const { rpc, replyTo, options, buffer }: {
       rpc: number,
       replyTo: string,
-      options: {[key:string]: any},
+      options: { [key: string]: any },
       buffer: ArrayBuffer | ImageBitmap
     } = data;
       // Skybox requesting data.

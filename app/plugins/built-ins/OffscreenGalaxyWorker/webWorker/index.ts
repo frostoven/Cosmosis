@@ -1,19 +1,27 @@
 import * as THREE from 'three';
 import {
+  API_BRIDGE_REQUEST,
+  BACK_SIDE,
+  BOTTOM_SIDE,
+  FRONT_SIDE,
+  LEFT_SIDE,
+  RIGHT_SIDE,
+  ROT_W,
   ROT_X,
   ROT_Y,
   ROT_Z,
-  ROT_W,
-  API_BRIDGE_REQUEST,
   SEND_SKYBOX,
-  FRONT_SIDE,
-  BACK_SIDE,
+  TOP_SIDE,
 } from './sharedBufferArrayConstants';
 
-import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import {
+  EffectComposer,
+} from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
-import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+import {
+  UnrealBloomPass,
+} from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import SpaceClouds from '../types/SpaceClouds';
 import StarGenerator from '../types/StarGenerator';
@@ -363,6 +371,20 @@ function actionStartDebugAnimation() {
 
 // -------------------------------------------------------------- //
 
+function mainRequestsSkyboxSide({ data }) {
+  onWorkerBootComplete.getOnce(() => {
+    const side = data.options.side;
+    const buffer = renderGalacticSide(side);
+    self.postMessage({
+      rpc: SEND_SKYBOX,
+      options: { side },
+      buffer,
+      // @ts-ignore - This is actually correct. Source:
+      // https://developer.mozilla.org/en-US/docs/Web/API/ImageBitmap.
+    }, [ buffer ]);
+  });
+}
+
 // function takeCubeScreenshot() {
 //   galacticClouds.showClouds();
 //   galacticStars.hideStars();
@@ -382,12 +404,18 @@ function actionStartDebugAnimation() {
 //   });
 // }
 
-const sideAngles = [ 0, 0, 0, 0, 0, 0, 0, 0 ];
-sideAngles[FRONT_SIDE] = 0;
-sideAngles[BACK_SIDE] = 0;
-
-function renderGalacticSide() {
-  //
+/**
+ * @param side
+ * @return ImageBitmap
+ */
+function renderGalacticSide(side: number) {
+  const [ axisFunction, radians ] = sideAngles[side];
+  camera.rotation.set(0, 0, 0);
+  // eg: camera.rotateY(Math.PI * 0.25);
+  camera[axisFunction](radians);
+  renderer.clear();
+  finalComposer.render();
+  return offscreenCanvas.transferToImageBitmap();
 }
 
 function createGalaxyBackdropSkybox() {
@@ -453,6 +481,8 @@ const endpoints = {
   receiveMilkyWayModel: receiveMilkyWayModel,
   receiveMilkyWayFogTexture: receiveMilkyWayFogTexture,
   receiveWindowSize: receiveWindowSize,
+  actionStartDebugAnimation: actionStartDebugAnimation,
+  mainRequestsSkyboxSide: mainRequestsSkyboxSide,
 };
 
 // Processes incoming messages. Supports serialized endpoints and shared buffer
