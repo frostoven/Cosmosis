@@ -178,22 +178,26 @@ function init({ data }) {
   });
 
   onAssetsReady.getOnce(() => {
+    galacticClouds.showClouds();
+    galacticStars.showStars();
     renderer.compile(scene, camera);
     finalComposer.renderer.compile(scene, camera);
-    // cubeCamera.update(finalComposer.renderer, scene);
+    // Render at least once before boot completes:
+    finalComposer.render();
+
     onWorkerBootComplete.setValue(Date.now());
   });
 }
 
-// function animate() {
-//   // renderer.render(scene, camera);
-//   // // this.bloomComposer.render();
-//   finalComposer.render();
-//
-//   if (self.requestAnimationFrame) {
-//     self.requestAnimationFrame(animate);
-//   }
-// }
+// Note: we should not rerender each frame. This function exists only for
+// testing purposes.
+function debugAnimate() {
+  finalComposer.render();
+
+  if (self.requestAnimationFrame) {
+    self.requestAnimationFrame(debugAnimate);
+  }
+}
 
 // -------------------------------------------------------------- //
 
@@ -247,11 +251,13 @@ function initAstrometrics() {
         });
 
         galacticStars.onStarGeneratorReady.getOnce(() => {
-          // The inbound object contains A LOT of data. Clear it to save RAM.
-          // @ts-ignore
-          inbound = Object.freeze({ message: 'worker boot complete' });
-          onAssetsReady.setValue(true);
-        })
+          galacticClouds.onSpaceCloudsReady.getOnce(() => {
+            // The inbound object contains A LOT of data. Clear it to save RAM.
+            // @ts-ignore
+            inbound = Object.freeze({ message: 'worker boot complete' });
+            onAssetsReady.setValue(true);
+          });
+        });
       });
     });
   });
