@@ -61,9 +61,15 @@ class OffscreenGalaxyWorker extends Worker {
 
       this.postMessage({
         endpoint: 'mainRequestsSkyboxSide',
-        options: { side: BACK_SIDE },
+        options: { side: FRONT_SIDE },
       });
     });
+    // setInterval(() => {
+    //   this.postMessage({
+    //     endpoint: 'mainRequestsSkyboxSide',
+    //     options: { side: THREE.MathUtils.randInt(0, 5) },
+    //   });
+    // }, 1000);
   }
 
   _init() {

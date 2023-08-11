@@ -40,7 +40,9 @@ let camera: THREE.PerspectiveCamera, scene: THREE.Scene,
   renderer: THREE.WebGLRenderer, renderScene: RenderPass,
   bloomPass: UnrealBloomPass, bloomComposer: EffectComposer,
   mixPass: ShaderPass, finalComposer: EffectComposer,
-  offscreenCanvas: OffscreenCanvas, material: THREE.ShaderMaterial;
+  offscreenCanvas: OffscreenCanvas, intermediateSkybox: THREE.Mesh,
+  postprocessingMaterial: THREE.ShaderMaterial,
+  skyboxMaterial: THREE.MeshBasicMaterial;
 
 // let cubeCamera: THREE.CubeCamera, cubeRenderTarget: THREE.WebGLCubeRenderTarget;
 
@@ -104,6 +106,14 @@ function init({ data }) {
   // const cube = new THREE.Mesh(geometry, material2);
   // scene.add(cube);
 
+  // Create internal skybox for multi-bake step purposes.
+  const size = 0.1;
+  const geometry = new THREE.BoxGeometry(size, size, size);
+  skyboxMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
+  skyboxMaterial.side = THREE.BackSide;
+  intermediateSkybox = new THREE.Mesh(geometry, skyboxMaterial);
+  scene.add(intermediateSkybox);
+
   addDebugCornerIndicators(scene);
   addDebugSideCounters(scene);
 
@@ -139,7 +149,7 @@ function init({ data }) {
   bloomComposer = new EffectComposer(renderer);
   bloomComposer.addPass(renderScene);
 
-  material = new THREE.ShaderMaterial({
+  postprocessingMaterial = new THREE.ShaderMaterial({
     uniforms: {
       // 0.18 is quite realistic, assuming you're inside one of the outer
       // galactic arms, and there's no ambient light. 1.0 is really
@@ -184,18 +194,18 @@ function init({ data }) {
           // float lum = 0.21 * bloom_color.r + 0.71 * bloom_color.g + 0.07 * bloom_color.b;
           // vec4 color4 = vec4(base_color.rgb + bloom_color.rgb, max(base_color.a, 1.0));
           vec4 color4 = vec4(base_color.rgb * brightness, 1.0);
-          gl_FragColor = color4;
+          gl_FragColor = gammaToLinear(color4);
         }
         else {
           gl_FragColor = base_color * vec4(vec3(brightness), 1.0);
         }
         
-        // gl_FragColor = gammaToLinear(gl_FragColor);
+        
       }
       `,
     defines: {},
   });
-  const mixPass = new ShaderPass(material, 'baseTexture');
+  const mixPass = new ShaderPass(postprocessingMaterial, 'baseTexture');
   mixPass.needsSwap = true;
 
   finalComposer = new EffectComposer(renderer);
@@ -219,7 +229,7 @@ function init({ data }) {
     finalComposer.renderer.compile(scene, camera);
 
     galacticStars.hideStars();
-    material.uniforms.brightness.value = 0.18;
+    postprocessingMaterial.uniforms.brightness.value = 0.18;
     // Render at least once before boot is marked complete:
     finalComposer.render();
 
@@ -362,6 +372,7 @@ function receiveWindowSize({ data }) {
 
   camera.aspect = width / height;
   camera.updateProjectionMatrix();
+  finalComposer.render();
 }
 
 // Makes the skybox rerender each frame.
@@ -371,10 +382,32 @@ function actionStartDebugAnimation() {
 
 // -------------------------------------------------------------- //
 
+// Request to render one face of the skybox.
 function mainRequestsSkyboxSide({ data }) {
   onWorkerBootComplete.getOnce(() => {
     const side = data.options.side;
-    const buffer = renderGalacticSide(side);
+
+    postprocessingMaterial.uniforms.mode.value = GFX_MODE_BRIGHTNESS;
+    postprocessingMaterial.uniforms.brightness.value = 0.18;
+    galacticClouds.showClouds();
+    galacticStars.hideStars();
+    let buffer = renderGalacticSide(side);
+
+    // Place the galaxy background over the skybox mesh:
+    const oldMaterial = intermediateSkybox.material;
+    intermediateSkybox.position.copy(camera.position);
+    intermediateSkybox.material = new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(buffer) });
+    intermediateSkybox.material.side = THREE.BackSide;
+    oldMaterial.dispose();
+    // skyboxMaterial.material.needsUpdate = true;
+    // skyboxMaterial.uniforms.map!.value.image.src = new THREE.CanvasTexture(buffer);
+
+    postprocessingMaterial.uniforms.mode.value = GFX_MODE_BRIGHTNESS_AND_BLOOM;
+    postprocessingMaterial.uniforms.brightness.value = 1.0;
+    galacticClouds.hideClouds();
+    galacticStars.showStars();
+    buffer = renderGalacticSide(side);
+
     self.postMessage({
       rpc: SEND_SKYBOX,
       options: { side },
@@ -385,16 +418,26 @@ function mainRequestsSkyboxSide({ data }) {
   });
 }
 
+// Request to render all six sides of the skybox.
+function mainRequestsSkyBox() {
+}
+
+// Request for galactic information.
+function mainRequestsQuery() {
+}
+
+// -------------------------------------------------------------- //
+
 // function takeCubeScreenshot() {
 //   galacticClouds.showClouds();
 //   galacticStars.hideStars();
 //   renderer.clear();
-//   material.uniforms.brightness.value = 0.18;
+//   postprocessingMaterial.uniforms.brightness.value = 0.18;
 //   finalComposer.render();
 //   //
 //   galacticClouds.hideClouds();
 //   galacticStars.showStars();
-//   material.uniforms.brightness.value = 1.0;
+//   postprocessingMaterial.uniforms.brightness.value = 1.0;
 //   finalComposer.render();
 //   //
 //   offscreenCanvas.convertToBlob().then((blob: Blob) => {
@@ -419,32 +462,36 @@ function renderGalacticSide(side: number) {
 }
 
 function createGalaxyBackdropSkybox() {
-  renderer.clear();
-  galacticClouds.showClouds();
-  galacticStars.showStars();
-  material.uniforms.brightness.value = 1.0;
-  material.uniforms.mode.value = GFX_MODE_BRIGHTNESS_AND_BLOOM;
-  finalComposer.render();
-
-  // offscreenCanvas.convertToBlob().then((blob: Blob) => {
-  //   blob.arrayBuffer().then((buffer: ArrayBuffer) => {
-  //     console.log('==> sending canvas buffer:', buffer);
-  //     // @ts-ignore
-  //     self.postMessage({ rpc: SEND_SKYBOX, buffer }, [ buffer ]);
-  //   });
-  // });
-
-  // console.log('====> IMAGE BITMAP:', offscreenCanvas.transferToImageBitmap());
-  // Note: ImageBitmap are transferable.
-  const buffer: ImageBitmap = offscreenCanvas.transferToImageBitmap();
-  self.postMessage({
-    rpc: SEND_SKYBOX,
-    options: { side: FRONT_SIDE },
-    buffer,
-    // @ts-ignore - This is actually correct. Source:
-    // https://developer.mozilla.org/en-US/docs/Web/API/ImageBitmap.
-  }, [ buffer ]);
+  //
 }
+
+// function createGalaxyBackdropSkybox() {
+//   renderer.clear();
+//   galacticClouds.showClouds();
+//   galacticStars.showStars();
+//   postprocessingMaterial.uniforms.brightness.value = 1.0;
+//   postprocessingMaterial.uniforms.mode.value = GFX_MODE_BRIGHTNESS_AND_BLOOM;
+//   finalComposer.render();
+//
+//   // offscreenCanvas.convertToBlob().then((blob: Blob) => {
+//   //   blob.arrayBuffer().then((buffer: ArrayBuffer) => {
+//   //     console.log('==> sending canvas buffer:', buffer);
+//   //     // @ts-ignore
+//   //     self.postMessage({ rpc: SEND_SKYBOX, buffer }, [ buffer ]);
+//   //   });
+//   // });
+//
+//   // console.log('====> IMAGE BITMAP:', offscreenCanvas.transferToImageBitmap());
+//   // Note: ImageBitmap are transferable.
+//   const buffer: ImageBitmap = offscreenCanvas.transferToImageBitmap();
+//   self.postMessage({
+//     rpc: SEND_SKYBOX,
+//     options: { side: FRONT_SIDE },
+//     buffer,
+//     // @ts-ignore - This is actually correct. Source:
+//     // https://developer.mozilla.org/en-US/docs/Web/API/ImageBitmap.
+//   }, [ buffer ]);
+// }
 
 function createStarBackdropSkybox() {
   //
@@ -461,7 +508,6 @@ function createSkybox() {
     // // --> takeCubeScreenshot
     //
     // galacticStars.hideStars();
-
     // bookm
     // takeCubeScreenshot();
   });
