@@ -45,6 +45,26 @@ let inbound = {
   galaxyModel: null as any,
 };
 
+const sideAngles = [
+  [ '(angle function)', 0 ],
+  [ '(angle function)', 0 ],
+  [ '(angle function)', 0 ],
+  [ '(angle function)', 0 ],
+  [ '(angle function)', 0 ],
+  [ '(angle function)', 0 ],
+  [ '(angle function)', 0 ],
+  [ '(angle function)', 0 ],
+];
+
+// The 'true' circle unit.
+const twoPi = 2 * Math.PI;
+sideAngles[FRONT_SIDE] = [ 'rotateY', 0 ];
+sideAngles[RIGHT_SIDE] = [ 'rotateY', twoPi * 0.75 ];
+sideAngles[BACK_SIDE] = [ 'rotateY', twoPi * 0.5 ];
+sideAngles[LEFT_SIDE] = [ 'rotateY', twoPi * 0.25 ];
+sideAngles[TOP_SIDE] = [ 'rotateX', twoPi * 0.25 ];
+sideAngles[BOTTOM_SIDE] = [ 'rotateX', twoPi * 0.75 ];
+
 const onReceiveRealStarData = new ChangeTracker();
 const onReceiveStarFogTexture = new ChangeTracker();
 const onReceiveGalaxyModel = new ChangeTracker();
