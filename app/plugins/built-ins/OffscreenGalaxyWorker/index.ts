@@ -25,6 +25,7 @@ class OffscreenGalaxyWorker extends Worker {
   private _pluginTracker!: PluginCacheTracker | PluginCompletion;
   // private transferablePosition!: Float64Array;
   private bridge: WebWorkerRuntimeBridge;
+  private debugLiveAnimation = false;
 
   constructor() {
     // Note: Webpack automatically bundles this from ./webWorker/index.ts. The
@@ -45,6 +46,18 @@ class OffscreenGalaxyWorker extends Worker {
           return;
         }
         this.sendPositionalInfo(cam);
+      if (this.debugLiveAnimation) {
+        this.postMessage({ endpoint: 'actionStartDebugAnimation' });
+        this._pluginTracker.core.onAnimate.getEveryChange(() => {
+          const cam: THREE.PerspectiveCamera = this._pluginTracker.player.camera;
+          if (!cam) {
+            return;
+          }
+          this.sendPositionalInfo(cam);
+        });
+        // TODO: disable space skybox when doing this.
+        return;
+      }
       });
     });
   }

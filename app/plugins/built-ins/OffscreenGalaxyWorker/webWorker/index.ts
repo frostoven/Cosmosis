@@ -336,6 +336,11 @@ function receiveWindowSize({ data }) {
   camera.updateProjectionMatrix();
 }
 
+// Makes the skybox rerender each frame.
+function actionStartDebugAnimation() {
+  debugAnimate();
+}
+
 // -------------------------------------------------------------- //
 
 // function takeCubeScreenshot() {
