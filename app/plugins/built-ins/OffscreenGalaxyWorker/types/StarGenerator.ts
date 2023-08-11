@@ -8,6 +8,7 @@ import {
   yAxis,
   zAxis,
 } from '../../../../local/mathUtils';
+import ChangeTracker from 'change-tracker/src';
 
 const unitFactor = 0.00001;
 const parsecToMLy = Unit.parsecToLy * unitFactor;
@@ -16,11 +17,16 @@ const equatorialTilt = 23.44 * THREE.MathUtils.DEG2RAD;
 
 export default class StarGenerator {
   public rng: FastDeterministicRandom;
+  private instancedPlane!: THREE.InstancedMesh<THREE.PlaneGeometry, THREE.ShaderMaterial>;
+  public onStarGeneratorReady: ChangeTracker;
+  private _visible: boolean;
 
   constructor({ solPosition, scene, stars }) {
     this.rng = new FastDeterministicRandom();
     // Chosen with: Math.floor(Math.random() * 16384)
     this.rng.seed = 8426;
+    this.onStarGeneratorReady = new ChangeTracker();
+    this._visible = true;
     this.setupStars(scene, stars, solPosition);
   }
 
@@ -94,12 +100,16 @@ export default class StarGenerator {
       new Float32Array(luminosities), 1,
     ));
 
+    instancedPlane.visible = this._visible;
+
     // instancedPlane.position.copy(solPosition);
     instancedPlane.instanceMatrix.needsUpdate = true;
 
     console.log('instanced star plane:', instancedPlane);
 
     scene.add(instancedPlane);
+    this.instancedPlane = instancedPlane;
+    this.onStarGeneratorReady.setValue(true);
 
     // Galaxy center marker. Used to double-check star placement.
     // const size = 0.00125;
@@ -107,5 +117,17 @@ export default class StarGenerator {
     // const material2 = new THREE.MeshBasicMaterial({ color: 0xffffff });
     // const cube = new THREE.Mesh(geometry, material2);
     // scene.add(cube);
+  }
+  
+  hideStars() {
+    if (this.instancedPlane) {
+      this.instancedPlane.visible = this._visible = false;
+    }
+  }
+
+  showStars() {
+    if (this.instancedPlane) {
+      this.instancedPlane.visible = this._visible = true;
+    }
   }
 }
