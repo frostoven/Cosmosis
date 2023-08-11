@@ -23,6 +23,10 @@ import WebWorkerRuntimeBridge from '../../../local/WebWorkerRuntimeBridge';
 import { bufferToPng } from './webWorker/workerUtils';
 import { gameRuntime } from '../../gameRuntime';
 
+const csmToThree = [
+  5, 4, 2, 3, 1, 0,
+];
+
 type PluginCompletion = PluginCacheTracker & {
   player: Player, core: Core,
 };
@@ -32,6 +36,11 @@ class OffscreenGalaxyWorker extends Worker {
   // private transferablePosition!: Float64Array;
   private bridge: WebWorkerRuntimeBridge;
   private debugLiveAnimation = false;
+  // If this is hits zero, a skybox is generated. If below zero, the class can
+  // still receive updates, but won't apply them to the skybox. This is
+  // intended for preemptive cases.
+  private skyboxCountDown = 5;
+  private skyboxTextures: THREE.CanvasTexture[] | null[] = [ null, null, null, null, null, null ];
 
   constructor() {
     // Note: Webpack automatically bundles this from ./webWorker/index.ts. The
@@ -59,9 +68,9 @@ class OffscreenGalaxyWorker extends Worker {
         return;
       }
 
+      this.skyboxCountDown = 5;
       this.postMessage({
-        endpoint: 'mainRequestsSkyboxSide',
-        options: { side: FRONT_SIDE },
+        endpoint: 'mainRequestsSkybox',
       });
     });
     // setInterval(() => {
@@ -135,19 +144,19 @@ class OffscreenGalaxyWorker extends Worker {
         console.log(`=======> ${SEND_SKYBOX}[${options.side}]`, buffer);
 
         const start = performance.now();
+        const side = options.side;
         const texture = new THREE.CanvasTexture(buffer as ImageBitmap);
         texture.image = buffer;
-        console.log(`------> processing took ${(performance.now() - start)}ms`);
+        // @ts-ignore
+        this.skyboxTextures[csmToThree[side]] = texture;
+        // Try to keep this under 1ms. The only real lag should come from
+        // offscreen GPU use. This averages 0.09-0.5ms on my laptop, depending
+        // on how busy the machine already is.
+        console.log(`[OffscreenGalaxyWorker] side cost the main thread ${(performance.now() - start)}ms.`);
 
-        const geometry = new THREE.PlaneGeometry(1, 1);
-        const material = new THREE.MeshBasicMaterial({
-          side: THREE.DoubleSide,
-          map: texture,
-        });
-        const plane = new THREE.Mesh(geometry, material);
-        gameRuntime.tracked.levelScene.getOnce((scene) => {
-          scene.add(plane);
-        });
+        if (this.skyboxCountDown-- === 0) {
+          this.buildSkybox();
+        }
       }
       else {
         console.warn(
@@ -177,6 +186,39 @@ class OffscreenGalaxyWorker extends Worker {
       endpoint: 'receivePositionalInfo',
       buffer: bufferArray.buffer,
     }, [ bufferArray.buffer ]);
+  }
+
+  buildSkybox() {
+    console.log('--> building skybox on main thread');
+    const start = performance.now();
+    const currentTextures = this.skyboxTextures;
+    this.skyboxTextures = [ null, null, null, null, null, null ];
+    let i: number, len: number;
+
+    const materials: THREE.MeshBasicMaterial[] = [];
+    for (i = 0, len = currentTextures.length; i < len; i++) {
+      // @ts-ignore
+      const bitmap: THREE.CanvasTexture = currentTextures[i];
+      bitmap.colorSpace = 'srgb';
+      // bitmap.image.
+      const newMaterial = new THREE.MeshBasicMaterial({ map: bitmap, side: THREE.BackSide });
+      materials.push(newMaterial);
+    }
+
+    // skybox.materials = materials;
+
+    const size = 200000;
+    const geometry = new THREE.BoxGeometry(size, size, size);
+    // const material = new THREE.MeshBasicMaterial({ color: 0x000000 });
+    // material.side = THREE.BackSide;
+    // material.side = THREE.BackSide;
+    const skybox = new THREE.Mesh(geometry, materials);
+
+    console.log(`[OffscreenGalaxyWorker] side cost the main thread ${(performance.now() - start)}ms.`);
+
+    gameRuntime.tracked.levelScene.getOnce((scene) => {
+      scene.add(skybox);
+    });
   }
 }
 

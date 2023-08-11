@@ -2,6 +2,12 @@ import * as THREE from 'three';
 
 const imageBitmapLoader = new THREE.ImageBitmapLoader();
 
+function requestPostAnimationFrame(task) {
+  requestAnimationFrame(() => {
+    setTimeout(task, 0);
+  });
+}
+
 function bufferToBlobUrl(buffer) {
   const blob = new Blob([ buffer ]);
   return URL.createObjectURL(blob);
@@ -24,6 +30,7 @@ function bufferToPng(buffer, callback: Function) {
 }
 
 export {
+  requestPostAnimationFrame,
   bufferToBlobUrl,
   bufferToString,
   bufferToPng,

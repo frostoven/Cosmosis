@@ -25,11 +25,20 @@ import {
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import SpaceClouds from '../types/SpaceClouds';
 import StarGenerator from '../types/StarGenerator';
-import { bufferToPng, bufferToString } from './workerUtils';
+import {
+  bufferToPng,
+  bufferToString,
+  requestPostAnimationFrame,
+} from './workerUtils';
 import ChangeTracker from 'change-tracker/src';
 import { addDebugCornerIndicators, addDebugSideCounters } from './debugTools';
 
-const NEAR = 0.000001, FAR = 1e27;
+let liveAnimationActive = false;
+let knownDisplayInfo = {
+  width: 0, height: 0, devicePixelRatio: 0,
+};
+
+const NEAR = 0.000001, FAR = 1e27, CUBE_ASPECT = 1;
 const GFX_MODE_BRIGHTNESS = 0;
 const GFX_MODE_BRIGHTNESS_AND_BLOOM = 1;
 
@@ -55,25 +64,24 @@ let inbound = {
   galaxyModel: null as any,
 };
 
+// 0: rotation function. 1: radians. 2: rotateY 90 degrees.
 const sideAngles = [
-  [ '(angle function)', 0 ],
-  [ '(angle function)', 0 ],
-  [ '(angle function)', 0 ],
-  [ '(angle function)', 0 ],
-  [ '(angle function)', 0 ],
-  [ '(angle function)', 0 ],
-  [ '(angle function)', 0 ],
-  [ '(angle function)', 0 ],
+  [ '(angle function)', 0, false ],
+  [ '(angle function)', 0, false ],
+  [ '(angle function)', 0, false ],
+  [ '(angle function)', 0, false ],
+  [ '(angle function)', 0, false ],
+  [ '(angle function)', 0, false ],
 ];
 
 // The 'true' circle unit.
 const twoPi = 2 * Math.PI;
-sideAngles[FRONT_SIDE] = [ 'rotateY', 0 ];
-sideAngles[RIGHT_SIDE] = [ 'rotateY', twoPi * 0.75 ];
-sideAngles[BACK_SIDE] = [ 'rotateY', twoPi * 0.5 ];
-sideAngles[LEFT_SIDE] = [ 'rotateY', twoPi * 0.25 ];
-sideAngles[TOP_SIDE] = [ 'rotateX', twoPi * 0.25 ];
-sideAngles[BOTTOM_SIDE] = [ 'rotateX', twoPi * 0.75 ];
+sideAngles[FRONT_SIDE] = [ 'rotateY', 0, false ];
+sideAngles[RIGHT_SIDE] = [ 'rotateY', twoPi * 0.75, false ];
+sideAngles[BACK_SIDE] = [ 'rotateY', twoPi * 0.5, false ];
+sideAngles[LEFT_SIDE] = [ 'rotateY', twoPi * 0.25, false ];
+sideAngles[TOP_SIDE] = [ 'rotateX', twoPi * 0.25, true ];
+sideAngles[BOTTOM_SIDE] = [ 'rotateX', twoPi * 0.75, true ];
 
 const onReceiveRealStarData = new ChangeTracker();
 const onReceiveStarFogTexture = new ChangeTracker();
@@ -82,19 +90,12 @@ const onAssetsReady = new ChangeTracker();
 const onWorkerBootComplete = new ChangeTracker();
 
 function init({ data }) {
-  const { canvas, width, height, pixelRatio, path } = data;
+  let { canvas, width, height, pixelRatio, path } = data;
   offscreenCanvas = canvas;
   // -- Basic stuff --------------------------------------------- //
-  camera = new THREE.PerspectiveCamera(45, width / height, NEAR, FAR);
-  camera.position.set(-0.028407908976078033, 0, 0.26675403118133545);
   //
-  // cubeRenderTarget = new THREE.WebGLCubeRenderTarget(128, {
-  //   format: THREE.RGBAFormat,
-  //   generateMipmaps: true,
-  //   minFilter: THREE.LinearMipmapLinearFilter
-  // });
-  // cubeCamera = new THREE.CubeCamera(NEAR, FAR, cubeRenderTarget);
 
+  let aspect, fov;
   scene = new THREE.Scene();
 
   // scene.background = new THREE.Color(0x000f15);
@@ -107,15 +108,15 @@ function init({ data }) {
   // scene.add(cube);
 
   // Create internal skybox for multi-bake step purposes.
-  const size = 0.1;
-  const geometry = new THREE.BoxGeometry(size, size, size);
+  const boxSize = 100;
+  const geometry = new THREE.BoxGeometry(boxSize, boxSize, boxSize);
   skyboxMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
   skyboxMaterial.side = THREE.BackSide;
   intermediateSkybox = new THREE.Mesh(geometry, skyboxMaterial);
   scene.add(intermediateSkybox);
 
-  addDebugCornerIndicators(scene);
-  addDebugSideCounters(scene);
+  // addDebugCornerIndicators(scene);
+  // addDebugSideCounters(scene);
 
   renderer = new THREE.WebGLRenderer({
     alpha: true,
@@ -124,13 +125,43 @@ function init({ data }) {
     preserveDrawingBuffer: true,
     powerPreference: "high-performance",
   });
+
+  if (!liveAnimationActive) {
+    // Make things act like a cube camera.
+    const size = Math.max(width, height);
+    width = size;
+    height = size;
+    pixelRatio = null;
+    aspect = 1;
+    fov = -90;
+  }
+  else {
+    aspect = width / height;
+    fov = 55;
+  }
+
   renderer.useLegacyLights = false;
-  renderer.setPixelRatio(pixelRatio);
+  pixelRatio && renderer.setPixelRatio(pixelRatio);
   renderer.setSize(width, height, false);
   renderer.autoClear = false;
+  // renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
+  renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
+
+  camera = new THREE.PerspectiveCamera(fov, aspect, NEAR, FAR);
+  camera.position.set(-0.028407908976078033, 0, 0.26675403118133545);
 
   const gl = renderer.getContext();
   gl.disable(gl.DEPTH_TEST);
+
+  // -- Cubemap ------------------------------------------------- //
+
+  // cubeRenderTarget = new THREE.WebGLCubeRenderTarget(2048, {
+  //   format: THREE.RGBAFormat,
+  //   generateMipmaps: true,
+  //   minFilter: THREE.LinearMipmapLinearFilter,
+  // });
+  // cubeCamera = new THREE.CubeCamera(NEAR, FAR, cubeRenderTarget);
+  // cubeCamera.position.set(-0.028407908976078033, 0, 0.26675403118133545);
 
   // -- Postprocessing ------------------------------------------ //
 
@@ -194,7 +225,7 @@ function init({ data }) {
           // float lum = 0.21 * bloom_color.r + 0.71 * bloom_color.g + 0.07 * bloom_color.b;
           // vec4 color4 = vec4(base_color.rgb + bloom_color.rgb, max(base_color.a, 1.0));
           vec4 color4 = vec4(base_color.rgb * brightness, 1.0);
-          gl_FragColor = gammaToLinear(color4);
+          gl_FragColor = color4;
         }
         else {
           gl_FragColor = base_color * vec4(vec3(brightness), 1.0);
@@ -213,6 +244,7 @@ function init({ data }) {
   finalComposer.addPass(renderScene);
   finalComposer.addPass(mixPass);
   finalComposer.addPass(outputPass);
+  finalComposer.renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
 
   initAstrometrics();
 
@@ -360,66 +392,90 @@ function receivePositionalInfo({ data }) {
 }
 
 function receiveWindowSize({ data }) {
-  const { width, height, devicePixelRatio } = data.serialData;
+  if (liveAnimationActive) {
+    const { width, height, devicePixelRatio } = data.serialData;
 
-  renderer.setSize(width, height, false);
-  bloomComposer.setSize(width, height);
-  finalComposer.setSize(width, height);
-  renderer.setPixelRatio(devicePixelRatio);
+    renderer.setSize(width, height, false);
+    bloomComposer.setSize(width, height);
+    finalComposer.setSize(width, height);
+    renderer.setPixelRatio(devicePixelRatio);
 
-  // const size = Math.max(width, height);
-  // cubeRenderTarget.setSize(width, height);
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+    finalComposer.render();
+  }
+  else {
+    const { width, height, devicePixelRatio } = data.serialData;
+    const size = Math.max(width, height);
 
-  camera.aspect = width / height;
-  camera.updateProjectionMatrix();
-  finalComposer.render();
+    renderer.setSize(size, size, false);
+    bloomComposer.setSize(size, size);
+    finalComposer.setSize(size, size);
+
+    camera.aspect = CUBE_ASPECT;
+    camera.updateProjectionMatrix();
+    finalComposer.render();
+  }
 }
 
 // Makes the skybox rerender each frame.
 function actionStartDebugAnimation() {
+  liveAnimationActive = true;
   debugAnimate();
 }
 
 // -------------------------------------------------------------- //
 
+// bookm
+
 // Request to render one face of the skybox.
 function mainRequestsSkyboxSide({ data }) {
   onWorkerBootComplete.getOnce(() => {
     const side = data.options.side;
+    let buffer;
 
     postprocessingMaterial.uniforms.mode.value = GFX_MODE_BRIGHTNESS;
     postprocessingMaterial.uniforms.brightness.value = 0.18;
+    postprocessingMaterial.uniformsNeedUpdate = true;
     galacticClouds.showClouds();
     galacticStars.hideStars();
-    let buffer = renderGalacticSide(side);
-
-    // Place the galaxy background over the skybox mesh:
-    const oldMaterial = intermediateSkybox.material;
-    intermediateSkybox.position.copy(camera.position);
-    intermediateSkybox.material = new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(buffer) });
-    intermediateSkybox.material.side = THREE.BackSide;
-    oldMaterial.dispose();
-    // skyboxMaterial.material.needsUpdate = true;
-    // skyboxMaterial.uniforms.map!.value.image.src = new THREE.CanvasTexture(buffer);
-
-    postprocessingMaterial.uniforms.mode.value = GFX_MODE_BRIGHTNESS_AND_BLOOM;
-    postprocessingMaterial.uniforms.brightness.value = 1.0;
-    galacticClouds.hideClouds();
-    galacticStars.showStars();
     buffer = renderGalacticSide(side);
 
-    self.postMessage({
-      rpc: SEND_SKYBOX,
-      options: { side },
-      buffer,
-      // @ts-ignore - This is actually correct. Source:
-      // https://developer.mozilla.org/en-US/docs/Web/API/ImageBitmap.
-    }, [ buffer ]);
+    requestPostAnimationFrame(() => {
+      // Place the galaxy background over the skybox mesh:
+      const oldMaterial = intermediateSkybox.material;
+      intermediateSkybox.position.copy(camera.position);
+      const texture = new THREE.CanvasTexture(buffer);
+      texture.colorSpace = 'srgb';
+      intermediateSkybox.material = new THREE.MeshBasicMaterial({ map: texture });
+      intermediateSkybox.material.side = THREE.BackSide;
+      oldMaterial.dispose();
+
+      postprocessingMaterial.uniforms.mode.value = GFX_MODE_BRIGHTNESS_AND_BLOOM;
+      postprocessingMaterial.uniforms.brightness.value = 1.0;
+      postprocessingMaterial.uniformsNeedUpdate = true;
+      galacticClouds.hideClouds();
+      galacticStars.showStars();
+      buffer = renderGalacticSide(side);
+
+      self.postMessage({
+        rpc: SEND_SKYBOX,
+        options: { side },
+        buffer,
+        // @ts-ignore - This is actually correct. Source:
+        // https://developer.mozilla.org/en-US/docs/Web/API/ImageBitmap.
+      }, [ buffer ]);
+    });
   });
 }
 
 // Request to render all six sides of the skybox.
-function mainRequestsSkyBox() {
+function mainRequestsSkybox() {
+  for (let i = 0; i < 6; i++) {
+    setTimeout(() => {
+      mainRequestsSkyboxSide({ data: { options: { side: i } } });
+    }, i * 50);
+  }
 }
 
 // Request for galactic information.
@@ -452,11 +508,14 @@ function mainRequestsQuery() {
  * @return ImageBitmap
  */
 function renderGalacticSide(side: number) {
-  const [ axisFunction, radians ] = sideAngles[side];
+  const [ axisFunction, radians, rotateFinal90 ] = sideAngles[side];
   camera.rotation.set(0, 0, 0);
   // eg: camera.rotateY(Math.PI * 0.25);
   camera[axisFunction](radians);
+  console.log(`------> side=${side}, axisFunction=${axisFunction}, radians=${radians}`);
+  rotateFinal90 && camera.rotateZ(Math.PI);
   renderer.clear();
+  finalComposer.renderer.clear();
   finalComposer.render();
   return offscreenCanvas.transferToImageBitmap();
 }
@@ -529,6 +588,7 @@ const endpoints = {
   receiveWindowSize: receiveWindowSize,
   actionStartDebugAnimation: actionStartDebugAnimation,
   mainRequestsSkyboxSide: mainRequestsSkyboxSide,
+  mainRequestsSkybox: mainRequestsSkybox,
 };
 
 // Processes incoming messages. Supports serialized endpoints and shared buffer
