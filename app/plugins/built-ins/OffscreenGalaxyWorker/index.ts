@@ -9,8 +9,8 @@ import {
   ROT_X,
   ROT_Y,
   ROT_Z,
-  RUNTIME_BRIDGE,
-  SBA_LENGTH, SKYBOX_TO_HOST,
+  API_BRIDGE_REQUEST,
+  SBA_LENGTH, SEND_SKYBOX,
   TYPE_POSITIONAL_DATA,
 } from './webWorker/sharedBufferArrayConstants';
 import WebWorkerRuntimeBridge from '../../../local/WebWorkerRuntimeBridge';
@@ -84,13 +84,13 @@ class OffscreenGalaxyWorker extends Worker {
     // }
     // else {
     const { rpc, replyTo, options, buffer }: {
-      rpc: string,
+      rpc: number,
       replyTo: string,
       options: {[key:string]: any},
       buffer: ArrayBuffer | ImageBitmap
     } = data;
       // Skybox requesting data.
-      if (rpc === RUNTIME_BRIDGE) {
+      if (rpc === API_BRIDGE_REQUEST) {
         this.bridge.auto(options, (error, { serialData, bufferData }) => {
           if (bufferData) {
             this.postMessage({
@@ -108,8 +108,8 @@ class OffscreenGalaxyWorker extends Worker {
         });
       }
       // Skybox sending data.
-      else if (rpc === SKYBOX_TO_HOST) {
-        console.log(`=======> ${SKYBOX_TO_HOST}[${options.side}]`, buffer);
+      else if (rpc === SEND_SKYBOX) {
+        console.log(`=======> ${SEND_SKYBOX}[${options.side}]`, buffer);
 
         const start = performance.now();
         const texture = new THREE.CanvasTexture(buffer as ImageBitmap);

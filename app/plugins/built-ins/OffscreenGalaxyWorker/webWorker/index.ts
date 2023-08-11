@@ -1,6 +1,13 @@
 import * as THREE from 'three';
 import {
-  ROT_X, ROT_Y, ROT_Z, ROT_W, RUNTIME_BRIDGE, SKYBOX_TO_HOST, FRONT_SIDE,
+  ROT_X,
+  ROT_Y,
+  ROT_Z,
+  ROT_W,
+  API_BRIDGE_REQUEST,
+  SEND_SKYBOX,
+  FRONT_SIDE,
+  BACK_SIDE,
 } from './sharedBufferArrayConstants';
 
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
@@ -172,7 +179,7 @@ function init({ data }) {
   initAstrometrics();
 
   self.postMessage({
-    rpc: RUNTIME_BRIDGE,
+    rpc: API_BRIDGE_REQUEST,
     replyTo: 'receiveWindowSize',
     options: { fn: 'onWindowResize' },
   });
@@ -182,9 +189,13 @@ function init({ data }) {
     galacticStars.showStars();
     renderer.compile(scene, camera);
     finalComposer.renderer.compile(scene, camera);
-    // Render at least once before boot completes:
+
+    galacticStars.hideStars();
+    material.uniforms.brightness.value = 0.18;
+    // Render at least once before boot is marked complete:
     finalComposer.render();
 
+    // debugAnimate();
     onWorkerBootComplete.setValue(Date.now());
   });
 }
@@ -203,7 +214,7 @@ function debugAnimate() {
 
 function initAstrometrics() {
   self.postMessage({
-    rpc: RUNTIME_BRIDGE,
+    rpc: API_BRIDGE_REQUEST,
     replyTo: 'receiveMilkyWayFogTexture',
     options: {
       fn: 'loadAsset',
@@ -213,7 +224,7 @@ function initAstrometrics() {
   });
 
   self.postMessage({
-    rpc: RUNTIME_BRIDGE,
+    rpc: API_BRIDGE_REQUEST,
     replyTo: 'receiveMilkyWayModel',
     options: {
       fn: 'loadAsset',
@@ -223,7 +234,7 @@ function initAstrometrics() {
   });
 
   self.postMessage({
-    rpc: RUNTIME_BRIDGE,
+    rpc: API_BRIDGE_REQUEST,
     replyTo: 'receiveRealStarData',
     options: {
       fn: 'loadAsset',
@@ -346,6 +357,14 @@ function receiveWindowSize({ data }) {
 //   });
 // }
 
+const sideAngles = [ 0, 0, 0, 0, 0, 0, 0, 0 ];
+sideAngles[FRONT_SIDE] = 0;
+sideAngles[BACK_SIDE] = 0;
+
+function renderGalacticSide() {
+  //
+}
+
 function createGalaxyBackdropSkybox() {
   renderer.clear();
   galacticClouds.showClouds();
@@ -358,7 +377,7 @@ function createGalaxyBackdropSkybox() {
   //   blob.arrayBuffer().then((buffer: ArrayBuffer) => {
   //     console.log('==> sending canvas buffer:', buffer);
   //     // @ts-ignore
-  //     self.postMessage({ rpc: SKYBOX_TO_HOST, buffer }, [ buffer ]);
+  //     self.postMessage({ rpc: SEND_SKYBOX, buffer }, [ buffer ]);
   //   });
   // });
 
@@ -366,7 +385,7 @@ function createGalaxyBackdropSkybox() {
   // Note: ImageBitmap are transferable.
   const buffer: ImageBitmap = offscreenCanvas.transferToImageBitmap();
   self.postMessage({
-    rpc: SKYBOX_TO_HOST,
+    rpc: SEND_SKYBOX,
     options: { side: FRONT_SIDE },
     buffer,
     // @ts-ignore - This is actually correct. Source:
@@ -395,12 +414,10 @@ function createSkybox() {
   });
 }
 
-onWorkerBootComplete.getOnce(() => {
-  console.log('---> taking screenshot.');
-  createGalaxyBackdropSkybox();
-});
-
-
+// onWorkerBootComplete.getOnce(() => {
+//   console.log('---> taking screenshot.');
+//   createGalaxyBackdropSkybox();
+// });
 
 // -------------------------------------------------------------- //
 
