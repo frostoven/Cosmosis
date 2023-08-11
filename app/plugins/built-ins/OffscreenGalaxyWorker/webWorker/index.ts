@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import {
-  ROT_X, ROT_Y, ROT_Z, ROT_W, RUNTIME_BRIDGE,
+  ROT_X, ROT_Y, ROT_Z, ROT_W, RUNTIME_BRIDGE, SKYBOX_TO_HOST, FRONT_SIDE,
 } from './sharedBufferArrayConstants';
 
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
@@ -12,15 +12,25 @@ import SpaceClouds from '../types/SpaceClouds';
 import StarGenerator from '../types/StarGenerator';
 import { bufferToPng, bufferToString } from './workerUtils';
 import ChangeTracker from 'change-tracker/src';
+import { addDebugCornerIndicators, addDebugSideCounters } from './debugTools';
 
 const NEAR = 0.000001, FAR = 1e27;
+const GFX_MODE_BRIGHTNESS = 0;
+const GFX_MODE_BRIGHTNESS_AND_BLOOM = 1;
 
+// TODO: test me.
 // THREE.ColorManagement.enabled = true;
 
 let camera: THREE.PerspectiveCamera, scene: THREE.Scene,
   renderer: THREE.WebGLRenderer, renderScene: RenderPass,
   bloomPass: UnrealBloomPass, bloomComposer: EffectComposer,
-  mixPass: ShaderPass, finalComposer: EffectComposer;
+  mixPass: ShaderPass, finalComposer: EffectComposer,
+  offscreenCanvas: OffscreenCanvas, material: THREE.ShaderMaterial;
+
+// let cubeCamera: THREE.CubeCamera, cubeRenderTarget: THREE.WebGLCubeRenderTarget;
+
+let galacticClouds: SpaceClouds = null as any;
+let galacticStars: StarGenerator = null as any;
 
 let inbound = {
   realStarData: null as any,
@@ -31,34 +41,48 @@ let inbound = {
 const onReceiveRealStarData = new ChangeTracker();
 const onReceiveStarFogTexture = new ChangeTracker();
 const onReceiveGalaxyModel = new ChangeTracker();
+const onAssetsReady = new ChangeTracker();
+const onWorkerBootComplete = new ChangeTracker();
 
 function init({ data }) {
   const { canvas, width, height, pixelRatio, path } = data;
+  offscreenCanvas = canvas;
   // -- Basic stuff --------------------------------------------- //
   camera = new THREE.PerspectiveCamera(45, width / height, NEAR, FAR);
   camera.position.set(-0.028407908976078033, 0, 0.26675403118133545);
-  // camera.position.set(50, 0, 160);
+  //
+  // cubeRenderTarget = new THREE.WebGLCubeRenderTarget(128, {
+  //   format: THREE.RGBAFormat,
+  //   generateMipmaps: true,
+  //   minFilter: THREE.LinearMipmapLinearFilter
+  // });
+  // cubeCamera = new THREE.CubeCamera(NEAR, FAR, cubeRenderTarget);
 
   scene = new THREE.Scene();
 
   // scene.background = new THREE.Color(0x000f15);
   // scene.background = new THREE.Color(0x010101);
 
-  const size = 0.00125;
-  const geometry = new THREE.BoxGeometry(size, size * 64, size);
-  const material2 = new THREE.MeshBasicMaterial({ color: 0xffffff });
-  const cube = new THREE.Mesh(geometry, material2);
-  scene.add(cube);
+  // const size = 0.00125;
+  // const geometry = new THREE.BoxGeometry(size, size * 64, size);
+  // const material2 = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  // const cube = new THREE.Mesh(geometry, material2);
+  // scene.add(cube);
+
+  addDebugCornerIndicators(scene);
+  addDebugSideCounters(scene);
 
   renderer = new THREE.WebGLRenderer({
     alpha: true,
     antialias: true,
     canvas: canvas,
+    preserveDrawingBuffer: true,
     powerPreference: "high-performance",
   });
   renderer.useLegacyLights = false;
   renderer.setPixelRatio(pixelRatio);
   renderer.setSize(width, height, false);
+  renderer.autoClear = false;
 
   const gl = renderer.getContext();
   gl.disable(gl.DEPTH_TEST);
@@ -80,19 +104,20 @@ function init({ data }) {
   bloomComposer = new EffectComposer(renderer);
   bloomComposer.addPass(renderScene);
 
-  const mixPass = new ShaderPass(
-    new THREE.ShaderMaterial({
-      uniforms: {
-        // 0.18 is quite realistic, assuming you're inside one of the outer
-        // galactic arms, and there's no ambient light. 1.0 is really
-        // pretty. It's probably useful for special effects and being
-        // inside the galactic center.
-        // brightness: { value: 0.18 },
-        brightness: { value: 1.0 },
-        baseTexture: { value: null },
-        // bloomTexture: { value: null }
-      },
-      vertexShader: `
+  material = new THREE.ShaderMaterial({
+    uniforms: {
+      // 0.18 is quite realistic, assuming you're inside one of the outer
+      // galactic arms, and there's no ambient light. 1.0 is really
+      // pretty. It's probably useful for special effects and being
+      // inside the galactic center.
+      // brightness: { value: 0.18 },
+      brightness: { value: 1.0 },
+      baseTexture: { value: null },
+      // bloomTexture: { value: null },
+      // Mode 0: brightness adjust. Mode 1: brightness adjust and bloom.
+      mode: { value: 1 },
+    },
+    vertexShader: `
         varying vec2 vUv;
 
         void main() {
@@ -100,29 +125,46 @@ function init({ data }) {
           gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
         }
       `,
-      fragmentShader: `
+    fragmentShader: `
       uniform float brightness;
       uniform sampler2D baseTexture;
       // uniform sampler2D bloomTexture;
+      uniform float mode;
 
       varying vec2 vUv;
+      
+      vec4 gammaToLinear(vec4 color) {
+        color.r = pow(color.r, 2.2);
+        color.g = pow(color.g, 2.2);
+        color.b = pow(color.b, 2.2);
+        return color;
+      }
 
       void main() {
         vec4 base_color = texture2D(baseTexture, vUv);
-        vec4 bloom_color = vec4(0.0);//texture2D(bloomTexture, vUv);
+        
+        if (mode == 1.0) {
+          vec4 bloom_color = vec4(0.0); //texture2D(bloomTexture, vUv);
 
-        // float lum = 0.21 * bloom_color.r + 0.71 * bloom_color.g + 0.07 * bloom_color.b;
-        // vec4 color4 = vec4(base_color.rgb + bloom_color.rgb, max(base_color.a, 1.0));
-        vec4 color4 = vec4(base_color.rgb * brightness, 1.0);
-        gl_FragColor = color4;
+          // float lum = 0.21 * bloom_color.r + 0.71 * bloom_color.g + 0.07 * bloom_color.b;
+          // vec4 color4 = vec4(base_color.rgb + bloom_color.rgb, max(base_color.a, 1.0));
+          vec4 color4 = vec4(base_color.rgb * brightness, 1.0);
+          gl_FragColor = color4;
+        }
+        else {
+          gl_FragColor = base_color * vec4(vec3(brightness), 1.0);
+        }
+        
+        // gl_FragColor = gammaToLinear(gl_FragColor);
       }
       `,
-      defines: {},
-    }), 'baseTexture',
-  );
+    defines: {},
+  });
+  const mixPass = new ShaderPass(material, 'baseTexture');
   mixPass.needsSwap = true;
 
   finalComposer = new EffectComposer(renderer);
+  // finalComposer = new EffectComposer(renderer, cubeRenderTarget);
   finalComposer.addPass(renderScene);
   finalComposer.addPass(mixPass);
   finalComposer.addPass(outputPass);
@@ -135,19 +177,23 @@ function init({ data }) {
     options: { fn: 'onWindowResize' },
   });
 
-  animate();
-  console.log('xxx end of init reached. animate() has been invoked.');
+  onAssetsReady.getOnce(() => {
+    renderer.compile(scene, camera);
+    finalComposer.renderer.compile(scene, camera);
+    // cubeCamera.update(finalComposer.renderer, scene);
+    onWorkerBootComplete.setValue(Date.now());
+  });
 }
 
-function animate() {
-  // renderer.render(scene, camera);
-  // // this.bloomComposer.render();
-  finalComposer.render();
-
-  if (self.requestAnimationFrame) {
-    self.requestAnimationFrame(animate);
-  }
-}
+// function animate() {
+//   // renderer.render(scene, camera);
+//   // // this.bloomComposer.render();
+//   finalComposer.render();
+//
+//   if (self.requestAnimationFrame) {
+//     self.requestAnimationFrame(animate);
+//   }
+// }
 
 // -------------------------------------------------------------- //
 
@@ -186,19 +232,26 @@ function initAstrometrics() {
     onReceiveStarFogTexture,
     onReceiveGalaxyModel
   ]).getOnce(() => {
-    const clouds = new SpaceClouds({
-      datasetMode: true,
+    galacticClouds = new SpaceClouds({
+      datasetMode: false,
       scene,
       fogTexture: inbound.starFogTexture,
       galaxyMeshUrl: inbound.galaxyModel,
     });
     onReceiveRealStarData.getOnce(() => {
-      clouds.onSolPosition.getOnce((position) => {
-        new StarGenerator({
+      galacticClouds.onSolPosition.getOnce((position) => {
+        galacticStars = new StarGenerator({
           scene,
           stars: inbound.realStarData,
           solPosition: position,
         });
+
+        galacticStars.onStarGeneratorReady.getOnce(() => {
+          // The inbound object contains A LOT of data. Clear it to save RAM.
+          // @ts-ignore
+          inbound = Object.freeze({ message: 'worker boot complete' });
+          onAssetsReady.setValue(true);
+        })
       });
     });
   });
@@ -253,13 +306,95 @@ function receivePositionalInfo({ data }) {
 
 function receiveWindowSize({ data }) {
   const { width, height, devicePixelRatio } = data.serialData;
+
   renderer.setSize(width, height, false);
   bloomComposer.setSize(width, height);
   finalComposer.setSize(width, height);
   renderer.setPixelRatio(devicePixelRatio);
+
+  // const size = Math.max(width, height);
+  // cubeRenderTarget.setSize(width, height);
+
   camera.aspect = width / height;
   camera.updateProjectionMatrix();
 }
+
+// -------------------------------------------------------------- //
+
+// function takeCubeScreenshot() {
+//   galacticClouds.showClouds();
+//   galacticStars.hideStars();
+//   renderer.clear();
+//   material.uniforms.brightness.value = 0.18;
+//   finalComposer.render();
+//   //
+//   galacticClouds.hideClouds();
+//   galacticStars.showStars();
+//   material.uniforms.brightness.value = 1.0;
+//   finalComposer.render();
+//   //
+//   offscreenCanvas.convertToBlob().then((blob: Blob) => {
+//     blob.arrayBuffer().then((buffer) => {
+//       console.log('==> canvas:', buffer);
+//     });
+//   });
+// }
+
+function createGalaxyBackdropSkybox() {
+  renderer.clear();
+  galacticClouds.showClouds();
+  galacticStars.showStars();
+  material.uniforms.brightness.value = 1.0;
+  material.uniforms.mode.value = GFX_MODE_BRIGHTNESS_AND_BLOOM;
+  finalComposer.render();
+
+  // offscreenCanvas.convertToBlob().then((blob: Blob) => {
+  //   blob.arrayBuffer().then((buffer: ArrayBuffer) => {
+  //     console.log('==> sending canvas buffer:', buffer);
+  //     // @ts-ignore
+  //     self.postMessage({ rpc: SKYBOX_TO_HOST, buffer }, [ buffer ]);
+  //   });
+  // });
+
+  // console.log('====> IMAGE BITMAP:', offscreenCanvas.transferToImageBitmap());
+  // Note: ImageBitmap are transferable.
+  const buffer: ImageBitmap = offscreenCanvas.transferToImageBitmap();
+  self.postMessage({
+    rpc: SKYBOX_TO_HOST,
+    options: { side: FRONT_SIDE },
+    buffer,
+    // @ts-ignore - This is actually correct. Source:
+    // https://developer.mozilla.org/en-US/docs/Web/API/ImageBitmap.
+  }, [ buffer ]);
+}
+
+function createStarBackdropSkybox() {
+  //
+}
+
+function createSkybox() {
+  onWorkerBootComplete.getOnce(() => {
+    // galacticClouds.showClouds();
+    // galacticStars.hideStars();
+    // // --> takeCubeScreenshot
+    //
+    // galacticClouds.hideClouds();
+    // galacticStars.showStars();
+    // // --> takeCubeScreenshot
+    //
+    // galacticStars.hideStars();
+
+    // bookm
+    // takeCubeScreenshot();
+  });
+}
+
+onWorkerBootComplete.getOnce(() => {
+  console.log('---> taking screenshot.');
+  createGalaxyBackdropSkybox();
+});
+
+
 
 // -------------------------------------------------------------- //
 

@@ -3,6 +3,9 @@
 let _index = 0;
 
 const RUNTIME_BRIDGE = 'BridgeRequest';
+const SKYBOX_TO_HOST = 'SendSkybox';
+
+const FRONT_SIDE = 1;
 
 // -- Array index info --//
 
@@ -31,6 +34,9 @@ const TYPE_POSITIONAL_DATA = _index++;
 
 export {
   RUNTIME_BRIDGE,
+  SKYBOX_TO_HOST,
+  // ------------------- //
+  FRONT_SIDE,
   // ------------------- //
   BUFFER_TYPE,
   POS_X,

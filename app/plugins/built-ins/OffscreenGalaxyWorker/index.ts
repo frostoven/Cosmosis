@@ -10,10 +10,12 @@ import {
   ROT_Y,
   ROT_Z,
   RUNTIME_BRIDGE,
-  SBA_LENGTH,
+  SBA_LENGTH, SKYBOX_TO_HOST,
   TYPE_POSITIONAL_DATA,
 } from './webWorker/sharedBufferArrayConstants';
 import WebWorkerRuntimeBridge from '../../../local/WebWorkerRuntimeBridge';
+import { bufferToPng } from './webWorker/workerUtils';
+import { gameRuntime } from '../../gameRuntime';
 
 type PluginCompletion = PluginCacheTracker & {
   player: Player, core: Core,
@@ -73,25 +75,55 @@ class OffscreenGalaxyWorker extends Worker {
   receiveMessage(message: { data: { buffer, rpc, replyTo, options } }) {
     // console.log('OffscreenGalaxyWorker received', { message });
     const data = message.data;
-    if (data.buffer) {
-      // This allows us to create an oscillating effect where the variable is
-      // passed back and forth between threads. It's currently unkown which
-      // produces more lag better bidirectional sharing and recreating
-      // Float64Array from scratch each frame.
-      // this.transferablePosition = data;
-    }
-    else {
-      const { rpc, replyTo, options } = data;
+    // if (data.buffer) {
+    //   // This allows us to create an oscillating effect where the variable is
+    //   // passed back and forth between threads. It's currently unkown which
+    //   // produces more lag better bidirectional sharing and recreating
+    //   // Float64Array from scratch each frame.
+    //   // this.transferablePosition = data;
+    // }
+    // else {
+    const { rpc, replyTo, options, buffer }: {
+      rpc: string,
+      replyTo: string,
+      options: {[key:string]: any},
+      buffer: ArrayBuffer | ImageBitmap
+    } = data;
+      // Skybox requesting data.
       if (rpc === RUNTIME_BRIDGE) {
-        // console.log('-> data.options:', data.options);
         this.bridge.auto(options, (error, { serialData, bufferData }) => {
-          // console.log('-> pre-send result:', { serialData, bufferData });
-          // console.log('-> pre-send result:', { serialData, /*bufferData,*/ buffer: bufferData.buffer });
-          this.postMessage({
-            endpoint: replyTo,
-            buffer: bufferData.buffer,
-            serialData,
-          }, [ bufferData.buffer ]);
+          if (bufferData) {
+            this.postMessage({
+              endpoint: replyTo,
+              buffer: bufferData.buffer,
+              serialData,
+            }, [bufferData.buffer]);
+          }
+          else {
+            this.postMessage({
+              endpoint: replyTo,
+              serialData,
+            });
+          }
+        });
+      }
+      // Skybox sending data.
+      else if (rpc === SKYBOX_TO_HOST) {
+        console.log(`=======> ${SKYBOX_TO_HOST}[${options.side}]`, buffer);
+
+        const start = performance.now();
+        const texture = new THREE.CanvasTexture(buffer as ImageBitmap);
+        texture.image = buffer;
+        console.log(`------> processing took ${(performance.now() - start)}ms`);
+
+        const geometry = new THREE.PlaneGeometry(1, 1);
+        const material = new THREE.MeshBasicMaterial({
+          side: THREE.DoubleSide,
+          map: texture,
+        });
+        const plane = new THREE.Mesh(geometry, material);
+        gameRuntime.tracked.levelScene.getOnce((scene) => {
+          scene.add(plane);
         });
       }
       else {
@@ -99,7 +131,7 @@ class OffscreenGalaxyWorker extends Worker {
           '[OffscreenGalaxyWorker] Posted message not understood:', message,
         );
       }
-    }
+    // }
   }
 
   sendPositionalInfo(camera: THREE.PerspectiveCamera) {
