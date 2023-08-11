@@ -12,6 +12,9 @@ const gltfLoader = new GLTFLoader();
 export default class SpaceClouds {
   public rng: FastDeterministicRandom;
   public onSolPosition: ChangeTracker;
+  public onSpaceCloudsReady: ChangeTracker;
+  private _visible: boolean;
+  private instancedPlane!: THREE.InstancedMesh<THREE.PlaneGeometry, THREE.ShaderMaterial>;
 
   /**
    * @param datasetMode - If true, nothing will be rendered, but positions will
@@ -29,8 +32,10 @@ export default class SpaceClouds {
     this.rng = new FastDeterministicRandom();
     // Chosen with: Math.floor(Math.random() * 16384)
     this.rng.seed = 8426;
+    this._visible = true;
 
     this.onSolPosition = new ChangeTracker();
+    this.onSpaceCloudsReady = new ChangeTracker();
 
     // Note: if using a URL, change to: gltfLoader.load(galaxyMeshUrl, (gltf) => {});
     gltfLoader.parse(galaxyMeshUrl, '', (gltf) => {
@@ -200,9 +205,23 @@ export default class SpaceClouds {
       instancedPlane.setMatrixAt(i, dummy.matrix);
     }
     instancedPlane.instanceMatrix.needsUpdate = true;
+    this.instancedPlane = instancedPlane;
 
     console.log('instancedPlane:', instancedPlane);
 
     scene.add(instancedPlane);
+    this.onSpaceCloudsReady.setValue(true);
+  }
+
+  hideClouds() {
+    if (this.instancedPlane) {
+      this.instancedPlane.visible = this._visible = false;
+    }
+  }
+
+  showClouds() {
+    if (this.instancedPlane) {
+      this.instancedPlane.visible = this._visible = true;
+    }
   }
 }
