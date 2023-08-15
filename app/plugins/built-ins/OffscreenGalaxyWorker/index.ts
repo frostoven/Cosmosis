@@ -208,7 +208,10 @@ class OffscreenGalaxyWorker extends Worker {
     // skybox.materials = materials;
 
     const size = 200000;
-    const geometry = new THREE.BoxGeometry(size, size, size);
+    const radius = size * 0.5;
+    const geometry = new THREE.BoxGeometry(size, size, size, 64, 64, 64);
+    cubeToSphere(geometry, radius);
+
     // const material = new THREE.MeshBasicMaterial({ color: 0x000000 });
     // material.side = THREE.BackSide;
     // material.side = THREE.BackSide;

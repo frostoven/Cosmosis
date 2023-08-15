@@ -32,6 +32,7 @@ import {
 } from './workerUtils';
 import ChangeTracker from 'change-tracker/src';
 import { addDebugCornerIndicators, addDebugSideCounters } from './debugTools';
+import { cubeToSphere } from '../../../../local/mathUtils';
 
 let liveAnimationActive = false;
 let knownDisplayInfo = {
@@ -109,7 +110,8 @@ function init({ data }) {
 
   // Create internal skybox for multi-bake step purposes.
   const boxSize = 100;
-  const geometry = new THREE.BoxGeometry(boxSize, boxSize, boxSize);
+  const geometry = new THREE.BoxGeometry(boxSize, boxSize, boxSize, 64, 64, 64);
+  cubeToSphere(geometry, boxSize * 0.5);
   skyboxMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
   skyboxMaterial.side = THREE.BackSide;
   intermediateSkybox = new THREE.Mesh(geometry, skyboxMaterial);
@@ -421,6 +423,7 @@ function receiveWindowSize({ data }) {
 // Makes the skybox rerender each frame.
 function actionStartDebugAnimation() {
   liveAnimationActive = true;
+  // TODO: change fov by re-requesting from main
   debugAnimate();
 }
 

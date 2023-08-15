@@ -18,7 +18,7 @@ const vertex = `
   ${import_log10} 
       
   #define PI ${Math.PI}
-  #define REALISM_FACTOR 0.1
+  #define REALISM_FACTOR 1.0
 
   #define CULL_DIST 0.000001
   
@@ -58,7 +58,7 @@ const vertex = `
     float brightness = aLuminosity / (4.0 * PI * pow(distanceScale, 2.0));
     vGlowAmount = brightness;
     
-    localPosition *= max(distanceScale, min(brightness * 0.01, 0.75));
+    localPosition *= max(distanceScale, min(brightness * 0.01, 0.75)) * REALISM_FACTOR;
     
     // -------------------------------------------------------------
     
