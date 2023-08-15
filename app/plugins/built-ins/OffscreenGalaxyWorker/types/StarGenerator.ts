@@ -10,6 +10,7 @@ import {
 } from '../../../../local/mathUtils';
 import ChangeTracker from 'change-tracker/src';
 
+const starSize = 0.5;
 const unitFactor = 0.00001;
 const parsecToMLy = Unit.parsecToLy * unitFactor;
 const pi = Math.PI;
@@ -40,7 +41,7 @@ export default class StarGenerator {
         invRadius: { value: 100.0 },
         invGlowRadius: { value: 3.0 },
         // 0-1: industrial light pollution. 9: small telescope.
-        invFadeAggression: { value: 3.0 },
+        invFadeAggression: { value: 5.0 },
       }
     });
 
@@ -52,7 +53,8 @@ export default class StarGenerator {
       visibleStars.push(starObject);
     }
 
-    const bufferGeometry = new THREE.PlaneGeometry(unitFactor, unitFactor);
+    const planeSize = starSize * unitFactor;
+    const bufferGeometry = new THREE.PlaneGeometry(planeSize, planeSize);
 
     const instancedPlane = new THREE.InstancedMesh(
       bufferGeometry, material, visibleStars.length,
