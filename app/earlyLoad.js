@@ -27,7 +27,6 @@ if (process.env && process.env.NODE_ENV !== 'production') {
 
   const hashRecords = {
     './build/game.js': null,
-    './build/offscreenSkybox.js': null,
     './build/offscreenGalaxy.js': null,
   };
 

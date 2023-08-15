@@ -134,7 +134,7 @@ const fragment = `
     // Airy disk calculation.
     // https://en.wikipedia.org/wiki/Airy_disk
     float diskScale = length(position) * invRadius;
-    // Dev note: devide spectrum by glowSize for easier debugging.
+    // Dev note: divide spectrum by glowSize for easier debugging.
     vec4 spectrum = scale * vec4(vec3(vColor), 1.0);
     vec4 color4 = spectrum / pow(diskScale, invGlowRadius);
     

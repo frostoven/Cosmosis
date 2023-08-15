@@ -20,8 +20,8 @@ import {
   BOTTOM_SIDE, LEFT_SIDE,
 } from './webWorker/sharedBufferArrayConstants';
 import WebWorkerRuntimeBridge from '../../../local/WebWorkerRuntimeBridge';
-import { bufferToPng } from './webWorker/workerUtils';
 import { gameRuntime } from '../../gameRuntime';
+import SpaceScene from '../SpaceScene';
 
 const csmToThree = [
   5, 4, 2, 3, 1, 0,
@@ -68,10 +68,7 @@ class OffscreenGalaxyWorker extends Worker {
         return;
       }
 
-      this.skyboxCountDown = 5;
-      this.postMessage({
-        endpoint: 'mainRequestsSkybox',
-      });
+      this.requestSkybox();
     });
     // setInterval(() => {
     //   this.postMessage({
@@ -188,39 +185,18 @@ class OffscreenGalaxyWorker extends Worker {
     }, [ bufferArray.buffer ]);
   }
 
+  requestSkybox() {
+    this.skyboxCountDown = 5;
+    this.postMessage({
+      endpoint: 'mainRequestsSkybox',
+    });
+  }
+
   buildSkybox() {
-    console.log('--> building skybox on main thread');
-    const start = performance.now();
-    const currentTextures = this.skyboxTextures;
-    this.skyboxTextures = [ null, null, null, null, null, null ];
-    let i: number, len: number;
-
-    const materials: THREE.MeshBasicMaterial[] = [];
-    for (i = 0, len = currentTextures.length; i < len; i++) {
-      // @ts-ignore
-      const bitmap: THREE.CanvasTexture = currentTextures[i];
-      bitmap.colorSpace = 'srgb';
-      // bitmap.image.
-      const newMaterial = new THREE.MeshBasicMaterial({ map: bitmap, side: THREE.BackSide });
-      materials.push(newMaterial);
-    }
-
-    // skybox.materials = materials;
-
-    const size = 200000;
-    const radius = size * 0.5;
-    const geometry = new THREE.BoxGeometry(size, size, size, 64, 64, 64);
-    cubeToSphere(geometry, radius);
-
-    // const material = new THREE.MeshBasicMaterial({ color: 0x000000 });
-    // material.side = THREE.BackSide;
-    // material.side = THREE.BackSide;
-    const skybox = new THREE.Mesh(geometry, materials);
-
-    console.log(`[OffscreenGalaxyWorker] side cost the main thread ${(performance.now() - start)}ms.`);
-
-    gameRuntime.tracked.levelScene.getOnce((scene) => {
-      scene.add(skybox);
+    gameRuntime.tracked.spaceScene.getOnce((scene: SpaceScene) => {
+      const start = performance.now();
+      scene.setSkyboxSides(this.skyboxTextures as THREE.CanvasTexture[]);
+      console.log(`[buildSkybox] applying sides cost the main thread ${(performance.now() - start)}ms.`);
     });
   }
 }

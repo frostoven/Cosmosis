@@ -446,7 +446,7 @@ function mainRequestsSkyboxSide({ data }) {
 
     requestPostAnimationFrame(() => {
       // Place the galaxy background over the skybox mesh:
-      const oldMaterial = intermediateSkybox.material;
+      const oldMaterial = intermediateSkybox.material as THREE.MeshBasicMaterial;
       intermediateSkybox.position.copy(camera.position);
       const texture = new THREE.CanvasTexture(buffer);
       texture.colorSpace = 'srgb';
@@ -513,6 +513,7 @@ function mainRequestsQuery() {
 function renderGalacticSide(side: number) {
   const [ axisFunction, radians, rotateFinal90 ] = sideAngles[side];
   camera.rotation.set(0, 0, 0);
+  // @ts-ignore - error makes no sense.
   // eg: camera.rotateY(Math.PI * 0.25);
   camera[axisFunction](radians);
   console.log(`------> side=${side}, axisFunction=${axisFunction}, radians=${radians}`);

@@ -5,14 +5,15 @@ import {
   PerspectiveCamera,
   Scene,
   WebGLRenderer,
-  sRGBEncoding,
-  Vector3,
 } from 'three';
 import CosmosisPlugin from '../../types/CosmosisPlugin';
 import { gameRuntime } from '../../gameRuntime';
 import { CoreType } from '../Core';
 import userProfile from '../../../userProfile';
-class SpaceScene extends Scene {
+import * as THREE from 'three';
+import { cubeToSphere } from '../../../local/mathUtils';
+export default class SpaceScene extends Scene {
+  public skybox: Mesh<BoxGeometry, MeshBasicMaterial[]> | null = null;
   private _renderer: WebGLRenderer;
   private _cachedCamera: PerspectiveCamera;
 
@@ -53,11 +54,11 @@ class SpaceScene extends Scene {
     });
 
     // --------------------------------------------------------------------- //
-    const geometry = new BoxGeometry(1, 1, 1);
-    const material = new MeshBasicMaterial({ color: 0xff0000 });
-    const cube = new Mesh(geometry, material);
-    this.add(cube);
-    cube.position.copy(new Vector3(1.5, 0.25, -6));
+    // const geometry = new BoxGeometry(1, 1, 1);
+    // const material = new MeshBasicMaterial({ color: 0xff0000 });
+    // const cube = new Mesh(geometry, material);
+    // this.add(cube);
+    // cube.position.copy(new Vector3(1.5, 0.25, -6));
     // --------------------------------------------------------------------- //
 
     window.addEventListener('resize', this.onWindowResize.bind(this));
@@ -85,6 +86,55 @@ class SpaceScene extends Scene {
     // TODO: move this to player module.
     this._cachedCamera.aspect = screenWidth / screenHeight;
     this._cachedCamera.updateProjectionMatrix();
+  }
+
+  setSkyboxSides(newTextures: THREE.CanvasTexture[]) {
+    console.log('--> building skybox on main thread');
+    let i: number, len: number;
+
+    const newMaterials: THREE.MeshBasicMaterial[] = [];
+    for (i = 0, len = newTextures.length; i < len; i++) {
+      // @ts-ignore
+      const bitmap: THREE.CanvasTexture = newTextures[i];
+      bitmap.colorSpace = 'srgb';
+      // bitmap.image.
+      const newMaterial = new THREE.MeshBasicMaterial({
+        map: bitmap,
+        side: THREE.BackSide,
+      });
+      newMaterials.push(newMaterial);
+    }
+
+    if (!this.skybox) {
+      // The idea with size is to get as close to infinity as possible while
+      // still keeping some distance from glitches. This can go up to 1e38
+      // before things start breaking down.
+      // Note that 1e15 is ~ Number.MAX_SAFE_INTEGER.
+      const size = 1e32;
+      const radius = size * 0.5;
+      let geometry = new THREE.BoxGeometry(size, size, size, 64, 64, 64);
+      cubeToSphere(geometry, radius);
+
+      this.skybox = new THREE.Mesh(geometry, newMaterials);
+      this.add(this.skybox);
+      console.log('[SpaceScene] skybox:', this.skybox);
+    }
+    else {
+
+      // A Three material can be an array of materials. In this case, it's an
+      // array, so 'materials' is not a typo.
+      const oldMaterials = this.skybox.material;
+      for (i = 0, len = oldMaterials.length; i < len; i++) {
+        const material: THREE.MeshBasicMaterial = oldMaterials[i];
+        // This saddens me a bit, but I have not yet found a modern way of
+        // updating texture maps without disposing the old maps. Methods used
+        // with older Three.js don't appear to work.
+        material.dispose();
+
+        // Assign new skybox side material.
+        oldMaterials[i] = newMaterials[i];
+      }
+    }
   }
 
   render() {
