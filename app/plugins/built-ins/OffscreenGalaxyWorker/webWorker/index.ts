@@ -5,6 +5,9 @@ import {
   BOTTOM_SIDE,
   FRONT_SIDE,
   LEFT_SIDE,
+  POS_X,
+  POS_Y,
+  POS_Z,
   RIGHT_SIDE,
   ROT_W,
   ROT_X,
@@ -31,12 +34,13 @@ import {
   requestPostAnimationFrame,
 } from './workerUtils';
 import ChangeTracker from 'change-tracker/src';
-import { addDebugCornerIndicators, addDebugSideCounters } from './debugTools';
 import { cubeToSphere } from '../../../../local/mathUtils';
 
 let liveAnimationActive = false;
-let knownDisplayInfo = {
-  width: 0, height: 0, devicePixelRatio: 0,
+let lastKnownOutsideInfo = {
+  width: 0, height: 0, pixelRatio: 0, aspect: 1, fov: 45,
+  cameraPosition: new THREE.Vector3(),
+  cameraQuaternion: new THREE.Quaternion(),
 };
 
 const NEAR = 0.000001, FAR = 1e27, CUBE_ASPECT = 1;
@@ -141,6 +145,12 @@ function init({ data }) {
     aspect = width / height;
     fov = 55;
   }
+
+  lastKnownOutsideInfo.width = width;
+  lastKnownOutsideInfo.height = height;
+  lastKnownOutsideInfo.pixelRatio = pixelRatio;
+  lastKnownOutsideInfo.aspect = aspect;
+  lastKnownOutsideInfo.fov = fov;
 
   renderer.useLegacyLights = false;
   pixelRatio && renderer.setPixelRatio(pixelRatio);
@@ -377,13 +387,26 @@ function receivePositionalInfo({ data }) {
     return;
   }
 
+  const unitFactor = 0.00001;
   const bufferArray: Float64Array = new Float64Array(data.buffer);
-  camera.quaternion.set(
-    bufferArray[ROT_X],
-    bufferArray[ROT_Y],
-    bufferArray[ROT_Z],
-    bufferArray[ROT_W],
+
+
+  lastKnownOutsideInfo.cameraQuaternion.set(
+      bufferArray[ROT_X],
+      bufferArray[ROT_Y],
+      bufferArray[ROT_Z],
+      bufferArray[ROT_W],
   );
+  lastKnownOutsideInfo.cameraPosition.set(
+      bufferArray[POS_X] * unitFactor,
+      bufferArray[POS_Y] * unitFactor,
+      bufferArray[POS_Z] * unitFactor,
+  );
+
+  if (liveAnimationActive) {
+    camera.quaternion.copy(lastKnownOutsideInfo.cameraQuaternion);
+  }
+  camera.position.copy(lastKnownOutsideInfo.cameraPosition);
 
   // Release variable back to the main thread.
   // This allows us to create an oscillating effect where the variable is
@@ -394,30 +417,33 @@ function receivePositionalInfo({ data }) {
 }
 
 function receiveWindowSize({ data }) {
+  let { width, height, pixelRatio } = data.serialData;
+  let aspect: number;
   if (liveAnimationActive) {
-    const { width, height, devicePixelRatio } = data.serialData;
-
     renderer.setSize(width, height, false);
     bloomComposer.setSize(width, height);
     finalComposer.setSize(width, height);
-    renderer.setPixelRatio(devicePixelRatio);
-
-    camera.aspect = width / height;
-    camera.updateProjectionMatrix();
-    finalComposer.render();
+    renderer.setPixelRatio(pixelRatio);
+    aspect = width / height;
   }
   else {
-    const { width, height, devicePixelRatio } = data.serialData;
     const size = Math.max(width, height);
+    width = height = size;
 
     renderer.setSize(size, size, false);
     bloomComposer.setSize(size, size);
     finalComposer.setSize(size, size);
-
-    camera.aspect = CUBE_ASPECT;
-    camera.updateProjectionMatrix();
-    finalComposer.render();
+    aspect = CUBE_ASPECT;
   }
+
+  camera.aspect = aspect;
+  camera.updateProjectionMatrix();
+  finalComposer.render();
+
+  lastKnownOutsideInfo.width = width;
+  lastKnownOutsideInfo.height = height;
+  lastKnownOutsideInfo.aspect = aspect;
+  lastKnownOutsideInfo.pixelRatio = pixelRatio;
 }
 
 // Makes the skybox rerender each frame.

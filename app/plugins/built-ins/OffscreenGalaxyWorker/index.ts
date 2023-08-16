@@ -17,7 +17,7 @@ import {
   RIGHT_SIDE,
   BACK_SIDE,
   TOP_SIDE,
-  BOTTOM_SIDE, LEFT_SIDE,
+  BOTTOM_SIDE, LEFT_SIDE, POS_X, POS_Y, POS_Z,
 } from './webWorker/sharedBufferArrayConstants';
 import WebWorkerRuntimeBridge from '../../../local/WebWorkerRuntimeBridge';
 import { gameRuntime } from '../../gameRuntime';
@@ -57,24 +57,19 @@ class OffscreenGalaxyWorker extends Worker {
     this._pluginTracker.onAllPluginsLoaded.getOnce(() => {
       if (this.debugLiveAnimation) {
         this.postMessage({ endpoint: 'actionStartDebugAnimation' });
-        this._pluginTracker.core.onAnimate.getEveryChange(() => {
-          const cam: THREE.PerspectiveCamera = this._pluginTracker.player.camera;
-          if (!cam) {
-            return;
-          }
-          this.sendPositionalInfo(cam);
-        });
-        // TODO: disable space skybox when doing this.
-        return;
       }
+      this._pluginTracker.core.onAnimate.getEveryChange(() => {
+        const cam: THREE.PerspectiveCamera = this._pluginTracker.player.camera;
+        if (!cam) {
+          return;
+        }
+        this.sendPositionalInfo(cam);
+      });
 
       this.requestSkybox();
     });
     // setInterval(() => {
-    //   this.postMessage({
-    //     endpoint: 'mainRequestsSkyboxSide',
-    //     options: { side: THREE.MathUtils.randInt(0, 5) },
-    //   });
+    //   this.requestSkybox();
     // }, 1000);
   }
 
@@ -172,12 +167,16 @@ class OffscreenGalaxyWorker extends Worker {
     // }
 
     const quaternion = camera.quaternion;
+    const position = camera.position;
 
     bufferArray[BUFFER_TYPE] = TYPE_POSITIONAL_DATA;
     bufferArray[ROT_X] = quaternion.x;
     bufferArray[ROT_Y] = quaternion.y;
     bufferArray[ROT_Z] = quaternion.z;
     bufferArray[ROT_W] = quaternion.w;
+    bufferArray[POS_X] = position.x;
+    bufferArray[POS_Y] = position.y;
+    bufferArray[POS_Z] = position.z;
 
     this.postMessage({
       endpoint: 'receivePositionalInfo',
