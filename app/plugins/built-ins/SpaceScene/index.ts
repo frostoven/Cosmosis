@@ -89,7 +89,6 @@ export default class SpaceScene extends Scene {
   }
 
   setSkyboxSides(newTextures: THREE.CanvasTexture[]) {
-    console.log('--> building skybox on main thread');
     let i: number, len: number;
 
     const newMaterials: THREE.MeshBasicMaterial[] = [];

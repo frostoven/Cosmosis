@@ -472,10 +472,8 @@ function actionStartDebugAnimation() {
 // -------------------------------------------------------------- //
 
 const debounceBuildSkybox = _.debounce(
-    () => {
-      console.log('-> Building skybox');
-      mainRequestsSkybox();
-    },
+    // Build skybox and send to main.
+    () => mainRequestsSkybox(),
     // How long to wait and see if a new request is made.
     50,
     // Don't delay total wait time more than this number of milliseconds.
