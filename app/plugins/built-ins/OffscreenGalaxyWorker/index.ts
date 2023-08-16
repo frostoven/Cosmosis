@@ -36,10 +36,6 @@ class OffscreenGalaxyWorker extends Worker {
   // private transferablePosition!: Float64Array;
   private bridge: WebWorkerRuntimeBridge;
   private debugLiveAnimation = false;
-  // If this is hits zero, a skybox is generated. If below zero, the class can
-  // still receive updates, but won't apply them to the skybox. This is
-  // intended for preemptive cases.
-  private skyboxCountDown = 5;
   private skyboxTextures: THREE.CanvasTexture[] | null[] = [ null, null, null, null, null, null ];
 
   constructor() {
@@ -133,10 +129,9 @@ class OffscreenGalaxyWorker extends Worker {
       }
       // Skybox sending data.
       else if (rpc === SEND_SKYBOX) {
-        console.log(`=======> ${SEND_SKYBOX}[${options.side}]`, buffer);
-
-        const start = performance.now();
+        // const start = performance.now();
         const side = options.side;
+        const triggerBuild = options.triggerBuild;
         const texture = new THREE.CanvasTexture(buffer as ImageBitmap);
         texture.image = buffer;
         // @ts-ignore
@@ -144,9 +139,9 @@ class OffscreenGalaxyWorker extends Worker {
         // Try to keep this under 1ms. The only real lag should come from
         // offscreen GPU use. This averages 0.09-0.5ms on my laptop, depending
         // on how busy the machine already is.
-        console.log(`[OffscreenGalaxyWorker] side cost the main thread ${(performance.now() - start)}ms.`);
+        // console.log(`[OffscreenGalaxyWorker] side cost the main thread ${(performance.now() - start)}ms.`);
 
-        if (this.skyboxCountDown-- === 0) {
+        if (triggerBuild) {
           this.buildSkybox();
         }
       }
@@ -185,7 +180,6 @@ class OffscreenGalaxyWorker extends Worker {
   }
 
   requestSkybox() {
-    this.skyboxCountDown = 5;
     this.postMessage({
       endpoint: 'mainRequestsSkybox',
     });

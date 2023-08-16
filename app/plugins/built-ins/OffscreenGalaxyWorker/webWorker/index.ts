@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import * as THREE from 'three';
 import {
   API_BRIDGE_REQUEST,
@@ -36,9 +37,11 @@ import {
 import ChangeTracker from 'change-tracker/src';
 import { cubeToSphere } from '../../../../local/mathUtils';
 
+let skyboxCurrentlyGenerating = false;
 let liveAnimationActive = false;
 let lastKnownOutsideInfo = {
   width: 0, height: 0, pixelRatio: 0, aspect: 1, fov: 45,
+  moduloPosition: new THREE.Vector3(),
   cameraPosition: new THREE.Vector3(),
   cameraQuaternion: new THREE.Quaternion(),
 };
@@ -93,6 +96,7 @@ const onReceiveStarFogTexture = new ChangeTracker();
 const onReceiveGalaxyModel = new ChangeTracker();
 const onAssetsReady = new ChangeTracker();
 const onWorkerBootComplete = new ChangeTracker();
+const onSkyboxSentToMain = new ChangeTracker();
 
 function init({ data }) {
   let { canvas, width, height, pixelRatio, path } = data;
@@ -155,7 +159,7 @@ function init({ data }) {
   renderer.useLegacyLights = false;
   pixelRatio && renderer.setPixelRatio(pixelRatio);
   renderer.setSize(width, height, false);
-  renderer.autoClear = false;
+  // renderer.autoClear = false;
   // renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
   renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
 
@@ -242,8 +246,6 @@ function init({ data }) {
         else {
           gl_FragColor = base_color * vec4(vec3(brightness), 1.0);
         }
-        
-        
       }
       `,
     defines: {},
@@ -388,8 +390,23 @@ function receivePositionalInfo({ data }) {
   }
 
   const unitFactor = 0.00001;
+  const modFactor = 1000;
+
   const bufferArray: Float64Array = new Float64Array(data.buffer);
 
+  const x = bufferArray[POS_X] * unitFactor;
+  const y = bufferArray[POS_Y] * unitFactor;
+  const z = bufferArray[POS_Z] * unitFactor;
+  const modX = Math.floor(x * modFactor) / modFactor;
+  const modY = Math.floor(y * modFactor) / modFactor;
+  const modZ = Math.floor(z * modFactor) / modFactor;
+
+  const lastCam = lastKnownOutsideInfo.moduloPosition;
+  const coordsUnchanged = lastCam.x === modX && lastCam.y === modY && lastCam.z === modZ;
+  if (coordsUnchanged) {
+    return;
+  }
+  lastKnownOutsideInfo.moduloPosition.set(modX, modY, modZ);
 
   lastKnownOutsideInfo.cameraQuaternion.set(
       bufferArray[ROT_X],
@@ -397,16 +414,19 @@ function receivePositionalInfo({ data }) {
       bufferArray[ROT_Z],
       bufferArray[ROT_W],
   );
-  lastKnownOutsideInfo.cameraPosition.set(
-      bufferArray[POS_X] * unitFactor,
-      bufferArray[POS_Y] * unitFactor,
-      bufferArray[POS_Z] * unitFactor,
-  );
+  lastKnownOutsideInfo.cameraPosition.set(x, y, z);
 
   if (liveAnimationActive) {
     camera.quaternion.copy(lastKnownOutsideInfo.cameraQuaternion);
+    intermediateSkybox.position.copy(lastKnownOutsideInfo.cameraPosition);
+    camera.position.copy(lastKnownOutsideInfo.cameraPosition);
   }
-  camera.position.copy(lastKnownOutsideInfo.cameraPosition);
+  else if (!skyboxCurrentlyGenerating) {
+    intermediateSkybox.position.copy(lastKnownOutsideInfo.cameraPosition);
+    camera.position.copy(lastKnownOutsideInfo.cameraPosition);
+  }
+
+  debounceBuildSkybox();
 
   // Release variable back to the main thread.
   // This allows us to create an oscillating effect where the variable is
@@ -455,55 +475,109 @@ function actionStartDebugAnimation() {
 
 // -------------------------------------------------------------- //
 
-// bookm
+const debounceBuildSkybox = _.debounce(
+    () => {
+      console.log('-> Building skybox');
+      mainRequestsSkybox();
+    },
+    // How long to wait and see if a new request is made.
+    50,
+    // Don't delay total wait time more than this number of milliseconds.
+    {maxWait: 100}
+);
+
+function prepareForBackdropRender() {
+  postprocessingMaterial.uniforms.mode.value = GFX_MODE_BRIGHTNESS;
+  postprocessingMaterial.uniforms.brightness.value = 0.18;
+  postprocessingMaterial.uniformsNeedUpdate = true;
+  galacticClouds.showClouds();
+  galacticStars.hideStars();
+}
+
+function prepareForStarRender() {
+  postprocessingMaterial.uniforms.mode.value = GFX_MODE_BRIGHTNESS_AND_BLOOM;
+  postprocessingMaterial.uniforms.brightness.value = 1.0;
+  postprocessingMaterial.uniformsNeedUpdate = true;
+  galacticClouds.hideClouds();
+  galacticStars.showStars();
+}
+
+function drawBackdrop(side, renderCount, onComplete) {
+  let skipScreenshot = renderCount > 0;
+  requestAnimationFrame(() => {
+    const screenshot = renderGalacticSide(side, skipScreenshot);
+    if (renderCount > 0) {
+      return drawBackdrop(side, renderCount - 1, onComplete);
+    }
+    else {
+      onComplete(screenshot);
+    }
+  });
+}
 
 // Request to render one face of the skybox.
-function mainRequestsSkyboxSide({ data }) {
+function drawSkyboxSide(side, triggerBuildOnMain = false, onDone) {
   onWorkerBootComplete.getOnce(() => {
-    const side = data.options.side;
     let buffer;
 
-    postprocessingMaterial.uniforms.mode.value = GFX_MODE_BRIGHTNESS;
-    postprocessingMaterial.uniforms.brightness.value = 0.18;
-    postprocessingMaterial.uniformsNeedUpdate = true;
-    galacticClouds.showClouds();
-    galacticStars.hideStars();
-    buffer = renderGalacticSide(side);
-
-    requestPostAnimationFrame(() => {
+    prepareForBackdropRender();
+    drawBackdrop(side, 1, (galaxyBackdrop: ImageBitmap) => {
       // Place the galaxy background over the skybox mesh:
       const oldMaterial = intermediateSkybox.material as THREE.MeshBasicMaterial;
       intermediateSkybox.position.copy(camera.position);
-      const texture = new THREE.CanvasTexture(buffer);
+      const texture = new THREE.CanvasTexture(galaxyBackdrop);
       texture.colorSpace = 'srgb';
-      intermediateSkybox.material = new THREE.MeshBasicMaterial({ map: texture });
+      intermediateSkybox.material = new THREE.MeshBasicMaterial({map: texture});
       intermediateSkybox.material.side = THREE.BackSide;
       oldMaterial.dispose();
 
-      postprocessingMaterial.uniforms.mode.value = GFX_MODE_BRIGHTNESS_AND_BLOOM;
-      postprocessingMaterial.uniforms.brightness.value = 1.0;
-      postprocessingMaterial.uniformsNeedUpdate = true;
-      galacticClouds.hideClouds();
-      galacticStars.showStars();
-      buffer = renderGalacticSide(side);
-
-      self.postMessage({
-        rpc: SEND_SKYBOX,
-        options: { side },
-        buffer,
-        // @ts-ignore - This is actually correct. Source:
-        // https://developer.mozilla.org/en-US/docs/Web/API/ImageBitmap.
-      }, [ buffer ]);
+      prepareForStarRender();
+      drawBackdrop(side, 1, (buffer: ImageBitmap) => {
+        self.postMessage({
+          rpc: SEND_SKYBOX,
+          options: {side, triggerBuild: triggerBuildOnMain},
+          buffer,
+          // @ts-ignore - This is actually correct. Source:
+          // https://developer.mozilla.org/en-US/docs/Web/API/ImageBitmap.
+        }, [buffer]);
+        onDone();
+        onSkyboxSentToMain.setValue(true);
+      });
     });
   });
 }
 
 // Request to render all six sides of the skybox.
 function mainRequestsSkybox() {
-  for (let i = 0; i < 6; i++) {
+  if (skyboxCurrentlyGenerating) {
+    return;
+  }
+  skyboxCurrentlyGenerating = true;
+
+  let i = 0;
+  function drawNext() {
     setTimeout(() => {
-      mainRequestsSkyboxSide({ data: { options: { side: i } } });
-    }, i * 50);
+      drawSkyboxSide(
+        // Which side to generate.
+        i,
+        // If true, the main thread will start skybox construction.
+        i === 5,
+        // Called when the render process is complete for a side.
+        () => {
+          console.log(`===> onDone called. i=${i}`);
+          if (++i < 6) {
+            drawNext();
+          }
+          else {
+            skyboxCurrentlyGenerating = false;
+          }
+        }
+      );
+    }, i);
+  }
+  drawNext();
+
+  for (let i = 0; i < 6; i++) {
   }
 }
 
@@ -536,18 +610,19 @@ function mainRequestsQuery() {
  * @param side
  * @return ImageBitmap
  */
-function renderGalacticSide(side: number) {
+function renderGalacticSide(side: number, skipScreenshot: boolean) {
   const [ axisFunction, radians, rotateFinal90 ] = sideAngles[side];
   camera.rotation.set(0, 0, 0);
   // @ts-ignore - error makes no sense.
   // eg: camera.rotateY(Math.PI * 0.25);
   camera[axisFunction](radians);
-  console.log(`------> side=${side}, axisFunction=${axisFunction}, radians=${radians}`);
   rotateFinal90 && camera.rotateZ(Math.PI);
-  renderer.clear();
-  finalComposer.renderer.clear();
+  // renderer.clear();
+  // finalComposer.renderer.clear();
   finalComposer.render();
-  return offscreenCanvas.transferToImageBitmap();
+  if (!skipScreenshot) {
+    return offscreenCanvas.transferToImageBitmap();
+  }
 }
 
 function createGalaxyBackdropSkybox() {
@@ -617,7 +692,6 @@ const endpoints = {
   receiveMilkyWayFogTexture: receiveMilkyWayFogTexture,
   receiveWindowSize: receiveWindowSize,
   actionStartDebugAnimation: actionStartDebugAnimation,
-  mainRequestsSkyboxSide: mainRequestsSkyboxSide,
   mainRequestsSkybox: mainRequestsSkybox,
 };
 

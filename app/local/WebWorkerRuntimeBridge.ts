@@ -29,7 +29,7 @@ export default class WebWorkerRuntimeBridge {
         serialData: {
           width: window.innerWidth,
           height: window.innerHeight,
-          devicePixelRatio: window.devicePixelRatio,
+          pixelRatio: window.devicePixelRatio,
         }
       });
     });

@@ -22,6 +22,12 @@ function bufferToString(array: Iterable<number>) {
   return result.join('');
 }
 
+// function bufferToImageBitmap(buffer: ImageBitmap) {
+//   return new THREE.CanvasTexture(buffer);
+// }
+//
+// // Note: this is quite slow. Unless you specifically need a PNG, use
+// // bufferToImageBitmap instead.
 function bufferToPng(buffer, callback: Function) {
   const url = bufferToBlobUrl(buffer);
   imageBitmapLoader.load(url, function(imageBitmap) {
@@ -33,5 +39,6 @@ export {
   requestPostAnimationFrame,
   bufferToBlobUrl,
   bufferToString,
+  // bufferToImageBitmap,
   bufferToPng,
 }
