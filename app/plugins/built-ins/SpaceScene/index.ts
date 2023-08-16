@@ -113,7 +113,6 @@ export default class SpaceScene extends Scene {
       const size = 1e32;
       const radius = size * 0.5;
       let geometry = new THREE.BoxGeometry(size, size, size, 64, 64, 64);
-      cubeToSphere(geometry, radius);
 
       this.skybox = new THREE.Mesh(geometry, newMaterials);
       this.add(this.skybox);

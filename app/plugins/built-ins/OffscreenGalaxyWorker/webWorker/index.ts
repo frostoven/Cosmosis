@@ -32,10 +32,8 @@ import StarGenerator from '../types/StarGenerator';
 import {
   bufferToPng,
   bufferToString,
-  requestPostAnimationFrame,
 } from './workerUtils';
 import ChangeTracker from 'change-tracker/src';
-import { cubeToSphere } from '../../../../local/mathUtils';
 
 let skyboxCurrentlyGenerating = false;
 let liveAnimationActive = false;
@@ -58,8 +56,7 @@ let camera: THREE.PerspectiveCamera, scene: THREE.Scene,
   bloomPass: UnrealBloomPass, bloomComposer: EffectComposer,
   mixPass: ShaderPass, finalComposer: EffectComposer,
   offscreenCanvas: OffscreenCanvas, intermediateSkybox: THREE.Mesh,
-  postprocessingMaterial: THREE.ShaderMaterial,
-  skyboxMaterial: THREE.MeshBasicMaterial;
+  postprocessingMaterial: THREE.ShaderMaterial;
 
 // let cubeCamera: THREE.CubeCamera, cubeRenderTarget: THREE.WebGLCubeRenderTarget;
 
@@ -117,12 +114,11 @@ function init({ data }) {
   // scene.add(cube);
 
   // Create internal skybox for multi-bake step purposes.
-  const boxSize = 100;
+  const boxSize = 1000;
   const geometry = new THREE.BoxGeometry(boxSize, boxSize, boxSize, 64, 64, 64);
-  cubeToSphere(geometry, boxSize * 0.5);
-  skyboxMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
-  skyboxMaterial.side = THREE.BackSide;
-  intermediateSkybox = new THREE.Mesh(geometry, skyboxMaterial);
+  const material = new THREE.MeshBasicMaterial({ color: 0x000000 });
+  material.side = THREE.BackSide;
+  intermediateSkybox = new THREE.Mesh(geometry, material);
   scene.add(intermediateSkybox);
 
   // addDebugCornerIndicators(scene);
@@ -518,18 +514,25 @@ function drawBackdrop(side, renderCount, onComplete) {
 // Request to render one face of the skybox.
 function drawSkyboxSide(side, triggerBuildOnMain = false, onDone) {
   onWorkerBootComplete.getOnce(() => {
-    let buffer;
+
+    // This saddens me a bit, but I have not yet found a modern way of
+    // updating texture maps without disposing the old maps. Methods used
+    // with older Three.js don't appear to work.
+    const oldMaterial = intermediateSkybox.material as THREE.MeshBasicMaterial;
+    const blackMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
+    blackMaterial.side = THREE.BackSide;
+    intermediateSkybox.material = blackMaterial;
+    oldMaterial.dispose();
 
     prepareForBackdropRender();
     drawBackdrop(side, 1, (galaxyBackdrop: ImageBitmap) => {
       // Place the galaxy background over the skybox mesh:
-      const oldMaterial = intermediateSkybox.material as THREE.MeshBasicMaterial;
-      intermediateSkybox.position.copy(camera.position);
+      const tempMaterial = intermediateSkybox.material as THREE.MeshBasicMaterial;
       const texture = new THREE.CanvasTexture(galaxyBackdrop);
       texture.colorSpace = 'srgb';
       intermediateSkybox.material = new THREE.MeshBasicMaterial({map: texture});
       intermediateSkybox.material.side = THREE.BackSide;
-      oldMaterial.dispose();
+      tempMaterial.dispose();
 
       prepareForStarRender();
       drawBackdrop(side, 1, (buffer: ImageBitmap) => {
@@ -547,6 +550,15 @@ function drawSkyboxSide(side, triggerBuildOnMain = false, onDone) {
   });
 }
 
+function pointCameraToSide(side: number) {
+  const [ axisFunction, radians, rotateFinal90 ] = sideAngles[side];
+  camera.rotation.set(0, 0, 0);
+  // @ts-ignore - error makes no sense.
+  // eg: camera.rotateY(Math.PI * 0.25);
+  camera[axisFunction](radians);
+  rotateFinal90 && camera.rotateZ(Math.PI);
+}
+
 // Request to render all six sides of the skybox.
 function mainRequestsSkybox() {
   if (skyboxCurrentlyGenerating) {
@@ -556,6 +568,7 @@ function mainRequestsSkybox() {
 
   let i = 0;
   function drawNext() {
+    pointCameraToSide(i);
     setTimeout(() => {
       drawSkyboxSide(
         // Which side to generate.
@@ -564,7 +577,6 @@ function mainRequestsSkybox() {
         i === 5,
         // Called when the render process is complete for a side.
         () => {
-          console.log(`===> onDone called. i=${i}`);
           if (++i < 6) {
             drawNext();
           }
@@ -590,15 +602,10 @@ function mainRequestsQuery() {
 
 /**
  * @param side
+ * @param skipScreenshot
  * @return ImageBitmap
  */
 function renderGalacticSide(side: number, skipScreenshot: boolean) {
-  const [ axisFunction, radians, rotateFinal90 ] = sideAngles[side];
-  camera.rotation.set(0, 0, 0);
-  // @ts-ignore - error makes no sense.
-  // eg: camera.rotateY(Math.PI * 0.25);
-  camera[axisFunction](radians);
-  rotateFinal90 && camera.rotateZ(Math.PI);
   // renderer.clear();
   // finalComposer.renderer.clear();
   finalComposer.render();
