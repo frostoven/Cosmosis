@@ -583,28 +583,10 @@ function mainRequestsSkybox() {
 
 // Request for galactic information.
 function mainRequestsQuery() {
+  console.error('Not yet implemented.');
 }
 
 // -------------------------------------------------------------- //
-
-// function takeCubeScreenshot() {
-//   galacticClouds.showClouds();
-//   galacticStars.hideStars();
-//   renderer.clear();
-//   postprocessingMaterial.uniforms.brightness.value = 0.18;
-//   finalComposer.render();
-//   //
-//   galacticClouds.hideClouds();
-//   galacticStars.showStars();
-//   postprocessingMaterial.uniforms.brightness.value = 1.0;
-//   finalComposer.render();
-//   //
-//   offscreenCanvas.convertToBlob().then((blob: Blob) => {
-//     blob.arrayBuffer().then((buffer) => {
-//       console.log('==> canvas:', buffer);
-//     });
-//   });
-// }
 
 /**
  * @param side
@@ -624,63 +606,6 @@ function renderGalacticSide(side: number, skipScreenshot: boolean) {
     return offscreenCanvas.transferToImageBitmap();
   }
 }
-
-function createGalaxyBackdropSkybox() {
-  //
-}
-
-// function createGalaxyBackdropSkybox() {
-//   renderer.clear();
-//   galacticClouds.showClouds();
-//   galacticStars.showStars();
-//   postprocessingMaterial.uniforms.brightness.value = 1.0;
-//   postprocessingMaterial.uniforms.mode.value = GFX_MODE_BRIGHTNESS_AND_BLOOM;
-//   finalComposer.render();
-//
-//   // offscreenCanvas.convertToBlob().then((blob: Blob) => {
-//   //   blob.arrayBuffer().then((buffer: ArrayBuffer) => {
-//   //     console.log('==> sending canvas buffer:', buffer);
-//   //     // @ts-ignore
-//   //     self.postMessage({ rpc: SEND_SKYBOX, buffer }, [ buffer ]);
-//   //   });
-//   // });
-//
-//   // console.log('====> IMAGE BITMAP:', offscreenCanvas.transferToImageBitmap());
-//   // Note: ImageBitmap are transferable.
-//   const buffer: ImageBitmap = offscreenCanvas.transferToImageBitmap();
-//   self.postMessage({
-//     rpc: SEND_SKYBOX,
-//     options: { side: FRONT_SIDE },
-//     buffer,
-//     // @ts-ignore - This is actually correct. Source:
-//     // https://developer.mozilla.org/en-US/docs/Web/API/ImageBitmap.
-//   }, [ buffer ]);
-// }
-
-function createStarBackdropSkybox() {
-  //
-}
-
-function createSkybox() {
-  onWorkerBootComplete.getOnce(() => {
-    // galacticClouds.showClouds();
-    // galacticStars.hideStars();
-    // // --> takeCubeScreenshot
-    //
-    // galacticClouds.hideClouds();
-    // galacticStars.showStars();
-    // // --> takeCubeScreenshot
-    //
-    // galacticStars.hideStars();
-    // bookm
-    // takeCubeScreenshot();
-  });
-}
-
-// onWorkerBootComplete.getOnce(() => {
-//   console.log('---> taking screenshot.');
-//   createGalaxyBackdropSkybox();
-// });
 
 // -------------------------------------------------------------- //
 
