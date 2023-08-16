@@ -5,6 +5,7 @@ import {
   Quaternion,
   Vector3,
 } from 'three';
+import * as THREE from 'three';
 
 const acos = Math.acos;
 const floor = Math.floor;
@@ -227,6 +228,28 @@ function rotateAboutPoint(obj, point, axis, theta, pointIsWorld){
   obj.rotateOnAxis(axis, theta); // rotate the OBJECT
 }
 
+/**
+ * Transforms a cube into a sphere. This is slower to initialize than
+ * Three.Sphere but preferred to Three.Sphere because Three.Sphere causes UV
+ * pin distortion at the poles. Note that you need a lot of geo on your cube
+ * for this function to be effective. This function preserves normals.
+ * @example
+ * const geometry = new THREE.BoxGeometry(1, 1, 1, 64, 64, 64);
+ * cubeToSphere(geometry);
+ * @param geometry
+ * @param radius
+ */
+function cubeToSphere(geometry: BufferGeometry, radius: number) {
+  const positionAttribute = geometry.attributes.position;
+  const vector = new THREE.Vector3();
+  for (let i = 0, len = positionAttribute.count; i < len; i++) {
+    // Obtain the vertex.
+    vector.fromBufferAttribute(positionAttribute, i);
+    vector.normalize().multiplyScalar(radius);
+    positionAttribute.setXYZ(i, vector.x, vector.y, vector.z)
+  }
+}
+
 export {
   xAxis,
   yAxis,
@@ -243,4 +266,5 @@ export {
   extractVertsFromGeo,
   extractAndPopulateVerts,
   rotateAboutPoint,
+  cubeToSphere,
 }
