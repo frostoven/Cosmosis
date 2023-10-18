@@ -114,7 +114,7 @@ function init({ data }) {
   // scene.add(cube);
 
   // Create internal skybox for multi-bake step purposes.
-  const boxSize = 1000;
+  const boxSize = 100000;
   const geometry = new THREE.BoxGeometry(boxSize, boxSize, boxSize, 64, 64, 64);
   const material = new THREE.MeshBasicMaterial({ color: 0x000000 });
   material.side = THREE.BackSide;
