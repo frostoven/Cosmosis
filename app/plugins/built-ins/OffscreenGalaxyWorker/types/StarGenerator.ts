@@ -45,13 +45,13 @@ export default class StarGenerator {
       }
     });
 
-    const visibleStars: any[] = [];
-
-    // TODO: move into GalaxyDB.
-    for (let i = 0, len = starObjects.length; i < len; i++) {
-      const starObject = starObjects[i];
-      visibleStars.push(starObject);
-    }
+    // const visibleStars: any[] = [];
+    // // TODO: move into GalaxyDB.
+    // for (let i = 0, len = starObjects.length; i < len; i++) {
+    //   const starObject = starObjects[i];
+    //   visibleStars.push(starObject);
+    // }
+    const visibleStars: any[] = starObjects;
 
     const planeSize = starSize * unitFactor;
     const bufferGeometry = new THREE.PlaneGeometry(planeSize, planeSize);
@@ -67,6 +67,16 @@ export default class StarGenerator {
 
     // Create instanced plane.
     for (let i = 0, len = visibleStars.length; i < len; i++) {
+      if (i > 0 && i % 10000 === 0) {
+        console.log('Stars still loading; now at', i);
+      }
+
+      // if (visibleStars[i] === null) {
+      //   visibleStars[i] = {
+      //     x: 0, y: 0, z: 0, N: Number.EPSILON, K: { r: 0, g: 1, b: 0 },
+      //   };
+      // }
+
       const {
         x, y, z, N: luminosity, K: color,
       } = visibleStars[i];
@@ -75,7 +85,7 @@ export default class StarGenerator {
         colors.push(color.r, color.g, color.b);
       }
       else {
-        colors.push(1.0, 0.0, 0.0);
+        colors.push(0.426, 0.559, 1);
       }
       luminosities.push(luminosity);
 
@@ -112,6 +122,8 @@ export default class StarGenerator {
     scene.add(instancedPlane);
     this.instancedPlane = instancedPlane;
     this.onStarGeneratorReady.setValue(true);
+
+    console.log('Loaded', visibleStars.length, 'stars.');
 
     // Galaxy center marker. Used to double-check star placement.
     // const size = 0.00125;

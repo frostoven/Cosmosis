@@ -75,8 +75,11 @@ const fragment = `
   #define THICK 1
   #define GALAXY_CENTER 2
   
-  #define HAPPY 1.0, 0.967, 0.336
-  #define BROWN 0.0164, 0.0082, 0.0
+  // #define HAPPY 1.0, 0.967, 0.336
+  // #define BROWN 0.0164, 0.0082, 0.0
+  
+  #define HAPPY 0.4, 0.4, 0.35
+  #define BROWN 0.06, 0.05, 0.025
 
   float inverseLerp(float v, float minValue, float maxValue) {
     return (v - minValue) / (maxValue - minValue);

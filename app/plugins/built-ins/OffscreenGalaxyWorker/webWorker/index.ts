@@ -229,6 +229,7 @@ function init({ data }) {
       }
 
       void main() {
+        vec4 color4;
         vec4 base_color = texture2D(baseTexture, vUv);
         
         if (mode == 1.0) {
@@ -236,12 +237,20 @@ function init({ data }) {
 
           // float lum = 0.21 * bloom_color.r + 0.71 * bloom_color.g + 0.07 * bloom_color.b;
           // vec4 color4 = vec4(base_color.rgb + bloom_color.rgb, max(base_color.a, 1.0));
-          vec4 color4 = vec4(base_color.rgb * brightness, 1.0);
-          gl_FragColor = color4;
+          color4 = vec4(base_color.rgb * brightness, 1.0);
         }
         else {
-          gl_FragColor = base_color * vec4(vec3(brightness), 1.0);
+          color4 = base_color * vec4(vec3(brightness), 1.0);
         }
+        
+        // Saturate.
+        float luminance = dot(color4.rgb, vec3(0.2126, 0.7152, 0.0722));
+        // Temperature false color:
+        // float luminance = dot(color4.rgb, vec3(0.07, 0.5, 0.2)); // + amount 20.0
+        float amount = 1.5;
+        color4 = vec4(mix(vec3(luminance), color4.rgb, amount), color4.a);
+        
+        gl_FragColor = color4;
       }
       `,
     defines: {},
