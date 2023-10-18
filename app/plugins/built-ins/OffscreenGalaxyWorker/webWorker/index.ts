@@ -381,7 +381,10 @@ function receiveMilkyWayFogTexture({ data }) {
 
 function receivePositionalInfo({ data }) {
   if (!camera) {
-    console.log('camera not ready:', {camera});
+    console.log('[webWorker] camera not ready; retrying in 10ms.');
+    setTimeout(() => {
+      receivePositionalInfo({ data });
+    }, 10);
     return;
   }
 
@@ -559,6 +562,14 @@ function pointCameraToSide(side: number) {
 
 // Request to render all six sides of the skybox.
 function mainRequestsSkybox() {
+  if (!camera) {
+    console.log('[webWorker] camera not ready; retrying in 10ms.');
+    setTimeout(() => {
+      mainRequestsSkybox();
+    }, 10);
+    return;
+  }
+
   if (skyboxCurrentlyGenerating) {
     return;
   }
@@ -586,9 +597,6 @@ function mainRequestsSkybox() {
     }, i);
   }
   drawNext();
-
-  for (let i = 0; i < 6; i++) {
-  }
 }
 
 // Request for galactic information.

@@ -22,21 +22,30 @@ import {
 import WebWorkerRuntimeBridge from '../../../local/WebWorkerRuntimeBridge';
 import { gameRuntime } from '../../gameRuntime';
 import SpaceScene from '../SpaceScene';
+import SpaceClouds from './types/SpaceClouds';
+import StarGenerator from './types/StarGenerator';
+import fs from 'fs';
+import { CanvasTexture, PerspectiveCamera } from 'three';
+import userProfile from '../../../userProfile';
+
+const USE_WEB_WORKER = true;
 
 const csmToThree = [
   5, 4, 2, 3, 1, 0,
 ];
 
 type PluginCompletion = PluginCacheTracker & {
-  player: Player, core: Core,
+  player: Player, core: Core, spaceScene: SpaceScene,
 };
 
 class OffscreenGalaxyWorker extends Worker {
   private _pluginTracker!: PluginCacheTracker | PluginCompletion;
   // private transferablePosition!: Float64Array;
   private bridge: WebWorkerRuntimeBridge;
-  private debugLiveAnimation = false;
   private skyboxTextures: THREE.CanvasTexture[] | null[] = [ null, null, null, null, null, null ];
+  private canvas!: HTMLElement | null;
+  // This is in use only if not using a web worker for visuals.
+  public localGalaxyObjects: any = {};
 
   constructor() {
     // Note: Webpack automatically bundles this from ./webWorker/index.ts. The
@@ -45,24 +54,23 @@ class OffscreenGalaxyWorker extends Worker {
 
     this.bridge = new WebWorkerRuntimeBridge();
     this.addEventListener('message', this.receiveMessage.bind(this));
-    this._init();
 
     // this.transferablePosition = new Float64Array(SBA_LENGTH);
 
-    this._pluginTracker = new PluginCacheTracker([ 'core', 'player' ]);
+    this._pluginTracker = new PluginCacheTracker([ 'core', 'player', 'spaceScene' ]);
     this._pluginTracker.onAllPluginsLoaded.getOnce(() => {
-      if (this.debugLiveAnimation) {
-        this.postMessage({ endpoint: 'actionStartDebugAnimation' });
-      }
-      this._pluginTracker.core.onAnimate.getEveryChange(() => {
-        const cam: THREE.PerspectiveCamera = this._pluginTracker.player.camera;
-        if (!cam) {
-          return;
-        }
-        this.sendPositionalInfo(cam);
-      });
+      this._pluginTracker.core.onAnimate.getEveryChange(this.step.bind(this));
 
-      this.requestSkybox();
+      if (USE_WEB_WORKER) {
+        this.requestSkybox();
+      }
+      else {
+        const scene: SpaceScene = this._pluginTracker.spaceScene;
+        if (scene.skybox) {
+          scene.skybox.visible = false;
+        }
+      }
+      this._init();
     });
     // setInterval(() => {
     //   this.requestSkybox();
@@ -70,18 +78,94 @@ class OffscreenGalaxyWorker extends Worker {
   }
 
   _init() {
+    this.canvas = document.getElementById('galaxy-canvas');
+    if (!this.canvas) {
+      console.error('[OffscreenGalaxyWorker] Error creating canvas.');
+      return;
+    }
+
+    if (USE_WEB_WORKER) {
+      return this.sendCanvasOffscreen();
+    }
+
+    // const scene: SpaceScene = this._pluginTracker.spaceScene;
+
+    // Note: the rest of this function is for debugging and previewing
+    // purposes. I doubt we'll move away from the skybox model for any normal
+    // cases, though we may end up hybridizing them later.
+    const { display } = userProfile.getCurrentConfig({
+      identifier: 'userOptions',
+    });
+    let galacticClouds: SpaceClouds, galacticStars: StarGenerator;
+    const scene = new THREE.Scene();
+    const renderer: THREE.WebGLRenderer = new THREE.WebGLRenderer({
+      canvas: this.canvas,
+      alpha: true,
+      powerPreference: "high-performance",
+      // antialias: false,
+      stencil: false,
+      depth: false,
+      //
+      // alpha: true,
+      // antialias: true,
+      // preserveDrawingBuffer: true,
+      // powerPreference: "high-performance",
+    });
+
+    const fogTexture = new THREE.TextureLoader().load('potatoLqAssets/smokeImg/fogColumn.png');
     // @ts-ignore
-    const canvas: HTMLCanvasElement = document.getElementById('galaxy-canvas');
-    if (!canvas || !('transferControlToOffscreen' in canvas)) {
-      // TODO: handle this better. Or not - we choose the NW.js version, and
-      //  won't choose something that doesn't boot. Needs thought.
+    const stars = JSON.parse(fs.readFileSync('prodHqAssets/starCatalogs/bsc5p_3d_min.json'));
+
+    // const ab = new ArrayBuffer(data.buffer.byteLength);
+    // const galaxyMeshUrl = Int32Array.from(data);
+    // const ab = new ArrayBuffer(data.buffer.byteLength);
+    // new Uint8Array(ab).set(new Uint8Array(ab));
+    // const galaxyMeshUrl = data.buffer;
+    const galaxyMeshUrl = 'potatoLqAssets/starCatalogs/milky_way.glb';
+
+    galacticClouds = new SpaceClouds({
+      datasetMode: false,
+      scene,
+      fogTexture: fogTexture as CanvasTexture,
+      galaxyMeshUrl,
+    });
+
+    galacticClouds.onSolPosition.getOnce((position) => {
+      galacticStars = new StarGenerator({
+        scene,
+        stars,
+        solPosition: position,
+      });
+
+      galacticStars.onStarGeneratorReady.getOnce(() => {
+        galacticClouds.onSpaceCloudsReady.getOnce(() => {
+          console.log('Local galaxy loading complete.');
+
+          const container = this.localGalaxyObjects;
+          container.fogTexture = fogTexture;
+          container.galaxyMeshUrl = galaxyMeshUrl;
+          container.stars = stars;
+          container.scene = scene;
+          container.renderer = renderer;
+          container.camera = new PerspectiveCamera(
+            display.fieldOfView,
+            window.innerWidth / window.innerHeight,
+            // Culling is in parsecs.
+            0.000001, 1e27,
+          );
+        });
+      });
+    });
+  }
+
+  sendCanvasOffscreen() {
+    if (!this.canvas || !('transferControlToOffscreen' in this.canvas)) {
       console.error('[OffscreenGalaxyWorker] Error creating offscreen canvas.');
       return;
     }
 
-    // TODO: on resize, post a message telling to change size.
     // @ts-ignore
-    const offscreen = canvas.transferControlToOffscreen();
+    const offscreen = this.canvas.transferControlToOffscreen();
     this.postMessage({
       endpoint: 'init',
       canvas: offscreen,
@@ -186,11 +270,28 @@ class OffscreenGalaxyWorker extends Worker {
   }
 
   buildSkybox() {
-    gameRuntime.tracked.spaceScene.getOnce((scene: SpaceScene) => {
-      const start = performance.now();
-      scene.setSkyboxSides(this.skyboxTextures as THREE.CanvasTexture[]);
-      console.log(`[buildSkybox] applying sides cost the main thread ${(performance.now() - start)}ms.`);
-    });
+    const scene: SpaceScene = this._pluginTracker.spaceScene;
+    const start = performance.now();
+    scene.setSkyboxSides(this.skyboxTextures as THREE.CanvasTexture[]);
+    console.log(`[buildSkybox] applying sides cost the main thread ${(performance.now() - start)}ms.`);
+  }
+
+  step() {
+    const cam: THREE.PerspectiveCamera = this._pluginTracker.player.camera;
+    if (USE_WEB_WORKER) {
+      if (!cam) {
+        return;
+      }
+      this.sendPositionalInfo(cam);
+    }
+    else if (this.localGalaxyObjects.camera) {
+      const container = this.localGalaxyObjects;
+      const renderer: THREE.WebGLRenderer = container.renderer;
+      const subCam: THREE.PerspectiveCamera = container.camera;
+      subCam.position.copy(cam.position).multiplyScalar(0.00001);
+      subCam.quaternion.copy(cam.quaternion);
+      renderer.render(container.scene, container.camera);
+    }
   }
 }
 
