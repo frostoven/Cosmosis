@@ -169,6 +169,12 @@ export default class LevelScene extends Scene {
     this._vehicleInventory = inventory;
     // console.log('-> gltf:', gltf);
     const scene = this._vehicle.scene;
+
+    // // Temporary hack to always face Orion.
+    // scene.rotateY(3.5);
+    // scene.rotateX(-0.2);
+    // this._cachedLocation.universeRotationM.quaternion.copy(scene.quaternion);
+
     this.add(scene);
     scene.add(this._cachedCamera);
     // Blender direction is 90 degrees off from what three.js considers to be

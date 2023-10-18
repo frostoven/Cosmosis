@@ -18,7 +18,7 @@ const vertex = `
   ${import_log10} 
       
   #define PI ${Math.PI}
-  #define REALISM_FACTOR 1.0
+  #define REALISM_FACTOR 0.5
 
   #define CULL_DIST 0.000001
   
@@ -52,7 +52,7 @@ const vertex = `
 
     // -------------------------------------------------------------
     
-    float distanceScale = vDistToCamera * 2500.0;
+    float distanceScale = vDistToCamera * 5000.0;
     
     // Calculate brightness based on the inverse square law of distance.
     float brightness = aLuminosity / (4.0 * PI * pow(distanceScale, 2.0));
@@ -92,10 +92,6 @@ const fragment = `
   uniform float invRadius;
   uniform float invGlowRadius;
   uniform float invFadeAggression;
-
-  #define fadeDist 0.05
-  #define fadeReciprocal (1.0/fadeDist)
-  #define fadeMultiplier 0.5
   
   #define pi ${Math.PI}
 
@@ -129,7 +125,7 @@ const fragment = `
     float glowSize = clamp(vGlowAmount, 0.0, 1.0);
     float halo = 1.0 - distance(vUv, vec2(0.5));
     vec4 glow = vec4(pow(halo, 4.0)) * vec4(vColor, 1.0) * -glowSize;
-    glow = mix(glow, transparent, 0.5);
+    glow = mix(glow, transparent, 0.6);
 
     // Airy disk calculation.
     // https://en.wikipedia.org/wiki/Airy_disk
@@ -137,6 +133,26 @@ const fragment = `
     // Dev note: divide spectrum by glowSize for easier debugging.
     vec4 spectrum = scale * vec4(vec3(vColor), 1.0);
     vec4 color4 = spectrum / pow(diskScale, invGlowRadius);
+    
+    // // Contrast. Applied to center bit of star.
+    // vec3 color3 = color4.rgb;
+    // float contrast = 2.0;
+    // float midpoint = 0.5;
+    // vec3 sg = sign(color3 - midpoint);
+    // color3 = sg * pow(
+    //   abs(color3 - midpoint) * 2.0,
+    //   vec3(1.0 / contrast)) * 0.5 + midpoint;
+    // // color4.rgb = color3;
+    // // color4 = vec4(color3.rgb, color4.a);
+    // color4.rgb *= 3.0;
+    
+    // Make star center parts a bit brighter.
+    color4.rgb *= -scale;
+    
+    // Desaturate the glow a tad.
+    float luminance = dot(glow.rgb, vec3(0.2126, 0.7152, 0.0722));
+    float amount = 0.25;
+    glow = vec4(mix(vec3(luminance), glow.rgb, amount), glow.a);
     
     // Blending between stars tends to look really terrible, and can result in
     // combined alphas producing black stars with bright rims. This fix does

@@ -37,13 +37,16 @@ export default class StarGenerator {
       fragmentShader: star.fragment,
       transparent: true,
       uniforms: {
-        scale: { value: -500.0 },
-        invRadius: { value: 100.0 },
+        scale: { value: -10.0 },
+        invRadius: { value: 110.0 },
         invGlowRadius: { value: 3.0 },
-        // 0-1: industrial light pollution. 9: small telescope.
-        invFadeAggression: { value: 5.0 },
+        // 0-1: industrial light pollution. 10: fully visible.
+        invFadeAggression: { value: 10.0 },
       }
     });
+
+    // Debugger hook:
+    // window.material = material;
 
     // const visibleStars: any[] = [];
     // // TODO: move into GalaxyDB.
@@ -53,7 +56,7 @@ export default class StarGenerator {
     // }
     const visibleStars: any[] = starObjects;
 
-    const planeSize = starSize * unitFactor;
+    const planeSize = starSize * unitFactor * 3;
     const bufferGeometry = new THREE.PlaneGeometry(planeSize, planeSize);
 
     const instancedPlane = new THREE.InstancedMesh(
