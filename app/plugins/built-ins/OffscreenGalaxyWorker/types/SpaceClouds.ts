@@ -26,7 +26,7 @@ export default class SpaceClouds {
   constructor({
     datasetMode, scene, galaxyMeshUrl, fogTexture,
   }: {
-    datasetMode: boolean, scene: THREE.Scene, galaxyMeshUrl: ArrayBuffer,
+    datasetMode: boolean, scene: THREE.Scene, galaxyMeshUrl: ArrayBuffer | string,
     fogTexture: CanvasTexture,
   }) {
     this.rng = new FastDeterministicRandom();
@@ -37,52 +37,67 @@ export default class SpaceClouds {
     this.onSolPosition = new ChangeTracker();
     this.onSpaceCloudsReady = new ChangeTracker();
 
-    // Note: if using a URL, change to: gltfLoader.load(galaxyMeshUrl, (gltf) => {});
-    gltfLoader.parse(galaxyMeshUrl, '', (gltf) => {
-      // @ts-ignore
-      const gltfScene: THREE.Scene = gltf.scene;
+    if (typeof galaxyMeshUrl === 'string') {
+      gltfLoader.load(galaxyMeshUrl, (gltf) => {
+        this.processGltf(gltf, datasetMode, scene, fogTexture);
+      }, (error) => {
+        console.error(error);
+      });
+    }
+    else {
+      // Note: if using a URL, change to: gltfLoader.load(galaxyMeshUrl, (gltf) => {});
+      gltfLoader.parse(galaxyMeshUrl, '', (gltf) => {
+        this.processGltf(gltf, datasetMode, scene, fogTexture);
+      }, (error) => {
+        console.error(error);
+      });
+    }
+  }
 
-      const thickDustPoints: any[] = [];
-      const thickDustTypes: any[] = [];
+  processGltf(gltf: object, datasetMode: boolean, scene: THREE.Scene, fogTexture: CanvasTexture) {
+    // @ts-ignore
+    const gltfScene: THREE.Scene = gltf.scene;
 
-      const thinDustPoints: any[] = [];
-      const thinDustTypes: any[] = [];
+    const thickDustPoints: any[] = [];
+    const thickDustTypes: any[] = [];
 
-      const galacticPoints: any[] = [];
-      const galacticTypes: any[] = [];
+    const thinDustPoints: any[] = [];
+    const thinDustTypes: any[] = [];
 
-      gltfScene.traverse((node) => {
-        // let reduceDensity = node.name === 'inner_arm_1' || node.name === 'inner_arm_2';
-        if (node.type === 'Object3D') {
-          if (node.name === 'SagA_str') {
-            return this.createGalacticCenterPositions(
-              scene, node, galacticTypes, galacticPoints
-            );
-          }
-          else if (node.name === 'Sol') {
-            this.onSolPosition.setValue(node.position);
-          }
-        }
-        else if (node.type === 'LineSegments') {
-          this.createGalacticArmPositions(
-            scene, node,
-            thickDustTypes, thickDustPoints, thinDustTypes, thinDustPoints
+    const galacticPoints: any[] = [];
+    const galacticTypes: any[] = [];
+
+    gltfScene.traverse((node) => {
+      // let reduceDensity = node.name === 'inner_arm_1' || node.name === 'inner_arm_2';
+      if (node.type === 'Object3D') {
+        if (node.name === 'SagA_str') {
+          return this.createGalacticCenterPositions(
+            scene, node, galacticTypes, galacticPoints
           );
         }
-      });
-
-      // Note: this controls the render order.
-      // Changing the order in which dust is rendered drastically effects visuals.
-      const dustPoints = [ thinDustPoints, galacticPoints, thickDustPoints ].flat();
-
-      // This order needs to match dustPoints order, else the shader will
-      // assign the wrong lighting to the wrong particles.
-      const dustTypes = [ thinDustTypes, galacticTypes, thickDustTypes ].flat();
-
-      if (!datasetMode) {
-        this.setupGalacticArmsInstanced(scene, dustTypes, dustPoints, fogTexture);
+        else if (node.name === 'Sol') {
+          this.onSolPosition.setValue(node.position);
+        }
+      }
+      else if (node.type === 'LineSegments') {
+        this.createGalacticArmPositions(
+          scene, node,
+          thickDustTypes, thickDustPoints, thinDustTypes, thinDustPoints
+        );
       }
     });
+
+    // Note: this controls the render order.
+    // Changing the order in which dust is rendered drastically effects visuals.
+    const dustPoints = [ thinDustPoints, galacticPoints, thickDustPoints ].flat();
+
+    // This order needs to match dustPoints order, else the shader will
+    // assign the wrong lighting to the wrong particles.
+    const dustTypes = [ thinDustTypes, galacticTypes, thickDustTypes ].flat();
+
+    if (!datasetMode) {
+      this.setupGalacticArmsInstanced(scene, dustTypes, dustPoints, fogTexture);
+    }
   }
 
   generateSemiSphere(amount, position, direction, r=0.05, dustTypes: any[], dustPoints: any[]) {
@@ -206,8 +221,6 @@ export default class SpaceClouds {
     }
     instancedPlane.instanceMatrix.needsUpdate = true;
     this.instancedPlane = instancedPlane;
-
-    console.log('instancedPlane:', instancedPlane);
 
     scene.add(instancedPlane);
     this.onSpaceCloudsReady.setValue(true);
