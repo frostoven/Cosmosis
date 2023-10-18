@@ -87,7 +87,7 @@ const fragment = `
     return mix(outMin, outMax, t);
   }
   
-  float saturate(float value) {
+  float csmSaturate(float value) {
     return clamp(value, 0.0, 1.0);
   }
 
@@ -423,7 +423,7 @@ const fragment = `
     float radialDecline = pow(v1 * v2, 5.5);
 
     float alpha = min(pow(average, 12.0) * color.r, radialDecline * color.r);
-    float antiCorner = abs(1.0 - saturate(max(pow(average, 8.0), radialDecline * 0.5)));
+    float antiCorner = abs(1.0 - csmSaturate(max(pow(average, 8.0), radialDecline * 0.5)));
 
     // float edgeFalloff = ridgedFBM(coords, 8, 0.5, 2.0);
     // // Contast the edge.

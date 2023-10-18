@@ -108,7 +108,7 @@ const fragment = `
     return mix(outMin, outMax, t);
   }
   
-  float saturate(float value) {
+  float csmSaturate(float value) {
     return clamp(value, 0.0, 1.0);
   }
 
