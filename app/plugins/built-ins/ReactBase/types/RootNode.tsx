@@ -6,9 +6,20 @@ import { reactControls } from './controls';
 import PluginCacheTracker from '../../../../emitters/PluginCacheTracker';
 import Core from '../../Core';
 import { InputManager } from '../../InputManager';
+import { FadeIn } from '../animations/FadeIn';
 
 const ARROW_DELAY = 500;
 const ARROW_REPEAT_MS = 50;
+
+const rootNodeStyle: React.CSSProperties = {
+  position: 'fixed',
+  top: 0,
+  bottom: 0,
+  left: 0,
+  right: 0,
+  backgroundColor: 'rgba(0, 0, 0, 0.30)',
+  zIndex: 25,
+};
 
 type PluginCompletion = PluginCacheTracker & {
   core: Core, inputManager: InputManager,
@@ -121,9 +132,14 @@ export default class RootNode extends React.Component<Props> {
   }
 
   render() {
+    if (!this.state.menuVisible) {
+      return null;
+    }
+
     return (
-      <div>
-      </div>
+      <FadeIn style={rootNodeStyle}>
+        <div></div>
+      </FadeIn>
     );
   }
 }
