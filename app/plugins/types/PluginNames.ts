@@ -6,13 +6,13 @@
 type PluginNames =
   'metadata' | 
   'core' | 
-  'offscreenGalaxyWorker' | 
   'nodeOps' | 
   'player' | 
   'location' | 
   'navigation' | 
   'levelScene' | 
   'spaceScene' | 
+  'offscreenGalaxyWorker' | 
   'hud3D' | 
   'mouseDriver' | 
   'gamepadDriver' | 
@@ -20,6 +20,7 @@ type PluginNames =
   'generalControl' | 
   'freeCam' | 
   'shipPilot' | 
+  'reactBase' | 
   'electricalHousingModule' | 
   'propulsionManagerModule' | 
   'warpDriveModule' | 
