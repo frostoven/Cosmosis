@@ -71,6 +71,13 @@ export default class InputBridge {
   _setupPulseWatchers() {
     const mc = this._modeController;
     mc.pulse.back.getEveryChange(() => this.onAction.setValue('back'));
+    mc.pulse.select.getEveryChange(() => this.onAction.setValue('select'));
+    mc.pulse.saveChanges.getEveryChange(() => this.onAction.setValue('saveChanges'));
+    mc.pulse.delete.getEveryChange(() => this.onAction.setValue('delete'));
+    mc.pulse.search.getEveryChange(() => this.onAction.setValue('search'));
+    mc.pulse.advanced.getEveryChange(() => this.onAction.setValue('advanced'));
+    mc.pulse.manageMacros.getEveryChange(() => this.onAction.setValue('manageMacros'));
+    mc.pulse.emergencyMenuClose.getEveryChange(() => this.onAction.setValue('emergencyMenuClose'));
   }
 
   // Manages arrow timing.
