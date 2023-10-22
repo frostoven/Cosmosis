@@ -7,9 +7,9 @@ import PluginCacheTracker from '../../../../emitters/PluginCacheTracker';
 import Core from '../../Core';
 import { InputManager } from '../../InputManager';
 import { FadeIn } from '../animations/FadeIn';
-
-const ARROW_DELAY = 500;
-const ARROW_REPEAT_MS = 50;
+import { FadeInDown } from '../animations/FadeInDown';
+import MenuVertical from '../menuTypes/MenuVertical';
+import InputBridge from './InputBridge';
 
 const rootNodeStyle: React.CSSProperties = {
   position: 'fixed',
@@ -19,6 +19,13 @@ const rootNodeStyle: React.CSSProperties = {
   right: 0,
   backgroundColor: 'rgba(0, 0, 0, 0.30)',
   zIndex: 25,
+};
+
+const centerBoth: React.CSSProperties = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)'
 };
 
 type PluginCompletion = PluginCacheTracker & {
@@ -31,115 +38,57 @@ interface Props {
 export default class RootNode extends React.Component<Props> {
   private _pluginTracker: PluginCacheTracker | PluginCompletion;
   private _modeController!: ModeController;
-
-  private readonly _repeatArrow: Function;
-  private _repeatDelta: number = 0;
-  private _arrowCountdown = ARROW_DELAY;
+  private _input = new InputBridge();
 
   state = {
     menuVisible: false,
+    // lastAction: 'none',
   };
 
   constructor(props: Props | Readonly<Props>) {
     super(props);
     this._pluginTracker = new PluginCacheTracker([ 'core', 'inputManager' ]);
-
-    this._repeatArrow = _.throttle(() => {
-      if (this._arrowCountdown === ARROW_DELAY) {
-        this.tickArrow();
-      }
-      this._arrowCountdown -= ARROW_REPEAT_MS * this._repeatDelta;
-      if (this._arrowCountdown < 0) {
-        this.tickArrow();
-      }
-    }, ARROW_REPEAT_MS, {
-      maxDelay: ARROW_REPEAT_MS,
-      leading: true,
-      trailing: false,
-    });
-
-    this._pluginTracker.onAllPluginsLoaded.getOnce(() => {
-      this._modeController = new ModeController('mainMenuSystem', ModeId.menuControl, reactControls);
-      this._modeController.step = this.stepArrowStream.bind(this);
-      const inputManager: InputManager = this._pluginTracker.inputManager;
-      inputManager.activateController(ModeId.menuControl, 'mainMenuSystem');
-      this._setupPulseWatchers();
-    });
   }
 
-  _setupPulseWatchers() {
-    const mc = this._modeController;
-    mc.pulse.back.getEveryChange(() => { this.onBack() });
+  componentDidMount() {
+    this._input.onAction.getEveryChange(this.handleAction);
   }
 
-  onBack() {
-    console.log('Back pressed.');
-    this.setState({ menuVisible: !this.state.menuVisible });
+  componentWillUnmount() {
+    this._input.onAction.removeGetEveryChangeListener(this.handleAction);
   }
 
-  // Manages arrow timing.
-  stepArrowStream(_, bigDelta) {
-    // Disable all key repeat processing while menu is closed.
-    if (!this.state.menuVisible) {
-      return;
+  handleAction = (action: string) => {
+    if (action === 'back') {
+      this.setState({ menuVisible: !this.state.menuVisible });
+      this._input.enableArrowStepping = this.state.menuVisible;
     }
-
-    const mc = this._modeController;
-    let { up, down, left, right } = mc.state;
-
-    if (up || down || left || right) {
-      this._repeatDelta = bigDelta;
-      this._repeatArrow();
-    }
-    else {
-      this._arrowCountdown = ARROW_DELAY;
-    }
-  }
-
-  // Handles arrow logic.
-  tickArrow() {
-    const mc = this._modeController;
-    let { up, down, left, right } = mc.state;
-
-    // Disallow confusion.
-    if (up && down) {
-      up = down = 0;
-    }
-    if (left && right) {
-      left = right = 0;
-    }
-
-    if (up) {
-      console.log('up');
-    }
-    else if (down) {
-      console.log('down');
-    }
-    else if (left) {
-      console.log('left');
-    }
-    else if (right) {
-      console.log('right');
-    }
-  }
-
-  menuUp() {
-    //
-  }
-
-  menuDown() {
-    //
-  }
+  };
 
   render() {
     if (!this.state.menuVisible) {
       return null;
     }
 
+    const menuOptions = {
+      type: 'MenuVertical',
+      default: 1,
+      entries: [
+        { name: 'Item 1', onSelect: () => console.log('selected 1'), },
+        { name: 'Item 2', onSelect: () => console.log('selected 2'), },
+        { name: 'Item 3', onSelect: () => console.log('selected 3'), },
+      ],
+    };
+
     return (
-      <FadeIn style={rootNodeStyle}>
-        <div></div>
-      </FadeIn>
+      <FadeInDown style={rootNodeStyle}>
+        <MenuVertical
+          options={menuOptions}
+          style={centerBoth}
+        >
+          Test
+        </MenuVertical>
+      </FadeInDown>
     );
   }
 }
