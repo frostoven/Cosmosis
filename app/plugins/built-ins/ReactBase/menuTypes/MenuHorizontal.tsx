@@ -7,8 +7,8 @@ export default class MenuHorizontal extends React.Component<MenuBasicProps> {
       <MenuBasic
         {...this.props}
         inlineButtons
-        actionNext='right'
-        actionPrevious='left'
+        actionsNext={[ 'right', 'down' ]}
+        actionsPrevious={[ 'left', 'up' ]}
       />
     );
   }

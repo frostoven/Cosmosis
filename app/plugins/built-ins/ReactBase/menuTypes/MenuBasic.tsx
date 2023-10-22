@@ -9,9 +9,9 @@ interface MenuBasicProps {
   },
   style: object,
   // Used to override what the 'next item' action is. Defaults to 'up'.
-  actionNext?: string,
+  actionsNext?: string[],
   // Used to override what the 'previous item' action is. Defaults to 'down'.
-  actionPrevious?: string,
+  actionsPrevious?: string[],
   inlineButtons?: boolean,
 }
 
@@ -19,8 +19,8 @@ export default class MenuBasic extends React.Component<MenuBasicProps> {
   private _input = new InputBridge();
   public static defaultProps = {
     style: {},
-    actionNext: 'down',
-    actionPrevious: 'up',
+    actionsNext: [ 'down' ],
+    actionsPrevious: [ 'up' ],
     inlineButtons: false,
   };
 
@@ -52,14 +52,14 @@ export default class MenuBasic extends React.Component<MenuBasicProps> {
       return this.select(selected);
     }
 
-    const next = this.props.actionNext;
-    const previous = this.props.actionPrevious;
+    const cursorNextBindings = this.props.actionsNext;
+    const cursorPreviousBindings = this.props.actionsPrevious;
     let direction: number;
-    if (action === previous) {
-      direction = -1;
-    }
-    else if (action === next) {
+    if (cursorNextBindings?.includes(action)) {
       direction = 1;
+    }
+    else if (cursorPreviousBindings?.includes(action)) {
+      direction = -1;
     }
     else {
       return;

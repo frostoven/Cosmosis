@@ -6,8 +6,8 @@ export default class MenuVertical extends React.Component<MenuBasicProps> {
     return (
       <MenuBasic
         {...this.props}
-        actionNext='down'
-        actionPrevious='up'
+        actionsNext={[ 'down' ]}
+        actionsPrevious={[ 'up' ]}
       />
     );
   }
