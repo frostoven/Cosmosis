@@ -40,6 +40,7 @@ module.exports = {
             '@babel/plugin-proposal-class-properties',
             '@babel/plugin-proposal-optional-chaining',
             '@babel/plugin-proposal-numeric-separator',
+            '@babel/plugin-transform-nullish-coalescing-operator',
           ]
         }
       },
