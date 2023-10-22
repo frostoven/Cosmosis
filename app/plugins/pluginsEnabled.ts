@@ -26,12 +26,12 @@ import { visorHudModulePlugin } from './built-ins/shipModules/VisorHud';
 import { generatePluginCompletion } from './generatePluginCompletion';
 import { offscreenGalaxyWorkerPlugin } from './built-ins/OffscreenGalaxyWorker';
 import { devGimbalPlugin } from './built-ins/DevGimbal';
+import { reactBasePlugin } from './built-ins/ReactBase';
 
 const builtInPluginsEnabled: PluginEntry[] = [
   // General
   { name: 'metadata', pluginInstance: metadataPlugin },
   { name: 'core', pluginInstance: corePlugin },
-  { name: 'offscreenGalaxyWorker', pluginInstance: offscreenGalaxyWorkerPlugin },
   { name: 'nodeOps', pluginInstance: nodeOpsPlugin },
   { name: 'player', pluginInstance: playerPlugin, dependencies: [ 'core' ] },
 
@@ -52,6 +52,9 @@ const builtInPluginsEnabled: PluginEntry[] = [
   { name: 'generalControl', pluginInstance: generalControlPlugin, dependencies: [ 'inputManager' ] },
   { name: 'freeCam', pluginInstance: freeCamPlugin, dependencies: [ 'player', 'inputManager' ] },
   { name: 'shipPilot', pluginInstance: shipPilotPlugin, dependencies: [ 'player', 'inputManager', 'levelScene' ] },
+
+  // React UI
+  { name: 'reactBase', pluginInstance: reactBasePlugin, dependencies: [ 'core', 'inputManager' ] },
 
   // ------------------------------------------------------------ //
 
