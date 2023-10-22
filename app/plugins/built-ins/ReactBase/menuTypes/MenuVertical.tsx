@@ -2,7 +2,7 @@ import React from 'react';
 import InputBridge from '../types/InputBridge';
 import KosmButton from '../components/KosmButton';
 
-interface Props {
+interface MenuBasicProps {
   options: {
     default?: number,
     entries: { name: string, onSelect: Function }[],
@@ -14,7 +14,7 @@ interface Props {
   actionPrevious?: string,
 }
 
-export default class MenuVertical extends React.Component<Props> {
+export default class MenuVertical extends React.Component<MenuBasicProps> {
   private _input = new InputBridge();
   public static defaultProps = {
     style: {},
@@ -101,7 +101,6 @@ export default class MenuVertical extends React.Component<Props> {
           return (
               <KosmButton
                 key={`MenuVertical-${index}`}
-                selectable
                 isActive={selected === index}
                 wide
                 block
@@ -120,3 +119,6 @@ export default class MenuVertical extends React.Component<Props> {
   }
 }
 
+export {
+  MenuBasicProps,
+}
