@@ -18,8 +18,8 @@ export default class MenuVertical extends React.Component<Props> {
   private _input = new InputBridge();
   public static defaultProps = {
     style: {},
-    actionNext: 'up',
-    actionPrevious: 'down',
+    actionNext: 'down',
+    actionPrevious: 'up',
   };
 
   state = {
@@ -53,10 +53,10 @@ export default class MenuVertical extends React.Component<Props> {
     const next = this.props.actionNext;
     const previous = this.props.actionPrevious;
     let direction: number;
-    if (action === next) {
+    if (action === previous) {
       direction = -1;
     }
-    else if (action === previous) {
+    else if (action === next) {
       direction = 1;
     }
     else {
