@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import scrollIntoView from '../utils/scrollIntoView';
+import scrollIntoView from './scrollIntoView';
 
 /**
  * Button that can be rendered as 'selected' (a.k.a clearly more visible
