@@ -72,11 +72,11 @@ export default class RootNode extends React.Component<Props> {
 
     const menuOptions = {
       type: 'MenuVertical',
-      default: 1,
+      // default: 1,
       entries: [
-        { name: 'Item 1', onSelect: () => console.log('selected 1'), },
-        { name: 'Item 2', onSelect: () => console.log('selected 2'), },
-        { name: 'Item 3', onSelect: () => console.log('selected 3'), },
+        { name: 'Item 1', onSelect: (e) => console.log('selected 1:', e), },
+        { name: 'Item 2', onSelect: (e) => console.log('selected 2:', e), },
+        { name: 'Item 3', onSelect: (e) => console.log('selected 3:', e), },
       ],
     };
 
