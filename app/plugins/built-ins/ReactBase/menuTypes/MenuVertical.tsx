@@ -8,12 +8,18 @@ interface Props {
     entries: { name: string, onSelect: Function }[],
   },
   style: object,
+  // Used to override what the 'next item' action is. Defaults to 'up'.
+  actionNext?: string,
+  // Used to override what the 'previous item' action is. Defaults to 'down'.
+  actionPrevious?: string,
 }
 
 export default class MenuVertical extends React.Component<Props> {
   private _input = new InputBridge();
   public static defaultProps = {
     style: {},
+    actionNext: 'up',
+    actionPrevious: 'down',
   };
 
   state = {
@@ -41,18 +47,16 @@ export default class MenuVertical extends React.Component<Props> {
     let selected = this.state.selected || 0;
 
     if (action === 'select') {
-      const callback = entries[selected].onSelect;
-      if (typeof callback === 'function') {
-        callback({ selected, ...entries[selected] });
-      }
-      return;
+      return this.select(selected);
     }
 
+    const next = this.props.actionNext;
+    const previous = this.props.actionPrevious;
     let direction: number;
-    if (action === 'up') {
+    if (action === next) {
       direction = -1;
     }
-    else if (action === 'down') {
+    else if (action === previous) {
       direction = 1;
     }
     else {
@@ -70,6 +74,18 @@ export default class MenuVertical extends React.Component<Props> {
       this.setState({ selected });
     }
   };
+
+  select(index: number) {
+    const entries = this.props.options?.entries;
+    if (!entries?.length) {
+      return;
+    }
+
+    const callback = entries[index].onSelect;
+    if (typeof callback === 'function') {
+      callback({ selected: index, ...entries[index] });
+    }
+  }
 
   render() {
     const entries = this.props.options?.entries;
@@ -89,6 +105,11 @@ export default class MenuVertical extends React.Component<Props> {
                 isActive={selected === index}
                 wide
                 block
+                onClick={() => {
+                  this.setState({ selected: index }, () => {
+                    this.select(index);
+                  });
+                }}
               >
                 {menuEntry.name}
               </KosmButton>
