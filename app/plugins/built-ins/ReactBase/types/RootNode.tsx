@@ -8,8 +8,9 @@ import Core from '../../Core';
 import { InputManager } from '../../InputManager';
 import { FadeIn } from '../animations/FadeIn';
 import { FadeInDown } from '../animations/FadeInDown';
-import MenuVertical from '../menuTypes/MenuVertical';
 import InputBridge from './InputBridge';
+import MenuHorizontal from '../menuTypes/MenuHorizontal';
+import MenuVertical from '../menuTypes/MenuVertical';
 
 const rootNodeStyle: React.CSSProperties = {
   position: 'fixed',
