@@ -2,10 +2,34 @@ import React from 'react';
 import InputBridge from '../types/InputBridge';
 import KosmButton from '../components/KosmButton';
 
+const menuEntriesStyle: React.CSSProperties = {
+  float: 'left',
+};
+
+const spacerStyle: React.CSSProperties = {
+  float: 'left',
+  paddingLeft: 16,
+};
+
+const descriptionBoxStyle: React.CSSProperties = {
+  float: 'left',
+  backgroundColor: 'rgb(33 33 33 / 70%)',
+  paddingLeft: 16,
+  paddingRight: 16,
+  paddingTop: 10,
+  paddingBottom: 10,
+  border: '4px solid black',
+  borderRadius: 4,
+  marginTop: -2,
+  marginBottom: 8,
+  minWidth: 300,
+};
+
 interface MenuBasicProps {
   options: {
     default?: number,
     entries: { name: string, onSelect: Function }[],
+    enableDescriptions?: boolean,
   },
   style: object,
   // Used to override what the 'next item' action is. Defaults to 'up'.
@@ -90,33 +114,56 @@ export default class MenuBasic extends React.Component<MenuBasicProps> {
   }
 
   render() {
+    const options = this.props.options;
     const entries = this.props.options?.entries;
-    if (!entries?.length) {
+    if (!options || !entries?.length) {
       return <div>[no menu entries available]</div>;
     }
 
     const selected = this.state.selected || 0;
+    // TODO: do as state instead. Basically, allow per-button.
     const inlineButtons = this.props.inlineButtons;
+
+    let leftCols: number, rightCols: number;
+    if (options.enableDescriptions) {
+      leftCols = rightCols = 8;
+    }
+    else {
+      leftCols = 16;
+      rightCols = 0;
+    }
 
     return (
       <div style={this.props.style}>
-        {entries.map((menuEntry, index) => {
-          return (
-              <KosmButton
-                key={`MenuBasic-${index}`}
-                isActive={selected === index}
-                wide={!this.props.inlineButtons}
-                block={!this.props.inlineButtons}
-                onClick={() => {
-                  this.setState({ selected: index }, () => {
-                    this.select(index);
-                  });
-                }}
-              >
-                {menuEntry.name}
-              </KosmButton>
-          )
-        })}
+        <div style={menuEntriesStyle}>
+          {entries.map((menuEntry, index) => {
+            return (
+                <KosmButton
+                  key={`MenuBasic-${index}`}
+                  isActive={selected === index}
+                  wide={!this.props.inlineButtons}
+                  block={!this.props.inlineButtons}
+                  onClick={() => {
+                    this.setState({ selected: index }, () => {
+                      this.select(index);
+                    });
+                  }}
+                >
+                  {menuEntry.name}
+                </KosmButton>
+            )
+          })}
+        </div>
+        <div
+          style={rightCols ? spacerStyle : { display: 'none' }}
+        >
+          &nbsp;
+        </div>
+        <div
+          style={rightCols ? descriptionBoxStyle : { display: 'none' }}
+        >
+          TEST
+        </div>
       </div>
     );
   }

@@ -23,10 +23,12 @@ const rootNodeStyle: React.CSSProperties = {
 };
 
 const centerBoth: React.CSSProperties = {
-  position: 'absolute',
   top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)'
+  transform: 'translateY(-50%)',
+  justifyContent: 'center',
+  position: 'absolute',
+  display: 'flex',
+  width: '100%',
 };
 
 type PluginCompletion = PluginCacheTracker & {
@@ -79,6 +81,7 @@ export default class RootNode extends React.Component<Props> {
         { name: 'Item 2', onSelect: (e) => console.log('selected 2:', e), },
         { name: 'Item 3', onSelect: (e) => console.log('selected 3:', e), },
       ],
+      enableDescriptions: true,
     };
 
     return (
