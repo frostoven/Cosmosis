@@ -1,12 +1,9 @@
 import _ from 'lodash';
 import React from 'react';
 import ModeController from '../../InputManager/types/ModeController';
-import { ModeId } from '../../InputManager/types/ModeId';
-import { reactControls } from './controls';
 import PluginCacheTracker from '../../../../emitters/PluginCacheTracker';
 import Core from '../../Core';
 import { InputManager } from '../../InputManager';
-import { FadeIn } from '../animations/FadeIn';
 import { FadeInDown } from '../animations/FadeInDown';
 import InputBridge from './InputBridge';
 import MenuHorizontal from '../menuTypes/MenuHorizontal';
@@ -75,13 +72,13 @@ export default class RootNode extends React.Component<Props> {
 
     const menuOptions = {
       type: 'MenuVertical',
-      // default: 1,
+      default: 1,
       entries: [
-        { name: 'Item 1', onSelect: (e) => console.log('selected 1:', e), },
-        { name: 'Item 2', onSelect: (e) => console.log('selected 2:', e), },
-        { name: 'Item 3', onSelect: (e) => console.log('selected 3:', e), },
+        { name: 'Item 1', onSelect: (e) => console.log('selected 1:', e) },
+        { name: 'Item 2', onSelect: (e) => console.log('selected 2:', e) },
+        { name: 'Item 3', onSelect: (e) => console.log('selected 3:', e) },
       ],
-      enableDescriptions: true,
+      alwaysShowDescriptionBox: true,
     };
 
     return (

@@ -26,10 +26,21 @@ const descriptionBoxStyle: React.CSSProperties = {
 };
 
 interface MenuBasicProps {
+  // Settings used to build the menu.
   options: {
+    // Menu entry index that is active when the menu opens. Defaults to 0.
     default?: number,
-    entries: { name: string, onSelect: Function }[],
-    enableDescriptions?: boolean,
+    // The actual menu entries. Supports strings and JSX. Any items included in
+    // this object will be sent to your callback.
+    entries: {
+      name: string,
+      description?: string | React.ReactNode,
+      onSelect: Function
+    }[],
+    // If true, will show a blank description box when menu entries have no
+    // description specified. Else, the description box will disappear in the
+    // absence of a description.
+    alwaysShowDescriptionBox?: boolean,
   },
   style: object,
   // Used to override what the 'next item' action is. Defaults to 'up'.
@@ -123,9 +134,10 @@ export default class MenuBasic extends React.Component<MenuBasicProps> {
     const selected = this.state.selected || 0;
     // TODO: do as state instead. Basically, allow per-button.
     const inlineButtons = this.props.inlineButtons;
+    const activeEntry = entries[selected];
 
     let leftCols: number, rightCols: number;
-    if (options.enableDescriptions) {
+    if (options.alwaysShowDescriptionBox || activeEntry.description) {
       leftCols = rightCols = 8;
     }
     else {
@@ -162,7 +174,7 @@ export default class MenuBasic extends React.Component<MenuBasicProps> {
         <div
           style={rightCols ? descriptionBoxStyle : { display: 'none' }}
         >
-          TEST
+          {activeEntry.description || ''}
         </div>
       </div>
     );
