@@ -333,8 +333,8 @@ const fragment = `
       // gl_FragColor = texture2D(thinDust, vUv) * vec4(.512, .588, .635, 0.001);
       //
       // This is also quite pretty if we ever wanted some additional effects:
-      // gl_FragColor.r = 0.275;
-      // gl_FragColor.a *= 20.0;
+      gl_FragColor.r = 0.275;
+      gl_FragColor.a *= 20.0;
       
       
 //      gl_FragColor.r = vCoords.y * 10.0;
