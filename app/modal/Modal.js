@@ -105,14 +105,13 @@ export default class Modal extends React.Component {
    * @param {undefined|Object[]} options.actions - Div containing buttons or status info.
    * @param {boolean} [options.unskippable] - If true, dialog cannot be skipped. Avoid where possible.
    * @param {boolean} [options.prioritise] - If true, pushes the dialog to the front. Avoid where possible.
-   * @param {undefined|function} options.callback
    * @returns {Modal}
    */
   _show = (
     {
       header='Message', body='', actions,
       unskippable=false, prioritise=false,
-      tag, callback=()=>{}
+      tag,
     }
   ) => {
     Modal.allowExternalListeners = false;
@@ -260,7 +259,6 @@ export default class Modal extends React.Component {
    * @param {undefined|JSX.Element} options.actions
    * @param {undefined|string} options.yesText - Text to use for positive button.
    * @param {undefined|string} options.noText - Text to use for negative button.
-   * @param {undefined|function} options.callback
    */
   confirm = (options, callback) => {
     if (typeof options === 'string') {
@@ -269,12 +267,8 @@ export default class Modal extends React.Component {
       };
     }
 
-    if (callback) {
-      options.callback = callback;
-    }
-
-    if (!options.callback) {
-      options.callback = () => console.warn('No callbacks passed to confirm.');
+    if (!callback) {
+      callback = () => console.warn('No callbacks passed to confirm.');
     }
 
     if (!options.actions) {
@@ -283,14 +277,14 @@ export default class Modal extends React.Component {
           name: options.yesText ? options.yesText : 'Yes',
           onSelect: () => {
             this.deactivateModal();
-            options.callback(true);
+            callback(true);
           }
         },
         {
           name: options.noText ? options.noText : 'No',
           onSelect: () => {
             this.deactivateModal();
-            options.callback(false);
+            callback(false);
           }
         },
       ];
@@ -309,11 +303,10 @@ export default class Modal extends React.Component {
    * @param {[{text: string, value: any}]} options.list
    * @param {undefined|JSX.Element} options.actions
    * @param {undefined|Array} options.buttons - Additional buttons. Simply pass a string array.
-   * @param {undefined|function} options.callback
    */
-  listPrompt = (options={}) => {
-    if (!options.callback) {
-      options.callback = () => console.warn('No callbacks passed to listPrompt.');
+  listPrompt = (options={}, callback) => {
+    if (!callback) {
+      callback = () => console.warn('No callbacks passed to listPrompt.');
     }
 
     if (!options.actions) {
@@ -340,7 +333,7 @@ export default class Modal extends React.Component {
             options.list.map(item =>
               <Button key={`listPrompt-${item.text}`} {...btnProps} selectable onClick={() => {
                 this.deactivateModal();
-                options.callback(item);
+                callback(item);
               }}
               >
                 {item.text}
@@ -363,7 +356,6 @@ export default class Modal extends React.Component {
    * @param {string|JSX.Element} options.body
    * @param {undefined|JSX.Element} options.actions
    * @param {undefined|Array} options.buttons - Additional buttons. Simply pass a string array.
-   * @param {undefined|function} options.callback
    */
   buttonPrompt = (options, callback) => {
     if (typeof options === 'string') {
@@ -372,12 +364,8 @@ export default class Modal extends React.Component {
       };
     }
 
-    if (callback) {
-      options.callback = callback;
-    }
-
-    if (!options.callback) {
-      options.callback = () => console.warn('No callbacks passed to buttonPrompt.');
+    if (!callback) {
+      callback = () => console.warn('No callbacks passed to buttonPrompt.');
     }
 
     if (!options.actions) options.actions = (
@@ -387,7 +375,7 @@ export default class Modal extends React.Component {
             options.buttons.map(text =>
               <Button key={`buttonPrompt-${text}`} selectable onClick={() => {
                 this.deactivateModal();
-                options.callback(text);
+                callback(text);
               }}
               >
                 {text}
@@ -407,7 +395,6 @@ export default class Modal extends React.Component {
    * @param {string|JSX.Element} options.header
    * @param {string|JSX.Element} options.body
    * @param {undefined|JSX.Element} options.actions
-   * @param {undefined|function} options.callback
    */
   prompt = (options, callback) => {
     let recordedText = '';
@@ -415,28 +402,22 @@ export default class Modal extends React.Component {
       options = {
         body: (
           <div>
-            {options}<br /><br />
+            {options}<br/><br/>
             {/* auto focus: */}
             <Input fluid icon={icons.text} focus autoFocus onChange={
-              event => { recordedText = event.target.value; }
+              event => {
+                recordedText = event.target.value;
+              }
             }/>
           </div>
         ),
       };
     }
 
-    if (callback) {
-      options.callback = callback;
-    }
-
-    if (!options.callback) {
-      options.callback = () => console.warn('No callbacks passed to confirm.');
-    }
-
     if (!options.actions) {
       const onClick = (text) => {
         this.deactivateModal();
-        options.callback(text);
+        callback(text);
       };
       options.actions = (
         <>
