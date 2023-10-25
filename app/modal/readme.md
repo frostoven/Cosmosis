@@ -101,6 +101,35 @@ $modal.confirm({
 });
 ```
 
+## Prompt
+
+Can be used as a simple replacement for `window.prompt()` , or as a more advanced dialog
+builder.
+
+```javascript
+$modal.prompt('Please enter your call sign:', (value) => {
+  if (value === null) {
+    console.log('[ user cancelled input ]');
+  }
+  else {
+      console.log('User entered:', value);
+  }
+});
+```
+
+As with all other modals, headers and buttons can be customised:
+```javascript
+$modal.prompt({
+  header: 'I Am The Header',
+  body: 'Please enter your ship\'s name:',
+  actions: [ 
+    { name: 'Randomize', onSelect: () => $modal.deactivateModal() },
+    { name: 'Accept', onSelect: () => $modal.deactivateModal() },
+    { name: 'Cancel', onSelect: () => $modal.deactivateModal() },
+  ]
+});
+```
+
 <!--
 #### title
 ```javascript
