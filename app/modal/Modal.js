@@ -157,14 +157,14 @@ export default class Modal extends React.Component {
   };
 
   _registerKeyListeners = () => {
-    document.addEventListener('keydown', this.receiveKeyEvent, true);
+    document.addEventListener('keydown', this._receiveKeyEvent, true);
   };
 
   _removeKeyListeners = () => {
-    document.removeEventListener('keydown', this.receiveKeyEvent, true);
+    document.removeEventListener('keydown', this._receiveKeyEvent, true);
   };
 
-  receiveKeyEvent = (event) => {
+  _receiveKeyEvent = (event) => {
     const { code } = event;
     if (!Modal.captureMode) {
       // Capture mode is used by features such as setting key bindings to
@@ -179,6 +179,8 @@ export default class Modal extends React.Component {
     Modal.allowExternalListeners = false;
 
     event.preventDefault();
+    event.stopPropagation();
+
     if (code === 'Enter') {
       return this._select();
     }
