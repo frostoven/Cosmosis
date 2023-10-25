@@ -27,8 +27,8 @@ export default class Modal extends React.Component {
   constructor(props) {
     super(props);
     this.state = Modal.defaultState;
-    this.currentMenu = null;
-    this.modalQueue = [];
+    this._currentMenu = null;
+    this._modalQueue = [];
   }
 
   componentDidMount() {
@@ -50,15 +50,11 @@ export default class Modal extends React.Component {
     delete window.$modal;
   }
 
-  handleMenuChange = ({ next }) => {
-    this.currentMenu = next;
-  };
-
-  reprocessQueue = () => {
-    const modalQueue = this.modalQueue;
+  _reprocessQueue = () => {
+    const modalQueue = this._modalQueue;
     if (!modalQueue.length) {
       // Reset modal to initial state.
-      this.hide();
+      this._hide();
     }
     else {
       if (modalQueue[modalQueue.length - 1].deactivated) {
@@ -74,15 +70,15 @@ export default class Modal extends React.Component {
     }
   };
 
-  activateModal = () => {
+  _activateModal = () => {
     this.setState({
       isVisible: true,
     });
   };
 
   deactivateModal = () => {
-    this.modalQueue.shift();
-    this.reprocessQueue();
+    this._modalQueue.shift();
+    this._reprocessQueue();
   };
 
   deactivateByTag = ({ tag }) => {
@@ -90,7 +86,7 @@ export default class Modal extends React.Component {
       return console.error('deactivateByTag requires a tag.');
     }
 
-    const queue = this.modalQueue;
+    const queue = this._modalQueue;
     for (let i = 0, len = queue.length; i < len; i++) {
       const modal = queue[i];
       if (modal.tag === tag) {
@@ -98,7 +94,7 @@ export default class Modal extends React.Component {
         break;
       }
     }
-    this.reprocessQueue();
+    this._reprocessQueue();
   };
 
   /**
@@ -112,7 +108,7 @@ export default class Modal extends React.Component {
    * @param {undefined|function} options.callback
    * @returns {Modal}
    */
-  show = (
+  _show = (
     {
       header='Message', body='', actions,
       unskippable=false, prioritise=false,
@@ -120,14 +116,14 @@ export default class Modal extends React.Component {
     }
   ) => {
     Modal.allowExternalListeners = false;
-    this.registerKeyListeners();
+    this._registerKeyListeners();
     if (!actions) {
       actions = [
         { name: 'OK', onSelect: () => this.deactivateModal() },
       ];
     }
 
-    this.activateModal();
+    this._activateModal();
 
     const options = {
       header, body, actions, unskippable, prioritise, tag,
@@ -135,14 +131,14 @@ export default class Modal extends React.Component {
     };
 
     if (prioritise) {
-      this.modalQueue.unshift(options);
+      this._modalQueue.unshift(options);
     }
     else {
-      this.modalQueue.push(options);
+      this._modalQueue.push(options);
     }
 
     this.setState({
-      modalCount: this.modalQueue.length - 1,
+      modalCount: this._modalQueue.length - 1,
       highestRecentCount: this.state.highestRecentCount + 1,
       selectionIndex: 0,
     });
@@ -150,8 +146,8 @@ export default class Modal extends React.Component {
     return this;
   };
 
-  hide = () => {
-    this.removeKeyListeners();
+  _hide = () => {
+    this._removeKeyListeners();
     Modal.allowExternalListeners = true;
     this.setState({
       isVisible: false,
@@ -160,11 +156,11 @@ export default class Modal extends React.Component {
     });
   };
 
-  registerKeyListeners = () => {
+  _registerKeyListeners = () => {
     document.addEventListener('keydown', this.receiveKeyEvent, true);
   };
 
-  removeKeyListeners = () => {
+  _removeKeyListeners = () => {
     document.removeEventListener('keydown', this.receiveKeyEvent, true);
   };
 
@@ -184,14 +180,14 @@ export default class Modal extends React.Component {
 
     event.preventDefault();
     if (code === 'Enter') {
-      return this.select();
+      return this._select();
     }
 
     let selected = this.state.selectionIndex || 0;
 
     if (code === 'ArrowDown' || code === 'ArrowRight') {
       selected++;
-      let length = this.modalQueue[0]?.actions?.length;
+      let length = this._modalQueue[0]?.actions?.length;
       if (typeof length !== 'number') {
         length = 1;
       }
@@ -209,11 +205,11 @@ export default class Modal extends React.Component {
     }
   };
 
-  select = (selected) => {
+  _select = (selected) => {
     if (typeof selected !== 'number') {
       selected = this.state.selectionIndex || 0;
     }
-    const activeModal = this.modalQueue[0] || {};
+    const activeModal = this._modalQueue[0] || {};
     if (!activeModal.actions?.length) {
       return;
     }
@@ -239,7 +235,7 @@ export default class Modal extends React.Component {
         body: options,
       };
     }
-    this.show(options);
+    this._show(options);
   };
 
   /**
@@ -286,7 +282,7 @@ export default class Modal extends React.Component {
       ];
     }
 
-    this.show(options);
+    this._show(options);
   };
 
   /**
@@ -341,7 +337,7 @@ export default class Modal extends React.Component {
       </>
     );
 
-    this.show(options);
+    this._show(options);
   };
 
   /**
@@ -388,7 +384,7 @@ export default class Modal extends React.Component {
       </>
     );
 
-    this.show(options);
+    this._show(options);
   };
 
   /**
@@ -440,14 +436,7 @@ export default class Modal extends React.Component {
       );
     }
 
-    this.show(options);
-  };
-
-  handleInput = ({ action }) => {
-    switch (action) {
-      case 'back':
-        return this.deactivateModal();
-    }
+    this._show(options);
   };
 
   /**
@@ -455,18 +444,18 @@ export default class Modal extends React.Component {
    * @param modalOptions
    */
   modifyModal = (modalOptions) => {
-    if (!this.modalQueue.length) {
+    if (!this._modalQueue.length) {
       return;
     }
-    this.modalQueue[0] = modalOptions;
+    this._modalQueue[0] = modalOptions;
     this.forceUpdate();
   };
 
   render() {
-    const activeModal = this.modalQueue[0] || {};
+    const activeModal = this._modalQueue[0] || {};
     const selected = this.state.selectionIndex || 0;
 
-    const modalCount = this.modalQueue.length;
+    const modalCount = this._modalQueue.length;
     let modalCountText = '';
     const { currentClosedCount, highestRecentCount } = this.state;
     if (modalCount > 1 || currentClosedCount > 0) {
@@ -476,7 +465,7 @@ export default class Modal extends React.Component {
     return (
       <SemanticModal
         className={`kosm-modal`}
-        open={!!this.modalQueue.length}
+        open={!!this._modalQueue.length}
       >
         <SemanticModal.Header>
           {modalCountText}
@@ -497,7 +486,7 @@ export default class Modal extends React.Component {
                   halfWide={true}
                   onClick={() => {
                     this.setState({ selectionIndex: index }, () => {
-                      this.select(index);
+                      this._select(index);
                     });
                   }}
                 >
