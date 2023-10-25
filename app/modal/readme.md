@@ -130,6 +130,25 @@ $modal.prompt({
 });
 ```
 
+## Button Prompt
+
+Offers a list of buttons to select from.
+
+```javascript
+$modal.buttonPrompt({
+  body: 'Please select an action:',
+  actions: [
+    { name: 'Start new session', value: 1 },
+    { name: 'View profile', value: 2 },
+    { name: 'View available lobbies', value: 3 },
+    { name: 'Close', value: 4 },
+  ]
+}, (userSelection) => {
+  // Contains: { name, value, onSelect }.
+  console.log(userSelection);
+});
+```
+
 <!--
 #### title
 ```javascript
