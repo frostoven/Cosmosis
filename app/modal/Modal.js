@@ -177,9 +177,6 @@ export default class Modal extends React.Component {
     }
     Modal.allowExternalListeners = false;
 
-    event.preventDefault();
-    event.stopPropagation();
-
     if (code === 'Enter') {
       return this._select();
     }
@@ -398,20 +395,31 @@ export default class Modal extends React.Component {
    */
   prompt = (options, callback) => {
     let recordedText = '';
+
+    let question = 'Enter a value:';
     if (typeof options === 'string') {
-      options = {
-        body: (
-          <div>
-            {options}<br/><br/>
-            {/* auto focus: */}
-            <Input fluid icon={icons.text} focus autoFocus onChange={
-              event => {
-                recordedText = event.target.value;
-              }
-            }/>
-          </div>
-        ),
-      };
+      question = options;
+      options = {};
+    }
+    else if (typeof options.body === 'string') {
+      question = options.body;
+    }
+
+    options.body = (
+      <div>
+        {question}<br/><br/>
+        {/* auto focus: */}
+        <Input fluid icon={icons.text} focus autoFocus onChange={
+          event => {
+            recordedText = event.target.value;
+            this.setState({ selectionIndex: 0 });
+          }
+        }/>
+      </div>
+    );
+
+    if (!callback) {
+      callback = () => console.warn('No callbacks passed to prompt.');
     }
 
     if (!options.actions) {
@@ -419,16 +427,23 @@ export default class Modal extends React.Component {
         this.deactivateModal();
         callback(text);
       };
-      options.actions = (
-        <>
-          <Button selectable onClick={() => onClick(recordedText)}>
-            Submit
-          </Button>
-          <Button selectable onClick={() => onClick(null)}>
-            Cancel
-          </Button>
-        </>
-      );
+
+      options.actions = [
+        {
+          name: 'Submit',
+          onSelect: () => {
+            this.deactivateModal();
+            callback(recordedText);
+          }
+        },
+        {
+          name: 'Cancel',
+          onSelect: () => {
+            this.deactivateModal();
+            callback(null);
+          }
+        },
+      ];
     }
 
     this._show(options);
