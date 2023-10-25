@@ -1,10 +1,9 @@
-import _ from 'lodash';
 import React from 'react';
 import ModeController from '../../InputManager/types/ModeController';
 import PluginCacheTracker from '../../../../emitters/PluginCacheTracker';
 import Core from '../../Core';
 import { InputManager } from '../../InputManager';
-import { FadeInDown } from '../animations/FadeInDown';
+import { FadeInDown } from '../../../../reactExtra/animations/FadeInDown';
 import InputBridge from './InputBridge';
 import MenuHorizontal from '../menuTypes/MenuHorizontal';
 import MenuVertical from '../menuTypes/MenuVertical';
@@ -78,7 +77,7 @@ export default class RootNode extends React.Component<Props> {
         { name: 'Item 2', onSelect: (e) => console.log('selected 2:', e) },
         { name: 'Item 3', onSelect: (e) => console.log('selected 3:', e) },
       ],
-      alwaysShowDescriptionBox: true,
+      // alwaysShowDescriptionBox: true,
     };
 
     return (
