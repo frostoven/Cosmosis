@@ -90,7 +90,7 @@ $modal.confirm({
 });
 ```
 
-#### Modal with custom button texts
+#### Confirm with custom buttons:
 ```javascript
 $modal.confirm({
   body: 'Left or right?',
