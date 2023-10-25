@@ -1,8 +1,6 @@
 import React from 'react';
 import { Input, Modal as SemanticModal } from 'semantic-ui-react';
 import Button from '../plugins/built-ins/ReactBase/components/KosmButton';
-import { onDocumentReady } from '../local/windowLoadListener';
-import * as ReactDOM from 'react-dom';
 
 // Unique name used to identify modals.
 const thisMenu = 'modal';
@@ -107,7 +105,7 @@ export default class Modal extends React.Component {
    * @param {string|object} options
    * @param {string|JSX.Element} options.header - Title at top of dialog.
    * @param {string|JSX.Element} options.body - The core content.
-   * @param {undefined|JSX.Element} options.actions - Div containing buttons or status info.
+   * @param {undefined|Object[]} options.actions - Div containing buttons or status info.
    * @param {boolean} [options.unskippable] - If true, dialog cannot be skipped. Avoid where possible.
    * @param {boolean} [options.prioritise] - If true, pushes the dialog to the front. Avoid where possible.
    * @param {undefined|function} options.callback
@@ -123,11 +121,9 @@ export default class Modal extends React.Component {
     Modal.modalActive = true;
     this.registerKeyListeners();
     if (!actions) {
-      actions = (
-        <Button selectable onClick={() => this.deactivateModal()}>
-          OK
-        </Button>
-      );
+      actions = [
+        { name: 'OK', onSelect: () => this.deactivateModal() },
+      ];
     }
 
     this.activateModal();
@@ -178,6 +174,24 @@ export default class Modal extends React.Component {
     }
     else if (code === 'ArrowUp' || code === 'ArrowLeft') {
       console.log('previous item');
+    }
+    else if (code === 'Enter') {
+      this.select();
+    }
+  };
+
+  select = () => {
+    const selected = this.state.selectionIndex || 0;
+    const activeModal = this.modalQueue[0] || {};
+    if (!activeModal.actions?.length) {
+      return;
+    }
+    const action = activeModal.actions[selected];
+    console.log('action:', action);
+
+    const callback = action.onSelect;
+    if (typeof callback === 'function') {
+      callback({ selected, ...action });
     }
   };
 
@@ -419,6 +433,7 @@ export default class Modal extends React.Component {
 
   render() {
     const activeModal = this.modalQueue[0] || {};
+    const selected = this.state.selectionIndex || 0;
 
     const modalCount = this.modalQueue.length;
     let modalCountText = '';
@@ -443,7 +458,21 @@ export default class Modal extends React.Component {
           {...this.props}
         >
           <div className='kosm-modal-actions'>
-            {activeModal.actions}
+            {activeModal?.actions?.map((menuEntry, index) => {
+              return (
+                <Button
+                  key={`ModalButton-${index}`}
+                  isActive={selected === index}
+                  onClick={() => {
+                    this.setState({ selectionIndex: index }, () => {
+                      this.select(index);
+                    });
+                  }}
+                >
+                  {menuEntry.name}
+                </Button>
+              )
+            })}
           </div>
         </div>
       </SemanticModal>
