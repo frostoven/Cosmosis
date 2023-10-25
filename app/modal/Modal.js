@@ -111,7 +111,7 @@ export default class Modal extends React.Component {
     {
       header='Message', body='', actions,
       unskippable=false, prioritise=false,
-      tag,
+      tag, inline=false,
     }
   ) => {
     Modal.allowExternalListeners = false;
@@ -126,7 +126,7 @@ export default class Modal extends React.Component {
 
     const options = {
       header, body, actions, unskippable, prioritise, tag,
-      deactivated: false,
+      deactivated: false, inline,
     };
 
     if (prioritise) {
@@ -297,91 +297,29 @@ export default class Modal extends React.Component {
    * the mouse.
    * @param {object} options
    * @param {string|JSX.Element} options.header
-   * @param {[{text: string, value: any}]} options.list
    * @param {undefined|JSX.Element} options.actions
-   * @param {undefined|Array} options.buttons - Additional buttons. Simply pass a string array.
+   * @param callback
    */
-  listPrompt = (options={}, callback) => {
-    if (!callback) {
-      callback = () => console.warn('No callbacks passed to listPrompt.');
-    }
-
-    if (!options.actions) {
-      options.actions = <div>&nbsp;</div>;
-    }
-
-    if (!options.list) {
-      options.list = [{ text: 'Default', value: 0 }];
-    }
-
-    const btnProps = {
-      selectable: true,
-      block: true,
-      wide: true,
-      autoScroll: true,
-    };
-
-    options.body = (
-      <>
-        <div
-          {...this.props}
-        >
-          {
-            options.list.map(item =>
-              <Button key={`listPrompt-${item.text}`} {...btnProps} selectable onClick={() => {
-                this.deactivateModal();
-                callback(item);
-              }}
-              >
-                {item.text}
-              </Button>
-            )
-          }
-        </div>
-      </>
-    );
-
-    this._show(options);
-  };
-
-  /**
-   * Asks a question and offers the user a bunch of buttons to click at the
-   * bottom of the modal.
-   * @param {string|object} options
-   * @param {undefined|function} [callback] - Optional. Omit if using options.
-   * @param {string|JSX.Element} options.header
-   * @param {string|JSX.Element} options.body
-   * @param {undefined|JSX.Element} options.actions
-   * @param {undefined|Array} options.buttons - Additional buttons. Simply pass a string array.
-   */
-  buttonPrompt = (options, callback) => {
-    if (typeof options === 'string') {
-      options = {
-        body: options,
-      };
-    }
-
+  buttonPrompt = (options={}, callback) => {
     if (!callback) {
       callback = () => console.warn('No callbacks passed to buttonPrompt.');
     }
 
-    if (!options.actions) options.actions = (
-      <>
-        {
-          options.buttons ? (
-            options.buttons.map(text =>
-              <Button key={`buttonPrompt-${text}`} selectable onClick={() => {
-                this.deactivateModal();
-                callback(text);
-              }}
-              >
-                {text}
-              </Button>
-            )
-          ) : null
-        }
-      </>
-    );
+    if (!options.actions) {
+      options.actions = [{ name: 'Default', value: 0 }];
+    }
+
+    options.actions.forEach((item) => {
+      item.onSelect = () => {
+        this.deactivateModal();
+        callback(item);
+      }
+    });
+
+    options.inline = true;
+    if (typeof options.body !== 'string') {
+        options.body = 'Please select an option:';
+    }
 
     this._show(options);
   };
@@ -464,6 +402,7 @@ export default class Modal extends React.Component {
   render() {
     const activeModal = this._modalQueue[0] || {};
     const selected = this.state.selectionIndex || 0;
+    const { inline } = activeModal;
 
     const modalCount = this._modalQueue.length;
     let modalCountText = '';
@@ -493,7 +432,9 @@ export default class Modal extends React.Component {
                 <Button
                   key={`ModalButton-${index}`}
                   isActive={selected === index}
-                  halfWide={true}
+                  halfWide={!inline}
+                  wide={inline}
+                  block={inline}
                   onClick={() => {
                     this.setState({ selectionIndex: index }, () => {
                       this._select(index);
