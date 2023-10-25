@@ -1,6 +1,6 @@
 import React from 'react';
 import InputBridge from '../types/InputBridge';
-import KosmButton from '../components/KosmButton';
+import KosmButton from '../../../../reactExtra/components/KosmButton';
 
 const menuEntriesStyle: React.CSSProperties = {
   float: 'left',

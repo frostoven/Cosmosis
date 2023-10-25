@@ -1,6 +1,6 @@
 import React from 'react';
 import { Input, Modal as SemanticModal } from 'semantic-ui-react';
-import Button from '../plugins/built-ins/ReactBase/components/KosmButton';
+import Button from '../reactExtra/components/KosmButton';
 
 // Unique name used to identify modals.
 const thisMenu = 'modal';
