@@ -1,13 +1,8 @@
 import React from 'react';
 import { Input, Modal as SemanticModal } from 'semantic-ui-react';
-
-import Button from '../elements/KosmButton';
-import MenuNavigation from '../elements/MenuNavigation';
-import { defaultMenuProps, defaultMenuPropTypes } from '../Menu/defaults';
-import { getStartupEmitter, startupEvent } from '../../emitters';
-import contextualInput from '../../local/contextualInput';
-
-const startupEmitter = getStartupEmitter();
+import Button from '../plugins/built-ins/ReactBase/components/KosmButton';
+import { onDocumentReady } from '../local/windowLoadListener';
+import * as ReactDOM from 'react-dom';
 
 // Unique name used to identify modals.
 const thisMenu = 'modal';
@@ -17,60 +12,17 @@ export const icons = {
   number: 'numbered list',
 };
 
-// Postpones execution of a message (ex. alert, confirm, prompt, etc.) until
-// the react root has mounted.
-function queueMessage({ type, args }) {
-  startupEmitter.on(startupEvent.menuLoaded, () => {
-    $modal[type](...args);
-  });
-}
-
-// Store modal requests until Modal has mounted.
-export const preBootPlaceholder = {
-  show: function() { queueMessage({ type: 'show', args: arguments }); },
-  alert: function() { queueMessage({ type: 'alert', args: arguments }); },
-  confirm: function() { queueMessage({ type: 'confirm', args: arguments }); },
-  prompt:  function() { queueMessage({ type: 'prompt', args: arguments }); },
-  listPrompt:  function() { queueMessage({ type: 'listPrompt', args: arguments }); },
-  buttonPrompt:  function() { queueMessage({ type: 'buttonPrompt', args: arguments }); },
-  deactivateByTag:  function() { queueMessage({ type: 'deactivateByTag', args: arguments }); },
-};
-
-/* == Duck punching =====  ====================== */
-
-const windowAlert = alert;
-const windowConfirm = confirm;
-const windowPrompt = prompt;
-
-window.alert = function alert() {
-  console.warn('** Please consider using $modal.alert() instead of alert() **');
-  return windowAlert(...arguments);
-};
-
-window.confirm = function confirm() {
-  console.warn('** Please consider using $modal.confirm() instead of confirm() **');
-  return windowConfirm(...arguments);
-};
-
-window.prompt = function prompt() {
-  console.warn('** Please consider using $modal.prompt() instead of prompt() **');
-  return windowPrompt(...arguments);
-};
-
-/* ======================  ====================== */
-
 let totalInstances = 0;
 
 export default class Modal extends React.Component {
-
-  static propTypes = defaultMenuPropTypes;
-  static defaultProps = defaultMenuProps;
+  static modalActive = false;
 
   static defaultState = {
     isVisible: false,
     modalCount: 0,
     currentClosedCount: 0,
     highestRecentCount: 0,
+    selectionIndex: 0,
   };
 
   constructor(props) {
@@ -88,28 +40,15 @@ export default class Modal extends React.Component {
       );
     }
 
-    this.props.registerMenuChangeListener({
-      onChange: this.handleMenuChange,
-    });
-
     // Replace all window.$modal placeholder boot functions with the real, now
     // loaded ones.
-    window.$modal = {};
-    const modalFnNames = Object.keys(preBootPlaceholder);
-    for (let i = 0, len = modalFnNames.length; i < len; i++) {
-      const fnName = modalFnNames[i];
-      window.$modal[fnName] = this[fnName];
-    }
+    window.$modal = this;
   }
 
   componentWillUnmount() {
     totalInstances--;
     console.warn('Modal component unmounted. This is probably a bug.');
     delete window.$modal;
-
-    this.props.deregisterMenuChangeListener({
-      onChange: this.handleMenuChange,
-    });
   }
 
   handleMenuChange = ({ next }) => {
@@ -120,16 +59,7 @@ export default class Modal extends React.Component {
     const modalQueue = this.modalQueue;
     if (!modalQueue.length) {
       // Reset modal to initial state.
-      this.setState({
-        isVisible: false,
-        currentClosedCount: 0,
-        highestRecentCount: 0,
-      });
-      // Give input control back to open menu.
-      this.props.changeMenu({
-        next: this.currentMenu,
-        suppressNotify: true,
-      });
+      this.hide();
     }
     else {
       if (modalQueue[modalQueue.length - 1].deactivated) {
@@ -149,8 +79,6 @@ export default class Modal extends React.Component {
     this.setState({
       isVisible: true,
     });
-    // This allows us to receive input without closing existing menus.
-    this.props.changeMenu({ next: thisMenu, suppressNotify: true });
   };
 
   deactivateModal = () => {
@@ -192,6 +120,8 @@ export default class Modal extends React.Component {
       tag, callback=()=>{}
     }
   ) => {
+    Modal.modalActive = true;
+    this.registerKeyListeners();
     if (!actions) {
       actions = (
         <Button selectable onClick={() => this.deactivateModal()}>
@@ -222,6 +152,35 @@ export default class Modal extends React.Component {
     return this;
   };
 
+  hide = () => {
+    this.removeKeyListeners();
+    Modal.modalActive = false;
+    this.setState({
+      isVisible: false,
+      currentClosedCount: 0,
+      highestRecentCount: 0,
+    });
+  };
+
+  registerKeyListeners = () => {
+    document.addEventListener('keydown', this.receivesKeyEvent);
+  };
+
+  removeKeyListeners = () => {
+    document.removeEventListener('keydown', this.receivesKeyEvent);
+  };
+
+  receivesKeyEvent = (event) => {
+    event.preventDefault();
+    const { code } = event;
+    if (code === 'ArrowDown' || code === 'ArrowRight') {
+      console.log('next item');
+    }
+    else if (code === 'ArrowUp' || code === 'ArrowLeft') {
+      console.log('previous item');
+    }
+  };
+
   /**
    * Backwards compatible with window.alert.
    * @param {string|object} options
@@ -231,6 +190,7 @@ export default class Modal extends React.Component {
    * @param {undefined|function} options.callback
    */
   alert = (options) => {
+    console.warn('--------------- alert');
     if (typeof options === 'string') {
       options = {
         body: options,
@@ -318,10 +278,8 @@ export default class Modal extends React.Component {
 
     options.body = (
       <>
-        <MenuNavigation
+        <div
           {...this.props}
-          identifier={thisMenu}
-          onUnhandledInput={this.handleInput}
         >
           {
             options.list.map(item =>
@@ -334,7 +292,7 @@ export default class Modal extends React.Component {
               </Button>
             )
           }
-        </MenuNavigation>
+        </div>
       </>
     );
 
@@ -420,19 +378,9 @@ export default class Modal extends React.Component {
       options.callback = () => console.warn('No callbacks passed to confirm.');
     }
 
-    // Block input for everything else.
-    contextualInput.ContextualInput.takeFullExclusivity({ mode: 'menuViewer' });
-    // Allow browser to respond to events - means we don't have to worry about
-    // how text gets into the input.
-    contextualInput.ContextualInput.enableBubbling();
-    // Prevent backspace from exiting our dialog.
-    contextualInput.ContextualInput.blockAction({ action: 'back' });
     if (!options.actions) {
       const onClick = (text) => {
         this.deactivateModal();
-        contextualInput.ContextualInput.relinquishFullExclusivity({ mode: 'menuViewer' });
-        contextualInput.ContextualInput.unblockAction({ action: 'back' });
-        contextualInput.ContextualInput.disableBubbling();
         options.callback(text);
       };
       options.actions = (
@@ -448,14 +396,6 @@ export default class Modal extends React.Component {
     }
 
     this.show(options);
-  };
-
-  getAnimation = (reverse = false) => {
-    if (this.state.isVisible) {
-      return 'fadeIn';
-    } else {
-      return 'fadeOut';
-    }
   };
 
   handleInput = ({ action }) => {
@@ -487,10 +427,9 @@ export default class Modal extends React.Component {
       modalCountText = `(${currentClosedCount + 1}/${highestRecentCount}) `;
     }
 
-    const animation = this.getAnimation();
     return (
       <SemanticModal
-        className={`kosm-modal ${animation}`}
+        className={`kosm-modal`}
         open={!!this.modalQueue.length}
       >
         <SemanticModal.Header>
@@ -498,20 +437,15 @@ export default class Modal extends React.Component {
           {activeModal.header}
         </SemanticModal.Header>
         <SemanticModal.Content>
-          {/*<MenuNavigation {...this.props}>*/}
             {activeModal.body}
-          {/*</MenuNavigation>*/}
         </SemanticModal.Content>
-        <MenuNavigation
+        <div
           {...this.props}
-          identifier={thisMenu}
-          onUnhandledInput={this.handleInput}
-          direction={MenuNavigation.direction.LeftRight}
         >
           <div className='kosm-modal-actions'>
             {activeModal.actions}
           </div>
-        </MenuNavigation>
+        </div>
       </SemanticModal>
     );
   }
