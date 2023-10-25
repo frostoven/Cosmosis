@@ -229,13 +229,25 @@ export default class Modal extends React.Component {
    * @param {string|JSX.Element} options.header
    * @param {string|JSX.Element} options.body
    * @param {undefined|JSX.Element} options.actions
-   * @param {undefined|function} options.callback
+   * @param optionalCallback
    */
-  alert = (options) => {
+  alert = (options, optionalCallback) => {
     if (typeof options === 'string') {
       options = {
         body: options,
       };
+    }
+
+    if (optionalCallback && !options.actions) {
+      options.actions = [
+        {
+          name: 'OK',
+          onSelect: () => {
+            this.deactivateModal();
+            optionalCallback(true);
+          }
+        },
+      ];
     }
     this._show(options);
   };
