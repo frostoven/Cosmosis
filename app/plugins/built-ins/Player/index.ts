@@ -4,8 +4,8 @@ import CosmosisPlugin from '../../types/CosmosisPlugin';
 
 // 1 micrometer to 100 billion light years in one scene, with 1 unit = 1 meter?
 // preposterous!  and yet...
-// const NEAR = 0.001, FAR = 1e27;
-const NEAR = 0.000001, FAR = 1e27;
+const NEAR = 0.001, FAR = 1e27;
+// const NEAR = 0.000001, FAR = 1e27;
 
 export default class Player {
   public camera: PerspectiveCamera;
@@ -30,10 +30,14 @@ export default class Player {
     this.camera.add(light);
     this.camera.add(allumination);
 
-    setTimeout(() => {
-      this.camera.position.set(-0.0038711067754775286, 0, 0.26675403118133545);
-      this.camera.rotateY(0.4);
-    }, 1400);
+    // const timerId = setInterval(() => {
+    //   if (!window.debug.sol) {
+    //     return;
+    //   }
+    //   clearInterval(timerId);
+    //   // this.camera.position.set(-0.0038711067754775286, 0, 0.26675403118133545);
+    //   this.camera.position.copy(window.debug.sol);
+    // }, 20);
   }
 }
 
