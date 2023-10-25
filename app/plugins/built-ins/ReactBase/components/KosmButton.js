@@ -13,6 +13,7 @@ export default class KosmButton extends React.Component {
     isActive: PropTypes.bool,
     autoScroll: PropTypes.bool,
     secondary: PropTypes.bool,
+    halfWide: PropTypes.bool,
     wide: PropTypes.bool,
     block: PropTypes.bool,
     aggressiveOptimisation: PropTypes.bool,
@@ -27,6 +28,7 @@ export default class KosmButton extends React.Component {
     isActive: false,
     autoScroll: false,
     secondary: false,
+    halfWide: false,
     wide: false,
     block: false,
     aggressiveOptimisation: true,
@@ -64,11 +66,12 @@ export default class KosmButton extends React.Component {
   getAnimation = (props) => {
     let buttonType = props.secondary ? 'secondary' : 'primary';
     let gradientClass = props.secondary ? 'kosm-gradient-box-secondary' : 'kosm-gradient-box';
+    let halfWide = props.halfWide ? 'kosm-half-wide' : '';
     let wide = props.wide ? 'kosm-wide' : '';
     let block = props.block ? 'kosm-block' : '';
     let invalid = props.invalid ? 'kosm-invalid' : '';
 
-    let extraCss = `${wide} ${block} ${invalid}`;
+    let extraCss = `${halfWide} ${wide} ${block} ${invalid}`;
 
     let className;
     if (props.isActive) {

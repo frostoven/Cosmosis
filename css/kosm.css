@@ -105,8 +105,12 @@
     background: #333333 !important;
 }
 
+.kosm-half-wide {
+    min-width: 156px;
+}
+
 .kosm-wide {
-    width: 313px;
+    min-width: 313px;
 }
 
 .kosm-block, .kosm-inline-block {
