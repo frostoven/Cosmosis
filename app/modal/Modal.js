@@ -13,7 +13,8 @@ export const icons = {
 let totalInstances = 0;
 
 export default class Modal extends React.Component {
-  static modalActive = false;
+  static captureMode = false;
+  static allowExternalListeners = true;
 
   static defaultState = {
     isVisible: false,
@@ -118,7 +119,7 @@ export default class Modal extends React.Component {
       tag, callback=()=>{}
     }
   ) => {
-    Modal.modalActive = true;
+    Modal.allowExternalListeners = false;
     this.registerKeyListeners();
     if (!actions) {
       actions = [
@@ -143,6 +144,7 @@ export default class Modal extends React.Component {
     this.setState({
       modalCount: this.modalQueue.length - 1,
       highestRecentCount: this.state.highestRecentCount + 1,
+      selectionIndex: 0,
     });
 
     return this;
@@ -150,7 +152,7 @@ export default class Modal extends React.Component {
 
   hide = () => {
     this.removeKeyListeners();
-    Modal.modalActive = false;
+    Modal.allowExternalListeners = true;
     this.setState({
       isVisible: false,
       currentClosedCount: 0,
@@ -159,35 +161,63 @@ export default class Modal extends React.Component {
   };
 
   registerKeyListeners = () => {
-    document.addEventListener('keydown', this.receivesKeyEvent);
+    document.addEventListener('keydown', this.receiveKeyEvent, true);
   };
 
   removeKeyListeners = () => {
-    document.removeEventListener('keydown', this.receivesKeyEvent);
+    document.removeEventListener('keydown', this.receiveKeyEvent, true);
   };
 
-  receivesKeyEvent = (event) => {
-    event.preventDefault();
+  receiveKeyEvent = (event) => {
     const { code } = event;
+    if (!Modal.captureMode) {
+      // Capture mode is used by features such as setting key bindings to
+      // detect which controls the user wants to map. Unless we're capturing
+      // keys, we have no need for special keys, and can allow external
+      // listeners such as the input manager plugin to process keys.
+      if (code === 'F11' || code === 'F12') {
+        Modal.allowExternalListeners = true;
+        return;
+      }
+    }
+    Modal.allowExternalListeners = false;
+
+    event.preventDefault();
+    if (code === 'Enter') {
+      return this.select();
+    }
+
+    let selected = this.state.selectionIndex || 0;
+
     if (code === 'ArrowDown' || code === 'ArrowRight') {
-      console.log('next item');
+      selected++;
+      let length = this.modalQueue[0]?.actions?.length;
+      if (typeof length !== 'number') {
+        length = 1;
+      }
+      if (selected >= length) {
+        selected = length - 1;
+      }
+      this.setState({ selectionIndex: selected });
     }
     else if (code === 'ArrowUp' || code === 'ArrowLeft') {
-      console.log('previous item');
-    }
-    else if (code === 'Enter') {
-      this.select();
+      selected--;
+      if (selected < 0) {
+        selected = 0;
+      }
+      this.setState({ selectionIndex: selected });
     }
   };
 
-  select = () => {
-    const selected = this.state.selectionIndex || 0;
+  select = (selected) => {
+    if (typeof selected !== 'number') {
+      selected = this.state.selectionIndex || 0;
+    }
     const activeModal = this.modalQueue[0] || {};
     if (!activeModal.actions?.length) {
       return;
     }
     const action = activeModal.actions[selected];
-    console.log('action:', action);
 
     const callback = action.onSelect;
     if (typeof callback === 'function') {
@@ -204,7 +234,6 @@ export default class Modal extends React.Component {
    * @param {undefined|function} options.callback
    */
   alert = (options) => {
-    console.warn('--------------- alert');
     if (typeof options === 'string') {
       options = {
         body: options,
@@ -238,22 +267,24 @@ export default class Modal extends React.Component {
       options.callback = () => console.warn('No callbacks passed to confirm.');
     }
 
-    if (!options.actions) options.actions = (
-      <>
-        <Button selectable onClick={() => {
-          this.deactivateModal();
-          options.callback(true);
-        }}>
-          {options.yesText ? options.yesText : 'Yes'}
-        </Button>
-        <Button selectable onClick={() => {
-          this.deactivateModal();
-          options.callback(false);
-        }}>
-          {options.noText ? options.noText : 'No'}
-        </Button>
-      </>
-    );
+    if (!options.actions) {
+      options.actions = [
+        {
+          name: options.yesText ? options.yesText : 'Yes',
+          onSelect: () => {
+            this.deactivateModal();
+            options.callback(true);
+          }
+        },
+        {
+          name: options.noText ? options.noText : 'No',
+          onSelect: () => {
+            this.deactivateModal();
+            options.callback(false);
+          }
+        },
+      ];
+    }
 
     this.show(options);
   };
@@ -463,6 +494,7 @@ export default class Modal extends React.Component {
                 <Button
                   key={`ModalButton-${index}`}
                   isActive={selected === index}
+                  halfWide={true}
                   onClick={() => {
                     this.setState({ selectionIndex: index }, () => {
                       this.select(index);

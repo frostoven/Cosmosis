@@ -294,6 +294,7 @@ export default class ModeController {
       // Under normal circumstances this value is always either 0 or 1.
       this.state[action] = value;
     }
+    // console.log('Key latency:', performance.now() - InputManager.lastPressTime);
   }
 
   // InputType: analogButton

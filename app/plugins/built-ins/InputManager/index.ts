@@ -1,4 +1,5 @@
 import CosmosisPlugin from '../../types/CosmosisPlugin';
+import Modal from '../../../modal/Modal';
 import { ModeId } from './types/ModeId';
 import { MouseDriver } from '../MouseDriver';
 import { gameRuntime } from '../../gameRuntime';
@@ -27,6 +28,14 @@ const mouseFriendly = [
 // Mode: a logical group of controllers.
 // Controller: something capable of responding to key input.
 class InputManager {
+  // Can be used to test key processing latency. At time the of wiring, takes
+  // less than 0.1ms (0.0001 seconds) under medium load, and immeasurably small
+  // (reported as 0ms) under low load, to reach the end of receiveAsKbButton.
+  // receiveAsKbButton is pretty much the last step in the processing queue.
+  // Unconscious human reflexes sit at around 80ms (0.08 seconds), so our
+  // performance is acceptable.
+  public static lastPressTime = -1;
+
   private _blockAllInput: boolean;
   private _blockKbMouse: boolean;
 
@@ -108,9 +117,14 @@ class InputManager {
   // TODO: this method (and several others) were copy-pasted from previous
   //  very quick-and-dirty code that became important. It needs cleanup.
   _kbMouseEventListener(event) {
-    if (this._blockKbMouse) {
+      // Input manager is subservient to the modal system. Give up if active,
+      // or if something has requested inputs be disabled.
+    // if (this._blockKbMouse || Modal.modalActive) {
+    if (this._blockKbMouse || !Modal.allowExternalListeners) {
       return;
     }
+
+    InputManager.lastPressTime = performance.now();
 
     // Note: code is retained for keyboard events, but modified for other event
     // types. For example, mouse click left will be stored as code=spMouseLeft
