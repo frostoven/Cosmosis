@@ -1,6 +1,10 @@
 import React from 'react';
 import { Input, Modal as SemanticModal } from 'semantic-ui-react';
 import Button from '../reactExtra/components/KosmButton';
+import { MoveDown } from '../reactExtra/animations/MoveDown';
+import { MoveUp } from '../reactExtra/animations/MoveUp';
+import { FadeIn } from "../reactExtra/animations/FadeIn";
+import ScrollIntoView from '../reactExtra/components/ScrollIntoView';
 
 // Unique name used to identify modals.
 const thisMenu = 'modal';
@@ -390,6 +394,205 @@ export default class Modal extends React.Component {
         },
       ];
     }
+
+    this._show(options);
+  };
+
+  /**
+   * Shows a list of options to select from.
+   * @param {object} options
+   * @param {string|JSX.Element} options.header
+   * @param {undefined|JSX.Element} options.actions
+   * @param {undefined|boolean} options.enableAnimations - Default is true.
+   * @param callback
+   */
+  listPrompt = (options = {}, callback) => {
+    if (!options.actions) {
+      options.actions = [ { name: 'Close', value: 0 } ];
+    }
+
+    if (!callback) {
+      callback = () => console.warn('No callbacks passed to listPrompt.');
+    }
+
+    if (typeof options.enableAnimations !== 'boolean') {
+      // Being JS based, spring is extremely slow on large sets. Downgrade to
+      // no animation unless the user forces a value.
+      options.enableAnimations = options.actions < 20;
+    }
+
+    for (let i = 0, len = options.actions.length; i < len; i++) {
+      const action = options.actions[i];
+      action.onSelect = () => {
+        this.deactivateModal();
+        callback(action);
+      };
+    }
+
+    let lastIndex = this.state.selectionIndex;
+    options.renderCustomDialog = () => {
+      const actions = options.actions;
+      const selectionIndex = this.state.selectionIndex;
+      const activeItem = actions[selectionIndex];
+
+      const handleClick = (action) => {
+        callback(action);
+      };
+
+      let MoveComponent;
+      let FadeComponent;
+      let moveDistance = null;
+      let duration = 75;
+      if (options.enableAnimations === false) {
+        FadeComponent = (props) => (
+          <div
+            className='bold-on-hover'
+            style={{ display: 'inline-block' }}
+            onClick={props.onClick}
+          >
+            {props.children}
+          </div>
+        );
+        MoveComponent = (props) => (
+          <div
+            className='bold-on-hover'
+            style={{ display: 'block' }}
+            onClick={props.onClick}
+          >
+            {props.children}
+          </div>
+        );
+      }
+      else if (lastIndex > selectionIndex) {
+        FadeComponent = FadeIn;
+        MoveComponent = MoveDown;
+        moveDistance = -50;
+      }
+      else {
+        FadeComponent = FadeIn;
+        MoveComponent = MoveUp;
+        moveDistance = 50;
+      }
+
+      const topItems = [];
+      const bottomItems = [];
+
+      actions.forEach((action, index) => {
+        if (index < selectionIndex) {
+          topItems.push(
+            <MoveComponent
+              className='bold-on-hover'
+              key={`listPrompt-${index}`}
+              style={{ paddingBottom: 4 }}
+              distance={`${moveDistance}%`} duration={duration}
+              onClick={() => handleClick(action)}
+            >
+              {action.name}
+            </MoveComponent>,
+          );
+        }
+        else if (index > selectionIndex) {
+          bottomItems.push(
+            <MoveComponent
+              className='bold-on-hover'
+              key={`listPrompt-${index}`}
+              style={{ paddingTop: 4 }}
+              distance={`${moveDistance}%`} duration={duration}
+              onClick={() => handleClick(action)}
+            >
+              {action.name}
+            </MoveComponent>,
+          );
+        }
+      });
+
+      const result = (
+        <div style={{
+          position: 'fixed',
+          top: 0, bottom: 0, left: 0, right: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.30)',
+          overflow: 'auto',
+          zIndex: 25,
+        }}>
+          <div style={{
+            position: 'absolute',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            textAlign: 'center',
+            width: '100%',
+          }}>
+            {/*
+              * TODO: if / when we invent alien numbers, place them left of
+              *  each option, example: n | Option
+              */}
+            <div style={{ position: 'relative' }}>
+              <div style={{ position: 'absolute', bottom: 0, width: '100%' }}>
+                {topItems}
+              </div>
+            </div>
+
+            <div
+              onClick={() => handleClick(action)}
+              style={{
+                position: 'relative',
+                paddingTop: 4,
+                paddingBottom: 24,
+              }}
+            >
+              <div style={{
+                position: 'absolute',
+                width: '100%',
+                fontSize: 18,
+                fontWeight: 700,
+              }}>
+                <div style={{
+                  display: 'inline-block',
+                  transform: 'translateY(-1px)',
+                  paddingRight: 16,
+                }}>
+                  [&nbsp;
+                </div>
+                <FadeComponent
+                  key={Math.random()}
+                  duration={duration * 1.25}
+                  style={{ display: 'inline-block' }}
+                >
+                  <MoveComponent
+                    key={Math.random()}
+                    distance={`${moveDistance * 2}%`}
+                    style={{ display: 'inline-block' }}
+                    duration={duration}
+                  >
+                    <div
+                      style={{ display: 'inline-block' }}
+                    >
+                        <ScrollIntoView>{activeItem.name}</ScrollIntoView>
+                    </div>
+                  </MoveComponent>
+                </FadeComponent>
+                <div style={{
+                  display: 'inline-block',
+                  transform: 'translateY(-1px)',
+                  paddingLeft: 16,
+                }}>
+                  &nbsp;]
+                </div>
+              </div>
+            </div>
+
+            <div style={{ position: 'relative' }}>
+              <div style={{ position: 'absolute', top: 0, width: '100%' }}>
+                {bottomItems}
+              </div>
+            </div>
+
+          </div>
+        </div>
+      );
+
+      lastIndex = selectionIndex;
+      return result;
+    };
 
     this._show(options);
   };
