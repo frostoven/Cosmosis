@@ -177,7 +177,7 @@ export default class Modal extends React.Component {
     }
     Modal.allowExternalListeners = false;
 
-    if (code === 'Enter') {
+    if (code === 'Enter' || code === 'NumpadEnter') {
       return this._select();
     }
 
