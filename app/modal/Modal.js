@@ -219,6 +219,16 @@ export default class Modal extends React.Component {
     }
   };
 
+  _getModalCountText() {
+    const modalCount = this._modalQueue.length;
+    let modalCountText = '';
+    const { currentClosedCount, highestRecentCount } = this.state;
+    if (modalCount > 1 || currentClosedCount > 0) {
+      modalCountText = `(${currentClosedCount + 1}/${highestRecentCount}) `;
+    }
+    return modalCountText;
+  }
+
   /**
    * Backwards compatible with window.alert.
    * @param {string|object} options
@@ -402,14 +412,7 @@ export default class Modal extends React.Component {
   render() {
     const activeModal = this._modalQueue[0] || {};
     const selected = this.state.selectionIndex || 0;
-    const { inline } = activeModal;
-
-    const modalCount = this._modalQueue.length;
-    let modalCountText = '';
-    const { currentClosedCount, highestRecentCount } = this.state;
-    if (modalCount > 1 || currentClosedCount > 0) {
-      modalCountText = `(${currentClosedCount + 1}/${highestRecentCount}) `;
-    }
+    const modalCountText = this._getModalCountText();
 
     return (
       <SemanticModal
