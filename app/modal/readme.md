@@ -175,16 +175,30 @@ $modal.listPrompt({
 });
 ```
 
-## Capturing Keys
+## Capturing Keys and Analog actions
 
 For situations where you want to capture a specific key (such as for user
 control bindings), `$modal` has a key capture function built right in. The rest
-of the game will entirely ignore input while these dialogs are open.
+of the game will entirely ignore input while key capture dialogs are open.
 
+`$modal` also includes methods which aren't true captures, but descriptive
+selections, such as mouse axis choosers. For consistency, these dialogs also
+start with the term `capture` even though they aren't technically capture
+functions.
+
+#### Keyboard code capture
 ```javascript
 $modal.captureKeyboardKey((keyCode) => {
   // Example output: 'ArrowUp'
   console.log(keyCode);
+});
+```
+
+#### Mouse axis chooser
+```javascript
+$modal.captureMouseDirection((spCode) => {
+  // Example output: 'spNorthSouth'
+  console.log(spCode);
 });
 ```
 
