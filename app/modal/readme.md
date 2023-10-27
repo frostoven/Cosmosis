@@ -175,6 +175,19 @@ $modal.listPrompt({
 });
 ```
 
+## Capturing Keys
+
+For situations where you want to capture a specific key (such as for user
+control bindings), `$modal` has a key capture function built right in. The rest
+of the game will entirely ignore input while these dialogs are open.
+
+```javascript
+$modal.captureKeyboardKey((keyCode) => {
+  // Example output: 'ArrowUp'
+  console.log(keyCode);
+});
+```
+
 <!--
 #### title
 ```javascript
