@@ -197,7 +197,12 @@
 .ui.page.modals.dimmer.transition.visible.active {
     background-color: #0000002b;
 }
- .kosm-modal input, .kosm-modal .icon.input {
-     color: white !important;
-     background-color: #333333 !important;
- }
+
+.kosm-modal input, .kosm-modal .icon.input {
+    color: white !important;
+    background-color: #333333 !important;
+}
+
+.bold-on-hover:hover {
+   font-weight: bold;
+}
