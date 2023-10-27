@@ -1,5 +1,5 @@
 import React from 'react';
-import { Input, Modal as SemanticModal } from 'semantic-ui-react';
+import { Icon, Input, Modal as SemanticModal } from 'semantic-ui-react';
 import Button from '../reactExtra/components/KosmButton';
 import { MoveDown } from '../reactExtra/animations/MoveDown';
 import { MoveUp } from '../reactExtra/animations/MoveUp';
@@ -180,6 +180,8 @@ export default class Modal extends React.Component {
         return;
       }
     }
+
+    event.stopPropagation();
 
     if (code === 'Enter' || code === 'NumpadEnter') {
       return this._select();
@@ -638,6 +640,19 @@ export default class Modal extends React.Component {
       callback(event.code);
     };
     document.addEventListener('keydown', captureKey, true);
+  };
+
+  captureMouseDirection = () => {
+    this.buttonPrompt({
+      body: 'Please select the mouse movement direction:',
+      actions: [
+        { name: <><Icon name='arrows alternate horizontal'/> Mouse X (Left-Right, i.e. Yaw)</>, value: 'spEastWest' },
+        { name: <><Icon name='arrows alternate vertical'/> Mouse Y (Up-Down, i.e. Pitch)</>, value: 'spNorthSouth' },
+      ]
+    }, (userSelection) => {
+      // Contains: { name, value, onSelect }.
+      console.log(userSelection);
+    });
   };
 
   render() {
