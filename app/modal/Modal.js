@@ -109,16 +109,15 @@ export default class Modal extends React.Component {
    */
   _show = (
     {
-      header='Message', body='', actions,
-      unskippable=false, prioritise=false,
-      tag, inline=false,
+      header='Message', body='', actions, unskippable=false, prioritise=false,
+      tag, inline=false, renderCustomDialog=null,
     }
   ) => {
     Modal.allowExternalListeners = false;
     this._registerKeyListeners();
     if (!actions) {
       actions = [
-        { name: 'OK', onSelect: () => this.deactivateModal() },
+        { name: 'Close', onSelect: () => this.deactivateModal() },
       ];
     }
 
@@ -126,7 +125,7 @@ export default class Modal extends React.Component {
 
     const options = {
       header, body, actions, unskippable, prioritise, tag,
-      deactivated: false, inline,
+      deactivated: false, inline, renderCustomDialog,
     };
 
     if (prioritise) {
@@ -141,8 +140,6 @@ export default class Modal extends React.Component {
       highestRecentCount: this.state.highestRecentCount + 1,
       selectionIndex: 0,
     });
-
-    return this;
   };
 
   _hide = () => {
@@ -411,6 +408,12 @@ export default class Modal extends React.Component {
 
   render() {
     const activeModal = this._modalQueue[0] || {};
+    const { inline, renderCustomDialog } = activeModal;
+
+    if (renderCustomDialog) {
+      return renderCustomDialog();
+    }
+
     const selected = this.state.selectionIndex || 0;
     const modalCountText = this._getModalCountText();
 
