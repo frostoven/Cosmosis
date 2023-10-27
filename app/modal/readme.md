@@ -149,6 +149,32 @@ $modal.buttonPrompt({
 });
 ```
 
+## List Prompt
+
+Offers a list of items to select from. Meant to be used as a
+controller-friendly substitute for dropdowns, or situations where the amount of
+selectable options are quite large.
+
+```javascript
+$modal.listPrompt({
+  // Note: setting enableAnimations forces it on or off. If not specified,
+  // $modal will disable animations if the amount of actions are large (20
+  // items at the time of writing). Enabling animations with 30+ actions in the
+  // list is incredibly slow and will hard-freeze the interface when scrolling.
+  enableAnimations: true,
+  actions: [
+    { name: 'Option 1', value: 1 },
+    { name: 'View profile', value: 2 },
+    { name: 'View available lobbies', value: 3 },
+    { name: 'Second-to-last option', value: 4 },
+    { name: 'Close', value: 5 },
+  ]
+}, (userSelection) => {
+  // Contains: { name, value, onSelect }.
+  console.log(userSelection);
+});
+```
+
 <!--
 #### title
 ```javascript
