@@ -1,20 +1,26 @@
 import React from 'react';
 import { useSpring, animated } from 'react-spring';
 
-const FadeInDown = ({children, style = {}}) => {
+const FadeInDown = ({
+  className = undefined,
+  children,
+  style = {},
+  distance = '-1%',
+  duration = 75,
+  onClick = undefined,
+}) => {
   const props = useSpring({
-    from: { opacity: 0, transform: 'translateY(-1%)' },
+    from: { opacity: 0, transform: `translateY(${distance})` },
     to: { opacity: 1, transform: 'translateY(0)' },
     config: {
-      duration: 75,
-    }
+      duration,
+    },
   });
 
   return (
-    <animated.div style={{
+    <animated.div className={className} onClick={onClick} style={{
       ...props,
       ...style,
-      display: 'inline',
     }}>
       {children}
     </animated.div>
@@ -23,4 +29,4 @@ const FadeInDown = ({children, style = {}}) => {
 
 export {
   FadeInDown,
-}
+};
