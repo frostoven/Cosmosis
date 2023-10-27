@@ -166,7 +166,11 @@ export default class Modal extends React.Component {
 
   _receiveKeyEvent = (event) => {
     const { code } = event;
-    if (!Modal.captureMode) {
+    Modal.allowExternalListeners = false;
+    if (Modal.captureMode) {
+      return;
+    }
+    else{
       // Capture mode is used by features such as setting key bindings to
       // detect which controls the user wants to map. Unless we're capturing
       // keys, we have no need for special keys, and can allow external
@@ -176,7 +180,6 @@ export default class Modal extends React.Component {
         return;
       }
     }
-    Modal.allowExternalListeners = false;
 
     if (code === 'Enter' || code === 'NumpadEnter') {
       return this._select();
@@ -609,6 +612,34 @@ export default class Modal extends React.Component {
     this.forceUpdate();
   };
 
+  /**
+   * Captures a keyboard key, and returns the result.
+   * @param callback
+   */
+  captureKeyboardKey = (callback) => {
+    if (!callback) {
+      callback = () => console.warn('No callback passed to captureKeyboardKey.');
+    }
+
+    Modal.captureMode = true;
+    this.alert({
+      header: 'Grabbing key...',
+      body: 'Please press a key on your keyboard.',
+      actions: [],
+    });
+
+    const captureKey = (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      document.removeEventListener('keydown', captureKey, true);
+      Modal.captureMode = false;
+      Modal.allowExternalListeners = true;
+      this.deactivateModal();
+      callback(event.code);
+    };
+    document.addEventListener('keydown', captureKey, true);
+  };
+
   render() {
     const activeModal = this._modalQueue[0] || {};
     const { inline, renderCustomDialog } = activeModal;
@@ -654,6 +685,7 @@ export default class Modal extends React.Component {
                 </Button>
               )
             })}
+            {activeModal?.actions?.length === 0 ? (<><br/><br/></>) : null}
           </div>
         </div>
       </SemanticModal>
