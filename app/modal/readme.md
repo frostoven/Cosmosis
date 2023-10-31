@@ -11,15 +11,18 @@ process input. This can be checked via `$modal.allowExternalListeners`._
 
 ## Alert
 
-Can be used as a simple replacement for `window.alert()` , or as a more advanced dialog
+Can be used as a simple replacement for `window.alert()` , or as a more
+advanced dialog
 builder.
 
 #### Simple alert:
+
 ```javascript
 $modal.alert('Your message here.');
 ```
 
 #### Callback on user accept:
+
 ```javascript
 // Placing a callback as a last option will notify you when the user selects
 // the built-in OK button.
@@ -29,35 +32,40 @@ $modal.alert('Your message here.', () => {
 ```
 
 #### Alert with custom header:
+
 ```javascript
 $modal.alert({
-    header: 'I Am The Header',
-    body: 'Your message here.',
+  header: 'I Am The Header',
+  body: 'Your message here.',
 });
 ```
 
 #### Alert with custom text on its button:
+
 ```javascript
 $modal.alert({
   header: 'Info',
   body: 'The Earth can fit eight times Saturn\'s hexigon storm.',
-  actions: [ 
+  actions: [
     { name: 'Damn, ok..', onSelect: () => $modal.deactivateModal() },
   ]
 });
 ```
 
 #### Alerts can be used as generic dialog builders:
-_Note that `$modal.confirm()` would be better suited than this next example as it'd be
+
+_Note that `$modal.confirm()` would be better suited than this next example as
+it'd be
 more concise._
+
 ```javascript
 $modal.alert({
   header: 'Question',
   body: 'Left or right?',
   actions: [
-    { 
-      name: 'Left', 
-      onSelect: () => console.log('left') || $modal.deactivateModal() 
+    {
+      name: 'Left',
+      onSelect: () => console.log('left') || $modal.deactivateModal()
     },
     {
       name: 'Right',
@@ -69,10 +77,12 @@ $modal.alert({
 
 ## Confirm
 
-Can be used as a simple replacement for `window.confirm()` , or as a more advanced dialog
+Can be used as a simple replacement for `window.confirm()` , or as a more
+advanced dialog
 builder.
 
 #### Simple confirmation window:
+
 ```javascript
 $modal.confirm('Are you want to proceed?', (yesOrNo) => {
   // true if 'Yes', false if 'No'. 
@@ -81,6 +91,7 @@ $modal.confirm('Are you want to proceed?', (yesOrNo) => {
 ```
 
 #### Confirm with custom header:
+
 ```javascript
 $modal.confirm({
   header: 'I Am The Header',
@@ -91,19 +102,24 @@ $modal.confirm({
 ```
 
 #### Confirm with custom buttons:
+
 ```javascript
 $modal.confirm({
   body: 'Left or right?',
-  actions: [ 
+  actions: [
     { name: 'Left, to Dark Woods', onSelect: () => $modal.deactivateModal() },
-    { name: 'Right, to Werewolf Mountain', onSelect: () => $modal.deactivateModal() },
+    {
+      name: 'Right, to Werewolf Mountain',
+      onSelect: () => $modal.deactivateModal()
+    },
   ]
 });
 ```
 
 ## Prompt
 
-Can be used as a simple replacement for `window.prompt()` , or as a more advanced dialog
+Can be used as a simple replacement for `window.prompt()` , or as a more
+advanced dialog
 builder.
 
 ```javascript
@@ -112,17 +128,18 @@ $modal.prompt('Please enter your call sign:', (value) => {
     console.log('[ user cancelled input ]');
   }
   else {
-      console.log('User entered:', value);
+    console.log('User entered:', value);
   }
 });
 ```
 
 As with all other modals, headers and buttons can be customised:
+
 ```javascript
 $modal.prompt({
   header: 'I Am The Header',
   body: 'Please enter your ship\'s name:',
-  actions: [ 
+  actions: [
     { name: 'Randomize', onSelect: () => $modal.deactivateModal() },
     { name: 'Accept', onSelect: () => $modal.deactivateModal() },
     { name: 'Cancel', onSelect: () => $modal.deactivateModal() },
@@ -187,6 +204,7 @@ start with the term `capture` even though they aren't technically capture
 functions.
 
 #### Keyboard code capture
+
 ```javascript
 $modal.captureKeyboardKey((keyCode) => {
   // Example output: 'ArrowUp'
@@ -195,10 +213,20 @@ $modal.captureKeyboardKey((keyCode) => {
 ```
 
 #### Mouse axis chooser
+
 ```javascript
 $modal.captureMouseDirection((spCode) => {
   // Example output: 'spNorthSouth'
   console.log(spCode);
+});
+```
+
+#### Gamepad button capture
+
+```javascript
+$modal.captureGamepadKey((buttonData) => {
+  // Example output: {key: 'bt0', value: 1}
+  console.log(buttonData);
 });
 ```
 
