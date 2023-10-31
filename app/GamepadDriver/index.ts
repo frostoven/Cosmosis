@@ -100,9 +100,9 @@ export default class GamepadDriver {
   private static _initialised = [ false, false, false, false ];
 
   // Checks if anything has changed for a particular controller.
-  private static _timestamps: Array<number> = [ 0, 0, 0, 0 ];
-  private static _axisCache: Array<Array<string>> = [ [], [], [], [] ];
-  private static _buttonCache: Array<Array<string>> = [ [], [], [], [] ];
+  private _timestamps: Array<number> = [ 0, 0, 0, 0 ];
+  private _axisCache: Array<Array<string>> = [ [], [], [], [] ];
+  private _buttonCache: Array<Array<string>> = [ [], [], [], [] ];
   private static _axisNames: Array<Array<string>> = [ [], [], [], [] ];
   private static _buttonNames: Array<Array<string>> = [ [], [], [], [] ];
 
@@ -157,8 +157,8 @@ export default class GamepadDriver {
   // Button and axes checked by InputManager are rather expensive. This
   // function only propagates actual changes.
   checkAndTriggerChanges({ index, axes, buttons }) {
-    const axisCache = GamepadDriver._axisCache[index];
-    const buttonCache = GamepadDriver._buttonCache[index];
+    const axisCache = this._axisCache[index];
+    const buttonCache = this._buttonCache[index];
     const axisNames = GamepadDriver._axisNames[index];
     const buttonNames = GamepadDriver._buttonNames[index];
 
@@ -193,13 +193,13 @@ export default class GamepadDriver {
     const gamepads = navigator.getGamepads();
     for (let i = 0, len = gamepads.length; i < len; i++) {
       const controller = gamepads[i];
-      if (!controller || controller.timestamp <= GamepadDriver._timestamps[i]) {
+      if (!controller || controller.timestamp <= this._timestamps[i]) {
         continue;
       }
       if (!GamepadDriver._initialised[i]) {
         this._initGamepad(controller);
       }
-      GamepadDriver._timestamps[i] = controller.timestamp;
+      this._timestamps[i] = controller.timestamp;
       this.checkAndTriggerChanges(controller);
     }
   }
