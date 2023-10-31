@@ -21,7 +21,7 @@ import { nodeOpsPlugin } from './built-ins/NodeOps';
 import { externalLightsModulePlugin } from './built-ins/shipModules/ExternalLights';
 import { propulsionManagerModulePlugin } from './built-ins/shipModules/PropulsionManager';
 import { warpDriveModulePlugin } from './built-ins/shipModules/WarpDrive';
-import { gamepadDriverPlugin } from './built-ins/GamepadDriver';
+import { gamepadConnectorPlugin } from './built-ins/GamepadConnector';
 import { visorHudModulePlugin } from './built-ins/shipModules/VisorHud';
 import { generatePluginCompletion } from './generatePluginCompletion';
 import { offscreenGalaxyWorkerPlugin } from './built-ins/OffscreenGalaxyWorker';
@@ -47,7 +47,7 @@ const builtInPluginsEnabled: PluginEntry[] = [
 
   // Input
   { name: 'mouseDriver', pluginInstance: mouseDriverPlugin, dependencies: [ 'core' ] },
-  { name: 'gamepadDriver', pluginInstance: gamepadDriverPlugin, dependencies: [ 'core' ] },
+  { name: 'gamepadConnector', pluginInstance: gamepadConnectorPlugin, dependencies: [ 'core', 'inputManager' ] },
   { name: 'inputManager', pluginInstance: inputManagerPlugin, dependencies: [ 'core', 'mouseDriver' ] },
   { name: 'generalControl', pluginInstance: generalControlPlugin, dependencies: [ 'inputManager' ] },
   { name: 'freeCam', pluginInstance: freeCamPlugin, dependencies: [ 'player', 'inputManager' ] },

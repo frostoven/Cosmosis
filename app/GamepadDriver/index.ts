@@ -1,6 +1,3 @@
-import CosmosisPlugin from '../../types/CosmosisPlugin';
-import { gameRuntime } from '../../gameRuntime';
-import { InputManager } from '../InputManager';
 import { ControllerType, guessControllerType } from './types/ControllerType';
 import { guessGamepadName } from './types/gamepadNames';
 
@@ -71,55 +68,72 @@ for (let i = 0; i < 32; i++) {
 
 // --- Pre-gen section end ------------------------------------------------- //
 
-// Note: this relates to how the mouse works with the game window. It has
-// nothing to do with mounting rodents, though we may or may not have such
-// implementation plans.
-class GamepadDriver {
+type GamepadCallback =
+  | (() => void)
+  | ((data: { key: string, value: number }) => void);
+
+interface GamepadOptions {
+  onAxisChange?: (() => void) | ((data: {
+    key: string,
+    value: number
+  }) => void),
+  onButtonChange?: (() => void) | ((data: {
+    key: string,
+    value: number
+  }) => void)
+}
+
+/**
+ * Offers a high-level interface for dealing with the gamepad. For performance
+ * and timing reasons, you need to manually call step in a loop such as
+ * requestAnimationFrame.
+ * @class
+ */
+export default class GamepadDriver {
+  public onAxisChange: GamepadCallback;
+  public onButtonChange: GamepadCallback;
+
+  // gamepadconnected events are inconsistent as they rely on accidentally
+  // loading this class before the user can press a button. This array helps
+  // keep track of what's been initialised so that we can detect late
+  // instantiation.
+  private static _initialised = [ false, false, false, false ];
+
   // Checks if anything has changed for a particular controller.
-  private readonly _timestamps: Array<number>;
-  // Cached check of this.controllers. If true, controller data isn't checked
-  // for updates at all.
-  private _allNull: boolean;
-  private readonly _axisCache: Array<Array<string>>;
-  private readonly _buttonCache: Array<Array<string>>;
-  private readonly _axisNames: Array<Array<string>>;
-  private readonly _buttonNames: Array<Array<string>>;
-  private _cachedInputManager: InputManager;
+  private static _timestamps: Array<number> = [ 0, 0, 0, 0 ];
+  private static _axisCache: Array<Array<string>> = [ [], [], [], [] ];
+  private static _buttonCache: Array<Array<string>> = [ [], [], [], [] ];
+  private static _axisNames: Array<Array<string>> = [ [], [], [], [] ];
+  private static _buttonNames: Array<Array<string>> = [ [], [], [], [] ];
 
-  constructor() {
-    this._timestamps = [ 0, 0, 0, 0 ];
-    this._allNull = true;
-    this._axisCache = [ [], [], [], [] ];
-    this._buttonCache = [ [], [], [], [] ];
-    this._axisNames = [ [], [], [], [] ];
-    this._buttonNames = [ [], [], [], [] ];
+  constructor({
+    onAxisChange = () => {
+    },
+    onButtonChange = () => {
+    },
+  }: GamepadOptions) {
+    this.onAxisChange = onAxisChange;
+    this.onButtonChange = onButtonChange;
 
-    window.addEventListener("gamepadconnected", this.onGamepadConnected.bind(this));
-    window.addEventListener("gamepaddisconnected", this.onGamepadDisconnected.bind(this));
-
-    this._cachedInputManager = gameRuntime.tracked.inputManager.cachedValue;
-    this._setupWatchers();
+    window.addEventListener('gamepadconnected', this.onGamepadConnected.bind(this));
+    window.addEventListener('gamepaddisconnected', this.onGamepadDisconnected.bind(this));
   }
 
-  _setupWatchers() {
-    gameRuntime.tracked.core.getEveryChange((core) => {
-      core.onPreAnimate.getEveryChange(this.step.bind(this));
-    });
-    gameRuntime.tracked.inputManager.getEveryChange((inputManager) => {
-      this._cachedInputManager = inputManager;
-    });
+  _initGamepad(gamepad: Gamepad) {
+    GamepadDriver._initialised[gamepad.index] = true;
+
+    const name = guessGamepadName(gamepad.id);
+    const deviceType = guessControllerType(gamepad.id);
+
+    GamepadDriver._axisNames[gamepad.index] = inputNames[deviceType][AXIS_INDEX];
+    GamepadDriver._buttonNames[gamepad.index] = inputNames[deviceType][BUTTON_INDEX];
+
+    console.log(`[GamepadDriver] Connected ${name} | treating as: ${ControllerType[deviceType]}`);
   }
 
   onGamepadConnected(event: GamepadEvent) {
     const gamepad = event.gamepad;
-    const name = guessGamepadName(gamepad.id);
-    const deviceType = guessControllerType(gamepad.id);
-
-    this._axisNames[gamepad.index] = inputNames[deviceType][AXIS_INDEX];
-    this._buttonNames[gamepad.index] = inputNames[deviceType][BUTTON_INDEX];
-
-    console.log(`[GamepadDriver] Connected ${name} | treating as: ${ControllerType[deviceType]}`);
-    this._allNull = false;
+    this._initGamepad(gamepad);
   }
 
   onGamepadDisconnected(event: GamepadEvent) {
@@ -129,11 +143,9 @@ class GamepadDriver {
     const controllers = navigator.getGamepads();
     for (let i = 0, len = controllers.length; i < len; i++) {
       if (controllers[i] !== null) {
-        this._allNull = false;
         return;
       }
     }
-    this._allNull = true;
     // TODO: consider adding hooks in the application that reset certain states
     //  (such as thrust) if a controller is unplugged. The reason here being
     //  that a slider, for example, sets different state to a keyboard, meaning
@@ -145,10 +157,10 @@ class GamepadDriver {
   // Button and axes checked by InputManager are rather expensive. This
   // function only propagates actual changes.
   checkAndTriggerChanges({ index, axes, buttons }) {
-    const axisCache = this._axisCache[index];
-    const buttonCache = this._buttonCache[index];
-    const axisNames = this._axisNames[index];
-    const buttonNames = this._buttonNames[index];
+    const axisCache = GamepadDriver._axisCache[index];
+    const buttonCache = GamepadDriver._buttonCache[index];
+    const axisNames = GamepadDriver._axisNames[index];
+    const buttonNames = GamepadDriver._buttonNames[index];
 
     // Propagate all axis changes.
     for (let i = 0, len = axes.length; i < len; i++) {
@@ -156,7 +168,7 @@ class GamepadDriver {
       if (axisCache[i] !== axisValue) {
         axisCache[i] = axisValue;
         // console.log(`[input] axis '${axisNames[i]}' changed to`, axisValue);
-        this._cachedInputManager.propagateInput({ key: axisNames[i], value: axisValue });
+        this.onAxisChange({ key: axisNames[i], value: axisValue });
       }
     }
 
@@ -172,7 +184,7 @@ class GamepadDriver {
         //  using similar controllers interchangeably while insuring that
         //  vastly different controllers don't steal keybindings not belonging
         //  to them. If unknown, default to bt. Don't do this for axes.
-        this._cachedInputManager.propagateInput({ key: buttonNames[i], value: buttonValue });
+        this.onButtonChange({ key: buttonNames[i], value: buttonValue });
       }
     }
   }
@@ -181,18 +193,14 @@ class GamepadDriver {
     const gamepads = navigator.getGamepads();
     for (let i = 0, len = gamepads.length; i < len; i++) {
       const controller = gamepads[i];
-      if (!controller || controller.timestamp <= this._timestamps[i]) {
+      if (!controller || controller.timestamp <= GamepadDriver._timestamps[i]) {
         continue;
       }
-      this._timestamps[i] = controller.timestamp;
+      if (!GamepadDriver._initialised[i]) {
+        this._initGamepad(controller);
+      }
+      GamepadDriver._timestamps[i] = controller.timestamp;
       this.checkAndTriggerChanges(controller);
     }
   }
-}
-
-const gamepadDriverPlugin = new CosmosisPlugin('gamepadDriver', GamepadDriver);
-
-export {
-  GamepadDriver,
-  gamepadDriverPlugin,
 }
