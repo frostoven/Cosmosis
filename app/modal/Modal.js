@@ -17,7 +17,7 @@ export const icons = {
 let totalInstances = 0;
 
 export default class Modal extends React.Component {
-  static captureMode = false;
+  static keyboardCaptureMode = false;
   static allowExternalListeners = true;
 
   static defaultState = {
@@ -167,7 +167,7 @@ export default class Modal extends React.Component {
   _receiveKeyEvent = (event) => {
     const { code } = event;
     Modal.allowExternalListeners = false;
-    if (Modal.captureMode) {
+    if (Modal.keyboardCaptureMode) {
       return;
     }
     else{
@@ -623,7 +623,7 @@ export default class Modal extends React.Component {
       callback = () => console.warn('No callback passed to captureKeyboardKey.');
     }
 
-    Modal.captureMode = true;
+    Modal.keyboardCaptureMode = true;
     this.alert({
       header: 'Grabbing key...',
       body: 'Please press a key on your keyboard.',
@@ -634,7 +634,7 @@ export default class Modal extends React.Component {
       event.preventDefault();
       event.stopPropagation();
       document.removeEventListener('keydown', captureKey, true);
-      Modal.captureMode = false;
+      Modal.keyboardCaptureMode = false;
       Modal.allowExternalListeners = true;
       this.deactivateModal();
       callback(event.code);
@@ -656,7 +656,7 @@ export default class Modal extends React.Component {
 
     const extraInfo = {
       opacity: 0.7,
-      paddingLeft: 12,
+      paddingLeft: 10,
     };
 
     this.buttonPrompt({
