@@ -5,6 +5,7 @@ import { MoveDown } from '../reactExtra/animations/MoveDown';
 import { MoveUp } from '../reactExtra/animations/MoveUp';
 import { FadeIn } from "../reactExtra/animations/FadeIn";
 import ScrollIntoView from '../reactExtra/components/ScrollIntoView';
+import GamepadDriver from '../GamepadDriver';
 
 // Unique name used to identify modals.
 const thisMenu = 'modal';
@@ -690,11 +691,79 @@ export default class Modal extends React.Component {
           value: 'spNorthSouth',
         },
       ]
-    }, (userSelection) => {
-      // Contains: { name, value, onSelect }.
-      console.log(userSelection);
-    });
     }, callback);
+  };
+
+  captureGamepadKey = (callback) => {
+    if (!callback) {
+      callback = () => console.warn('No callbacks passed to captureGamepadKey.');
+    }
+
+    this.alert({
+      header: 'Grabbing button...',
+      body: 'Please press a button on your controller.',
+      actions: [],
+    });
+
+    let keysPressed = [];
+    let waitingForButton = true;
+    // Used to check for controller-connected spam.
+    const modelOpenTime = Date.now();
+
+    const receiveKey = _.debounce(() => {
+      if (keysPressed.length === 1) {
+        waitingForButton = false;
+        this.deactivateModal();
+        callback(keysPressed[0]);
+      }
+      else if (keysPressed.length > 1) {
+        const currentModal = this._modalQueue[0];
+        currentModal.body = (
+          <div>
+            <b>Multiple buttons pressed at once. Please try again.</b>
+            <br/>
+            <br/>
+            <i>
+              Note that this can happen if your controller was sleeping, and
+              does <b>not</b> mean your controller has problems. On H.O.T.A.S.
+              devices in particular multiple buttons can be triggered when the
+              device is used for the first time since game boot.
+            </i>
+          </div>
+        );
+        this.modifyModal(currentModal);
+        keysPressed = [];
+      }
+    }, 150);
+
+    const handler = ({ key, value }) => {
+      if (value !== 0) {
+        keysPressed.push({ key, value });
+        receiveKey();
+      }
+    };
+
+    const driver = new GamepadDriver({
+      onButtonChange: (data) => {
+        if (Date.now() - modelOpenTime <= 40) {
+          console.log(`[ignoring press; Date.now() - modelOpenTime = ${Date.now() - modelOpenTime}]`);
+          // Reset; we received spam due to controller init.
+          return keysPressed = [];
+        }
+        else {
+          handler(data);
+        }
+      },
+    });
+
+    const waitForButton = () => {
+      if (waitingForButton) {
+        requestAnimationFrame(waitForButton);
+        driver.step();
+      }
+    };
+
+    waitForButton();
   };
 
   render() {
