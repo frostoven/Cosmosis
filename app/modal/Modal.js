@@ -642,17 +642,59 @@ export default class Modal extends React.Component {
     document.addEventListener('keydown', captureKey, true);
   };
 
-  captureMouseDirection = () => {
+  captureMouseDirection = (callback) => {
+    const iconContainer = {
+      display: 'inline-block',
+      width: 48,
+    };
+
+    const axisText = {
+      minWidth: 256,
+      display: 'inline-block',
+      textAlign: 'left'
+    };
+
+    const extraInfo = {
+      opacity: 0.7,
+      paddingLeft: 12,
+    };
+
     this.buttonPrompt({
       body: 'Please select the mouse movement direction:',
       actions: [
-        { name: <><Icon name='arrows alternate horizontal'/> Mouse X (Left-Right, i.e. Yaw)</>, value: 'spEastWest' },
-        { name: <><Icon name='arrows alternate vertical'/> Mouse Y (Up-Down, i.e. Pitch)</>, value: 'spNorthSouth' },
+        {
+          name: (
+            <>
+              <div style={iconContainer}>
+                <Icon name='arrows alternate horizontal'/>
+              </div>
+              <code style={axisText}>
+                Mouse X <i style={extraInfo}>Left-Right; Yaw</i>
+              </code>
+            </>
+          ),
+          value: 'spEastWest'
+        },
+        {
+          name: (
+            <>
+              <div
+                style={iconContainer}>
+                <Icon name="arrows alternate vertical"/>
+              </div>
+              <code style={axisText}>
+                Mouse Y <i style={extraInfo}>Up-Down; Pitch</i>
+              </code>
+            </>
+          ),
+          value: 'spNorthSouth',
+        },
       ]
     }, (userSelection) => {
       // Contains: { name, value, onSelect }.
       console.log(userSelection);
     });
+    }, callback);
   };
 
   render() {
