@@ -15,7 +15,7 @@ type PluginNames =
   'offscreenGalaxyWorker' | 
   'hud3D' | 
   'mouseDriver' | 
-  'gamepadDriver' | 
+  'gamepadConnector' | 
   'inputManager' | 
   'generalControl' | 
   'freeCam' | 
