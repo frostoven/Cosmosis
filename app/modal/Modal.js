@@ -120,7 +120,7 @@ export default class Modal extends React.Component {
    * @param {boolean} [options.prioritise] - If true, pushes the dialog to the front. Avoid where possible.
    * @returns {Modal}
    */
-  _show = (
+  buildModal = (
     {
       header='Message', body='', actions, unskippable=false, prioritise=false,
       tag, inline=false, renderCustomDialog=null,
@@ -270,7 +270,7 @@ export default class Modal extends React.Component {
         },
       ];
     }
-    this._show(options);
+    this.buildModal(options);
   };
 
   /**
@@ -312,7 +312,7 @@ export default class Modal extends React.Component {
       ];
     }
 
-    this._show(options);
+    this.buildModal(options);
   };
 
   /**
@@ -346,7 +346,7 @@ export default class Modal extends React.Component {
         options.body = 'Please select an option:';
     }
 
-    this._show(options);
+    this.buildModal(options);
   };
 
   /**
@@ -409,7 +409,7 @@ export default class Modal extends React.Component {
       ];
     }
 
-    this._show(options);
+    this.buildModal(options);
   };
 
   /**
@@ -608,7 +608,7 @@ export default class Modal extends React.Component {
       return result;
     };
 
-    this._show(options);
+    this.buildModal(options);
   };
 
   /**
