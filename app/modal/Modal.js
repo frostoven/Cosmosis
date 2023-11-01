@@ -55,6 +55,7 @@ export default class Modal extends React.Component {
     // Replace all window.$modal placeholder boot functions with the real, now
     // loaded ones.
     window.$modal = this;
+    window.$modal.static = Modal;
   }
 
   componentWillUnmount() {
@@ -200,7 +201,7 @@ export default class Modal extends React.Component {
 
     if (code === 'ArrowDown' || code === 'ArrowRight') {
       selected++;
-      let length = this._modalQueue[0]?.actions?.length;
+      let length = this.getActiveModal()?.actions?.length;
       if (typeof length !== 'number') {
         length = 1;
       }
@@ -222,7 +223,7 @@ export default class Modal extends React.Component {
     if (typeof selected !== 'number') {
       selected = this.state.selectionIndex || 0;
     }
-    const activeModal = this._modalQueue[0] || {};
+    const activeModal = this.getActiveModal() || {};
     if (!activeModal.actions?.length) {
       return;
     }
@@ -243,6 +244,15 @@ export default class Modal extends React.Component {
     }
     return modalCountText;
   }
+
+  /**
+   * Retrieves the active modal from the modal queue.
+   * @returns {Object|undefine} The active modal object, or undefined if the
+   * queue is empty.
+   */
+  getActiveModal = () => {
+    return this._modalQueue[0];
+  };
 
   /**
    * Backwards compatible with window.alert.
@@ -725,7 +735,7 @@ export default class Modal extends React.Component {
         callback(keysPressed[0]);
       }
       else if (keysPressed.length > 1) {
-        const currentModal = this._modalQueue[0];
+        const currentModal = this.getActiveModal();
         currentModal.body = (
           <div>
             <b>Multiple buttons pressed at once. Please try again.</b>
@@ -834,7 +844,7 @@ export default class Modal extends React.Component {
   };
 
   render() {
-    const activeModal = this._modalQueue[0] || {};
+    const activeModal = this.getActiveModal() || {};
     const { inline, renderCustomDialog } = activeModal;
 
     if (renderCustomDialog) {
