@@ -21,6 +21,14 @@ export default class Modal extends React.Component {
   static keyboardCaptureMode = false;
   static allowExternalListeners = true;
 
+  // How much an axis should change, in percentage from initial position,
+  // before it's accepted as a binding.
+  static axisDeadzone = 0.2;
+  // When a gamepad is captured for the first time, you'll often get a flood of
+  // button presses. This number is the amount of time that should pass before
+  // we assume the flood has passed.
+  static gamepadSpamTimeMs = 40;
+
   static defaultState = {
     isVisible: false,
     modalCount: 0,
@@ -745,8 +753,8 @@ export default class Modal extends React.Component {
 
     const driver = new GamepadDriver({
       onButtonChange: (data) => {
-        if (Date.now() - modelOpenTime <= 40) {
-          console.log(`[ignoring press; Date.now() - modelOpenTime = ${Date.now() - modelOpenTime}]`);
+        if (Date.now() - modelOpenTime <= Modal.gamepadSpamTimeMs) {
+          // console.log(`[ignoring press; Date.now() - modelOpenTime = ${Date.now() - modelOpenTime}]`);
           // Reset; we received spam due to controller init.
           return keysPressed = [];
         }
@@ -758,6 +766,65 @@ export default class Modal extends React.Component {
 
     const waitForButton = () => {
       if (waitingForButton) {
+        requestAnimationFrame(waitForButton);
+        driver.step();
+      }
+    };
+
+    waitForButton();
+  };
+
+  captureGamepadAxis = (callback) => {
+    if (!callback) {
+      callback = () => console.warn('No callbacks passed to captureGamepadKey.');
+    }
+
+    this.alert({
+      header: 'Grabbing axis...',
+      body: 'Please move a stick, rudder, or peddle on your controller.',
+      actions: [],
+    });
+
+    let axesMoved = {};
+    let waitingForAxis = true;
+    // Used to check for controller-connected spam.
+    const modelOpenTime = Date.now();
+
+    const handler = ({ key, value }) => {
+      if (typeof axesMoved[key] === 'undefined') {
+        axesMoved[key] = value;
+      }
+
+      const originalValue = axesMoved[key];
+      const lower = (Math.min(originalValue, value) + 1) * 0.5;
+      let upper = (Math.max(originalValue, value) + 1) * 0.5;
+      if (lower === 0) {
+        upper = Number.EPSILON;
+      }
+      const percentage = 1 - Math.abs(lower / upper);
+      // console.log(key, { lower, upper, percentage });
+      if (percentage > Modal.axisDeadzone) {
+        waitingForAxis = false;
+        this.deactivateModal();
+        callback({ key, value });
+      }
+    };
+
+    const driver = new GamepadDriver({
+      onAxisChange: (data) => {
+        if (Date.now() - modelOpenTime <= Modal.gamepadSpamTimeMs) {
+          // console.log(`[ignoring axis; Date.now() - modelOpenTime = ${Date.now() - modelOpenTime}]`);
+          // Reset; we received spam due to controller init.
+          return axesMoved = {};
+        }
+        else {
+          handler(data);
+        }
+      },
+    });
+
+    const waitForButton = () => {
+      if (waitingForAxis) {
         requestAnimationFrame(waitForButton);
         driver.step();
       }
