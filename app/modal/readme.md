@@ -243,9 +243,32 @@ $modal.captureGamepadAxis((axisData) => {
 });
 ```
 
-<!--
-#### title
-```javascript
-$modal
-```
--->
+## Other modal API details
+
+This is not an exhaustive list, updating this properly in the todo.
+
+Any modal functions that do not start with an underscore may be used freely.
+Any functions that do start with an underscore should be avoided, otherwise you
+might corrupt modal state. The modal class supports things like modal stacking
+and live modal editing, so messing with its internal state via underscored
+functions can break code that runs later on.
+
+#### Variables
+
+The only variables you'll really want to care about for most situations is are
+the static ones. You can reach them by importing Modal, or via `$modal.static`.
+
+* `Modal.allowExternalListeners` - while this is false, you should avoid
+  letting your own input plugins control game state.
+* `Modal.axisDeadzone` - how sensitive the axis-capture dialog is.
+
+#### Methods
+
+* `$modal.deactivateModal()` - closes the top-most modal.
+* `$modal.buildModal(options)` - used internally by all the other modal
+   functions in the Examples section above to create modals.
+* `$modal.modifyModal(modalOptions)` - replaces the active modal with the
+  contents of the specified `modalOptions`; especially useful when used with
+  `$modal.getActiveModal()`, which will return the active modal options.
+* `$modal.getActiveModal()` - gets the object that defines the actively
+  displayed dialog, or undefined if nothing is being shown.
