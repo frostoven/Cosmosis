@@ -216,7 +216,7 @@ $modal.captureKeyboardKey((keyCode) => {
 
 ```javascript
 $modal.captureMouseDirection((spCode) => {
-  // Example output: 'spNorthSouth'
+  // Example outputs: 'spNorthSouth' or 'spEastWest'
   console.log(spCode);
 });
 ```
@@ -225,7 +225,9 @@ $modal.captureMouseDirection((spCode) => {
 
 ```javascript
 $modal.captureGamepadKey((buttonData) => {
-  // Example output: {key: 'bt0', value: 1}
+  // Example outputs:
+  //  * {key: 'bt0', value: 1}
+  //  * {key: 'hb24', value: 1}
   console.log(buttonData);
 });
 ```
@@ -234,7 +236,9 @@ $modal.captureGamepadKey((buttonData) => {
 
 ```javascript
 $modal.captureGamepadAxis((axisData) => {
-  // Example output: {key: "ax1", value: -0.25720998644828796}
+  // Example outputs:
+  //  * {key: 'ax1', value: -0.25720998644828796}
+  //  * {key: 'ha3', value: 0.7199316620826721}
   console.log(axisData);
 });
 ```
