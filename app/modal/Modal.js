@@ -798,7 +798,7 @@ export default class Modal extends React.Component {
       const originalValue = axesMoved[key];
       const lower = (Math.min(originalValue, value) + 1) * 0.5;
       let upper = (Math.max(originalValue, value) + 1) * 0.5;
-      if (lower === 0) {
+      if (upper === 0) {
         upper = Number.EPSILON;
       }
       const percentage = 1 - Math.abs(lower / upper);
