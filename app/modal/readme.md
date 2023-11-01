@@ -230,6 +230,15 @@ $modal.captureGamepadKey((buttonData) => {
 });
 ```
 
+#### Gamepad axis capture
+
+```javascript
+$modal.captureGamepadAxis((axisData) => {
+  // Example output: {key: "ax1", value: -0.25720998644828796}
+  console.log(axisData);
+});
+```
+
 <!--
 #### title
 ```javascript
