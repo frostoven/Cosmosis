@@ -1,7 +1,9 @@
 import { ControllerType, guessControllerType } from './types/ControllerType';
 import { guessGamepadName } from './types/gamepadNames';
 
-const { unknown, gamepad, hotas, flightStick, racingWheel } = ControllerType;
+const {
+  unknown, gamepad, hotas, flightStick, racingWheel, pedals,
+} = ControllerType;
 
 // --- Pre-generate button names ------------------------------------------- //
 
@@ -41,10 +43,15 @@ const flightStickButtonNames: Array<string> = [];
 inputNames[flightStick][AXIS_INDEX] = flightStickAxisNames;
 inputNames[flightStick][BUTTON_INDEX] = flightStickButtonNames;
 //
-const racerStickAxisNames: Array<string> = [];
-const racerStickButtonNames: Array<string> = [];
-inputNames[racingWheel][AXIS_INDEX] = racerStickAxisNames;
-inputNames[racingWheel][BUTTON_INDEX] = racerStickButtonNames;
+const racerAxisNames: Array<string> = [];
+const racerButtonNames: Array<string> = [];
+inputNames[racingWheel][AXIS_INDEX] = racerAxisNames;
+inputNames[racingWheel][BUTTON_INDEX] = racerButtonNames;
+//
+const pedalAxisNames: Array<string> = [];
+const pedalButtonNames: Array<string> = [];
+inputNames[pedals][AXIS_INDEX] = pedalAxisNames;
+inputNames[pedals][BUTTON_INDEX] = pedalButtonNames;
 
 // TODO: maybe set these to -1 or something. The first time a button is
 //  pressed, the gamepad will forcibly report a bunch of zeros and the one
@@ -62,8 +69,11 @@ for (let i = 0; i < 32; i++) {
   flightStickAxisNames.push(`fa${i}`);
   flightStickButtonNames.push(`fb${i}`);
   //
-  racerStickAxisNames.push(`ra${i}`);
-  racerStickButtonNames.push(`rb${i}`);
+  racerAxisNames.push(`ra${i}`);
+  racerButtonNames.push(`rb${i}`);
+  //
+  pedalAxisNames.push(`pa${i}`);
+  pedalButtonNames.push(`pb${i}`);
 }
 
 // --- Pre-gen section end ------------------------------------------------- //
@@ -167,7 +177,7 @@ export default class GamepadDriver {
       const axisValue = axes[i];
       if (axisCache[i] !== axisValue) {
         axisCache[i] = axisValue;
-        // console.log(`[input] axis '${axisNames[i]}' changed to`, axisValue);
+        console.log(`[input] axis '${axisNames[i]}' changed to`, axisValue);
         this.onAxisChange({ key: axisNames[i], value: axisValue });
       }
     }
@@ -177,7 +187,7 @@ export default class GamepadDriver {
       const buttonValue = buttons[i].value;
       if (buttonCache[i] !== buttonValue) {
         buttonCache[i] = buttonValue;
-        // console.log(`[input] button ${buttonNames[i]} changed to`, buttonValue);
+        console.log(`[input] button ${buttonNames[i]} changed to`, buttonValue);
         // TODO: use `bt` for Xbox, Sony, and generic controllers. For others,
         //  use names that resemble the type or brand. For example, maybe name
         //  flight stick buttons `fl` and HOTAS switches `ht`. This allows
