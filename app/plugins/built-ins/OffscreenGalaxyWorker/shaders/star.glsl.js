@@ -165,6 +165,12 @@ const fragment = `
     //   color4.a = color4.a >= 0.0 ? 1.0 : -1.0;
     // }
     
+    // // This has the potential to be quite pretty, but I'm unsure how to mix
+    // // it in without hurting existing colors.
+    // float reductionMask = (abs(position.x) + abs(position.y)) * 15.0;
+    // float rays = ((1.0 - abs(position.x * position.y))) / reductionMask;
+    // color4 = vec4(vec3(-rays), color4.a);
+    
     // Dev note: mix is *probably* less realistic but far prettier. We should
     // consider trying to use min instead and make it pretty.
     // gl_FragColor = min(color4, glow);
