@@ -25,6 +25,8 @@ const vertex = `
   #define THIN 0
   #define THICK 1
   #define GALAXY_CENTER 2
+  
+  #define EXAGGERATE_FAR_AMOUNT 4000.0 
 
   mat3 calculateLookAtMatrix(in vec3 cameraPosition, in vec3 targetPosition, in float rollAngle) {
     vec3 forwardVector = normalize(targetPosition - cameraPosition);
@@ -52,7 +54,8 @@ const vertex = `
 
     // -------------------------------------------------------------
     
-    float distanceScale = vDistToCamera * 5000.0;
+    float distanceScale = vDistToCamera * EXAGGERATE_FAR_AMOUNT;
+    float InvDistSq = 1.0 / pow(vDistToCamera, 2.0);
     
     // Calculate brightness based on the inverse square law of distance.
     float brightness = aLuminosity / (4.0 * PI * pow(distanceScale, 2.0));
@@ -91,7 +94,7 @@ const fragment = `
   uniform float scale;
   uniform float invRadius;
   uniform float invGlowRadius;
-  uniform float invFadeAggression;
+  uniform float lightPollution;
   
   #define pi ${Math.PI}
 
@@ -146,9 +149,6 @@ const fragment = `
     // // color4 = vec4(color3.rgb, color4.a);
     // color4.rgb *= 3.0;
     
-    // Make star center parts a bit brighter.
-    color4.rgb *= -scale;
-    
     // Desaturate the glow a tad.
     float luminance = dot(glow.rgb, vec3(0.2126, 0.7152, 0.0722));
     float amount = 0.25;
@@ -165,11 +165,11 @@ const fragment = `
     //   color4.a = color4.a >= 0.0 ? 1.0 : -1.0;
     // }
     
-    // // This has the potential to be quite pretty, but I'm unsure how to mix
-    // // it in without hurting existing colors.
-    // float reductionMask = (abs(position.x) + abs(position.y)) * 15.0;
-    // float rays = ((1.0 - abs(position.x * position.y))) / reductionMask;
-    // color4 = vec4(vec3(-rays), color4.a);
+    // This has the potential to be quite pretty, but I'm unsure how to mix
+    // it in without hurting existing colors.
+    float reductionMask = (abs(position.x) + abs(position.y)) * 15.0;
+    float rays = ((1.0 - abs(position.x * position.y))) / reductionMask;
+    color4 = vec4(vec3(-rays) * vColor, color4.a);
     
     // Dev note: mix is *probably* less realistic but far prettier. We should
     // consider trying to use min instead and make it pretty.
@@ -177,7 +177,9 @@ const fragment = `
     gl_FragColor = mix(color4, glow, 0.5);
     
     // Fade out stars according to their brightness.
-    float fade = pow(1.0 - glowSize, invFadeAggression);
+    float pollution = (lightPollution * 0.1) + 0.9;
+    float exaggerateNearAmount = vGlowAmount * 0.07;
+    float fade = min(1.0, abs(1.0 - (glowSize + exaggerateNearAmount)) * pollution);
     gl_FragColor = mix(gl_FragColor, transparent, fade);
   }
 `;

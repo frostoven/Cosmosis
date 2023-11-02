@@ -39,9 +39,9 @@ export default class StarGenerator {
       uniforms: {
         scale: { value: -10.0 },
         invRadius: { value: 110.0 },
-        invGlowRadius: { value: 3.0 },
-        // 0-1: industrial light pollution. 10: fully visible.
-        invFadeAggression: { value: 10.0 },
+        invGlowRadius: { value: 2.0 },
+        // 0-1: no pollution to industrial pollution. 1-100: sunlight.
+        lightPollution: { value: 0.0 },
       }
     });
 
