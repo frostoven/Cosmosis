@@ -179,7 +179,7 @@ const fragment = `
     // Fade out stars according to their brightness.
     float pollution = (lightPollution * 0.1) + 0.9;
     float exaggerateNearAmount = vGlowAmount * 0.07;
-    float fade = min(1.0, abs(1.0 - (glowSize + exaggerateNearAmount)) * pollution);
+    float fade = min(1.0, (1.0 - (glowSize + exaggerateNearAmount)) * pollution);
     gl_FragColor = mix(gl_FragColor, transparent, fade);
   }
 `;
