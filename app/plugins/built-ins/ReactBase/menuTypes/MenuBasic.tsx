@@ -25,18 +25,20 @@ const descriptionBoxStyle: React.CSSProperties = {
   minWidth: 300,
 };
 
+type Entry = {
+  name: string,
+  description?: string | React.ReactNode,
+  onSelect: Function
+};
+
 interface MenuBasicProps {
   // Settings used to build the menu.
   options: {
     // Menu entry index that is active when the menu opens. Defaults to 0.
-    default?: number,
+    defaultIndex?: number,
     // The actual menu entries. Supports strings and JSX. Any items included in
     // this object will be sent to your callback.
-    entries: {
-      name: string,
-      description?: string | React.ReactNode,
-      onSelect: Function
-    }[],
+    entries: Entry[],
     // If true, will show a blank description box when menu entries have no
     // description specified. Else, the description box will disappear in the
     // absence of a description.
@@ -65,7 +67,7 @@ export default class MenuBasic extends React.Component<MenuBasicProps> {
 
   componentDidMount() {
     this._input.onAction.getEveryChange(this.handleAction);
-    const defaultIndex = this.props.options.default;
+    const defaultIndex = this.props.options.defaultIndex;
     if (this.state.selected === null && typeof defaultIndex === 'number') {
       this.setState({ selected: defaultIndex });
     }
@@ -124,6 +126,26 @@ export default class MenuBasic extends React.Component<MenuBasicProps> {
     }
   }
 
+  genMenu = (entries: Entry[], selected: number) => {
+    return entries.map((menuEntry, index) => {
+      return (
+        <KosmButton
+          key={`MenuBasic-${index}`}
+          isActive={selected === index}
+          wide={!this.props.inlineButtons}
+          block={!this.props.inlineButtons}
+          onClick={() => {
+            this.setState({ selected: index }, () => {
+              this.select(index);
+            });
+          }}
+        >
+          {menuEntry.name}
+        </KosmButton>
+      )
+    })
+  };
+
   render() {
     const options = this.props.options;
     const entries = this.props.options?.entries;
@@ -148,23 +170,7 @@ export default class MenuBasic extends React.Component<MenuBasicProps> {
     return (
       <div style={this.props.style}>
         <div style={menuEntriesStyle}>
-          {entries.map((menuEntry, index) => {
-            return (
-                <KosmButton
-                  key={`MenuBasic-${index}`}
-                  isActive={selected === index}
-                  wide={!this.props.inlineButtons}
-                  block={!this.props.inlineButtons}
-                  onClick={() => {
-                    this.setState({ selected: index }, () => {
-                      this.select(index);
-                    });
-                  }}
-                >
-                  {menuEntry.name}
-                </KosmButton>
-            )
-          })}
+          {this.genMenu(entries, selected)}
         </div>
         <div
           style={rightCols ? spacerStyle : { display: 'none' }}
