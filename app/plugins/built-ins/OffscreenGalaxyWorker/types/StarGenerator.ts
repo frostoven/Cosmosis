@@ -40,8 +40,8 @@ export default class StarGenerator {
         scale: { value: -10.0 },
         invRadius: { value: 110.0 },
         invGlowRadius: { value: 2.0 },
-        // 0-1: no pollution to industrial pollution. 1-100: sunlight.
-        lightPollution: { value: 0.0 },
+        // 1: all stars visible. 0.25: industrial light pollution. 0: sunlight.
+        visibility: { value: 1 },
       }
     });
 

@@ -18,21 +18,26 @@ const vertex = `
   ${import_log10} 
       
   #define PI ${Math.PI}
-  #define REALISM_FACTOR 0.5
+  #define HALF_RAD ${(Math.PI / 180) * 0.5}
+  #define STAR_SIZE 1000.0
+  #define FOV 90.0
 
   #define CULL_DIST 0.000001
-  
-  #define THIN 0
-  #define THICK 1
-  #define GALAXY_CENTER 2
-  
-  #define EXAGGERATE_FAR_AMOUNT 4000.0 
 
   mat3 calculateLookAtMatrix(in vec3 cameraPosition, in vec3 targetPosition, in float rollAngle) {
     vec3 forwardVector = normalize(targetPosition - cameraPosition);
     vec3 rightVector = normalize(cross(forwardVector, vec3(sin(rollAngle), cos(rollAngle), 0.0)));
     vec3 upVector = normalize(cross(rightVector, forwardVector));
     return mat3(rightVector, upVector, -forwardVector);
+  }
+
+  float inverseLerp(float v, float minValue, float maxValue) {
+    return (v - minValue) / (maxValue - minValue);
+  }
+  
+  float remap(float v, float inMin, float inMax, float outMin, float outMax) {
+    float t = inverseLerp(v, inMin, inMax);
+    return mix(outMin, outMax, t);
   }
 
   void main() {
@@ -54,14 +59,21 @@ const vertex = `
 
     // -------------------------------------------------------------
     
-    float distanceScale = vDistToCamera * EXAGGERATE_FAR_AMOUNT;
-    float InvDistSq = 1.0 / pow(vDistToCamera, 2.0);
-    
     // Calculate brightness based on the inverse square law of distance.
-    float brightness = aLuminosity / (4.0 * PI * pow(distanceScale, 2.0));
+    // This should return something between 0 and 1e7.
+    float magnitude = aLuminosity / (4.0 * PI * pow(vDistToCamera, 2.0));
+    
+    // Use log10 to bring range down to single digits.
+    float brightness = 1.0 / log10(max(1.0, magnitude));
+    
+    // Bring magnitude into a range of 0.1 to 1 (remap min: 0.107, max: 0.18).
+    brightness = max(0.07, 1.0 - remap(brightness, 0.107, 0.18, 0.0, 1.0));
+    
+    // Send brightness to fragment shader.
     vGlowAmount = brightness;
     
-    localPosition *= max(distanceScale, min(brightness * 0.01, 0.75)) * REALISM_FACTOR;
+    // https://threejs.org/docs/#manual/en/introduction/FAQ (preserve on resize)
+    localPosition *= (2.0 * tan(HALF_RAD * FOV) * vDistToCamera) * STAR_SIZE;
     
     // -------------------------------------------------------------
     
@@ -94,22 +106,9 @@ const fragment = `
   uniform float scale;
   uniform float invRadius;
   uniform float invGlowRadius;
-  uniform float lightPollution;
+  uniform float visibility;
   
   #define pi ${Math.PI}
-
-  float inverseLerp(float v, float minValue, float maxValue) {
-    return (v - minValue) / (maxValue - minValue);
-  }
-
-  float remap(float v, float inMin, float inMax, float outMin, float outMax) {
-    float t = inverseLerp(v, inMin, inMax);
-    return mix(outMin, outMax, t);
-  }
-  
-  float csmSaturate(float value) {
-    return clamp(value, 0.0, 1.0);
-  }
 
   void main() {
     if (vDistToCamera == 0.0) {
@@ -137,18 +136,6 @@ const fragment = `
     vec4 spectrum = scale * vec4(vec3(vColor), 1.0);
     vec4 color4 = spectrum / pow(diskScale, invGlowRadius);
     
-    // // Contrast. Applied to center bit of star.
-    // vec3 color3 = color4.rgb;
-    // float contrast = 2.0;
-    // float midpoint = 0.5;
-    // vec3 sg = sign(color3 - midpoint);
-    // color3 = sg * pow(
-    //   abs(color3 - midpoint) * 2.0,
-    //   vec3(1.0 / contrast)) * 0.5 + midpoint;
-    // // color4.rgb = color3;
-    // // color4 = vec4(color3.rgb, color4.a);
-    // color4.rgb *= 3.0;
-    
     // Desaturate the glow a tad.
     float luminance = dot(glow.rgb, vec3(0.2126, 0.7152, 0.0722));
     float amount = 0.25;
@@ -171,16 +158,22 @@ const fragment = `
     float rays = ((1.0 - abs(position.x * position.y))) / reductionMask;
     color4 = vec4(vec3(-rays) * vColor, color4.a);
     
-    // Dev note: mix is *probably* less realistic but far prettier. We should
-    // consider trying to use min instead and make it pretty.
-    // gl_FragColor = min(color4, glow);
-    gl_FragColor = mix(color4, glow, 0.5);
+    // // Contrast. Applied to center bit of star.
+    // vec3 color3 = color4.rgb;
+    // float contrast = 2.0;
+    // float midpoint = 0.5;
+    // vec3 sg = sign(color3 - midpoint);
+    // color3 = sg * pow(
+    //   abs(color3 - midpoint) * 2.0,
+    //   vec3(1.0 / contrast)) * 0.5 + midpoint;
+    // color4 = vec4(color3.rgb, color4.a);
+    
+    // Combine star dot and its glow.
+    gl_FragColor = min(color4, glow);
     
     // Fade out stars according to their brightness.
-    float pollution = (lightPollution * 0.1) + 0.9;
-    float exaggerateNearAmount = vGlowAmount * 0.07;
-    float fade = min(1.0, (1.0 - (glowSize + exaggerateNearAmount)) * pollution);
-    gl_FragColor = mix(gl_FragColor, transparent, fade);
+    float fade = clamp(vGlowAmount, 0.0, 1.0) * visibility;
+    gl_FragColor = mix(transparent, gl_FragColor, fade);
   }
 `;
 
