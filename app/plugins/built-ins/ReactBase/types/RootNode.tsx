@@ -7,6 +7,7 @@ import { FadeInDown } from '../../../../reactExtra/animations/FadeInDown';
 import InputBridge from './InputBridge';
 import MenuHorizontal from '../menuTypes/MenuHorizontal';
 import MenuVertical from '../menuTypes/MenuVertical';
+import MenuGrid from '../menuTypes/MenuGrid';
 
 const rootNodeStyle: React.CSSProperties = {
   position: 'fixed',
@@ -64,30 +65,77 @@ export default class RootNode extends React.Component<Props> {
     }
   };
 
+  // render() {
+  //   if (!this.state.menuVisible) {
+  //     return null;
+  //   }
+  //
+  //   const menuOptions = {
+  //     type: 'MenuVertical',
+  //     default: 1,
+  //     entries: [
+  //       { name: 'Item 1', onSelect: (e) => console.log('selected 1:', e) },
+  //       { name: 'Item 2', onSelect: (e) => console.log('selected 2:', e) },
+  //       { name: 'Item 3', onSelect: (e) => console.log('selected 3:', e) },
+  //     ],
+  //     // alwaysShowDescriptionBox: true,
+  //   };
+  //
+  //   return (
+  //     <FadeInDown style={rootNodeStyle}>
+  //       <MenuVertical
+  //         options={menuOptions}
+  //         style={centerBoth}
+  //       >
+  //         Test
+  //       </MenuVertical>
+  //     </FadeInDown>
+  //   );
+  // }
+
   render() {
     if (!this.state.menuVisible) {
       return null;
     }
 
+    // const menuOptions = {
+    //   type: 'MenuVertical',
+    //   defaultIndex: 1,
+    //   entries: [
+    //     { name: 'Item 1', onSelect: (e) => console.log('selected 1:', e) },
+    //     { name: 'Item 2', onSelect: (e) => console.log('selected 2:', e) },
+    //     { name: 'Item 3', onSelect: (e) => console.log('selected 3:', e) },
+    //   ],
+    //   // alwaysShowDescriptionBox: true,
+    // };
+
+    const entries = [
+      ['',   '',        '',          '',            '',           '',      ''],
+      ['',   '',        '',     'debug tools',      '',           '',      ''],
+      ['',   '',        '',      'tutorials',       '',           '',      ''],
+      ['',   '',        '',     'multiplayer',      '',           '',      ''],
+      ['', 'stats', 'inventory',  'resume',     'galaxy map', 'solar map', ''],
+      ['',   '',        '',       'journal',        '',           '',      ''],
+      ['',   '',        '',       'options',        '',           '',      ''],
+      ['',   '',        '',        'quit',          '',           '',      ''],
+      ['',   '',        '',          '',            '',           '',      ''],
+    ];
+
     const menuOptions = {
       type: 'MenuVertical',
-      default: 1,
-      entries: [
-        { name: 'Item 1', onSelect: (e) => console.log('selected 1:', e) },
-        { name: 'Item 2', onSelect: (e) => console.log('selected 2:', e) },
-        { name: 'Item 3', onSelect: (e) => console.log('selected 3:', e) },
-      ],
+      defaultIndex: { row: 4, column: 3 },
+      entries,
       // alwaysShowDescriptionBox: true,
     };
 
     return (
       <FadeInDown style={rootNodeStyle}>
-        <MenuVertical
+        <MenuGrid
           options={menuOptions}
           style={centerBoth}
         >
           Test
-        </MenuVertical>
+        </MenuGrid>
       </FadeInDown>
     );
   }
