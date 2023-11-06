@@ -50,7 +50,7 @@ export default class SpaceScene extends Scene {
     this._renderer = renderer;
 
     gameRuntime.tracked.core.getOnce((core: CoreType) => {
-      core.prependRendererHook(this.render.bind(this));
+      core.appendRenderHook(this.render.bind(this));
     });
 
     // --------------------------------------------------------------------- //
