@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import CosmosisPlugin from '../../types/CosmosisPlugin';
 import Modal from '../../../modal/Modal';
 import { ModeId } from './types/ModeId';
@@ -6,6 +7,7 @@ import { gameRuntime } from '../../gameRuntime';
 import { AnalogSource } from './types/AnalogSource';
 import ModeController from './types/ModeController';
 import { CoreType } from '../Core';
+import { InputSchemeEntry } from './interfaces/InputSchemeEntry';
 
 /*
  * Mechanism:
@@ -52,6 +54,32 @@ class InputManager {
   private _prevMouseY: number;
   private _prevControllerX: number;
   private _prevControllerY: number;
+
+  /**
+   * This allows plugins to make their control bindings known without the need
+   * to be activated first (useful for things like the control bindings menu).
+   * Plugins may use this simply by storing their controls in here when their
+   * constructors run. Use it like so:
+   *
+   * @example
+   * InputManager.allControlSchemes.yourControlSchema = {
+   *   schema: yourControlSchema,
+   *   friendly: 'Name You Want Displayed',
+   * };
+   */
+  public static allControlSchemes: Record<string, InputSchemeEntry> = {};
+
+  /**
+   * Returns InputManager.allControlSchemes, ordered by priority, descending.
+   * @return InputSchemeEntry
+   */
+  public static getControlSchemes = (): InputSchemeEntry[] => {
+    return _.orderBy(
+      InputManager.allControlSchemes,
+      (entry: InputSchemeEntry,) => entry.priority || 0,
+      [ 'desc' ],
+    ) as InputSchemeEntry[];
+  };
 
   constructor() {
     this._blockAllInput = false;
