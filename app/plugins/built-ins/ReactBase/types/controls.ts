@@ -5,7 +5,7 @@ import { InputType } from '../../InputManager/types/InputTypes';
 const { pulse, continuous } = ActionType;
 const { keyboardButton, analogButton, mouseButton } = InputType;
 
-const reactControls: ControlSchema = {
+const reactMenuControls: ControlSchema = {
   // Keys that may be held
   up:           { actionType: continuous, current: null, default: { ArrowUp: keyboardButton } },
   down:         { actionType: continuous, current: null, default: { ArrowDown: keyboardButton } },
@@ -23,5 +23,5 @@ const reactControls: ControlSchema = {
 };
 
 export {
-  reactControls,
+  reactMenuControls,
 };

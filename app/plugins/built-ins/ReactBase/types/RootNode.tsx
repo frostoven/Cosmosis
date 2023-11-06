@@ -1,5 +1,4 @@
 import React from 'react';
-import ModeController from '../../InputManager/types/ModeController';
 import PluginCacheTracker from '../../../../emitters/PluginCacheTracker';
 import Core from '../../Core';
 import { InputManager } from '../../InputManager';
@@ -8,6 +7,8 @@ import InputBridge from './InputBridge';
 import MenuHorizontal from '../menuTypes/MenuHorizontal';
 import MenuVertical from '../menuTypes/MenuVertical';
 import MenuGrid from '../menuTypes/MenuGrid';
+import MenuControlSetup from '../menuTypes/MenuControlSetup';
+import { reactMenuControls } from './controls';
 
 const rootNodeStyle: React.CSSProperties = {
   position: 'fixed',
@@ -36,8 +37,6 @@ interface Props {
 }
 
 export default class RootNode extends React.Component<Props> {
-  private _pluginTracker: PluginCacheTracker | PluginCompletion;
-  private _modeController!: ModeController;
   private _input = new InputBridge();
 
   state = {
@@ -47,7 +46,12 @@ export default class RootNode extends React.Component<Props> {
 
   constructor(props: Props | Readonly<Props>) {
     super(props);
-    this._pluginTracker = new PluginCacheTracker([ 'core', 'inputManager' ]);
+    InputManager.allControlSchemes.reactMenuControls = {
+      key: 'reactMenuControls',
+      schema: reactMenuControls,
+      friendly: 'Menu Controls',
+      priority: 1,
+    };
   }
 
   componentDidMount() {
@@ -106,36 +110,44 @@ export default class RootNode extends React.Component<Props> {
     //     { name: 'Item 2', onSelect: (e) => console.log('selected 2:', e) },
     //     { name: 'Item 3', onSelect: (e) => console.log('selected 3:', e) },
     //   ],
-    //   // alwaysShowDescriptionBox: true,
+    //   alwaysShowDescriptionBox: true,
     // };
 
-    const entries = [
-      ['',   '',        '',          '',            '',           '',      ''],
-      ['',   '',        '',     'debug tools',      '',           '',      ''],
-      ['',   '',        '',      'tutorials',       '',           '',      ''],
-      ['',   '',        '',     'multiplayer',      '',           '',      ''],
-      ['', 'stats', 'inventory',  'resume',     'galaxy map', 'solar map', ''],
-      ['',   '',        '',       'journal',        '',           '',      ''],
-      ['',   '',        '',       'options',        '',           '',      ''],
-      ['',   '',        '',        'quit',          '',           '',      ''],
-      ['',   '',        '',          '',            '',           '',      ''],
-    ];
+    // const entries = [
+    //   ['',   '',        '',          '',            '',           '',      ''],
+    //   ['',   '',        '',     'debug tools',      '',           '',      ''],
+    //   ['',   '',        '',      'tutorials',       '',           '',      ''],
+    //   ['',   '',        '',     'multiplayer',      '',           '',      ''],
+    //   ['', 'stats', 'inventory',  'resume',     'galaxy map', 'solar map', ''],
+    //   ['',   '',        '',       'journal',        '',           '',      ''],
+    //   ['',   '',        '',       'options',        '',           '',      ''],
+    //   ['',   '',        '',        'quit',          '',           '',      ''],
+    //   ['',   '',        '',          '',            '',           '',      ''],
+    // ];
+    // const menuOptions = {
+    //   type: 'MenuGrid',
+    //   defaultIndex: { row: 4, column: 3 },
+    //   entries,
+    // };
 
     const menuOptions = {
-      type: 'MenuVertical',
-      defaultIndex: { row: 4, column: 3 },
-      entries,
-      // alwaysShowDescriptionBox: true,
+      type: 'MenuControlSetup',
+      defaultIndex: 1,
+      entries: [
+        { name: 'Item 4', onSelect: (e) => console.log('selected 1:', e) },
+        { name: 'Item 5', onSelect: (e) => console.log('selected 2:', e) },
+        { name: 'Item 6', onSelect: (e) => console.log('selected 3:', e) },
+      ],
     };
 
     return (
       <FadeInDown style={rootNodeStyle}>
-        <MenuGrid
+        <MenuControlSetup
           options={menuOptions}
           style={centerBoth}
         >
           Test
-        </MenuGrid>
+        </MenuControlSetup>
       </FadeInDown>
     );
   }

@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import ModeController from '../../InputManager/types/ModeController';
 import { ModeId } from '../../InputManager/types/ModeId';
-import { reactControls } from './controls';
+import { reactMenuControls } from './controls';
 import PluginCacheTracker from '../../../../emitters/PluginCacheTracker';
 import Core from '../../Core';
 import { InputManager } from '../../InputManager';
@@ -60,7 +60,7 @@ export default class InputBridge {
     this._pluginTracker = new PluginCacheTracker([ 'core', 'inputManager' ]);
 
     this._pluginTracker.onAllPluginsLoaded.getOnce(() => {
-      this._modeController = new ModeController('mainMenuSystem', ModeId.menuControl, reactControls);
+      this._modeController = new ModeController('mainMenuSystem', ModeId.menuControl, reactMenuControls);
       this._modeController.step = this.stepArrowStream.bind(this);
       const inputManager: InputManager = this._pluginTracker.inputManager;
       inputManager.activateController(ModeId.menuControl, 'mainMenuSystem');
