@@ -177,7 +177,7 @@ export default class GamepadDriver {
       const axisValue = axes[i];
       if (axisCache[i] !== axisValue) {
         axisCache[i] = axisValue;
-        console.log(`[input] axis '${axisNames[i]}' changed to`, axisValue);
+        // console.log(`[input] axis '${axisNames[i]}' changed to`, axisValue);
         this.onAxisChange({ key: axisNames[i], value: axisValue });
       }
     }
@@ -187,7 +187,7 @@ export default class GamepadDriver {
       const buttonValue = buttons[i].value;
       if (buttonCache[i] !== buttonValue) {
         buttonCache[i] = buttonValue;
-        console.log(`[input] button ${buttonNames[i]} changed to`, buttonValue);
+        // console.log(`[input] button ${buttonNames[i]} changed to`, buttonValue);
         // TODO: use `bt` for Xbox, Sony, and generic controllers. For others,
         //  use names that resemble the type or brand. For example, maybe name
         //  flight stick buttons `fl` and HOTAS switches `ht`. This allows
