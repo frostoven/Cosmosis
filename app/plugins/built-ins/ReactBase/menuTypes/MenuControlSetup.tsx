@@ -1,7 +1,13 @@
+import _ from 'lodash';
 import React from 'react';
 import InputBridge from '../types/InputBridge';
 import KosmButton from '../../../../reactExtra/components/KosmButton';
 import { Icon } from 'semantic-ui-react';
+import { InputManager } from '../../InputManager';
+import { ControlSchema } from '../../InputManager/interfaces/ControlSchema';
+import {
+  InputSchemeEntry
+} from '../../InputManager/interfaces/InputSchemeEntry';
 
 const menuEntriesStyle: React.CSSProperties = {
   overflow: 'auto',
@@ -56,6 +62,7 @@ interface MenuControlSetupProps {
 
 export default class MenuControlSetup extends React.Component<MenuControlSetupProps> {
   private _input = new InputBridge();
+  private _processedBindingCache: InputSchemeEntry[] | null = null;
   public static defaultProps = {
     style: {},
     actionsNext: [ 'down' ],
@@ -69,6 +76,7 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
   };
 
   componentDidMount() {
+    this._processedBindingCache = null;
     this._input.onAction.getEveryChange(this.handleAction);
     const defaultIndex = this.props.options.defaultIndex;
     if (this.state.selected === null && typeof defaultIndex === 'number') {
@@ -129,68 +137,143 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
     }
   }
 
-  genMenu = (entries: Entry[], selected: number) => {
-    return entries.map((menuEntry, index) => {
-      return (
-        <div key={`MenuControlSetup-${index}`}>
-          <div style={{ textAlign: 'left', display: 'inline-block' }}>
-            <KosmButton
-              isActive={selected === index}
-              halfWide={true}
-              onClick={() => {
-                this.setState({ selected: index }, () => {
-                  this.select(index);
-                });
-              }}
-            >
-              {menuEntry.name}
-            </KosmButton>
+  buildBindingCache = () => {
+    const orderedSchemes = InputManager.getControlSchemes();
+    console.log('InputManager orderedSchemes:', orderedSchemes);
 
-            <div style={{ display: 'inline-block', paddingLeft: 4, paddingRight: 8 }}>
-              <code>-&gt;</code>
-            </div>
-          </div>
+    const bindingsInfo: InputSchemeEntry[] = [];
+    const mergeDependants: InputSchemeEntry[] = [];
+    const entryByKey: Record<string, InputSchemeEntry> = {};
 
-          <div style={{ textAlign: 'right', display: 'inline-block' }}>
-          {Math.random() < 0.5 ?
-            <KosmButton
-              isActive={selected === index}
-              halfWide={true}
-              onClick={() => {
-                this.setState({ selected: index }, () => {
-                  this.select(index);
-                });
-              }}
-            >
-              {menuEntry.name}
-            </KosmButton>
-            : null
-          }
-          {Math.random() < 0.5 ?
-            <KosmButton
-              isActive={selected === index}
-              halfWide={true}
-              onClick={() => {
-                this.setState({ selected: index }, () => {
-                  this.select(index);
-                });
-              }}
-            >
-              {menuEntry.name}
-            </KosmButton>
-            : null
-          }
-          <KosmButton
-            // isActive={selected === index}
-            halfWide={true}
-            onClick={() => {}}
-          >
-            <Icon name='plus'/>
-          </KosmButton>
-        </div>
+    for (let i = 0, len = orderedSchemes.length; i < len; i++) {
+      const entry: InputSchemeEntry = orderedSchemes[i];
+      if (!entry.key) {
+        console.error('Entry is missing a key:', entry);
+        continue;
+      }
+
+      // We don't want to modify the original configs; make a copy.
+      entry.schema = { ...entry.schema };
+      entryByKey[entry.key] = entry;
+
+      if (entry.mergeInto) {
+        mergeDependants.push(entry);
+      }
+      else {
+        bindingsInfo.push(entry);
+      }
+    }
+
+    for (let i = 0, len = mergeDependants.length; i < len; i++) {
+      const entry: InputSchemeEntry = mergeDependants[i];
+      const mergeInto = entry.mergeInto as string;
+
+      if (!entryByKey[mergeInto]) {
+        console.error(
+          `Cannot merge view '${entry.key}' into '${entry.mergeInto}' ` +
+          `- ${entry.mergeInto} does not (yet?) exist.`,
+        );
+        continue;
+      }
+
+      const source: InputSchemeEntry = entryByKey[entry.key];
+      const target: InputSchemeEntry = entryByKey[mergeInto];
+      target.schema = { ...target.schema, ...source.schema };
+    }
+
+    return this._processedBindingCache = bindingsInfo;
+  };
+
+  genMenu = () => {
+    let cache = this._processedBindingCache;
+    if (!cache) {
+      cache = this.buildBindingCache();
+    }
+
+    console.log('-> Bindings cache:', { cache });
+
+    const majorSection: JSX.Element[] = [];
+
+    for (let i = 0, len = cache.length; i < len; i++) {
+      const entry: InputSchemeEntry = cache[i];
+      majorSection.push(
+        <div key={`MenuControlSetup-${i}`}>
+          <h4 style={{ paddingTop: 16 }}>{entry.friendly}</h4>
+          {Object.keys(entry.schema).map((actionName) => {
+            const descriptor = entry.schema[actionName];
+            return (
+              <div key={`MenuControlSetup-${actionName}`}>
+                {/* Left ride */}
+                <div style={{ textAlign: 'left', display: 'inline-block' }}>
+                  <KosmButton
+                    isActive={false}
+                    halfWide={true}
+                    onClick={() => {
+                      // this.setState({ selected: index }, () => {
+                      //   this.select(index);
+                      // });
+                    }}
+                  >
+                    {actionName}
+                  </KosmButton>
+
+                  <div style={{
+                    display: 'inline-block',
+                    paddingLeft: 4,
+                    paddingRight: 8,
+                  }}>
+                    <code>-&gt;</code>
+                  </div>
+                </div>
+
+                {/* Right side */}
+                <div style={{ textAlign: 'right', display: 'inline-block' }}>
+                  {Math.random() < 0.5 ?
+                    <KosmButton
+                      isActive={false}
+                      halfWide={true}
+                      onClick={() => {
+                        // this.setState({ selected: index }, () => {
+                        //   this.select(index);
+                        // });
+                      }}
+                    >
+                      {'binding1'}
+                    </KosmButton>
+                    : null
+                  }
+                  {Math.random() < 0.5 ?
+                    <KosmButton
+                      isActive={false}
+                      halfWide={true}
+                      onClick={() => {
+                        // this.setState({ selected: index }, () => {
+                        //   this.select(index);
+                        // });
+                      }}
+                    >
+                      {'binding2'}
+                    </KosmButton>
+                    : null
+                  }
+
+                  <KosmButton
+                    // isActive={selected === index}
+                    halfWide={true}
+                    onClick={() => {
+                    }}
+                  >
+                    <Icon name="plus"/>
+                  </KosmButton>
+                </div>
+              </div>
+            )
+          })}
         </div>
       )
-    })
+    }
+
+    return majorSection;
   };
 
   render() {
@@ -207,7 +290,7 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
     return (
       <div style={this.props.style}>
         <div style={menuEntriesStyle}>
-          {this.genMenu(entries, selected)}
+          {this.genMenu()}
         </div>
         <div
           style={spacerStyle}
