@@ -13,6 +13,8 @@ const menuEntriesStyle: React.CSSProperties = {
   overflow: 'auto',
   display: 'inline-block',
   whiteSpace: 'nowrap',
+  marginTop: 64,
+  marginBottom: 32,
 };
 
 const spacerStyle: React.CSSProperties = {
@@ -31,9 +33,17 @@ const descriptionBoxStyle: React.CSSProperties = {
   paddingBottom: 10,
   border: '4px solid black',
   borderRadius: 4,
-  marginTop: -2,
-  marginBottom: 8,
+  marginTop: 62,
+  marginBottom: 32,
   minWidth: 200,
+};
+
+const centerStyle: React.CSSProperties = {
+  justifyContent: 'center',
+  position: 'absolute',
+  display: 'flex',
+  width: '100%',
+  height: '100%',
 };
 
 type Entry = {
@@ -63,6 +73,7 @@ interface MenuControlSetupProps {
 export default class MenuControlSetup extends React.Component<MenuControlSetupProps> {
   private _input = new InputBridge();
   private _processedBindingCache: InputSchemeEntry[] | null = null;
+  private _processedBindingCount: number = 0;
   public static defaultProps = {
     style: {},
     actionsNext: [ 'down' ],
@@ -89,12 +100,8 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
   }
 
   handleAction = (action: string) => {
-    const entries = this.props.options?.entries;
-    if (!entries?.length) {
-      return;
-    }
-
     let selected = this.state.selected || 0;
+    const selectionMax = Math.max(this._processedBindingCount - 1, 0);
 
     if (action === 'select') {
       return this.select(selected);
@@ -117,8 +124,8 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
     if (selected < 0) {
       return this.setState({ selected: 0 });
     }
-    else if (selected >= entries.length) {
-      return this.setState({ selected: entries.length - 1 });
+    else if (selected >= selectionMax) {
+      return this.setState({ selected: selectionMax });
     }
     else {
       this.setState({ selected });
@@ -126,15 +133,6 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
   };
 
   select(index: number) {
-    const entries = this.props.options?.entries;
-    if (!entries?.length) {
-      return;
-    }
-
-    const callback = entries[index].onSelect;
-    if (typeof callback === 'function') {
-      callback({ selected: index, ...entries[index] });
-    }
   }
 
   buildBindingCache = () => {
@@ -144,6 +142,7 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
     const bindingsInfo: InputSchemeEntry[] = [];
     const mergeDependants: InputSchemeEntry[] = [];
     const entryByKey: Record<string, InputSchemeEntry> = {};
+    let controlCount = 0;
 
     for (let i = 0, len = orderedSchemes.length; i < len; i++) {
       const entry: InputSchemeEntry = orderedSchemes[i];
@@ -160,6 +159,7 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
         mergeDependants.push(entry);
       }
       else {
+        controlCount += Object.values(entry.schema || 0).length;
         bindingsInfo.push(entry);
       }
     }
@@ -181,6 +181,7 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
       target.schema = { ...target.schema, ...source.schema };
     }
 
+    this._processedBindingCount = controlCount;
     return this._processedBindingCache = bindingsInfo;
   };
 
@@ -194,6 +195,8 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
 
     const majorSection: JSX.Element[] = [];
 
+    let controlIndex = 0;
+    const selected = this.state.selected || 0;
     for (let i = 0, len = cache.length; i < len; i++) {
       const entry: InputSchemeEntry = cache[i];
       majorSection.push(
@@ -206,8 +209,10 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
                 {/* Left ride */}
                 <div style={{ textAlign: 'left', display: 'inline-block' }}>
                   <KosmButton
-                    isActive={false}
-                    halfWide={true}
+                    isActive={controlIndex++ === selected}
+                    wide
+                    autoScroll
+                    style={{ minWidth: 240 }}
                     onClick={() => {
                       // this.setState({ selected: index }, () => {
                       //   this.select(index);
@@ -228,34 +233,29 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
 
                 {/* Right side */}
                 <div style={{ textAlign: 'right', display: 'inline-block' }}>
-                  {Math.random() < 0.5 ?
-                    <KosmButton
-                      isActive={false}
-                      halfWide={true}
-                      onClick={() => {
-                        // this.setState({ selected: index }, () => {
-                        //   this.select(index);
-                        // });
-                      }}
-                    >
-                      {'binding1'}
-                    </KosmButton>
-                    : null
-                  }
-                  {Math.random() < 0.5 ?
-                    <KosmButton
-                      isActive={false}
-                      halfWide={true}
-                      onClick={() => {
-                        // this.setState({ selected: index }, () => {
-                        //   this.select(index);
-                        // });
-                      }}
-                    >
-                      {'binding2'}
-                    </KosmButton>
-                    : null
-                  }
+                  <KosmButton
+                    isActive={false}
+                    halfWide={true}
+                    onClick={() => {
+                      // this.setState({ selected: index }, () => {
+                      //   this.select(index);
+                      // });
+                    }}
+                  >
+                    {'binding1'}
+                  </KosmButton>
+
+                  <KosmButton
+                    isActive={false}
+                    halfWide={true}
+                    onClick={() => {
+                      // this.setState({ selected: index }, () => {
+                      //   this.select(index);
+                      // });
+                    }}
+                  >
+                    {'binding2'}
+                  </KosmButton>
 
                   <KosmButton
                     // isActive={selected === index}
@@ -267,10 +267,10 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
                   </KosmButton>
                 </div>
               </div>
-            )
+            );
           })}
-        </div>
-      )
+        </div>,
+      );
     }
 
     return majorSection;
@@ -278,17 +278,12 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
 
   render() {
     const options = this.props.options;
-    const entries = this.props.options?.entries;
-    if (!options || !entries?.length) {
-      return <div>[no menu entries available]</div>;
-    }
 
     const selected = this.state.selected || 0;
-    // TODO: do as state instead. Basically, allow per-button.
-    const activeEntry = entries[selected];
 
     return (
-      <div style={this.props.style}>
+      <div style={{ ...centerStyle, ...this.props.style }}>
+        <h3 style={{ paddingTop: 16 }}>Controls</h3>
         <div style={menuEntriesStyle}>
           {this.genMenu()}
         </div>
@@ -300,7 +295,7 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
         <div
           style={descriptionBoxStyle}
         >
-          {activeEntry.description || ''}
+          {/*{activeEntry.description || ''}*/ ''}
         </div>
       </div>
     );
