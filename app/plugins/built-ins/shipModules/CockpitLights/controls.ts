@@ -1,6 +1,7 @@
 import { ActionType } from '../../InputManager/types/ActionType';
 import { ControlSchema } from '../../InputManager/interfaces/ControlSchema';
 import { InputType } from '../../InputManager/types/InputTypes';
+import { genAutoFriendlyNames } from '../../InputManager/utils';
 
 const cockpitLightControls: ControlSchema = {
   cycleCockpitLights: {
@@ -40,6 +41,8 @@ const cockpitLightControls: ControlSchema = {
   //   },
   // },
 };
+
+genAutoFriendlyNames(cockpitLightControls);
 
 export {
   cockpitLightControls,

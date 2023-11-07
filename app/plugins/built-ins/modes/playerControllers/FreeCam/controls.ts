@@ -2,6 +2,7 @@ import { ActionType } from '../../../InputManager/types/ActionType';
 import { ControlSchema } from '../../../InputManager/interfaces/ControlSchema';
 import { InputType } from '../../../InputManager/types/InputTypes';
 import { DefaultInputSpeeds } from '../../../InputManager/types/DefaultInputSpeeds';
+import { genAutoFriendlyNames } from '../../../InputManager/utils';
 
 const { continuous } = ActionType;
 
@@ -76,6 +77,8 @@ const freeCamControls: ControlSchema = {
   // Dev controls.
   _devChangeCamMode:   { actionType: ActionType.pulse, current: null, default: { F7: keyboardButton, F8: keyboardButton } },
 };
+
+genAutoFriendlyNames(freeCamControls);
 
 export {
   freeCamControls,

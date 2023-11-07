@@ -1,6 +1,7 @@
 import { ActionType } from '../../../InputManager/types/ActionType';
 import { ControlSchema } from '../../../InputManager/interfaces/ControlSchema';
 import { InputType } from '../../../InputManager/types/InputTypes';
+import { genAutoFriendlyNames } from '../../../InputManager/utils';
 
 const { pulse, continuous } = ActionType;
 const { keyboardButton, analogButton, analogStickAxis, mouseButton,
@@ -39,6 +40,8 @@ const shipPilotControls: ControlSchema = {
   _debugFullWarpSpeed: { actionType: pulse, current: null, default: { ScrollLock: keyboardButton } },
   _devChangeCamMode:   { actionType: pulse, current: null, default: { F7: keyboardButton, F8: keyboardButton } },
 };
+
+genAutoFriendlyNames(shipPilotControls);
 
 export {
   shipPilotControls,
