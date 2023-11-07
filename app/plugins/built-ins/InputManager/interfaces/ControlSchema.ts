@@ -53,6 +53,10 @@ interface ControlSchema {
     // If true, only the mouse and analog sticks are allowed to interface with
     // the control.
     isBidirectional?: boolean,
+
+    // The text to show in a UI. Note that you can use genAutoFriendlyNames()
+    // to auto-gen friendly names for controls that don't specify any.
+    friendly?: string,
   };
 }
 
