@@ -73,7 +73,7 @@ export default class RootNode extends React.Component<Props> {
   //       { name: 'Item 2', onSelect: (e) => console.log('selected 2:', e) },
   //       { name: 'Item 3', onSelect: (e) => console.log('selected 3:', e) },
   //     ],
-  //     // alwaysShowDescriptionBox: true,
+  //     alwaysShowDescriptionBox: true,
   //   };
   //
   //   return (
@@ -83,6 +83,61 @@ export default class RootNode extends React.Component<Props> {
   //       >
   //         Test
   //       </MenuVertical>
+  //     </FadeInDown>
+  //   );
+  // }
+
+
+  // render() {
+  //   if (!this.state.menuVisible) {
+  //     return null;
+  //   }
+  //
+  //   // const menuOptions = {
+  //   //   type: 'MenuVertical',
+  //   //   defaultIndex: 1,
+  //   //   entries: [
+  //   //     { name: 'Item 1', onSelect: (e) => console.log('selected 1:', e) },
+  //   //     { name: 'Item 2', onSelect: (e) => console.log('selected 2:', e) },
+  //   //     { name: 'Item 3', onSelect: (e) => console.log('selected 3:', e) },
+  //   //   ],
+  //   //   alwaysShowDescriptionBox: true,
+  //   // };
+  //
+  //   // const entries = [
+  //   //   ['',   '',        '',          '',            '',           '',      ''],
+  //   //   ['',   '',        '',     'debug tools',      '',           '',      ''],
+  //   //   ['',   '',        '',      'tutorials',       '',           '',      ''],
+  //   //   ['',   '',        '',     'multiplayer',      '',           '',      ''],
+  //   //   ['', 'stats', 'inventory',  'resume',     'galaxy map', 'solar map', ''],
+  //   //   ['',   '',        '',       'journal',        '',           '',      ''],
+  //   //   ['',   '',        '',       'options',        '',           '',      ''],
+  //   //   ['',   '',        '',        'quit',          '',           '',      ''],
+  //   //   ['',   '',        '',          '',            '',           '',      ''],
+  //   // ];
+  //   // const menuOptions = {
+  //   //   type: 'MenuGrid',
+  //   //   defaultIndex: { row: 4, column: 3 },
+  //   //   entries,
+  //   // };
+  //
+  //   const menuOptions = {
+  //     type: 'MenuControlSetup',
+  //     defaultIndex: 1,
+  //     entries: [
+  //       { name: 'Item 4', onSelect: (e) => console.log('selected 1:', e) },
+  //       { name: 'Item 5', onSelect: (e) => console.log('selected 2:', e) },
+  //       { name: 'Item 6', onSelect: (e) => console.log('selected 3:', e) },
+  //     ],
+  //   };
+  //
+  //   return (
+  //     <FadeInDown style={rootNodeStyle}>
+  //       <MenuControlSetup
+  //         options={menuOptions}
+  //       >
+  //         Test
+  //       </MenuControlSetup>
   //     </FadeInDown>
   //   );
   // }
@@ -122,12 +177,7 @@ export default class RootNode extends React.Component<Props> {
 
     const menuOptions = {
       type: 'MenuControlSetup',
-      defaultIndex: 1,
-      entries: [
-        { name: 'Item 4', onSelect: (e) => console.log('selected 1:', e) },
-        { name: 'Item 5', onSelect: (e) => console.log('selected 2:', e) },
-        { name: 'Item 6', onSelect: (e) => console.log('selected 3:', e) },
-      ],
+      // defaultIndex: 5,
     };
 
     return (
