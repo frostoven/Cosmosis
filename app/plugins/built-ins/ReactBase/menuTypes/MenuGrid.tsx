@@ -6,6 +6,15 @@ const menuEntriesStyle: React.CSSProperties = {
   float: 'left',
 };
 
+const centerBothStyle: React.CSSProperties = {
+  top: '50%',
+  transform: 'translateY(-50%)',
+  justifyContent: 'center',
+  position: 'absolute',
+  display: 'flex',
+  width: '100%',
+};
+
 type Entry = string[];
 
 interface MenuGridProps {
@@ -267,7 +276,7 @@ export default class MenuGrid extends React.Component<MenuGridProps, State> {
     const selected = this.state.selected || 0;
 
     return (
-      <div style={this.props.style}>
+      <div style={{ ...centerBothStyle, ...this.props.style }}>
         <div style={menuEntriesStyle}>
           {this.genMenu(entries, selected)}
         </div>

@@ -25,6 +25,15 @@ const descriptionBoxStyle: React.CSSProperties = {
   minWidth: 300,
 };
 
+const centerBothStyle: React.CSSProperties = {
+  top: '50%',
+  transform: 'translateY(-50%)',
+  justifyContent: 'center',
+  position: 'absolute',
+  display: 'flex',
+  width: '100%',
+};
+
 type Entry = {
   name: string,
   description?: string | React.ReactNode,
@@ -168,7 +177,7 @@ export default class MenuBasic extends React.Component<MenuBasicProps> {
     }
 
     return (
-      <div style={this.props.style}>
+      <div style={{ ...centerBothStyle, ...this.props.style }}>
         <div style={menuEntriesStyle}>
           {this.genMenu(entries, selected)}
         </div>

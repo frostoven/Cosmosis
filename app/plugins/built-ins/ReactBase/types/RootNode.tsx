@@ -20,15 +20,6 @@ const rootNodeStyle: React.CSSProperties = {
   zIndex: 25,
 };
 
-const centerBoth: React.CSSProperties = {
-  top: '50%',
-  transform: 'translateY(-50%)',
-  justifyContent: 'center',
-  position: 'absolute',
-  display: 'flex',
-  width: '100%',
-};
-
 type PluginCompletion = PluginCacheTracker & {
   core: Core, inputManager: InputManager,
 };
@@ -89,7 +80,6 @@ export default class RootNode extends React.Component<Props> {
   //     <FadeInDown style={rootNodeStyle}>
   //       <MenuVertical
   //         options={menuOptions}
-  //         style={centerBoth}
   //       >
   //         Test
   //       </MenuVertical>
@@ -144,7 +134,6 @@ export default class RootNode extends React.Component<Props> {
       <FadeInDown style={rootNodeStyle}>
         <MenuControlSetup
           options={menuOptions}
-          style={centerBoth}
         >
           Test
         </MenuControlSetup>
