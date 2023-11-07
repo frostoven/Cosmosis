@@ -17,6 +17,7 @@ export default class KosmButton extends React.Component {
     wide: PropTypes.bool,
     block: PropTypes.bool,
     aggressiveOptimisation: PropTypes.bool,
+    style: PropTypes.object,
     // If true, uses static borders instead of animated gradients to colour
     // buttons.
     onClick: PropTypes.func,
@@ -32,6 +33,7 @@ export default class KosmButton extends React.Component {
     wide: false,
     block: false,
     aggressiveOptimisation: true,
+    style: {},
     onClick: () => {},
   };
 
@@ -98,7 +100,12 @@ export default class KosmButton extends React.Component {
     }
 
     return (
-      <div ref={scrollToMe} className={className} onClick={this.props.onClick}>
+      <div
+        ref={scrollToMe}
+        className={className}
+        style={this.props.style}
+        onClick={this.props.onClick}
+      >
         {this.props.children}
       </div>
     );
