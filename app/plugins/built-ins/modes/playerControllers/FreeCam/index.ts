@@ -24,6 +24,7 @@ class FreeCam extends ModeController {
       key: 'freeCamControls',
       schema: freeCamControls,
       friendly: 'Free-Flight Camera',
+      priority: 70,
     };
 
     this._cachedInputManager = gameRuntime.tracked.inputManager.cachedValue;
