@@ -202,7 +202,7 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
       majorSection.push(
         <div key={`MenuControlSetup-${i}`}>
           <h4 style={{ paddingTop: 16 }}>{entry.friendly}</h4>
-          {Object.keys(entry.schema).map((actionName) => {
+          {_.map(entry.schema, (control, actionName) => {
             const descriptor = entry.schema[actionName];
             return (
               <div key={`MenuControlSetup-${actionName}`}>
@@ -212,14 +212,14 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
                     isActive={controlIndex++ === selected}
                     wide
                     autoScroll
-                    style={{ minWidth: 240 }}
+                    style={{ minWidth: 240, textAlign: 'left' }}
                     onClick={() => {
                       // this.setState({ selected: index }, () => {
                       //   this.select(index);
                       // });
                     }}
                   >
-                    {actionName}
+                    {control.friendly || actionName}
                   </KosmButton>
 
                   <div style={{
