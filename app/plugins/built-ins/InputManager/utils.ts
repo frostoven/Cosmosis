@@ -21,6 +21,7 @@ function genAutoFriendlyNames(controls: ControlSchema) {
       .replace('_dev', '[Dev]')
       .replace('_debug', '[Dev]')
       .replace(/Inc Dec$/, '[Slider]')
+      .replace(/Held$/, ' [Held]')
       .replace(/Inc$/, 'Increase')
       .replace(/Dec$/, 'Decrease');
 
