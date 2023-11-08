@@ -156,7 +156,6 @@ function getKeyByAction(schemaName: string, action: string) {
 
 function getJsxByAction(schemaName: string, action: string, includeIcon = true) {
   const actionData = getKeyByAction(schemaName, action);
-  console.log('--> getJsxByAction:', actionData);
   return keyCodeToJsx(actionData.key, actionData.type, includeIcon);
 }
 
@@ -197,7 +196,7 @@ interface MenuControlSetupProps {
   actionsNext?: string[],
   // Used to override what the 'previous item' action is. Defaults to 'down'.
   actionsPrevious?: string[],
-  actionsOpenControl?: string[],
+  actionsSelect?: string[],
   actionsBack?: string[],
 }
 
@@ -208,27 +207,32 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
   // If true, scrolling further right is not allowed.
   private _subsectionLimitReached: boolean = false;
 
+  public selectionInfo: {
+    type: InputType;
+    key: string;
+    actionName: any
+  } | {} = {};
+
   public static defaultProps = {
     style: {},
     actionsNext: [ 'down', 'right' ],
     actionsPrevious: [ 'up', 'left' ],
-    actionsOpenControl: [ 'right', 'select' ],
+    actionsSelect: [ 'right', 'select' ],
     actionsBack: [ 'back' ],
   };
 
   state = {
-    selected: null,
+    selected: 0,
     subSelection: 0,
     // If true, browsing up/down. If false, we're editing controls
     // (horizontal).
     scrollingVertically: true,
   };
-
   componentDidMount() {
     this._processedBindingCache = null;
     this._input.onAction.getEveryChange(this.handleAction);
     const defaultIndex = this.props.options.defaultIndex;
-    if (this.state.selected === null && typeof defaultIndex === 'number') {
+    if (typeof defaultIndex === 'number') {
       this.setState({ selected: defaultIndex });
     }
   }
@@ -238,7 +242,10 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
   }
 
   handleAction = (action: string) => {
-    if (this.state.scrollingVertically) {
+    if (action === 'delete') {
+      this.removeExistBinding();
+    }
+    else if (this.state.scrollingVertically) {
       this.handleVerticalScrolling(action);
     }
     else {
@@ -247,11 +254,11 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
   };
 
   handleVerticalScrolling = (action: string) => {
-    let selected = this.state.selected || 0;
+    let selected = this.state.selected;
     const selectionMax = Math.max(this._processedBindingCount - 1, 0);
 
     // If pressing Enter or ArrowRight on control to open it:
-    if (this.props.actionsOpenControl?.includes(action)) {
+    if (this.props.actionsSelect?.includes(action)) {
       return this.setState({ scrollingVertically: false });
     }
 
@@ -281,12 +288,15 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
   };
 
   handleHorizontalScrolling = (action: string) => {
-    const { actionsBack, actionsNext, actionsPrevious } = this.props;
+    const {
+      actionsBack, actionsNext, actionsPrevious, actionsSelect,
+    } = this.props;
     const subSelection = this.state.subSelection;
 
     const goNext = actionsNext?.includes(action);
     const goPrevious = actionsPrevious?.includes(action);
     const goBack = actionsBack?.includes(action);
+    const activate = actionsSelect?.includes(action) && !actionsNext?.includes(action);
     const backToScrollMenu = goBack || (subSelection === 0 && goPrevious);
 
     if (backToScrollMenu) {
@@ -294,6 +304,9 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
         scrollingVertically: true,
         subSelection: 0,
       });
+    }
+    else if (activate && this._subsectionLimitReached) {
+      this.addNewBinding();
     }
     else if (goNext) {
       if (!this._subsectionLimitReached) {
@@ -305,14 +318,24 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
     }
   };
 
-  addNewBinding(actionName: string) {
-  }
+  addNewBinding = () => {
+    console.log('--> addNewBinding tba');
+    console.log('  > selectionInfo:', this.selectionInfo);
+  };
 
-  removeExistBinding(actionName: string, keyCode: string) {
-  }
+  removeExistBinding = () => {
+    if (this.state.scrollingVertically || this._subsectionLimitReached) {
+      return window.$modal.alert('Cannot delete - no key selected.');
+    }
+    const cache = this.getBindingsCache();
+    const { selected, subSelection } = this.state;
+    console.log('--> cache:', cache);
+    console.log('  > item indexes:', { selected, subSelection });
+    console.log('  > selectionInfo:', this.selectionInfo);
+  };
 
-  resetBinding(actionName: string) {
-  }
+  resetBinding = (actionName: string) => {
+  };
 
   buildBindingCache = () => {
     const orderedSchemes = InputManager.getControlSchemes();
@@ -364,17 +387,21 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
     return this._processedBindingCache = bindingsInfo;
   };
 
-  genMenu = () => {
-    let cache = this._processedBindingCache;
-    if (!cache) {
-      cache = this.buildBindingCache();
+  getBindingsCache = (): InputSchemeEntry[] => {
+    if (!this._processedBindingCache) {
+      this.buildBindingCache();
     }
+    return this._processedBindingCache as InputSchemeEntry[];
+  };
+
+  genMenu = () => {
+    let cache = this.getBindingsCache();
 
     const majorSection: JSX.Element[] = [];
-
-    const selected = this.state.selected || 0;
-    const subSelection = this.state.subSelection || 0;
+    const selected = this.state.selected;
+    const subSelection = this.state.subSelection;
     const scrollingVertically = this.state.scrollingVertically;
+
     let controlIndex = 0;
     let controlSubIndex = 0;
 
@@ -389,19 +416,23 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
           {_.map(entry.schema, (control, actionName) => {
             const entryControlCount = Object.values(control.current).length;
             const descriptor = entry.schema[actionName];
+            const currentVerticalIndex = controlIndex++;
+            let subIndexCount = 0;
             return (
               <div key={`MenuControlSetup-${actionName}`}>
                 {/* Left ride */}
                 <div style={{ textAlign: 'left', display: 'inline-block' }}>
                   <KosmButton
-                    isActive={controlIndex++ === selected}
+                    isActive={currentVerticalIndex === selected}
                     wide
                     autoScroll
                     style={{ minWidth: 240, textAlign: 'left', marginTop: 2, marginBottom: 2 }}
                     onClick={() => {
-                      // this.setState({ selected: index }, () => {
-                      //   this.select(index);
-                      // });
+                      this.setState({
+                        selected: currentVerticalIndex,
+                        subSelection: 0,
+                        scrollingVertically: true,
+                      });
                     }}
                   >
                     {control.friendly || actionName}
@@ -419,6 +450,8 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
                 {/* Right side */}
                 <div style={{ textAlign: 'right', display: 'inline-block' }}>
                   {_.map(control.current, (type: InputType, keyCode: string) => {
+                    const currentSubIndex = subIndexCount++;
+
                     let active = false;
                     if (!scrollingVertically) {
                       if (controlIndex - 1 !== selected) {
@@ -429,6 +462,14 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
                       }
                     }
 
+                    if (active) {
+                      // Store position for easier use by tools like control
+                      // deletion and editing.
+                      this.selectionInfo = {
+                        actionName, key: keyCode, type,
+                      };
+                    }
+
                     return (
                       <KosmButton
                         key={`MenuControlSetup-${actionName}-${keyCode}`}
@@ -437,9 +478,11 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
                         halfWide={true}
                         style={{ minWidth: 200, textAlign: 'left', marginTop: 2, marginBottom: 2 }}
                         onClick={() => {
-                          // this.setState({ selected: index }, () => {
-                          //   this.select(index);
-                          // });
+                          this.setState({
+                            selected: currentVerticalIndex,
+                            subSelection: currentSubIndex,
+                            scrollingVertically: false,
+                          });
                         }}
                       >
                         {keyCodeToJsx(keyCode, type)}
@@ -450,10 +493,9 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
                   {/* The '+' button right of the bindings. */}
                   <KosmButton
                     isActive={(() => {
-                      if (controlIndex - 1 !== selected) {
+                      if (currentVerticalIndex !== selected) {
                         return false;
                       }
-
                       const limitReached = subSelection >= entryControlCount;
                       this._subsectionLimitReached = limitReached;
                       return limitReached;
@@ -462,6 +504,12 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
                     halfWide={true}
                     style={{ minWidth: 200, padding: 11, marginTop: 2, height: 39 }}
                     onClick={() => {
+                      this.setState({
+                        selected: currentVerticalIndex,
+                        subSelection: 0,
+                        scrollingVertically: false,
+                      },
+                      this.addNewBinding);
                     }}
                   >
                     <Icon name="plus"/>
@@ -478,14 +526,14 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
   };
 
   showAdvancedOptions = () => {
-    //
+    let cache = this.getBindingsCache();
   };
 
   render() {
     const options = this.props.options;
-    const selected = this.state.selected || 0;
+    const selected = this.state.selected;
 
-    console.log('--> Reverse lookup:', InputManager.allKeyLookups);
+    // console.log('--> Reverse lookup:', InputManager.allKeyLookups);
 
     return (
       <div style={{ ...centerStyle, ...this.props.style }}>
@@ -524,23 +572,29 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
               height: 12,
             }}
           />
-          &nbsp;&nbsp;
+
+          <div style={{ paddingLeft: 8, display: 'inline-block' }}/>
+
           <StatusbarButton onClick={() => {}}>
             {getJsxByAction('reactMenuControls', 'search', false)}
             &nbsp;Search
           </StatusbarButton>
+
           <StatusbarButton onClick={() => {}}>
             {getJsxByAction('reactMenuControls', 'emergencyMenuClose', false)}
             &nbsp;Emergency Menu Close
           </StatusbarButton>
+
           <StatusbarButton onClick={this.showAdvancedOptions}>
             {getJsxByAction('reactMenuControls', 'advanced', false)}
             &nbsp;Advanced Options
           </StatusbarButton>
-          <StatusbarButton onClick={() => {}}>
+
+          <StatusbarButton onClick={this.removeExistBinding}>
             {getJsxByAction('reactMenuControls', 'delete', false)}
             &nbsp;Remove Binding
           </StatusbarButton>
+
           <StatusbarButton onClick={() => {}}>
             {getJsxByAction('reactMenuControls', 'saveChanges', false)}
             &nbsp;Save Changes
