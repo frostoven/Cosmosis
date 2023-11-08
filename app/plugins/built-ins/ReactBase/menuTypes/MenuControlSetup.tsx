@@ -4,7 +4,6 @@ import InputBridge from '../types/InputBridge';
 import KosmButton from '../../../../reactExtra/components/KosmButton';
 import { Icon } from 'semantic-ui-react';
 import { InputManager } from '../../InputManager';
-import { ControlSchema } from '../../InputManager/interfaces/ControlSchema';
 import {
   InputSchemeEntry,
 } from '../../InputManager/interfaces/InputSchemeEntry';
@@ -275,7 +274,10 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
       const entry: InputSchemeEntry = cache[i];
       majorSection.push(
         <div key={`MenuControlSetup-${i}`}>
-          <h4 style={{ paddingTop: 16 }}>{entry.friendly}</h4>
+          <h4 style={{ paddingTop: 16 }}>
+            <Icon name='crosshairs'/>&nbsp;
+            {entry.friendly}
+          </h4>
           {_.map(entry.schema, (control, actionName) => {
             const descriptor = entry.schema[actionName];
             return (
@@ -307,33 +309,28 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
 
                 {/* Right side */}
                 <div style={{ textAlign: 'right', display: 'inline-block' }}>
-                  <KosmButton
-                    isActive={false}
-                    halfWide={true}
-                    onClick={() => {
-                      // this.setState({ selected: index }, () => {
-                      //   this.select(index);
-                      // });
-                    }}
-                  >
-                    {'binding1'}
-                  </KosmButton>
-
-                  <KosmButton
-                    isActive={false}
-                    halfWide={true}
-                    onClick={() => {
-                      // this.setState({ selected: index }, () => {
-                      //   this.select(index);
-                      // });
-                    }}
-                  >
-                    {'binding2'}
-                  </KosmButton>
-
+                  {_.map(control.current, (type: InputType, keyCode: string) => {
+                    return (
+                      <KosmButton
+                        key={`MenuControlSetup-${actionName}-${keyCode}`}
+                        isActive={false}
+                        halfWide={true}
+                        style={{ minWidth: 200, textAlign: 'left' }}
+                        onClick={() => {
+                          // this.setState({ selected: index }, () => {
+                          //   this.select(index);
+                          // });
+                        }}
+                      >
+                        {keyCodeToJsx(keyCode, type)}
+                      </KosmButton>
+                    )
+                  })}
+                  {/* The '+' button right of the bindings. */}
                   <KosmButton
                     // isActive={selected === index}
                     halfWide={true}
+                    style={{ minWidth: 200 }}
                     onClick={() => {
                     }}
                   >
