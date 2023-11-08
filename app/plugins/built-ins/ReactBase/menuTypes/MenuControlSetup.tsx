@@ -59,7 +59,7 @@ const keyTypeIcons = {
 };
 
 function keyCodeToJsx(keyCode: string | JSX.Element, type: InputType) {
-  let icon: JSX.Element | null = <Icon name={keyTypeIcons[type]}/>;
+  let icon: JSX.Element | null = <><Icon name={keyTypeIcons[type]}/>&nbsp;</>;
 
   switch (keyCode) {
     case 'spNorthSouth':
@@ -99,15 +99,25 @@ function keyCodeToJsx(keyCode: string | JSX.Element, type: InputType) {
 
   if (type === InputType.keyboardButton) {
     let key = keyCode as string;
+
     if (key.startsWith('Key')) {
       key = key.slice(3);
     }
+    else if (key === 'Slash') {
+      key = '/';
+    }
+    else if (key === 'Backslash') {
+      key = '\\';
+    }
+
     keyCode = (
       <div style={{
         display: 'inline-block',
         borderRadius: 4,
         border: 'thin solid grey',
         padding: 4,
+        textAlign: 'center',
+        minWidth: 22,
       }}>
         {key}
       </div>
@@ -263,8 +273,6 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
     if (!cache) {
       cache = this.buildBindingCache();
     }
-
-    console.log('-> Bindings cache:', { cache });
 
     const majorSection: JSX.Element[] = [];
 

@@ -20,7 +20,7 @@ const reactMenuControls: ControlSchema = {
   search:       { actionType: pulse, current: null, default: { Slash: keyboardButton } },
   advanced:     { actionType: pulse, current: null, default: { F3: keyboardButton } },
   manageMacros: { actionType: pulse, current: null, default: { F4: keyboardButton } },
-  emergencyMenuClose: { actionType: pulse, current: null, default: { keyQ: keyboardButton } },
+  emergencyMenuClose: { actionType: pulse, current: null, default: { KeyQ: keyboardButton } },
 };
 
 genAutoFriendlyNames(reactMenuControls);
