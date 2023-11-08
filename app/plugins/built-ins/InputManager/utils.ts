@@ -20,7 +20,8 @@ function genAutoFriendlyNames(controls: ControlSchema) {
     friendly = friendly
       .replace('_dev', '[Dev]')
       .replace('_debug', '[Dev]')
-      .replace(/Inc Dec$/, '[Slider]')
+      .replace(/Inc Dec$/, '[Analog]')
+      .replace(/Left Right$/, '[Analog]')
       .replace(/Held$/, ' [Held]')
       .replace(/Inc$/, 'Increase')
       .replace(/Dec$/, 'Decrease');
