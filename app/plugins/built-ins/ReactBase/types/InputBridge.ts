@@ -62,6 +62,15 @@ export default class InputBridge {
     this._pluginTracker.onAllPluginsLoaded.getOnce(() => {
       this._modeController = new ModeController('mainMenuSystem', ModeId.menuControl, reactMenuControls);
       this._modeController.step = this.stepArrowStream.bind(this);
+
+      InputManager.allKeyLookups.reactMenuControls = this._modeController.keyLookup;
+      InputManager.allControlSchemes.reactMenuControls = {
+        key: 'reactMenuControls',
+        schema: reactMenuControls,
+        friendly: 'Menu Controls',
+        priority: 1,
+      };
+
       const inputManager: InputManager = this._pluginTracker.inputManager;
       inputManager.activateController(ModeId.menuControl, 'mainMenuSystem');
       this._setupPulseWatchers();

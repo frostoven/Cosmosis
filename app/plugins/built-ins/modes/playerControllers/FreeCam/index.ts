@@ -20,6 +20,8 @@ class FreeCam extends ModeController {
 
   constructor() {
     super('freeCam', ModeId.playerControl, freeCamControls);
+
+    InputManager.allKeyLookups.freeCamControls = this.keyLookup;
     InputManager.allControlSchemes.freeCamControls = {
       key: 'freeCamControls',
       schema: freeCamControls,

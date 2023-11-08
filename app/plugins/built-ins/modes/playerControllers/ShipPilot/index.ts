@@ -35,6 +35,8 @@ class ShipPilot extends ModeController {
 
   constructor() {
     super('shipPilot', ModeId.playerControl, shipPilotControls);
+
+    InputManager.allKeyLookups.shipPilotControls = this.keyLookup;
     InputManager.allControlSchemes.shipPilotControls = {
       key: 'shipPilotControls',
       schema: shipPilotControls,

@@ -12,6 +12,7 @@ class GeneralControl extends ModeController {
   constructor() {
     super('general', ModeId.appControl, generalControls);
 
+    InputManager.allKeyLookups.generalControls = this.keyLookup;
     InputManager.allControlSchemes.generalControls = {
       key: 'generalControls',
       schema: generalControls,
