@@ -34,6 +34,7 @@ const descriptionBoxStyle: React.CSSProperties = {
   border: '4px solid black',
   borderRadius: 4,
   marginTop: 62,
+  marginRight: 62,
   marginBottom: 32,
   minWidth: 200,
 };
@@ -116,7 +117,7 @@ function keyCodeToJsx(keyCode: string | JSX.Element, type: InputType) {
         borderRadius: 4,
         border: 'thin solid grey',
         textAlign: 'center',
-        minWidth: 22,
+        minWidth: 23,
         padding: 4,
         marginTop: -6,
         marginBottom: -6,
@@ -156,22 +157,30 @@ interface MenuControlSetupProps {
   // Used to override what the 'previous item' action is. Defaults to 'down'.
   actionsPrevious?: string[],
   actionsOpenControl?: string[],
+  actionsBack?: string[],
 }
 
 export default class MenuControlSetup extends React.Component<MenuControlSetupProps> {
   private _input = new InputBridge();
   private _processedBindingCache: InputSchemeEntry[] | null = null;
   private _processedBindingCount: number = 0;
+  // If true, scrolling further right is not allowed.
+  private _subsectionLimitReached: boolean = false;
+
   public static defaultProps = {
     style: {},
-    actionsNext: [ 'down' ],
-    actionsPrevious: [ 'up' ],
+    actionsNext: [ 'down', 'right' ],
+    actionsPrevious: [ 'up', 'left' ],
     actionsOpenControl: [ 'right', 'select' ],
-    actionsCloseControl: [ 'back' ],
+    actionsBack: [ 'back' ],
   };
 
   state = {
     selected: null,
+    subSelection: 0,
+    // If true, browsing up/down. If false, we're editing controls
+    // (horizontal).
+    scrollingVertically: true,
   };
 
   componentDidMount() {
@@ -188,11 +197,21 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
   }
 
   handleAction = (action: string) => {
+    if (this.state.scrollingVertically) {
+      this.handleVerticalScrolling(action);
+    }
+    else {
+      this.handleHorizontalScrolling(action);
+    }
+  };
+
+  handleVerticalScrolling = (action: string) => {
     let selected = this.state.selected || 0;
     const selectionMax = Math.max(this._processedBindingCount - 1, 0);
 
-    if (action === 'select') {
-      return this.select(selected);
+    // If pressing Enter or ArrowRight on control to open it:
+    if (this.props.actionsOpenControl?.includes(action)) {
+      return this.setState({ scrollingVertically: false });
     }
 
     const cursorNextBindings = this.props.actionsNext;
@@ -217,6 +236,31 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
     }
     else {
       this.setState({ selected });
+    }
+  };
+
+  handleHorizontalScrolling = (action: string) => {
+    const { actionsBack, actionsNext, actionsPrevious } = this.props;
+    const subSelection = this.state.subSelection;
+
+    const goNext = actionsNext?.includes(action);
+    const goPrevious = actionsPrevious?.includes(action);
+    const goBack = actionsBack?.includes(action);
+    const backToScrollMenu = goBack || (subSelection === 0 && goPrevious);
+
+    if (backToScrollMenu) {
+      return this.setState({
+        scrollingVertically: true,
+        subSelection: 0,
+      });
+    }
+    else if (goNext) {
+      if (!this._subsectionLimitReached) {
+        this.setState({ subSelection: subSelection + 1 });
+      }
+    }
+    else if (goPrevious) {
+      this.setState({ subSelection: subSelection - 1 });
     }
   };
 
@@ -281,8 +325,12 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
 
     const majorSection: JSX.Element[] = [];
 
-    let controlIndex = 0;
     const selected = this.state.selected || 0;
+    const subSelection = this.state.subSelection || 0;
+    const scrollingVertically = this.state.scrollingVertically;
+    let controlIndex = 0;
+    let controlSubIndex = 0;
+
     for (let i = 0, len = cache.length; i < len; i++) {
       const entry: InputSchemeEntry = cache[i];
       majorSection.push(
@@ -292,6 +340,7 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
             {entry.friendly}
           </h4>
           {_.map(entry.schema, (control, actionName) => {
+            const entryControlCount = Object.values(control.current).length;
             const descriptor = entry.schema[actionName];
             return (
               <div key={`MenuControlSetup-${actionName}`}>
@@ -323,10 +372,21 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
                 {/* Right side */}
                 <div style={{ textAlign: 'right', display: 'inline-block' }}>
                   {_.map(control.current, (type: InputType, keyCode: string) => {
+                    let active = false;
+                    if (!scrollingVertically) {
+                      if (controlIndex - 1 !== selected) {
+                        controlSubIndex = 0;
+                      }
+                      else {
+                        active = controlSubIndex++ === subSelection;
+                      }
+                    }
+
                     return (
                       <KosmButton
                         key={`MenuControlSetup-${actionName}-${keyCode}`}
-                        isActive={false}
+                        isActive={active}
+                        autoScroll
                         halfWide={true}
                         style={{ minWidth: 200, textAlign: 'left', marginTop: 2, marginBottom: 2 }}
                         onClick={() => {
@@ -339,9 +399,19 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
                       </KosmButton>
                     )
                   })}
+
                   {/* The '+' button right of the bindings. */}
                   <KosmButton
-                    // isActive={selected === index}
+                    isActive={(() => {
+                      if (controlIndex - 1 !== selected) {
+                        return false;
+                      }
+
+                      const limitReached = subSelection >= entryControlCount;
+                      this._subsectionLimitReached = limitReached;
+                      return limitReached;
+                    })()}
+                    autoScroll
                     halfWide={true}
                     style={{ minWidth: 200, padding: 11, marginTop: 2, height: 39 }}
                     onClick={() => {
