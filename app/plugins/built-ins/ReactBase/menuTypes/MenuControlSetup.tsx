@@ -482,10 +482,10 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
   };
 
   render() {
-    console.log('render');
     const options = this.props.options;
-
     const selected = this.state.selected || 0;
+
+    console.log('--> Reverse lookup:', InputManager.allKeyLookups);
 
     return (
       <div style={{ ...centerStyle, ...this.props.style }}>
@@ -511,28 +511,39 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
           left: 0,
           right: 0,
           paddingLeft: 4,
-          paddingBottom: 2,
-          backgroundColor: 'rgb(33 33 33 / 90%)',
+          paddingTop: 7,
+          paddingBottom: 8,
+          // backgroundColor: 'rgb(33 33 33 / 90%)',
+          backgroundColor: 'rgb(128 0 0 / 90%)',
         }}>
           <img
-            alt='' src='/prodHqAssets/icons/menu_status_redC0.png'
-            style={{ transform: 'translateY(2px)', height: 12 }}
+            alt="" src="/prodHqAssets/icons/menu_status_redC0.png"
+            style={{
+              display: 'inline-block',
+              transform: 'translateY(1px)',
+              height: 12,
+            }}
           />
           &nbsp;&nbsp;
           <StatusbarButton onClick={() => {}}>
-            /: Search
+            {getJsxByAction('reactMenuControls', 'search', false)}
+            &nbsp;Search
           </StatusbarButton>
           <StatusbarButton onClick={() => {}}>
-            Q: Emergency Menu Close
+            {getJsxByAction('reactMenuControls', 'emergencyMenuClose', false)}
+            &nbsp;Emergency Menu Close
           </StatusbarButton>
           <StatusbarButton onClick={this.showAdvancedOptions}>
-            F6: Advanced Options
+            {getJsxByAction('reactMenuControls', 'advanced', false)}
+            &nbsp;Advanced Options
           </StatusbarButton>
           <StatusbarButton onClick={() => {}}>
-            Delete: Remove Binding
+            {getJsxByAction('reactMenuControls', 'delete', false)}
+            &nbsp;Remove Binding
           </StatusbarButton>
           <StatusbarButton onClick={() => {}}>
-            F10: Save Changes
+            {getJsxByAction('reactMenuControls', 'saveChanges', false)}
+            &nbsp;Save Changes
           </StatusbarButton>
         </div>
       </div>
