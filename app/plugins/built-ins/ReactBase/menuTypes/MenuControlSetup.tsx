@@ -135,6 +135,22 @@ function keyCodeToJsx(keyCode: string | JSX.Element, type: InputType) {
   );
 }
 
+function StatusbarButton({ children, onClick }) {
+  return (
+    <div
+      onClick={onClick}
+      style={{
+        display: 'inline-block',
+        fontWeight: 'bold',
+        // TODO: include this within the project.
+        fontFamily: 'DejaVu Sans Mono, monospace',
+        paddingRight: 24 }}
+    >
+      {children}
+    </div>
+  )
+}
+
 type Entry = {
   name: string,
   description?: string | React.ReactNode,
@@ -264,7 +280,13 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
     }
   };
 
-  select(index: number) {
+  addNewBinding(actionName: string) {
+  }
+
+  removeExistBinding(actionName: string, keyCode: string) {
+  }
+
+  resetBinding(actionName: string) {
   }
 
   buildBindingCache = () => {
@@ -430,7 +452,12 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
     return majorSection;
   };
 
+  showAdvancedOptions = () => {
+    //
+  };
+
   render() {
+    console.log('render');
     const options = this.props.options;
 
     const selected = this.state.selected || 0;
@@ -450,6 +477,35 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
           style={descriptionBoxStyle}
         >
           {/*{activeEntry.description || ''}*/ ''}
+        </div>
+
+        {/* Statusbar */}
+        <div style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: 20,
+          paddingLeft: 4,
+          backgroundColor: 'rgb(33 33 33 / 90%)',
+        }}>
+          <img alt='' src='/prodHqAssets/icons/menu_status_redC0.png'/>
+          &nbsp;&nbsp;
+          <StatusbarButton onClick={() => {}}>
+            /: Search
+          </StatusbarButton>
+          <StatusbarButton onClick={() => {}}>
+            Q: Emergency Menu Close
+          </StatusbarButton>
+          <StatusbarButton onClick={this.showAdvancedOptions}>
+            F6: Advanced Options
+          </StatusbarButton>
+          <StatusbarButton onClick={() => {}}>
+            Delete: Remove Binding
+          </StatusbarButton>
+          <StatusbarButton onClick={() => {}}>
+            F10: Save Changes
+          </StatusbarButton>
         </div>
       </div>
     );
