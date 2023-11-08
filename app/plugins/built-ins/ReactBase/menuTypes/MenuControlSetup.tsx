@@ -485,11 +485,14 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
           bottom: 0,
           left: 0,
           right: 0,
-          height: 20,
           paddingLeft: 4,
+          paddingBottom: 2,
           backgroundColor: 'rgb(33 33 33 / 90%)',
         }}>
-          <img alt='' src='/prodHqAssets/icons/menu_status_redC0.png'/>
+          <img
+            alt='' src='/prodHqAssets/icons/menu_status_redC0.png'
+            style={{ transform: 'translateY(2px)', height: 12 }}
+          />
           &nbsp;&nbsp;
           <StatusbarButton onClick={() => {}}>
             /: Search
