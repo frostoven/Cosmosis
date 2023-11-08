@@ -135,6 +135,25 @@ function keyCodeToJsx(keyCode: string | JSX.Element, type: InputType) {
   );
 }
 
+// Returns all keys associated with the specified action.
+function getKeysByAction(schemaName: string, action: string) {
+  const actions = InputManager.allKeyLookups[schemaName];
+  return actions[action] || [];
+}
+
+// Returns the first key associated with the specified schema and action.
+function getKeyByAction(schemaName: string, action: string) {
+  return getKeysByAction(schemaName, action)[0] || {
+    key: '???', type: InputType.none,
+  };
+}
+
+function getJsxByAction(schemaName: string, action: string, includeIcon = true) {
+  const actionData = getKeyByAction(schemaName, action);
+  console.log('--> getJsxByAction:', actionData);
+  return keyCodeToJsx(actionData.key, actionData.type, includeIcon);
+}
+
 function StatusbarButton({ children, onClick }) {
   return (
     <div
