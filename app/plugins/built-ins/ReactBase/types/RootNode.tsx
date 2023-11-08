@@ -37,12 +37,6 @@ export default class RootNode extends React.Component<Props> {
 
   constructor(props: Props | Readonly<Props>) {
     super(props);
-    InputManager.allControlSchemes.reactMenuControls = {
-      key: 'reactMenuControls',
-      schema: reactMenuControls,
-      friendly: 'Menu Controls',
-      priority: 1,
-    };
   }
 
   componentDidMount() {
