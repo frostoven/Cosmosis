@@ -115,13 +115,18 @@ function keyCodeToJsx(keyCode: string | JSX.Element, type: InputType) {
         display: 'inline-block',
         borderRadius: 4,
         border: 'thin solid grey',
-        padding: 4,
         textAlign: 'center',
         minWidth: 22,
+        padding: 4,
+        marginTop: -6,
+        marginBottom: -6,
       }}>
         {key}
       </div>
     );
+  }
+  else {
+
   }
 
   return (
@@ -296,7 +301,7 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
                     isActive={controlIndex++ === selected}
                     wide
                     autoScroll
-                    style={{ minWidth: 240, textAlign: 'left' }}
+                    style={{ minWidth: 240, textAlign: 'left', marginTop: 2, marginBottom: 2 }}
                     onClick={() => {
                       // this.setState({ selected: index }, () => {
                       //   this.select(index);
@@ -323,7 +328,7 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
                         key={`MenuControlSetup-${actionName}-${keyCode}`}
                         isActive={false}
                         halfWide={true}
-                        style={{ minWidth: 200, textAlign: 'left' }}
+                        style={{ minWidth: 200, textAlign: 'left', marginTop: 2, marginBottom: 2 }}
                         onClick={() => {
                           // this.setState({ selected: index }, () => {
                           //   this.select(index);
@@ -338,7 +343,7 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
                   <KosmButton
                     // isActive={selected === index}
                     halfWide={true}
-                    style={{ minWidth: 200 }}
+                    style={{ minWidth: 200, padding: 11, marginTop: 2, height: 39 }}
                     onClick={() => {
                     }}
                   >
