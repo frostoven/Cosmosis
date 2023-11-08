@@ -59,8 +59,14 @@ const keyTypeIcons = {
   [InputType.analogButton]: 'gamepad',
 };
 
-function keyCodeToJsx(keyCode: string | JSX.Element, type: InputType) {
-  let icon: JSX.Element | null = <><Icon name={keyTypeIcons[type]}/>&nbsp;</>;
+function keyCodeToJsx(keyCode: string | JSX.Element, type: InputType, includeIcon = true) {
+  let icon: JSX.Element | null;
+  if (includeIcon) {
+    icon = <><Icon name={keyTypeIcons[type]}/>&nbsp;</>;
+  }
+  else {
+    icon = null;
+  }
 
   switch (keyCode) {
     case 'spNorthSouth':
@@ -131,7 +137,7 @@ function keyCodeToJsx(keyCode: string | JSX.Element, type: InputType) {
   }
 
   return (
-    <div>{icon}{keyCode}</div>
+    <div style={{ display: 'inline-block' }}>{icon}{keyCode}</div>
   );
 }
 
