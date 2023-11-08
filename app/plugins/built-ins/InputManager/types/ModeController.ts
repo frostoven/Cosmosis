@@ -37,6 +37,7 @@ export default class ModeController {
   public modeId: ModeId;
   public controlSchema: ControlSchema;
   public controlsByKey: {};
+  public keyLookup: {} = {};
   private readonly _actionReceivers: Array<Function>;
 
   // Passive state. This only changes when something external changes. Stores
@@ -95,14 +96,14 @@ export default class ModeController {
   // This allows both core code and modders to add their own control bindings.
   extendControlSchema(controlSchema: ControlSchema) {
     const savedControls = userProfile.getCurrentConfig({ identifier: 'controls' }).controls;
-    const actionInputMap = {
-      /* Example: */
-      /* forward: { action: 'KeyW', inputType: InputTypes.keyboardButton } */
-    };
+
+    // Used by parts of the application that want to display the bindings for a
+    // particular action, such as tutorials or instructional info blocks.
+    const keyLookup = this.keyLookup;
+
     _.each(controlSchema, (control, actionName) => {
       // ---> do not remove this, it's part of the structure below.
       // if (savedControls[actionName]) {
-
 
         // TODO: remove me
         if (Array.isArray(control.default)) {
@@ -149,23 +150,25 @@ export default class ModeController {
             controlSchema[actionName].disallowSign = 0;
           }
         }
-          // console.log('85========>', `controlSchema[${actionName}].current = { ...`, controlSchema[actionName].default, '}')
 
         catch (error) {
           console.error(`[ModeController] Failed to set key for action '${actionName}'`, error);
         }
-      // }
 
-
-      /* Example: */
-      /* actionInputMap = { forward: { action: 'KeyW', inputType: InputTypes.keyboardButton } };*/
-      // controlSchema[actionName].actionInputMap = {
-      //   actionName
-      // };
 
       if (!controlSchema[actionName].sign) {
         controlSchema[actionName].sign = 1;
       }
+
+      // Save reverse lookup data.
+      if (!keyLookup[actionName]) {
+        keyLookup[actionName] = [];
+      }
+      _.each(control.current, (type, key) => {
+        // Example result:
+        // groupControls.myAction = [{ type: 7, key: 'spNorthSouth', ... }]
+        keyLookup[actionName].push({ type, key });
+      });
     });
 
     const allowedConflicts = {};
@@ -212,7 +215,6 @@ export default class ModeController {
       // The user can assign multiple keys to each action; store them all in
       // controlsByKey individually.
       _.each(keys, (inputType, key) => {
-        // console.log('149------->', key);
         const ctrlByKey = this.controlsByKey[key];
         // console.log(`-> arrayContainsArray(`, allowedConflicts?.[actionName], `,`, this.controlsByKey[key], `) === `, arrayContainsArray(allowedConflicts?.[actionName], this.controlsByKey[key]));
         if (this.controlsByKey[key] && !arrayContainsArray(allowedConflicts?.[actionName], this.controlsByKey[key])) {
