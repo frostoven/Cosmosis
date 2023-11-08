@@ -6,8 +6,9 @@ import { Icon } from 'semantic-ui-react';
 import { InputManager } from '../../InputManager';
 import { ControlSchema } from '../../InputManager/interfaces/ControlSchema';
 import {
-  InputSchemeEntry
+  InputSchemeEntry,
 } from '../../InputManager/interfaces/InputSchemeEntry';
+import { InputType } from '../../InputManager/types/InputTypes';
 
 const menuEntriesStyle: React.CSSProperties = {
   overflow: 'auto',
@@ -45,6 +46,79 @@ const centerStyle: React.CSSProperties = {
   width: '100%',
   height: '100%',
 };
+
+const keyTypeIcons = {
+  default: 'dna',
+  [InputType.keyboardButton]: 'keyboard',
+  [InputType.mouseButton]: 'mouse pointer',
+  [InputType.mouseAxisInfinite]: 'crosshairs',
+  [InputType.mouseAxisThreshold]: 'bullseye',
+  [InputType.mouseAxisGravity]: 'bullseye',
+  [InputType.analogSlider]: 'fighter jet',
+  [InputType.analogStickAxis]: 'fighter jet',
+  [InputType.analogButton]: 'gamepad',
+};
+
+function keyCodeToJsx(keyCode: string | JSX.Element, type: InputType) {
+  let icon: JSX.Element | null = <Icon name={keyTypeIcons[type]}/>;
+
+  switch (keyCode) {
+    case 'spNorthSouth':
+      keyCode = <><Icon name='arrows alternate vertical'/> MouseY</>;
+      icon = null;
+      break;
+    case 'spEastWest':
+      icon = null;
+      keyCode = <><Icon name='arrows alternate horizontal'/> MouseX</>;
+      break;
+    case 'spNorth':
+      keyCode = <><Icon name='arrows alternate vertical'/> MouseMoveUp</>;
+      icon = null;
+      break;
+    case 'spSouth':
+      keyCode = <><Icon name='arrows alternate vertical'/> MouseMoveDown</>;
+      icon = null;
+      break;
+    case 'spEast':
+      icon = null;
+      keyCode = <><Icon name='arrows alternate horizontal'/> MouseMoveLeft</>;
+      break;
+    case 'spWest':
+      icon = null;
+      keyCode = <><Icon name='arrows alternate horizontal'/> MouseMoveRight</>;
+      break;
+    case 'spScrollUp':
+      keyCode = 'MouseScrollUp';
+      break;
+    case 'spScrollDown':
+      keyCode = 'MouseScrollDown';
+      break;
+    case 'spMouseMiddle':
+      keyCode = 'MouseMiddleClick';
+      break;
+  }
+
+  if (type === InputType.keyboardButton) {
+    let key = keyCode as string;
+    if (key.startsWith('Key')) {
+      key = key.slice(3);
+    }
+    keyCode = (
+      <div style={{
+        display: 'inline-block',
+        borderRadius: 4,
+        border: 'thin solid grey',
+        padding: 4,
+      }}>
+        {key}
+      </div>
+    );
+  }
+
+  return (
+    <div>{icon}{keyCode}</div>
+  );
+}
 
 type Entry = {
   name: string,
