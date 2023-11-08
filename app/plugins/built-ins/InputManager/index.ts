@@ -69,6 +69,9 @@ class InputManager {
    */
   public static allControlSchemes: Record<string, InputSchemeEntry> = {};
 
+  /** Contains reverse-lookup details of key bindings. */
+  public static allKeyLookups: Record<string, Object> = {};
+
   /**
    * Returns InputManager.allControlSchemes, ordered by priority, descending.
    * @return InputSchemeEntry
