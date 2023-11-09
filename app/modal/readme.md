@@ -55,8 +55,7 @@ $modal.alert({
 #### Alerts can be used as generic dialog builders:
 
 _Note that `$modal.confirm()` would be better suited than this next example as
-it'd be
-more concise._
+it's more concise._
 
 ```javascript
 $modal.alert({
@@ -84,9 +83,9 @@ builder.
 #### Simple confirmation window:
 
 ```javascript
-$modal.confirm('Are you want to proceed?', (yesOrNo) => {
+$modal.confirm('Are you want to proceed?', (answer) => {
   // true if 'Yes', false if 'No'. 
-  console.log(yesOrNo);
+  console.log(answer);
 });
 ```
 
@@ -96,8 +95,8 @@ $modal.confirm('Are you want to proceed?', (yesOrNo) => {
 $modal.confirm({
   header: 'I Am The Header',
   body: 'Are you want to proceed?',
-}, (yesOrNo) => {
-  console.log(yesOrNo);
+}, (answer) => {
+  console.log(answer);
 });
 ```
 

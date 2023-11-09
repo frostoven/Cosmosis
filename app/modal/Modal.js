@@ -260,7 +260,7 @@ export default class Modal extends React.Component {
    * @param {string|JSX.Element} options.header
    * @param {string|JSX.Element} options.body
    * @param {undefined|JSX.Element} options.actions
-   * @param optionalCallback
+   * @param [optionalCallback]
    */
   alert = (options, optionalCallback) => {
     if (typeof options === 'string') {
