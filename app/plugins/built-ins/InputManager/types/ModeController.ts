@@ -245,6 +245,22 @@ export default class ModeController {
     });
   }
 
+  deleteBinding(actionName, key) {
+    const { controlSchema, controlsByKey } = this;
+
+    // The key schema is used duting boot, and when saving controls to disk.
+    // Remove the entry being deleted.
+    const keyMap = controlSchema[actionName].current;
+    keyMap !== null && delete keyMap[key];
+
+    // controlsByKey is used for live lookups. Delete here so we don't need a
+    // reboot.
+    const controlsByKeyIndex = controlsByKey[key].indexOf(actionName);
+    if (controlsByKeyIndex !== -1) {
+      controlsByKey[key].splice(controlsByKeyIndex, 1);
+    }
+  }
+
   receiveAction(
     {
       action,
