@@ -208,10 +208,18 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
   private _subsectionLimitReached: boolean = false;
 
   public selectionInfo: {
-    type: InputType;
-    key: string;
-    actionName: any
-  } | {} = {};
+    group: string,
+    actionName: string,
+    friendly: string,
+    type: InputType,
+    key: string,
+  } = {
+    group: '',
+    actionName: '',
+    friendly: '',
+    type: InputType.none,
+    key: '',
+  };
 
   public static defaultProps = {
     style: {},
@@ -342,45 +350,28 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
     console.log('InputManager orderedSchemes:', orderedSchemes);
 
     const bindingsInfo: InputSchemeEntry[] = [];
-    const mergeDependants: InputSchemeEntry[] = [];
     const entryByKey: Record<string, InputSchemeEntry> = {};
     let controlCount = 0;
 
     for (let i = 0, len = orderedSchemes.length; i < len; i++) {
       const entry: InputSchemeEntry = orderedSchemes[i];
+
+      // We don't want to modify the original configs; make a copy.
+      const schema = { ...entry.modeController.controlSchema };
+      if (!schema) {
+        console.warn('[buildBindingCache] Skipping', entry, '- bad schema');
+        continue;
+      }
+
       if (!entry.key) {
         console.error('Entry is missing a key:', entry);
         continue;
       }
 
-      // We don't want to modify the original configs; make a copy.
-      entry.schema = { ...entry.schema };
       entryByKey[entry.key] = entry;
 
-      if (entry.mergeInto) {
-        mergeDependants.push(entry);
-      }
-      else {
-        controlCount += Object.values(entry.schema || 0).length;
-        bindingsInfo.push(entry);
-      }
-    }
-
-    for (let i = 0, len = mergeDependants.length; i < len; i++) {
-      const entry: InputSchemeEntry = mergeDependants[i];
-      const mergeInto = entry.mergeInto as string;
-
-      if (!entryByKey[mergeInto]) {
-        console.error(
-          `Cannot merge view '${entry.key}' into '${entry.mergeInto}' ` +
-          `- ${entry.mergeInto} does not (yet?) exist.`,
-        );
-        continue;
-      }
-
-      const source: InputSchemeEntry = entryByKey[entry.key];
-      const target: InputSchemeEntry = entryByKey[mergeInto];
-      target.schema = { ...target.schema, ...source.schema };
+      controlCount += Object.values(schema || 0).length;
+      bindingsInfo.push(entry);
     }
 
     this._processedBindingCount = controlCount;
@@ -407,15 +398,17 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
 
     for (let i = 0, len = cache.length; i < len; i++) {
       const entry: InputSchemeEntry = cache[i];
+      const schema = { ...entry.modeController.controlSchema };
+      const group = entry.key;
       majorSection.push(
         <div key={`MenuControlSetup-${i}`}>
           <h4 style={{ paddingTop: 16 }}>
             <Icon name='crosshairs'/>&nbsp;
             {entry.friendly}
           </h4>
-          {_.map(entry.schema, (control, actionName) => {
+          {_.map(schema, (control, actionName) => {
             const entryControlCount = Object.values(control.current).length;
-            const descriptor = entry.schema[actionName];
+            const descriptor = schema[actionName];
             const currentVerticalIndex = controlIndex++;
             let subIndexCount = 0;
             return (
@@ -466,7 +459,8 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
                       // Store position for easier use by tools like control
                       // deletion and editing.
                       this.selectionInfo = {
-                        actionName, key: keyCode, type,
+                        group, actionName, friendly: control.friendly,
+                        key: keyCode, type,
                       };
                     }
 
@@ -576,27 +570,27 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
           <div style={{ paddingLeft: 8, display: 'inline-block' }}/>
 
           <StatusbarButton onClick={() => {}}>
-            {getJsxByAction('reactMenuControls', 'search', false)}
+            {getJsxByAction('menuSystem', 'search', false)}
             &nbsp;Search
           </StatusbarButton>
 
           <StatusbarButton onClick={() => {}}>
-            {getJsxByAction('reactMenuControls', 'emergencyMenuClose', false)}
+            {getJsxByAction('menuSystem', 'emergencyMenuClose', false)}
             &nbsp;Emergency Menu Close
           </StatusbarButton>
 
           <StatusbarButton onClick={this.showAdvancedOptions}>
-            {getJsxByAction('reactMenuControls', 'advanced', false)}
+            {getJsxByAction('menuSystem', 'advanced', false)}
             &nbsp;Advanced Options
           </StatusbarButton>
 
           <StatusbarButton onClick={this.removeExistBinding}>
-            {getJsxByAction('reactMenuControls', 'delete', false)}
+            {getJsxByAction('menuSystem', 'delete', false)}
             &nbsp;Remove Binding
           </StatusbarButton>
 
           <StatusbarButton onClick={() => {}}>
-            {getJsxByAction('reactMenuControls', 'saveChanges', false)}
+            {getJsxByAction('menuSystem', 'saveChanges', false)}
             &nbsp;Save Changes
           </StatusbarButton>
         </div>
