@@ -10,13 +10,6 @@ class CockpitLightsModule extends ModuleSpawner {
   constructor() {
     super();
 
-    InputManager.allControlSchemes.cockpitLightControls = {
-      key: 'cockpitLightControls',
-      schema: cockpitLightControls,
-      mergeInto: 'shipPilotControls',
-      friendly: '[merged into shipPilotControls]',
-    };
-
     gameRuntime.tracked.shipPilot.getOnce((shipPilot: ShipPilot) => {
       shipPilot.extendControlSchema(cockpitLightControls);
     });
