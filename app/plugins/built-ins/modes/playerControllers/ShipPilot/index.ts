@@ -34,15 +34,8 @@ class ShipPilot extends ModeController {
   private _pluginCache: PluginCacheTracker | PluginCompletion;
 
   constructor() {
-    super('shipPilot', ModeId.playerControl, shipPilotControls);
-
-    InputManager.allKeyLookups.shipPilotControls = this.keyLookup;
-    InputManager.allControlSchemes.shipPilotControls = {
-      key: 'shipPilotControls',
-      schema: shipPilotControls,
-      friendly: 'Ship Pilot Controls',
-      priority: 80,
-    };
+    const uiInfo = { friendly: 'Ship Pilot Controls', priority: 80 };
+    super('shipPilot', ModeId.playerControl, shipPilotControls, uiInfo);
 
     this._pluginCache = new PluginCacheTracker(
       [ 'player', 'core', 'inputManager' ],

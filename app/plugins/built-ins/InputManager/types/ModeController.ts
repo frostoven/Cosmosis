@@ -9,6 +9,7 @@ import { ControlSchema } from '../interfaces/ControlSchema';
 import { arrayContainsArray } from '../../../../local/utils';
 import { InputType } from './InputTypes';
 import { easeIntoExp, signRelativeMax } from '../../../../local/mathUtils';
+import { InputUiInfo } from '../interfaces/InputSchemeEntry';
 
 // TODO: move to user configs, and expose to UI. Minimum value should be zero,
 //  and max should be 0.95 to prevent bugs.
@@ -38,6 +39,7 @@ export default class ModeController {
   public controlSchema: ControlSchema;
   public controlsByKey: {};
   public keyLookup: {} = {};
+  public uiInfo: InputUiInfo;
   private readonly _actionReceivers: Array<Function>;
 
   // Passive state. This only changes when something external changes. Stores
@@ -61,11 +63,12 @@ export default class ModeController {
   // the input is ignored instead of being reset in state.
   private _analogFlutterCheck: { [actionName: string]: number };
 
-  constructor(name: string, modeId: ModeId, controlSchema: ControlSchema) {
+  constructor(name: string, modeId: ModeId, controlSchema: ControlSchema, uiInfo: InputUiInfo) {
     this.name = name;
     this.modeId = modeId;
     this.controlSchema = {};
     this.controlsByKey = {};
+    this.uiInfo = uiInfo;
 
     this.state = {};
     this.activeState = {};
@@ -91,6 +94,15 @@ export default class ModeController {
 
     const inputManager: InputManager = gameRuntime.tracked.inputManager.cachedValue;
     inputManager.registerController(this);
+    this._setupSchemeLookups();
+  }
+
+  _setupSchemeLookups() {
+    InputManager.allControlSchemes[this.name] = {
+      ...this.uiInfo,
+      modeController: this,
+      key: this.name,
+    };
   }
 
   // This allows both core code and modders to add their own control bindings.
@@ -243,6 +255,8 @@ export default class ModeController {
         this.activeState[actionName] = 0;
       }
     });
+
+    InputManager.allKeyLookups[this.name] = keyLookup;
   }
 
   deleteBinding(actionName, key) {

@@ -19,15 +19,8 @@ class FreeCam extends ModeController {
   public maxMoveSpeed: Speed;
 
   constructor() {
-    super('freeCam', ModeId.playerControl, freeCamControls);
-
-    InputManager.allKeyLookups.freeCamControls = this.keyLookup;
-    InputManager.allControlSchemes.freeCamControls = {
-      key: 'freeCamControls',
-      schema: freeCamControls,
-      friendly: 'Free-Flight Camera',
-      priority: 70,
-    };
+    const uiInfo = { friendly: 'Free-Flight Camera', priority: 70 };
+    super('freeCam', ModeId.playerControl, freeCamControls, uiInfo);
 
     this._cachedInputManager = gameRuntime.tracked.inputManager.cachedValue;
     this.maxMoveSpeed = new Speed(1);

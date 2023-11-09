@@ -10,15 +10,8 @@ class GeneralControl extends ModeController {
   private _mouseDriver: MouseDriver;
 
   constructor() {
-    super('general', ModeId.appControl, generalControls);
-
-    InputManager.allKeyLookups.generalControls = this.keyLookup;
-    InputManager.allControlSchemes.generalControls = {
-      key: 'generalControls',
-      schema: generalControls,
-      friendly: 'General Controls',
-      priority: 5,
-    };
+    const uiInfo = { friendly: 'General Controls', priority: 5 };
+    super('general', ModeId.appControl, generalControls, uiInfo);
 
     this._mouseDriver = gameRuntime.tracked.mouseDriver.cachedValue;
 
