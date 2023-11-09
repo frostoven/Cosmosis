@@ -337,9 +337,26 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
     }
     const cache = this.getBindingsCache();
     const { selected, subSelection } = this.state;
-    console.log('--> cache:', cache);
-    console.log('  > item indexes:', { selected, subSelection });
-    console.log('  > selectionInfo:', this.selectionInfo);
+    // console.log('--> cache:', cache);
+    // console.log('  > item indexes:', { selected, subSelection });
+    // console.log('  > selectionInfo:', this.selectionInfo);
+
+    const { group, actionName, friendly, key, type } = this.selectionInfo;
+    if (!actionName || !key) {
+      return console.error(
+        '[removeExistBinding] Invalid binding data:', this.selectionInfo,
+      );
+    }
+
+    window.$modal.confirm(
+      `Deleting '${friendly}' binding '${key}' (type: ${InputType[type]}).\n\n` +
+      `Proceed?'`, (deleteKey: boolean) => {
+        if (deleteKey) {
+          const entry: InputSchemeEntry = InputManager.allControlSchemes[group];
+          entry.modeController.deleteBinding(actionName, key);
+        }
+      }
+    );
   };
 
   resetBinding = (actionName: string) => {
