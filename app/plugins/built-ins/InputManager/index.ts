@@ -385,7 +385,7 @@ class InputManager {
         continue;
       }
 
-      if (actions.length === 0) {
+      if (actions.length === 1) {
         // const keyType = actions[0]
         controller.receiveAction({ action: actions[0], key, value, analogData });
         return;
