@@ -544,7 +544,7 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
                   {/* The '+' button right of the bindings. */}
                   <KosmButton
                     isActive={(() => {
-                      if (currentVerticalIndex !== selected) {
+                      if (currentVerticalIndex !== selected || scrollingVertically) {
                         return false;
                       }
                       const limitReached = subSelection >= entryControlCount;
@@ -557,7 +557,7 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
                     onClick={() => {
                       this.setState({
                         selected: currentVerticalIndex,
-                        subSelection: 0,
+                        subSelection: entryControlCount,
                         scrollingVertically: false,
                       },
                       this.addNewBinding);
