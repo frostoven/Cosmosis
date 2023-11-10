@@ -157,14 +157,14 @@ export default class Modal extends React.Component {
     });
   };
 
-  _hide = () => {
+  _hide = (optionalCallback) => {
     this._removeKeyListeners();
     Modal.allowExternalListeners = true;
     this.setState({
       isVisible: false,
       currentClosedCount: 0,
       highestRecentCount: 0,
-    });
+    }, optionalCallback);
   };
 
   _registerKeyListeners = () => {
