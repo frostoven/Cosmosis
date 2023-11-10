@@ -8,6 +8,7 @@ import {
   InputSchemeEntry,
 } from '../../InputManager/interfaces/InputSchemeEntry';
 import { InputType } from '../../InputManager/types/InputTypes';
+import { camelToTitleCase } from '../../../../local/utils';
 
 const menuEntriesStyle: React.CSSProperties = {
   overflow: 'auto',
@@ -253,6 +254,9 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
     if (action === 'delete') {
       this.removeExistBinding();
     }
+    else if (action === 'resetBinding') {
+      this.resetBinding();
+    }
     else if (this.state.scrollingVertically) {
       this.handleVerticalScrolling(action);
     }
@@ -354,12 +358,50 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
         if (deleteKey) {
           const entry: InputSchemeEntry = InputManager.allControlSchemes[group];
           entry.modeController.deleteBinding(actionName, key);
+          this.setState({ subSelection: 0, forceRerender: Math.random() });
         }
       }
     );
   };
 
-  resetBinding = (actionName: string) => {
+  resetBinding = () => {
+    const { group, actionName, friendly, key, type } = this.selectionInfo;
+    if (!group || !actionName) {
+      return console.error(
+        '[removeExistBinding] Invalid binding data:', this.selectionInfo,
+      );
+    }
+
+    const entry: InputSchemeEntry = InputManager.allControlSchemes[group];
+    const defaultSet = entry.modeController.controlSchema[actionName].default;
+    const newControls: JSX.Element[] = [];
+    _.each(defaultSet, (type: InputType, key: string) => {
+      const friendlyType = camelToTitleCase(InputType[type]);
+      newControls.push(
+        <li key={`resetBinding-${key}-${type}`} style={{ padding: 4 }}>
+          {keyCodeToJsx(key, type)}&nbsp;&nbsp;({friendlyType})
+        </li>
+      )
+    });
+    console.log({ defaultSet });
+
+    window.$modal.confirm({
+      body: (
+        <div>
+          Control '{friendly}' will reset to the following:
+          <ul>
+            {newControls}
+          </ul>
+          <br/>
+          All other bindings will be lost. Proceed?
+        </div>
+      )
+    }, (resetKey: boolean) => {
+      if (resetKey) {
+        entry.modeController.resetActionBindings(actionName);
+        this.setState({ subSelection: 0, forceRerender: Math.random() });
+      }
+    });
   };
 
   buildBindingCache = () => {
@@ -424,16 +466,25 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
             {entry.friendly}
           </h4>
           {_.map(schema, (control, actionName) => {
+            // @ts-ignore - Unsure what TS is smoking, this matches the
+            // interface signature precisely unless I've gone demented.
             const entryControlCount = Object.values(control.current).length;
             const descriptor = schema[actionName];
             const currentVerticalIndex = controlIndex++;
             let subIndexCount = 0;
+            const isActive = currentVerticalIndex === selected;
+            if (isActive) {
+              this.selectionInfo = {
+                group, actionName, friendly: control.friendly || '',
+                key: '', type: InputType.none,
+              };
+            }
             return (
               <div key={`MenuControlSetup-${actionName}`}>
                 {/* Left ride */}
                 <div style={{ textAlign: 'left', display: 'inline-block' }}>
                   <KosmButton
-                    isActive={currentVerticalIndex === selected}
+                    isActive={isActive}
                     wide
                     autoScroll
                     style={{ minWidth: 240, textAlign: 'left', marginTop: 2, marginBottom: 2 }}
@@ -476,7 +527,7 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
                       // Store position for easier use by tools like control
                       // deletion and editing.
                       this.selectionInfo = {
-                        group, actionName, friendly: control.friendly,
+                        group, actionName, friendly: control.friendly || '',
                         key: keyCode, type,
                       };
                     }
@@ -604,6 +655,11 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
           <StatusbarButton onClick={this.removeExistBinding}>
             {getJsxByAction('menuSystem', 'delete', false)}
             &nbsp;Remove Binding
+          </StatusbarButton>
+
+          <StatusbarButton onClick={this.resetBinding}>
+            {getJsxByAction('menuSystem', 'resetBinding', false)}
+            &nbsp;Reset Binding
           </StatusbarButton>
 
           <StatusbarButton onClick={() => {}}>

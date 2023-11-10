@@ -17,6 +17,7 @@ const reactMenuControls: ControlSchema = {
   select:       { actionType: pulse, current: null, default: { Enter: keyboardButton } },
   saveChanges:  { actionType: pulse, current: null, default: { F10: keyboardButton } },
   delete:       { actionType: pulse, current: null, default: { Delete: keyboardButton, KeyX: keyboardButton } },
+  resetBinding: { actionType: pulse, current: null, default: { KeyR: keyboardButton } },
   search:       { actionType: pulse, current: null, default: { Slash: keyboardButton, F3: keyboardButton } },
   advanced:     { actionType: pulse, current: null, default: { F6: keyboardButton } },
   manageMacros: { actionType: pulse, current: null, default: { F4: keyboardButton } },

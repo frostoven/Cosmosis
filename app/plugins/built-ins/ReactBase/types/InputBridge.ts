@@ -78,6 +78,7 @@ export default class InputBridge {
     mc.pulse.select.getEveryChange(() => this.onAction.setValue('select'));
     mc.pulse.saveChanges.getEveryChange(() => this.onAction.setValue('saveChanges'));
     mc.pulse.delete.getEveryChange(() => this.onAction.setValue('delete'));
+    mc.pulse.resetBinding.getEveryChange(() => this.onAction.setValue('resetBinding'));
     mc.pulse.search.getEveryChange(() => this.onAction.setValue('search'));
     mc.pulse.advanced.getEveryChange(() => this.onAction.setValue('advanced'));
     mc.pulse.manageMacros.getEveryChange(() => this.onAction.setValue('manageMacros'));
