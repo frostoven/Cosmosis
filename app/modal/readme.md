@@ -220,6 +220,15 @@ $modal.captureMouseDirection((spCode) => {
 });
 ```
 
+#### Mouse axis chooser
+
+```javascript
+$modal.captureMouseDirection((spCode) => {
+  // Example outputs: 'spNorthSouth' or 'spEastWest'
+  console.log(spCode);
+});
+```
+
 #### Gamepad button capture
 
 ```javascript
