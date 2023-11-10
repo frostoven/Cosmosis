@@ -109,10 +109,6 @@ export default class ModeController {
   extendControlSchema(controlSchema: ControlSchema) {
     const savedControls = userProfile.getCurrentConfig({ identifier: 'controls' }).controls;
 
-    // Used by parts of the application that want to display the bindings for a
-    // particular action, such as tutorials or instructional info blocks.
-    const keyLookup = this.keyLookup;
-
     _.each(controlSchema, (control, actionName) => {
       // ---> do not remove this, it's part of the structure below.
       // if (savedControls[actionName]) {
@@ -171,98 +167,135 @@ export default class ModeController {
       if (!controlSchema[actionName].sign) {
         controlSchema[actionName].sign = 1;
       }
-
-      // Save reverse lookup data.
-      if (!keyLookup[actionName]) {
-        keyLookup[actionName] = [];
-      }
-      _.each(control.current, (type, key) => {
-        // Example result:
-        // groupControls.myAction = [{ type: 7, key: 'spNorthSouth', ... }]
-        keyLookup[actionName].push({ type, key });
-      });
     });
+
+
+    _.each(controlSchema, (control: ControlSchema['key'], actionName: string) => {
+      this.registerControl(control, actionName);
+    });
+
+    InputManager.allKeyLookups[this.name] = this.keyLookup;
+  }
+
+  registerControl(control: ControlSchema['key'], actionName: string) {
+    // Used by parts of the application that want to display the bindings for a
+    // particular action, such as tutorials or instructional info blocks.
+    const keyLookup = this.keyLookup;
 
     const allowedConflicts = {};
 
-    _.each(controlSchema, (control: ControlSchema['key'], actionName: string) => {
-      if (this.controlSchema[actionName]) {
-        return console.error(
-          `[ModeController] Ignoring attempt to set register control action ` +
-          `'${actionName}' in mode ${this.name} - ${this.name} already has `
-          + `that action defined for something else.`
-        );
+    InputManager.allKeyLookups[this.name] = keyLookup;
+    if (this.controlSchema[actionName]) {
+      return console.error(
+        `[ModeController] Ignoring attempt to set register control action ` +
+        `'${actionName}' in mode ${this.name} - ${this.name} already has `
+        + `that action defined for something else.`
+      );
+    }
+
+    this.controlSchema[actionName] = {
+      // Note that this can possibly be undefined, but that's ok because
+      // { ...undefined } is just {}.
+      ...this.controlSchema[actionName],
+      ...control,
+    };
+    // console.log(`this.controlSchema[${actionName}] = { ...`, control, '}');
+
+
+    // Conflicts are rarely allowed in cases where a single mode internally
+    // disambiguates conflicts.
+    if (control.allowKeyConflicts) {
+      if (!allowedConflicts[actionName]) {
+        allowedConflicts[actionName] = [];
       }
 
-      this.controlSchema[actionName] = { ...control };
-      // console.log(`this.controlSchema[${actionName}] = { ...`, control, '}');
-
-
-      // Conflicts are rarely allowed in cases where a single mode internally
-      // disambiguates conflicts.
-      if (control.allowKeyConflicts) {
-        if (!allowedConflicts[actionName]) {
-          allowedConflicts[actionName] = [];
+      _.each(control.allowKeyConflicts, (conflictAction) => {
+        if (!allowedConflicts[actionName].includes(conflictAction)) {
+          // Example: allowedConflicts['lookUp'] = [ 'pitchUp' ];
+          allowedConflicts[actionName].push(conflictAction);
         }
 
-        _.each(control.allowKeyConflicts, (conflictAction) => {
-          if (!allowedConflicts[actionName].includes(conflictAction)) {
-            // Example: allowedConflicts['lookUp'] = [ 'pitchUp' ];
-            allowedConflicts[actionName].push(conflictAction);
-          }
-
-          // Rewrite the conflicting keys to allow conflict with these keys. This
-          // allows devs and modders to define allowed conflicts in any order.
-          if (!allowedConflicts[conflictAction]) {
-            allowedConflicts[conflictAction] = [];
-          }
-          if (!allowedConflicts[conflictAction].includes(actionName)) {
-            // Example: allowedConflicts['pitchUp'] = [ 'lookUp' ];
-            allowedConflicts[conflictAction].push(actionName);
-          }
-        });
-      }
-
-      const keys = control.current;
-      // The user can assign multiple keys to each action; store them all in
-      // controlsByKey individually.
-      _.each(keys, (inputType, key) => {
-        const ctrlByKey = this.controlsByKey[key];
-        // console.log(`-> arrayContainsArray(`, allowedConflicts?.[actionName], `,`, this.controlsByKey[key], `) === `, arrayContainsArray(allowedConflicts?.[actionName], this.controlsByKey[key]));
-        if (this.controlsByKey[key] && !arrayContainsArray(allowedConflicts?.[actionName], this.controlsByKey[key])) {
-          console.warn(
-            `[ModeController] Ignoring attempt to set the same key (${key}) ` +
-            `for than one action (${actionName} would conflict with ` +
-            `${this.controlsByKey[key]}).`,
-            'From:',
-            keys,
-          );
+        // Rewrite the conflicting keys to allow conflict with these keys. This
+        // allows devs and modders to define allowed conflicts in any order.
+        if (!allowedConflicts[conflictAction]) {
+          allowedConflicts[conflictAction] = [];
         }
-        else {
-          if (!this.controlsByKey[key]) {
-            this.controlsByKey[key] = [];
-          }
-          this.controlsByKey[key].push(actionName);
+        if (!allowedConflicts[conflictAction].includes(actionName)) {
+          // Example: allowedConflicts['pitchUp'] = [ 'lookUp' ];
+          allowedConflicts[conflictAction].push(actionName);
         }
       });
+    }
 
-      if (control.actionType === ActionType.pulse) {
-        this.pulse[actionName] = new ChangeTracker();
-        this.pulse[actionName].setSilent(0);
+    const keys = control.current;
+    // The user can assign multiple keys to each action; store them all in
+    // controlsByKey individually.
+    _.each(keys, (inputType, key) => {
+      const ctrlByKey = this.controlsByKey[key];
+      // console.log(`-> arrayContainsArray(`, allowedConflicts?.[actionName], `,`, this.controlsByKey[key], `) === `, arrayContainsArray(allowedConflicts?.[actionName], this.controlsByKey[key]));
+      if (this.controlsByKey[key] && !arrayContainsArray(allowedConflicts?.[actionName], this.controlsByKey[key])) {
+        console.warn(
+          `[ModeController] Ignoring attempt to set the same key (${key}) ` +
+          `for than one action (${actionName} would conflict with ` +
+          `${this.controlsByKey[key]}).`,
+          'From:',
+          keys,
+        );
       }
       else {
-        this.state[actionName] = 0;
-        this.activeState[actionName] = 0;
+        if (!this.controlsByKey[key]) {
+          this.controlsByKey[key] = [];
+        }
+        this.controlsByKey[key].push(actionName);
       }
     });
 
-    InputManager.allKeyLookups[this.name] = keyLookup;
+    if (control.actionType === ActionType.pulse) {
+      this.pulse[actionName] = new ChangeTracker();
+      this.pulse[actionName].setSilent(0);
+    }
+    else {
+      this.state[actionName] = 0;
+      this.activeState[actionName] = 0;
+    }
+
+    // Save reverse lookup data.
+    if (!keyLookup[actionName]) {
+      keyLookup[actionName] = [];
+    }
+    _.each(control.current, (type, key) => {
+      // Example result:
+      // groupControls.myAction = [{ type: 7, key: 'spNorthSouth', ... }]
+      keyLookup[actionName].push({ type, key });
+    });
   }
 
-  deleteBinding(actionName, key) {
+  resetActionBindings(actionName: string, saveChanges = true) {
+    const { controlSchema, controlsByKey } = this;
+    const oldBindings = controlSchema[actionName].current;
+    _.each(oldBindings, (type: InputType, keyCode: string) => {
+      this.deleteBinding(actionName, keyCode, false);
+    });
+
+    const defaultBindings = controlSchema[actionName].default;
+    controlSchema[actionName].current = { ...defaultBindings };
+    // this.registerBinding(controlSchema[actionName], actionName, false);
+    // _.each(defaultBindings, (type, keyCode) => {
+    //   this.registerBinding(keyCode, actionName, false);
+    // });
+
+    _.each(defaultBindings, (type, keyCode) => {
+      const controlsByKeyIndex = controlsByKey[keyCode].indexOf(actionName);
+      if (controlsByKeyIndex === -1) {
+        controlsByKey[keyCode].push(actionName);
+      }
+    });
+  }
+
+  deleteBinding(actionName: string, key: string, saveChanges = true) {
     const { controlSchema, controlsByKey } = this;
 
-    // The key schema is used duting boot, and when saving controls to disk.
+    // The key schema is used during boot, and when saving controls to disk.
     // Remove the entry being deleted.
     const keyMap = controlSchema[actionName].current;
     keyMap !== null && delete keyMap[key];
@@ -286,6 +319,7 @@ export default class ModeController {
     const control = this.controlSchema[action];
     const actionType = control.actionType;
     const sign = control.sign;
+    // console.log(`[receiveAction:${action}] control:`, control);
 
     // @ts-ignore - this is set during init. If not, this point isn't
     // reachable unless by bug.
@@ -484,9 +518,9 @@ export default class ModeController {
   //
   // Dev note: this does not support mouse movement.
   handlePulse({ action, value }) {
+    // console.log('[input-agnostic pulse]', { action, value });
     if (value > ANALOG_BUTTON_THRESHOLD) {
       if (this.pulse[action].cachedValue === 0) {
-        console.log('[input-agnostic pulse]', { action, value });
         this.pulse[action].setValue(1);
       }
     }
