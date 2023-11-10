@@ -65,23 +65,24 @@ export default class Modal extends React.Component {
     delete window.$modal;
   }
 
-  _reprocessQueue = () => {
+  _reprocessQueue = (optionalCallback) => {
     const modalQueue = this._modalQueue;
     if (!modalQueue.length) {
       // Reset modal to initial state.
-      this._hide();
+      this._hide(optionalCallback);
     }
     else {
       if (modalQueue[modalQueue.length - 1].deactivated) {
         // This happens if the user requested deactivation by name. Close that
         // modal and move on.
-        return this.deactivateModal();
+        // Note: This is recursive as deactivateModal calls _reprocessQueue.
+        return this.deactivateModal(optionalCallback);
       }
 
       this.setState({
         modalCount: modalQueue.length,
         currentClosedCount: this.state.currentClosedCount + 1,
-      });
+      }, optionalCallback);
     }
   };
 
@@ -91,12 +92,12 @@ export default class Modal extends React.Component {
     });
   };
 
-  deactivateModal = () => {
+  deactivateModal = (optionalCallback) => {
     this._modalQueue.shift();
-    this._reprocessQueue();
+    this._reprocessQueue(optionalCallback);
   };
 
-  deactivateByTag = ({ tag }) => {
+  deactivateByTag = ({ tag }, optionalCallback) => {
     if (!tag) {
       return console.error('deactivateByTag requires a tag.');
     }
@@ -109,7 +110,7 @@ export default class Modal extends React.Component {
         break;
       }
     }
-    this._reprocessQueue();
+    this._reprocessQueue(optionalCallback);
   };
 
   /**
