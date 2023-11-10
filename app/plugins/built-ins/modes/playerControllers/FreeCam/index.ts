@@ -66,7 +66,7 @@ class FreeCam extends ModeController {
     // gamepad stick at the 50% mark means add 0.5 units per x unit time).
     this.state.lookLeftRight += this.activeState.lookLeftRight * bigDelta;
     this.state.lookUpDown += this.activeState.lookUpDown * bigDelta;
-    this.state.rollLeftRight += this.activeState.rollLeftRight * bigDelta;
+    this.state.rollAnalog += this.activeState.rollAnalog * bigDelta;
     //
     const moveLeftRight = clamp(this.state.moveLeftRight + this.activeState.moveLeftRight, -1, 1);
     const moveUpDown = clamp(this.state.moveUpDown + this.activeState.moveUpDown, -1, 1);
@@ -93,7 +93,7 @@ class FreeCam extends ModeController {
     this._cachedCamera.translateZ((moveForwardBackward * speed) * delta * speedFactor);
 
     // Apply camera roll.
-    this._cachedCamera.quaternion.setFromAxisAngle(zAxis, -this.state.rollLeftRight);
+    this._cachedCamera.quaternion.setFromAxisAngle(zAxis, -this.state.rollAnalog);
 
     // Note: don't use delta here. We don't want mouse speed to be dependent on
     // framerate.

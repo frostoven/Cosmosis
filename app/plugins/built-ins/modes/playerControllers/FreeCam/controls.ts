@@ -63,9 +63,9 @@ const freeCamControls: ControlSchema = {
   lookDown:      { actionType: continuous, sign:  1, analogRemap: 'lookUpDown', current: null, default: { Numpad2: keyboardButton }, multiplier: { ...defaultButtonLookMulti } },
   lookUpDown:    { actionType: continuous, current: null, default: { spNorthSouth: mouseAxisInfinite, ax3: analogStickAxis }, isBidirectional: true, multiplier: { ...defaultBidirectionalLookMulti } },
   //
-  rollLeft:      { actionType: continuous, sign: -1, analogRemap: 'rollLeftRight', current: null, default: { bt6: analogButton, Numpad7: keyboardButton }, multiplier: { ...defaultButtonRollMulti } },
-  rollRight:     { actionType: continuous, sign:  1, analogRemap: 'rollLeftRight', current: null, default: { bt7: analogButton, Numpad9: keyboardButton }, multiplier: { ...defaultButtonRollMulti } },
-  rollLeftRight: { actionType: continuous, current: null, default: null, isBidirectional: true, multiplier: { ...defaultBidirectionalLookMulti } },
+  rollLeft:      { actionType: continuous, sign: -1, analogRemap: 'rollAnalog', current: null, default: { bt6: analogButton, Numpad7: keyboardButton }, multiplier: { ...defaultButtonRollMulti } },
+  rollRight:     { actionType: continuous, sign:  1, analogRemap: 'rollAnalog', current: null, default: { bt7: analogButton, Numpad9: keyboardButton }, multiplier: { ...defaultButtonRollMulti } },
+  rollAnalog: { actionType: continuous, current: null, default: null, isBidirectional: true, multiplier: { ...defaultBidirectionalLookMulti } },
   //
   lookLeft:      { actionType: continuous, sign: -1, analogRemap: 'lookLeftRight', current: null, default: { Numpad4: keyboardButton }, multiplier: { ...defaultButtonLookMulti } },
   lookRight:     { actionType: continuous, sign:  1, analogRemap: 'lookLeftRight', current: null, default: { Numpad6: keyboardButton }, multiplier: { ...defaultButtonLookMulti } },

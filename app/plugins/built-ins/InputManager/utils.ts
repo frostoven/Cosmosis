@@ -20,10 +20,10 @@ function genAutoFriendlyNames(controls: ControlSchema) {
     friendly = friendly
       .replace('_dev', '[Dev]')
       .replace('_debug', '[Dev]')
-      .replace(/Inc Dec$/, '[Analog]')
-      .replace(/Up Down$/, '[Analog]')
-      .replace(/Left Right$/, '[Analog]')
-      .replace(/Forward Backward$/, '[Analog]')
+      .replace(/Analog$/, '[Analog]')
+      .replace(/Up Down$/, 'U/D [Analog]')
+      .replace(/Left Right$/, 'L/R [Analog]')
+      .replace(/Forward Backward$/, 'F/B [Analog]')
       .replace(/Held$/, ' [Held]')
       .replace(/Inc$/, 'Increase')
       .replace(/Dec$/, 'Decrease');

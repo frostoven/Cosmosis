@@ -82,8 +82,8 @@ class ShipPilot extends ModeController {
   }
 
   set throttlePosition(value) {
-    this.state.thrustIncDec = clamp(value, -1, 1);
-    this.activeState.thrustIncDec = 0;
+    this.state.thrustAnalog = clamp(value, -1, 1);
+    this.activeState.thrustAnalog = 0;
   }
 
   // ----------------------------------------------------------------------- //
@@ -195,7 +195,7 @@ class ShipPilot extends ModeController {
   }
 
   processShipControls(delta, bigDelta) {
-    this._throttlePosition = clamp(this.state.thrustIncDec + this.activeState.thrustIncDec, -1, 1);
+    this._throttlePosition = clamp(this.state.thrustAnalog + this.activeState.thrustAnalog, -1, 1);
     // The pretty position is a way of making very sudden changes (like with a
     // keyboard button press) look a bit more natural by gradually going to
     // where it needs to, but does not reduce actual throttle position.

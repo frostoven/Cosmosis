@@ -17,13 +17,13 @@ const shipPilotControls: ControlSchema = {
   //
   // Continuous
   //
-  thrustInc:     { actionType: continuous, sign: -1, analogRemap: 'thrustIncDec', current: null, default: { KeyW: keyboardButton } },
-  thrustDec:     { actionType: continuous, sign:  1, analogRemap: 'thrustIncDec', current: null, default: { KeyS: keyboardButton } },
-  thrustIncDec:  { actionType: continuous, current: null, default: { ax1: analogStickAxis, ha5: analogSlider }, isBidirectional: true },
+  thrustInc:     { actionType: continuous, sign: -1, analogRemap: 'thrustAnalog', current: null, default: { KeyW: keyboardButton } },
+  thrustDec:     { actionType: continuous, sign:  1, analogRemap: 'thrustAnalog', current: null, default: { KeyS: keyboardButton } },
+  thrustAnalog:  { actionType: continuous, current: null, default: { ax1: analogStickAxis, ha5: analogSlider }, isBidirectional: true },
   //
-  pitchUp:       { actionType: continuous, sign: -1, analogRemap: 'pitchUpDown', current: null, default: { Numpad8: keyboardButton } },
-  pitchDown:     { actionType: continuous, sign:  1, analogRemap: 'pitchUpDown', current: null, default: { Numpad2: keyboardButton } },
-  pitchUpDown:   { actionType: continuous, current: null, default: { spNorthSouth: mouseAxisThreshold, ax3: InputType.analogStickAxis }, isBidirectional: true },
+  pitchUp:       { actionType: continuous, sign: -1, analogRemap: 'pitchAnalog', current: null, default: { Numpad8: keyboardButton } },
+  pitchDown:     { actionType: continuous, sign:  1, analogRemap: 'pitchAnalog', current: null, default: { Numpad2: keyboardButton } },
+  pitchAnalog:   { actionType: continuous, current: null, default: { spNorthSouth: mouseAxisThreshold, ax3: InputType.analogStickAxis }, isBidirectional: true },
   //
   rollLeft:      { actionType: continuous, sign:  1, current: null, default: { KeyA: keyboardButton } },
   rollRight:     { actionType: continuous, sign: -1, current: null, default: { KeyD: keyboardButton } },
