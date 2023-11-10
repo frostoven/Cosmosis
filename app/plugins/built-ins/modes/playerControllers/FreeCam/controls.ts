@@ -1,6 +1,6 @@
 import { ActionType } from '../../../InputManager/types/ActionType';
 import { ControlSchema } from '../../../InputManager/interfaces/ControlSchema';
-import { InputType } from '../../../InputManager/types/InputTypes';
+import { InputType } from '../../../../../configs/types/InputTypes';
 import { DefaultInputSpeeds } from '../../../InputManager/types/DefaultInputSpeeds';
 import { genAutoFriendlyNames } from '../../../InputManager/utils';
 

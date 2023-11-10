@@ -1,5 +1,5 @@
 import { ActionType } from '../types/ActionType';
-import { InputType, InputTypeKeyFields } from '../types/InputTypes';
+import { InputType, InputTypeKeyFields } from '../../../../configs/types/InputTypes';
 
 interface ControlSchema {
   [key: string]: {

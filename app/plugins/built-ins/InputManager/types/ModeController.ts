@@ -7,7 +7,7 @@ import { ModeId } from './ModeId';
 import { ActionType } from './ActionType';
 import { ControlSchema } from '../interfaces/ControlSchema';
 import { arrayContainsArray } from '../../../../local/utils';
-import { InputType } from './InputTypes';
+import { InputType } from '../../../../configs/types/InputTypes';
 import { easeIntoExp, signRelativeMax } from '../../../../local/mathUtils';
 import { InputUiInfo } from '../interfaces/InputSchemeEntry';
 

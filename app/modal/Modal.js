@@ -6,6 +6,7 @@ import { MoveUp } from '../reactExtra/animations/MoveUp';
 import { FadeIn } from "../reactExtra/animations/FadeIn";
 import ScrollIntoView from '../reactExtra/components/ScrollIntoView';
 import GamepadDriver from '../GamepadDriver';
+import { InputType } from '../configs/types/InputTypes';
 
 // Unique name used to identify modals.
 const thisMenu = 'modal';

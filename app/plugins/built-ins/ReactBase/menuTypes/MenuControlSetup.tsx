@@ -7,7 +7,7 @@ import { InputManager } from '../../InputManager';
 import {
   InputSchemeEntry,
 } from '../../InputManager/interfaces/InputSchemeEntry';
-import { InputType } from '../../InputManager/types/InputTypes';
+import { InputType } from '../../../../configs/types/InputTypes';
 import { camelToTitleCase } from '../../../../local/utils';
 
 const menuEntriesStyle: React.CSSProperties = {
