@@ -7,6 +7,8 @@ import { FadeIn } from "../reactExtra/animations/FadeIn";
 import ScrollIntoView from '../reactExtra/components/ScrollIntoView';
 import GamepadDriver from '../GamepadDriver';
 import { InputType } from '../configs/types/InputTypes';
+import { keyTypeIcons } from '../configs/ui';
+import { MouseButtonName, ScrollName } from '../configs/types/MouseButtonName';
 
 // Unique name used to identify modals.
 const thisMenu = 'modal';
@@ -652,6 +654,79 @@ export default class Modal extends React.Component {
       this.deactivateModal(() => callback(event.code));
     };
     document.addEventListener('keydown', captureKey, true);
+  };
+
+  /**
+   * Captures a mouse click, and calls back the result.
+   * @param callback
+   */
+  captureMouseButton = (callback) => {
+    if (!callback) {
+      callback = () => console.warn('No callback passed to captureMouseButton.');
+    }
+
+    let scrollSetupComplete = false;
+    let scanCount = 0;
+    const mousetrap = React.createRef();
+
+    const handleClick = (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const button = event.button;
+      this.deactivateModal(() => callback(MouseButtonName[button]));
+    };
+
+    const handleScroll = (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      let code = event.deltaY < 0 ? ScrollName.spScrollUp : ScrollName.spScrollDown;
+      this.deactivateModal(() => callback(code));
+    };
+
+    const handleMove = (event) => {
+      if (mousetrap.current) {
+        const x = event.nativeEvent.offsetX;
+        const y = event.nativeEvent.offsetY;
+        mousetrap.current.style.backgroundColor =
+          `hsl(${133 - x}deg ${15 + y * 0.0001}% ${49 - y * 0.125}%)`;
+      }
+    };
+
+    const setupScroll = () => {
+      if (!scrollSetupComplete && mousetrap.current) {
+        scrollSetupComplete = true;
+        mousetrap.current.addEventListener('wheel', handleScroll, {
+          passive: false,
+        });
+      }
+    };
+
+    Modal.keyboardCaptureMode = true;
+    this.alert({
+      header: 'Grabbing click...',
+      body: (
+        <div style={{ textAlign: 'center' }}>
+          Click or scroll in this box:
+          <br/>
+          <div
+            ref={mousetrap}
+            onMouseDown={handleClick}
+            onMouseEnter={setupScroll}
+            onMouseMove={handleMove}
+            style={{
+              display: 'inline-block',
+              marginTop: 8,
+              width: 150,
+              height: 150,
+              borderRadius: 3,
+              border: 'thin solid #3a3a3a',
+              backgroundColor: 'grey',
+            }}
+          />
+        </div>
+      ),
+      actions: [],
+    });
   };
 
   captureMouseDirection = (callback) => {
