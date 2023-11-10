@@ -1,5 +1,7 @@
 # Info
 
+Offers a non-blocking API that resembles DOM dialog functions.
+
 Not to be confused with the menu system, the modal system is an early-load
 system with its own React root node. Supports both mouse and keyboard out of
 the box.
@@ -45,7 +47,7 @@ $modal.alert({
 ```javascript
 $modal.alert({
   header: 'Info',
-  body: 'The Earth can fit eight times Saturn\'s hexigon storm.',
+  body: 'The Earth can fit eight times inside Saturn\'s hexigon storm.',
   actions: [
     { name: 'Damn, ok..', onSelect: () => $modal.deactivateModal() },
   ]
@@ -54,8 +56,8 @@ $modal.alert({
 
 #### Alerts can be used as generic dialog builders:
 
-_Note that `$modal.confirm()` would be better suited than this next example as
-it's more concise._
+_**Note:** `$modal.confirm()` would be better suited than this next example as
+it's more concise. This is just to showcase the alert builder._
 
 ```javascript
 $modal.alert({
@@ -202,6 +204,18 @@ selections, such as mouse axis choosers. For consistency, these dialogs also
 start with the term `capture` even though they aren't technically capture
 functions.
 
+#### Automatic
+
+You can use `autoInputCapture()` to let the user decide the type of input to
+capture, which will then choose one of the methods in this section below.
+
+```javascript
+$modal.autoInputCapture((code) => {
+  // Example outputs: 'KeyW', 'spMouseMiddle', 'bt10'
+  console.log(code);
+});
+```
+
 #### Keyboard code capture
 
 ```javascript
@@ -211,11 +225,11 @@ $modal.captureKeyboardKey((keyCode) => {
 });
 ```
 
-#### Mouse axis chooser
+#### Mouse button / scroll chooser
 
 ```javascript
-$modal.captureMouseDirection((spCode) => {
-  // Example outputs: 'spNorthSouth' or 'spEastWest'
+$modal.captureMouseButton((spCode) => {
+  // Example outputs: 'spMouseLeft', 'spMouseMiddle', 'spScrollUp'
   console.log(spCode);
 });
 ```
@@ -272,7 +286,10 @@ the static ones. You can reach them by importing Modal, or via `$modal.static`.
 
 #### Methods
 
-* `$modal.deactivateModal()` - closes the top-most modal.
+* `$modal.deactivateModal(optionalCallback)` - closes the top-most modal. If
+  you want to do additional modal work immediately after  `deactivateModal()`,
+  be sure to wrap it inside `optionalCallback` to ensure your code doesn't
+  suffer state-update timing issues.
 * `$modal.buildModal(options)` - used internally by all the other modal
    functions in the Examples section above to create modals.
 * `$modal.modifyModal(modalOptions)` - replaces the active modal with the
