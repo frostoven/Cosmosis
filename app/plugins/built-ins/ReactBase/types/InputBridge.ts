@@ -31,17 +31,19 @@ export default class InputBridge {
   private _repeatDelta: number = 0;
   private _arrowCountdown = ARROW_DELAY;
   private readonly _repeatArrow = _.throttle(() => {
-      if (this._arrowCountdown === ARROW_DELAY) {
-          this.tickArrow();
-      }
-      this._arrowCountdown -= ARROW_REPEAT_MS * this._repeatDelta;
-      if (this._arrowCountdown < 0) {
-          this.tickArrow();
-      }
+    if (this._arrowCountdown === ARROW_DELAY) {
+      this.tickArrow();
+    }
+    this._arrowCountdown -= ARROW_REPEAT_MS * this._repeatDelta;
+    if (this._arrowCountdown < 0) {
+      this.tickArrow();
+    }
   }, ARROW_REPEAT_MS, {
-      maxDelay: ARROW_REPEAT_MS,
-      leading: true,
-      trailing: false,
+    // @ts-ignore - Unsure if the error is correct, this popped up after
+    // installing the types package. Maybe needs investigation.
+    maxDelay: ARROW_REPEAT_MS,
+    leading: true,
+    trailing: false,
   });
 
   state = {
