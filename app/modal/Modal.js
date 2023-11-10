@@ -276,8 +276,7 @@ export default class Modal extends React.Component {
         {
           name: 'OK',
           onSelect: () => {
-            this.deactivateModal();
-            optionalCallback(true);
+            this.deactivateModal(() => optionalCallback(true));
           }
         },
       ];
@@ -310,15 +309,13 @@ export default class Modal extends React.Component {
         {
           name: options.yesText ? options.yesText : 'Yes',
           onSelect: () => {
-            this.deactivateModal();
-            callback(true);
+            this.deactivateModal(() => callback(true));
           }
         },
         {
           name: options.noText ? options.noText : 'No',
           onSelect: () => {
-            this.deactivateModal();
-            callback(false);
+            this.deactivateModal(() => callback(false));
           }
         },
       ];
@@ -348,8 +345,7 @@ export default class Modal extends React.Component {
 
     options.actions.forEach((item) => {
       item.onSelect = () => {
-        this.deactivateModal();
-        callback(item);
+        this.deactivateModal(() => callback(item));
       }
     });
 
@@ -399,23 +395,20 @@ export default class Modal extends React.Component {
 
     if (!options.actions) {
       const onClick = (text) => {
-        this.deactivateModal();
-        callback(text);
+        this.deactivateModal(() => callback(text));
       };
 
       options.actions = [
         {
           name: 'Submit',
           onSelect: () => {
-            this.deactivateModal();
-            callback(recordedText);
+            this.deactivateModal(() => callback(recordedText));
           }
         },
         {
           name: 'Cancel',
           onSelect: () => {
-            this.deactivateModal();
-            callback(null);
+            this.deactivateModal(() => callback(null));
           }
         },
       ];
@@ -450,8 +443,7 @@ export default class Modal extends React.Component {
     for (let i = 0, len = options.actions.length; i < len; i++) {
       const action = options.actions[i];
       action.onSelect = () => {
-        this.deactivateModal();
-        callback(action);
+        this.deactivateModal(() => callback(action));
       };
     }
 
@@ -636,7 +628,7 @@ export default class Modal extends React.Component {
   };
 
   /**
-   * Captures a keyboard key, and returns the result.
+   * Captures a keyboard key, and calls back the result.
    * @param callback
    */
   captureKeyboardKey = (callback) => {
@@ -657,8 +649,7 @@ export default class Modal extends React.Component {
       document.removeEventListener('keydown', captureKey, true);
       Modal.keyboardCaptureMode = false;
       Modal.allowExternalListeners = true;
-      this.deactivateModal();
-      callback(event.code);
+      this.deactivateModal(() => callback(event.code));
     };
     document.addEventListener('keydown', captureKey, true);
   };
@@ -672,7 +663,7 @@ export default class Modal extends React.Component {
     const axisText = {
       minWidth: 256,
       display: 'inline-block',
-      textAlign: 'left'
+      textAlign: 'left',
     };
 
     const extraInfo = {
@@ -733,8 +724,7 @@ export default class Modal extends React.Component {
     const receiveKey = _.debounce(() => {
       if (keysPressed.length === 1) {
         waitingForButton = false;
-        this.deactivateModal();
-        callback(keysPressed[0]);
+        this.deactivateModal(() => callback(keysPressed[0]));
       }
       else if (keysPressed.length > 1) {
         const currentModal = this.getActiveModal();
@@ -817,8 +807,7 @@ export default class Modal extends React.Component {
       // console.log(key, { lower, upper, percentage });
       if (percentage > Modal.axisDeadzone) {
         waitingForAxis = false;
-        this.deactivateModal();
-        callback({ key, value });
+        this.deactivateModal(() => callback({ key, value }));
       }
     };
 
