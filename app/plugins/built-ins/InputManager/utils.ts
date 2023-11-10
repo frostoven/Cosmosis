@@ -21,7 +21,9 @@ function genAutoFriendlyNames(controls: ControlSchema) {
       .replace('_dev', '[Dev]')
       .replace('_debug', '[Dev]')
       .replace(/Inc Dec$/, '[Analog]')
+      .replace(/Up Down$/, '[Analog]')
       .replace(/Left Right$/, '[Analog]')
+      .replace(/Forward Backward$/, '[Analog]')
       .replace(/Held$/, ' [Held]')
       .replace(/Inc$/, 'Increase')
       .replace(/Dec$/, 'Decrease');
