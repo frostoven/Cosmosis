@@ -8,6 +8,7 @@ import { AnalogSource } from './types/AnalogSource';
 import ModeController from './types/ModeController';
 import { CoreType } from '../Core';
 import { InputSchemeEntry } from './interfaces/InputSchemeEntry';
+import { MouseButtonName } from '../../../configs/types/MouseButtonName';
 
 /*
  * Mechanism:
@@ -21,10 +22,6 @@ import { InputSchemeEntry } from './interfaces/InputSchemeEntry';
  * explicitly defining priority). In order of priority, the first mode to want
  * a key, gets that key.
  */
-
-const mouseFriendly = [
-  'Left', 'Middle', 'Right',
-];
 
 // Nomenclature:
 // Mode: a logical group of controllers.
@@ -205,10 +202,10 @@ class InputManager {
         );
         break;
       case 'mousedown':
-        key = `spMouse${mouseFriendly[event.button]}`;
+        key = MouseButtonName[event.button];
         break;
       case 'mouseup':
-        key = `spMouse${mouseFriendly[event.button]}`;
+        key = MouseButtonName[event.button];
       // Note: fallthrough is intentional here.
       case 'keyup':
         value = 0;
