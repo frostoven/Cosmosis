@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import { ControlSchema } from './interfaces/ControlSchema';
+import { camelToTitleCase } from '../../../local/utils';
 
 
 /**
@@ -15,8 +16,7 @@ function genAutoFriendlyNames(controls: ControlSchema) {
       return;
     }
 
-    let friendly = action.replace(/([A-Z]|([0-9]+))/g, ' $1');
-    friendly = action[0].toUpperCase() + friendly.slice(1);
+    let friendly = camelToTitleCase(action);
     friendly = friendly
       .replace('_dev', '[Dev]')
       .replace('_debug', '[Dev]')

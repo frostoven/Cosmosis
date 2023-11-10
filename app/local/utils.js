@@ -139,20 +139,31 @@ function addSpacesBetweenWords(string) {
 }
 
 /**
+ * Example: 'camelCaseString69' becomes 'Camel Case String 69'.
+ * @param {string} string
+ * @return {string}
+ */
+function camelToTitleCase(string) {
+  const friendly = string.replace(/([A-Z]|([0-9]+))/g, ' $1');
+  return friendly[0].toUpperCase() + friendly.slice(1);
+}
+
+/**
  * Example: 'thisString' becomes 'ThisString'.
  * @param {string} string
+ * @return {string}
  */
-function toTitleCase(string) {
+function capitalizeFirst(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
 /**
- * Combines addSpacesBetweenWords and toTitleCase.
+ * Combines addSpacesBetweenWords and capitalizeFirst.
  * @param {string} string
  * @returns {string}
  */
 function spacedTitled(string) {
-  return addSpacesBetweenWords(toTitleCase(string));
+  return addSpacesBetweenWords(capitalizeFirst(string));
 }
 
 function lowercaseFirst(string) {
@@ -227,7 +238,8 @@ export {
   forEachFn,
   forEachFnLimit,
   addSpacesBetweenWords,
-  toTitleCase,
+  camelToTitleCase,
+  capitalizeFirst,
   spacedTitled,
   lowercaseFirst,
   capitaliseFirst,
