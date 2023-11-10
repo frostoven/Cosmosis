@@ -9,6 +9,7 @@ import {
 } from '../../InputManager/interfaces/InputSchemeEntry';
 import { InputType } from '../../../../configs/types/InputTypes';
 import { camelToTitleCase } from '../../../../local/utils';
+import { keyTypeIcons } from '../../../../configs/ui';
 
 const menuEntriesStyle: React.CSSProperties = {
   overflow: 'auto',
@@ -46,18 +47,6 @@ const centerStyle: React.CSSProperties = {
   display: 'flex',
   width: '100%',
   height: '100%',
-};
-
-const keyTypeIcons = {
-  default: 'dna',
-  [InputType.keyboardButton]: 'keyboard',
-  [InputType.mouseButton]: 'mouse pointer',
-  [InputType.mouseAxisInfinite]: 'crosshairs',
-  [InputType.mouseAxisThreshold]: 'bullseye',
-  [InputType.mouseAxisGravity]: 'bullseye',
-  [InputType.analogSlider]: 'fighter jet',
-  [InputType.analogStickAxis]: 'fighter jet',
-  [InputType.analogButton]: 'gamepad',
 };
 
 function keyCodeToJsx(keyCode: string | JSX.Element, type: InputType, includeIcon = true) {
