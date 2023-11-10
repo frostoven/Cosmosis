@@ -630,6 +630,66 @@ export default class Modal extends React.Component {
   };
 
   /**
+   * Captures input based on what the user decides they want captured.
+   * @param callback
+   */
+  autoInputCapture = (callback) => {
+    // TODO: refactor:
+    //  * analogButton to gamepadButton
+    //  * analogSlider to gamepadSlide
+    const keyboardButton = InputType.keyboardButton;
+    const gamepadButton = InputType.analogButton;
+    const gamepadAnalog = InputType.analogSlider;
+    const mouseButton = InputType.mouseButton;
+    const mouseAxis = InputType.mouseAxisInfinite;
+
+    $modal.buttonPrompt({
+      header: 'Input Capture',
+      body: 'Please choose your input type:',
+      actions: [
+        {
+          name: <><Icon name={keyTypeIcons[keyboardButton]}/> Keyboard Button</>,
+          value: keyboardButton,
+        },
+        {
+          name: <><Icon name={keyTypeIcons[gamepadButton]}/> Controller Button</>,
+          value: gamepadButton,
+        },
+        {
+          name: <><Icon name={keyTypeIcons[gamepadAnalog]}/> Controller Axis</>,
+          value: gamepadAnalog,
+        },
+        {
+          name: <><Icon name={keyTypeIcons[mouseButton]}/> Mouse Button</>,
+          value: mouseButton,
+        },
+        {
+          name: <><Icon name={keyTypeIcons[mouseAxis]}/> Mouse Axis</>,
+          value: mouseAxis,
+        },
+      ]
+    }, (userSelection) => {
+      this.deactivateModal(() => {
+        const answer = userSelection.value;
+        switch (answer) {
+          case keyboardButton:
+            return this.captureKeyboardKey(callback);
+          case gamepadButton:
+            return this.captureGamepadKey(callback);
+          case gamepadAnalog:
+            return this.captureGamepadAxis(callback);
+          case mouseButton:
+            return this.captureMouseButton(callback);
+          case mouseAxis:
+            return this.captureMouseDirection(callback);
+          default:
+            console.error('[Modal] Bug detected: unknown value', answer);
+        }
+      });
+    });
+  };
+
+  /**
    * Captures a keyboard key, and calls back the result.
    * @param callback
    */
