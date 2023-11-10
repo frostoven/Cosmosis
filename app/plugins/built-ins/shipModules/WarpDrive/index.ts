@@ -4,7 +4,6 @@ import ModuleSpawner from '../types/ModuleSpawner';
 import { gameRuntime } from '../../../gameRuntime';
 import { ShipPilot } from '../../modes/playerControllers/ShipPilot';
 import { warpDriveControls } from './controls';
-import { InputManager } from '../../InputManager';
 
 class WarpDriveModule extends ModuleSpawner {
   constructor() {

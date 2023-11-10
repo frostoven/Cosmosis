@@ -4,7 +4,6 @@ import CockpitLights from './types/CockpitLights';
 import { gameRuntime } from '../../../gameRuntime';
 import { ShipPilot } from '../../modes/playerControllers/ShipPilot';
 import { cockpitLightControls } from './controls';
-import { InputManager } from '../../InputManager';
 
 class CockpitLightsModule extends ModuleSpawner {
   constructor() {

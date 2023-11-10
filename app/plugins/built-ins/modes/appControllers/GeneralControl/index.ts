@@ -4,7 +4,6 @@ import { generalControls } from './controls';
 import { gameRuntime } from '../../../../gameRuntime';
 import { ModeId } from '../../../InputManager/types/ModeId';
 import { MouseDriver } from '../../../MouseDriver';
-import { InputManager } from '../../../InputManager';
 
 class GeneralControl extends ModeController {
   private _mouseDriver: MouseDriver;
