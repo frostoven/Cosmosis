@@ -10,6 +10,7 @@ import {
 import { InputType } from '../../../../configs/types/InputTypes';
 import { camelToTitleCase } from '../../../../local/utils';
 import { keyTypeIcons } from '../../../../configs/ui';
+import { ScrollName } from '../../../../configs/types/MouseButtonName';
 
 const menuEntriesStyle: React.CSSProperties = {
   overflow: 'auto',
@@ -50,9 +51,10 @@ const centerStyle: React.CSSProperties = {
 };
 
 function keyCodeToJsx(keyCode: string | JSX.Element, type: InputType, includeIcon = true) {
+  const icons = keyTypeIcons;
   let icon: JSX.Element | null;
   if (includeIcon) {
-    icon = <><Icon name={keyTypeIcons[type]}/>&nbsp;</>;
+    icon = <><Icon name={icons[type]}/>&nbsp;</>;
   }
   else {
     icon = null;
@@ -60,37 +62,39 @@ function keyCodeToJsx(keyCode: string | JSX.Element, type: InputType, includeIco
 
   switch (keyCode) {
     case 'spNorthSouth':
-      keyCode = <><Icon name='arrows alternate vertical'/> MouseY</>;
+      keyCode = <><Icon name={icons.MouseY}/> MouseY</>;
       icon = null;
       break;
     case 'spEastWest':
       icon = null;
-      keyCode = <><Icon name='arrows alternate horizontal'/> MouseX</>;
+      keyCode = <><Icon name={icons.MouseX}/> MouseX</>;
       break;
     case 'spNorth':
-      keyCode = <><Icon name='arrows alternate vertical'/> MouseMoveUp</>;
+      keyCode = <><Icon name={icons.MouseY}/> MouseMoveUp</>;
       icon = null;
       break;
     case 'spSouth':
-      keyCode = <><Icon name='arrows alternate vertical'/> MouseMoveDown</>;
+      keyCode = <><Icon name={icons.MouseY}/> MouseMoveDown</>;
       icon = null;
       break;
     case 'spEast':
       icon = null;
-      keyCode = <><Icon name='arrows alternate horizontal'/> MouseMoveLeft</>;
+      keyCode = <><Icon name={icons.MouseX}/> MouseMoveLeft</>;
       break;
     case 'spWest':
       icon = null;
-      keyCode = <><Icon name='arrows alternate horizontal'/> MouseMoveRight</>;
+      keyCode = <><Icon name={icons.MouseX}/> MouseMoveRight</>;
+      icon = null;
       break;
     case 'spScrollUp':
-      keyCode = 'MouseScrollUp';
+      keyCode = <><Icon name={icons[ScrollName.spScrollUp]}/> MouseScrollUp</>;
+      icon = null;
       break;
     case 'spScrollDown':
-      keyCode = 'MouseScrollDown';
-      break;
-    case 'spMouseMiddle':
-      keyCode = 'MouseMiddleClick';
+      keyCode = <>
+        <Icon name={icons[ScrollName.spScrollDown]}/> MouseScrollDown
+      </>;
+      icon = null;
       break;
   }
 
