@@ -43,6 +43,14 @@ class FreeCam extends ModeController {
       console.log('grabbing interactable.');
     });
 
+    this.pulse.speedUp.getEveryChange(() => {
+      this.maxMoveSpeed.rampUpSmall(Math.pow(SPEED_FACTOR, 5));
+    });
+
+    this.pulse.slowDown.getEveryChange(() => {
+      this.maxMoveSpeed.rampDownSmall(Math.pow(SPEED_FACTOR, 5));
+    });
+
     this.pulse._devChangeCamMode.getEveryChange(() => {
       this._cachedInputManager.activateController(ModeId.playerControl, 'shipPilot');
     });

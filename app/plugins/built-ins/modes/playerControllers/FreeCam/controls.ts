@@ -4,10 +4,11 @@ import { InputType } from '../../../../../configs/types/InputTypes';
 import { DefaultInputSpeeds } from '../../../InputManager/types/DefaultInputSpeeds';
 import { genAutoFriendlyNames } from '../../../InputManager/utils';
 
-const { continuous } = ActionType;
+const { continuous, hybrid } = ActionType;
 
 const {
-  keyboardButton, analogButton, analogStickAxis, mouseAxisInfinite, analogSlider
+  keyboardButton, analogButton, analogStickAxis, mouseAxisInfinite,
+  analogSlider, scrollWheel,
 } = InputType;
 
 const {
@@ -52,8 +53,8 @@ const freeCamControls: ControlSchema = {
   moveDown:            { actionType: continuous, sign: -1, analogRemap: 'moveUpDown', current: null, default: { KeyF: keyboardButton, bt0: analogButton } },
   moveUpDown:          { actionType: continuous, current: null, default: null, isBidirectional: true, multiplier: { ...defaultBidirectionalMoveMulti } },
   //
-  speedUp:             { actionType: continuous, current: null, default: { NumpadAdd: keyboardButton } },
-  slowDown:            { actionType: continuous, current: null, default: { NumpadSubtract: keyboardButton } },
+  speedUp:             { actionType: hybrid, current: null, default: { NumpadAdd: keyboardButton, spScrollUp: scrollWheel } },
+  slowDown:            { actionType: hybrid, current: null, default: { NumpadSubtract: keyboardButton, spScrollDown: scrollWheel } },
   doubleSpeed:         { actionType: continuous, current: null, default: { ShiftLeft: keyboardButton, ShiftRight: keyboardButton } },
   halfSpeed:           { actionType: continuous, current: null, default: { AltLeft: keyboardButton, AltRight: keyboardButton } },
   //
