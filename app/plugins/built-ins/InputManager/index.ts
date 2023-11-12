@@ -8,7 +8,10 @@ import { AnalogSource } from './types/AnalogSource';
 import ModeController from './types/ModeController';
 import { CoreType } from '../Core';
 import { InputSchemeEntry } from './interfaces/InputSchemeEntry';
-import { MouseButtonName } from '../../../configs/types/MouseButtonName';
+import {
+  MouseButtonName,
+  scrollDeltaToEnum,
+} from '../../../configs/types/MouseButtonName';
 
 /*
  * Mechanism:
@@ -34,6 +37,16 @@ class InputManager {
   // Unconscious human reflexes sit at around 80ms (0.08 seconds), so our
   // performance is acceptable.
   public static lastPressTime = -1;
+
+  /**
+   * To prevent laptop users accidentally scrolling horizontally, we explicitly
+   * only allow vertical scrolling. Modders may enable 2-way scrolling like so:
+   * @example
+   * InputManager.scrollDetector = scrollTouchpadDeltaToEnum;
+   * @tutorial - Modders will need to override the Modal class as well.
+   * @type {(scrollDelta: number) => ScrollName.spScrollUp | ScrollName.spScrollDown}
+   */
+  static scrollDetector = scrollDeltaToEnum;
 
   private _blockAllInput: boolean;
   private _blockKbMouse: boolean;
@@ -213,7 +226,7 @@ class InputManager {
       case 'wheel':
         // Note: a wheel scroll is always classed as a press.
         isNeverHeld = true;
-        key = this.keyFromWheelDelta(event.deltaY);
+        key = InputManager.scrollDetector(event);
         if (!key) {
           // TODO: check if returning out after zero is bad thing. Maybe we need it for resets.
           return;
@@ -270,23 +283,6 @@ class InputManager {
 
   blockKbMouse(enabled = true) {
     this._blockKbMouse = enabled;
-  }
-
-  /**
-   * Returns spScrollDown or spScrollUp. Returns null if delta is 0.
-   * @param {number} deltaY
-   * @returns {string|null}
-   */
-  keyFromWheelDelta(deltaY) {
-    if (deltaY === 0){
-      return null;
-    } else if (deltaY > 0) {
-      // Scrolling down.
-      return 'spScrollDown';
-    } else {
-      // Scrolling up.
-      return 'spScrollUp';
-    }
   }
 
   /**
