@@ -10,6 +10,11 @@ import { arrayContainsArray } from '../../../../local/utils';
 import { InputType } from '../../../../configs/types/InputTypes';
 import { easeIntoExp, signRelativeMax } from '../../../../local/mathUtils';
 import { InputUiInfo } from '../interfaces/InputSchemeEntry';
+import {
+  BasicActionData,
+  FullActionData,
+  ReceiverActionData,
+} from '../interfaces/ActionData';
 
 // TODO: move to user configs, and expose to UI. Minimum value should be zero,
 //  and max should be 0.95 to prevent bugs.
@@ -87,6 +92,7 @@ export default class ModeController {
       this.receiveAsMouseAxisGravity.bind(this),
       this.receiveAsMouseAxisThreshold.bind(this),
       this.receiveAsAnalogSlider.bind(this),
+      this.receiveAsScroller.bind(this),
     ];
 
     if (!name) {
@@ -269,11 +275,17 @@ export default class ModeController {
       }
     });
 
-    if (control.actionType === ActionType.pulse) {
+    const actionType = control.actionType;
+    const pulse = ActionType.pulse;
+    const continuous = ActionType.continuous;
+    const hybrid = ActionType.hybrid;
+    //
+    if (actionType === pulse || actionType === hybrid) {
       this.pulse[actionName] = new ChangeTracker();
       this.pulse[actionName].setSilent(0);
     }
-    else {
+    //
+    if (actionType === continuous || actionType === hybrid) {
       this.state[actionName] = 0;
       this.activeState[actionName] = 0;
     }
@@ -327,14 +339,7 @@ export default class ModeController {
     }
   }
 
-  receiveAction(
-    {
-      action,
-      key,
-      value,
-      analogData,
-    }: { action: string, key: string | undefined, value: number, analogData: object | undefined },
-  ) {
+  receiveAction({ action, key, value, analogData }: ReceiverActionData) {
     const control = this.controlSchema[action];
     const actionType = control.actionType;
     const sign = control.sign;
@@ -361,19 +366,20 @@ export default class ModeController {
   // --------------------------------------------------------------------------
 
   // InputType: none
-  receiveAndIgnore({ action }) {
+  receiveAndIgnore({ action }: FullActionData) {
     console.log('Received but ignoring', action);
   }
 
   // Receives a non-pulsed keyboard button.
   // InputType: keyboardButton
-  receiveAsKbButton({ action, value, control }) {
-    // console.log('[keyboard button]', { action, actionType: ActionType[control.actionType], value, control });
+  receiveAsKbButton({ action, value, control }: FullActionData) {
+    // console.log('[button]', { action, actionType: ActionType[control.actionType], value, control });
     if (control.analogRemap) {
       // TODO: value multipliers should probably go into the control definition
       //  as we probably don't want things being arbitrarily multiplied for no
       //  reason. Maybe call it 'remapMultiplier' to indicate it's only used
       //  for analog remaps.
+      // @ts-ignore - See previous comment.
       this.activeState[control.analogRemap] = value * control.multiplier.keyboardButton * control.sign;
     }
     else {
@@ -384,7 +390,7 @@ export default class ModeController {
   }
 
   // InputType: analogButton
-  receiveAsAnalogButton({ action, value, control }) {
+  receiveAsAnalogButton({ action, value, control }: FullActionData) {
     // console.log('[analog button]', { action, actionType: ActionType[control.actionType], value, control });
     // Under normal circumstances this value is always in range of 0-1.
     if (value < ANALOG_BUTTON_THRESHOLD) {
@@ -392,6 +398,7 @@ export default class ModeController {
     }
 
     if (control.analogRemap) {
+      // @ts-ignore - See comment in receiveAsKbButton.
       this.activeState[control.analogRemap] = value * control.multiplier.analogButton * control.sign;
     }
     else {
@@ -401,7 +408,7 @@ export default class ModeController {
   }
 
   // InputType: analogStickAxis
-  receiveAsAnalogStick({ action, value, control }) {
+  receiveAsAnalogStick({ action, value, control }: FullActionData) {
     if (control.disallowSign !== 0) {
       if (control.disallowSign === 1 && value > 0) {
         return;
@@ -423,7 +430,8 @@ export default class ModeController {
       }
     }
     else if (result !== 0) {
-      const multiplier = control.multiplier.analogStickAxis;
+      // @ts-ignore - See comment in receiveAsKbButton.
+      const multiplier = control.multiplier.analogStickAxis as number;
       const effectiveThreshold = multiplier * ANALOG_STICK_THRESHOLD;
       result = value * multiplier;
       // This allows the user to ease into the turn without suddenly jumping to
@@ -442,6 +450,7 @@ export default class ModeController {
     }
 
     if (ANALOG_STICK_EASING) {
+      // @ts-ignore - See comment in receiveAsKbButton.
       const maxRange = control.multiplier.analogStickAxis - ANALOG_STICK_THRESHOLD;
       stateTarget[action] = easeIntoExp(result, maxRange);
     }
@@ -454,12 +463,13 @@ export default class ModeController {
   }
 
   // InputType: mouseButton
-  receiveAsMouseButton({ action, value, control }) {
-    console.log('[mouse button]', { action, actionType: ActionType[control.actionType], value, control });
+  receiveAsMouseButton(actionData: FullActionData) {
+    // This works pretty much identically to keyboard; send it there instead.
+    this.receiveAsKbButton(actionData);
   }
 
   // InputType: mouseAxisInfinite
-  receiveAsMouse({ action, value, analogData, control }) {
+  receiveAsMouse({ action, value, analogData, control }: FullActionData) {
     if (control.disallowSign !== 0) {
       if (control.disallowSign === 1 && value > 0) {
         return;
@@ -471,18 +481,21 @@ export default class ModeController {
 
     // console.log('[mouse movement | standard]', { action, actionType: ActionType[control.actionType], value, analogData, control });
     // console.log(`--> analogData[${action}]: delta=${analogData.delta}; grav=${analogData.gravDelta}`);
+    // @ts-ignore - See comment in receiveAsKbButton.
     this.state[action] += analogData.delta * control.multiplier.mouseAxisInfinite;
   }
 
   // InputType: mouseAxisGravity
-  receiveAsMouseAxisGravity({ action, value, analogData, control }) {
+  receiveAsMouseAxisGravity({ action, value, analogData, control }: FullActionData) {
     console.log('[mouse movement | gravity]', { action, actionType: ActionType[control.actionType], value, analogData, control });
+    // @ts-ignore - See comment in receiveAsKbButton.
     this.state[action] += this.state[action] += analogData.delta;
   }
 
   // InputType: mouseAxisThreshold
-  receiveAsMouseAxisThreshold({ action, value, analogData, control }) {
+  receiveAsMouseAxisThreshold({ action, value, analogData, control }: FullActionData) {
     console.log('[mouse movement | threshold]', { action, actionType: ActionType[control.actionType], value, analogData, control });
+    // @ts-ignore - See comment in receiveAsKbButton.
     const result = this.state[action] += value * control.multiplier.mouseAxisInfinite;
     if (Math.abs(result) > 1) {
       this.state[action] = signRelativeMax(result, 1);
@@ -490,7 +503,7 @@ export default class ModeController {
     console.log(`[mouse{${this.name}}|${action}]`, this.state[action]);
   }
 
-  receiveAsAnalogSlider({ action, value, control }) {
+  receiveAsAnalogSlider({ action, value, control }: FullActionData) {
     if (control.disallowSign !== 0) {
       if (control.disallowSign === 1 && value > 0) {
         return;
@@ -533,11 +546,22 @@ export default class ModeController {
     }
   }
 
+  receiveAsScroller({ action, value, control }: FullActionData) {
+    if (control.actionType === ActionType.continuous) {
+      return console.error(
+        '[ModeController] receiveAsScroller controls should be of type ' +
+        'ActionType.pulse or ActionType.hybrid.'
+      );
+    }
+
+    this.handlePulse({ action, value });
+  }
+
   // Pulse once if the button is down. We don't pulse on release. Doesn't pulse
   // if receiving two subsequent non-zero values without first getting a zero.
   //
   // Dev note: this does not support mouse movement.
-  handlePulse({ action, value }) {
+  handlePulse({ action, value }: BasicActionData) {
     const pulseAction = this.pulse[action];
     if (!pulseAction) {
       return console.error(

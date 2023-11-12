@@ -20,6 +20,8 @@ enum InputType {
   // Analog devices that stay in place after moving them (eg. the throttle
   // control on a HOTAS box).
   analogSlider,
+  // Up and down scrolling. Note that this is propagated as keyboard input.
+  scrollWheel
 }
 
 type InputTypeKeys = keyof typeof InputType;

@@ -6,12 +6,13 @@ import { genAutoFriendlyNames } from '../../../InputManager/utils';
 const { pulse, continuous } = ActionType;
 const { keyboardButton, analogButton, analogStickAxis, mouseButton,
   mouseAxisInfinite, mouseAxisGravity, mouseAxisThreshold, analogSlider,
+  scrollWheel,
 } = InputType;
 
 const shipPilotControls: ControlSchema = {
   // Pulsed
-  thrustUp10:          { actionType: pulse, current: null, default: { spScrollUp: mouseButton }, friendly: 'Thrust Increase (10%)' },
-  thrustReset:         { actionType: pulse, current: null, default: { spScrollDown: mouseButton } },
+  thrustUp10:          { actionType: pulse, current: null, default: { spScrollUp: scrollWheel }, friendly: 'Thrust Increase (10%)' },
+  thrustReset:         { actionType: pulse, current: null, default: { spScrollDown: scrollWheel } },
   mouseHeadLook:       { actionType: pulse, current: null, default: { spMouseMiddle: mouseButton, Numpad5: keyboardButton, bt11: analogButton, bt10: analogButton } },
   toggleFlightAssist:  { actionType: pulse, current: null, default: { KeyZ: keyboardButton } },
   //
