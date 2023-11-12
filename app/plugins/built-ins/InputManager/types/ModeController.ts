@@ -89,6 +89,25 @@ export default class ModeController {
       this.receiveAsAnalogSlider.bind(this),
     ];
 
+    if (!name) {
+      console.error('ModeController requires a name for lookup purposes.');
+      return;
+    }
+    if (!modeId) {
+      console.error(
+        'ModeController requires ModeId number. Please have a look at ' +
+        'built-in plugins such as FreeCam for examples.',
+      );
+      return;
+    }
+    if (!controlSchema) {
+      console.error(
+        'ModeController requires a ControlSchema object. Please have a look ' +
+        'at built-in plugins such as FreeCam for examples.',
+      );
+      return;
+    }
+
     // Control setup.
     this.extendControlSchema(controlSchema);
 
@@ -332,6 +351,7 @@ export default class ModeController {
 
     if (actionType === ActionType.pulse && inputType !== 0) {
       this.handlePulse({ action, value });
+      // console.log(`[handlePulse:${action}]`, { value });
     }
     else {
       this._actionReceivers[inputType]({ action, value, analogData, control });
@@ -518,10 +538,17 @@ export default class ModeController {
   //
   // Dev note: this does not support mouse movement.
   handlePulse({ action, value }) {
+    const pulseAction = this.pulse[action];
+    if (!pulseAction) {
+      return console.error(
+        `[ModeController] Pulsed control '${action}' requires a pulse ` +
+        `mapping to be defined (missing in ${this.name}).`,
+      );
+    }
     // console.log('[input-agnostic pulse]', { action, value });
     if (value > ANALOG_BUTTON_THRESHOLD) {
-      if (this.pulse[action].cachedValue === 0) {
-        this.pulse[action].setValue(1);
+      if (pulseAction.cachedValue === 0) {
+        pulseAction.setValue(1);
       }
     }
     else if (value > 0) {
@@ -530,9 +557,9 @@ export default class ModeController {
       // console.log(`-> ignoring bad value ${value} < ${ANALOG_BUTTON_THRESHOLD}`);
       return;
     }
-    else if (this.pulse[action].cachedValue !== 0) {
+    else if (pulseAction.cachedValue !== 0) {
       // console.log('[input-agnostic pulse] -- RESET --', { action, value });
-      this.pulse[action].setSilent(0);
+      pulseAction.setSilent(0);
     }
   }
 
