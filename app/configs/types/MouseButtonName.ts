@@ -1,7 +1,7 @@
 const baseMousePairs = {
   0: 'spMouseLeft',
-  1: 'spMouseRight',
-  2: 'spMouseMiddle',
+  1: 'spMouseMiddle',
+  2: 'spMouseRight',
 };
 
 for (let i = 3; i < 32; i++) {
@@ -10,8 +10,8 @@ for (let i = 3; i < 32; i++) {
   // games tend to count this way as well.
   // Example end results:
   //  * MouseButtonName[0] = 'spMouseLeft';
-  //  * MouseButtonName[1] = 'spMouseRight';
-  //  * MouseButtonName[2] = 'spMouseMiddle';
+  //  * MouseButtonName[1] = 'spMouseMiddle';
+  //  * MouseButtonName[2] = 'spMouseRight';
   //  * MouseButtonName[3] = 'spMouse4';
   //  * MouseButtonName[31] = 'spMouse32';
   baseMousePairs[i] = `spMouse${i + 1}`;
