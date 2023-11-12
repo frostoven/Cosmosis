@@ -9,13 +9,20 @@ the box.
 _Dev note: When the modal system is busy, no other control systems should
 process input. This can be checked via `$modal.allowExternalListeners`._
 
+## Special keys
+
+Pressing Escape will in all circumstance close the top-most dialog window. If
+not, then there's a bug in either the Modal class or in a plugin overriding it.
+
+If you pass in a callback when creating a dialog window, your callback will
+receive `null` to indicate that a cancellation has occurred.
+
 # Examples
 
 ## Alert
 
 Can be used as a simple replacement for `window.alert()` , or as a more
-advanced dialog
-builder.
+advanced dialog builder. Displays a message.
 
 #### Simple alert:
 
@@ -79,8 +86,7 @@ $modal.alert({
 ## Confirm
 
 Can be used as a simple replacement for `window.confirm()` , or as a more
-advanced dialog
-builder.
+advanced dialog builder. Asks the user to approve or confirm something.
 
 #### Simple confirmation window:
 
@@ -120,8 +126,7 @@ $modal.confirm({
 ## Prompt
 
 Can be used as a simple replacement for `window.prompt()` , or as a more
-advanced dialog
-builder.
+advanced dialog builder. Prompts the user for text.
 
 ```javascript
 $modal.prompt('Please enter your call sign:', (value) => {
