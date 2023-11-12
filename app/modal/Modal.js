@@ -714,9 +714,8 @@ export default class Modal extends React.Component {
       ]
     }, (userSelection) => {
       if (userSelection === null) {
-        // User pressed Escape. We're wrapping buttonPrompt, which will have
-        // informed the caller of a null return by now, so just quit out.
-        return;
+        // User pressed Escape. Report as cancellation.
+        return callback(null);
       }
       this.deactivateModal(() => {
         const answer = userSelection.value;
@@ -760,7 +759,10 @@ export default class Modal extends React.Component {
       document.removeEventListener('keydown', captureKey, true);
       Modal.keyboardCaptureMode = false;
       Modal.allowExternalListeners = true;
-      this.deactivateModal(() => callback(event.code));
+      let code = event.code;
+      // Never report Escape as a capture; treat it as a cancellation.
+      code === 'Escape' && (code = null);
+      this.deactivateModal(() => callback(code));
     };
     document.addEventListener('keydown', captureKey, true);
   };
@@ -835,6 +837,10 @@ export default class Modal extends React.Component {
         </div>
       ),
       actions: [],
+    }, () => {
+      // If this calls back, then it means the user pressed Escape as that's
+      // the only key we should currently be listening for. Send cancellation.
+      this.deactivateModal(() => callback(null));
     });
   };
 
@@ -894,16 +900,21 @@ export default class Modal extends React.Component {
       callback = () => console.warn('No callbacks passed to captureGamepadKey.');
     }
 
-    this.alert({
-      header: 'Grabbing button...',
-      body: 'Please press a button on your controller.',
-      actions: [],
-    });
-
     let keysPressed = [];
     let waitingForButton = true;
     // Used to check for controller-connected spam.
     const modelOpenTime = Date.now();
+
+    this.alert({
+      header: 'Grabbing button...',
+      body: 'Please press a button on your controller.',
+      actions: [],
+    }, () => {
+      // The only possible code we can receive at this point is Escape. Treat
+      // as cancellation.
+      waitingForButton = false;
+      callback(null);
+    });
 
     const receiveKey = _.debounce(() => {
       if (keysPressed.length === 1) {
@@ -965,16 +976,21 @@ export default class Modal extends React.Component {
       callback = () => console.warn('No callbacks passed to captureGamepadKey.');
     }
 
-    this.alert({
-      header: 'Grabbing axis...',
-      body: 'Please move a stick, rudder, or peddle on your controller.',
-      actions: [],
-    });
-
     let axesMoved = {};
     let waitingForAxis = true;
     // Used to check for controller-connected spam.
     const modelOpenTime = Date.now();
+
+    this.alert({
+      header: 'Grabbing axis...',
+      body: 'Please move a stick, rudder, or peddle on your controller.',
+      actions: [],
+    }, () => {
+      // The only possible code we can receive at this point is Escape. Treat
+      // as cancellation.
+      waitingForAxis = false;
+      this.deactivateModal(() => callback(null));
+    });
 
     const handler = ({ key, value }) => {
       if (typeof axesMoved[key] === 'undefined') {
