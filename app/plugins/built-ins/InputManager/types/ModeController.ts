@@ -339,6 +339,21 @@ export default class ModeController {
     }
   }
 
+  addNewBinding(actionName: string, key: string, type: InputType) {
+    const { controlSchema, controlsByKey } = this;
+
+    if (controlSchema[actionName].current === null) {
+      controlSchema[actionName].current = {};
+    }
+
+    if (!controlsByKey[key]) {
+      controlsByKey[key] = [];
+    }
+
+    controlSchema[actionName].current![key] = type;
+    controlsByKey[key].push(actionName);
+  };
+
   receiveAction({ action, key, value, analogData }: ReceiverActionData) {
     const control = this.controlSchema[action];
     const actionType = control.actionType;
@@ -562,6 +577,12 @@ export default class ModeController {
   //
   // Dev note: this does not support mouse movement.
   handlePulse({ action, value }: BasicActionData) {
+    // Dev note: if not read carefully, the code below may appear as though it
+    // triggers pulses twice (one on press, one on release). This is not the
+    // case - on release, pulseAction.setSilent(0) resets pulse state without
+    // informing mode controller plugins. This is intentional and should not be
+    // changed.
+
     const pulseAction = this.pulse[action];
     if (!pulseAction) {
       return console.error(
@@ -569,7 +590,7 @@ export default class ModeController {
         `mapping to be defined (missing in ${this.name}).`,
       );
     }
-    // console.log('[input-agnostic pulse]', { action, value });
+
     if (value > ANALOG_BUTTON_THRESHOLD) {
       if (pulseAction.cachedValue === 0) {
         pulseAction.setValue(1);
