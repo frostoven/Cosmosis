@@ -715,7 +715,7 @@ export default class Modal extends React.Component {
     }, (userSelection) => {
       if (userSelection === null) {
         // User pressed Escape. Report as cancellation.
-        return callback(null);
+        return callback(null, InputType.none);
       }
       this.deactivateModal(() => {
         const answer = userSelection.value;
@@ -723,13 +723,13 @@ export default class Modal extends React.Component {
           case keyboardButton:
             return this.captureKeyboardKey(callback);
           case gamepadButton:
-            return this.captureGamepadKey(callback);
+            return this.captureGamepadButton(callback);
           case gamepadAnalog:
             return this.captureGamepadAxis(callback);
           case mouseButton:
             return this.captureMouseButton(callback);
           case mouseAxis:
-            return this.captureMouseDirection(callback);
+            return this.captureMouseAxis(callback);
           default:
             console.error('[Modal] Bug detected: unknown value', answer);
         }
@@ -762,7 +762,7 @@ export default class Modal extends React.Component {
       let code = event.code;
       // Never report Escape as a capture; treat it as a cancellation.
       code === 'Escape' && (code = null);
-      this.deactivateModal(() => callback(code));
+      this.deactivateModal(() => callback(code, InputType.keyboardButton));
     };
     document.addEventListener('keydown', captureKey, true);
   };
@@ -777,21 +777,21 @@ export default class Modal extends React.Component {
     }
 
     let scrollSetupComplete = false;
-    let scanCount = 0;
+    let type = InputType.mouseButton;
     const mousetrap = React.createRef();
 
     const handleClick = (event) => {
       event.preventDefault();
       event.stopPropagation();
       const button = event.button;
-      this.deactivateModal(() => callback(MouseButtonName[button]));
+      this.deactivateModal(() => callback(MouseButtonName[button], type));
     };
 
     const handleScroll = (event) => {
       event.preventDefault();
       event.stopPropagation();
       let code = Modal.scrollDetector(event);
-      this.deactivateModal(() => callback(code));
+      this.deactivateModal(() => callback(code, type));
     };
 
     const handleMove = (event) => {
@@ -840,11 +840,11 @@ export default class Modal extends React.Component {
     }, () => {
       // If this calls back, then it means the user pressed Escape as that's
       // the only key we should currently be listening for. Send cancellation.
-      this.deactivateModal(() => callback(null));
+      this.deactivateModal(() => callback(null, InputType.none));
     });
   };
 
-  captureMouseDirection = (callback) => {
+  captureMouseAxis = (callback) => {
     const iconContainer = {
       display: 'inline-block',
       width: 48,
@@ -892,12 +892,19 @@ export default class Modal extends React.Component {
           value: 'spNorthSouth',
         },
       ]
-    }, callback);
+    }, (result) => {
+      if (result === null) {
+        callback(result, InputType.mouseAxisInfinite);
+      }
+      else {
+        callback(result.value, InputType.mouseAxisInfinite);
+      }
+    });
   };
 
-  captureGamepadKey = (callback) => {
+  captureGamepadButton = (callback) => {
     if (typeof callback !== 'function') {
-      callback = () => console.warn('No callbacks passed to captureGamepadKey.');
+      callback = () => console.warn('No callbacks passed to captureGamepadButton.');
     }
 
     let keysPressed = [];
@@ -913,13 +920,13 @@ export default class Modal extends React.Component {
       // The only possible code we can receive at this point is Escape. Treat
       // as cancellation.
       waitingForButton = false;
-      callback(null);
+      callback(null, InputType.none);
     });
 
     const receiveKey = _.debounce(() => {
       if (keysPressed.length === 1) {
         waitingForButton = false;
-        this.deactivateModal(() => callback(keysPressed[0]));
+        this.deactivateModal(() => callback(keysPressed[0], InputType.analogButton));
       }
       else if (keysPressed.length > 1) {
         const currentModal = this.getActiveModal();
@@ -943,7 +950,7 @@ export default class Modal extends React.Component {
 
     const handler = ({ key, value }) => {
       if (value !== 0) {
-        keysPressed.push({ key, value });
+        keysPressed.push(key);
         receiveKey();
       }
     };
@@ -973,7 +980,7 @@ export default class Modal extends React.Component {
 
   captureGamepadAxis = (callback) => {
     if (typeof callback !== 'function') {
-      callback = () => console.warn('No callbacks passed to captureGamepadKey.');
+      callback = () => console.warn('No callbacks passed to captureGamepadButton.');
     }
 
     let axesMoved = {};
@@ -989,7 +996,7 @@ export default class Modal extends React.Component {
       // The only possible code we can receive at this point is Escape. Treat
       // as cancellation.
       waitingForAxis = false;
-      this.deactivateModal(() => callback(null));
+      this.deactivateModal(() => callback(null, InputType.none));
     });
 
     const handler = ({ key, value }) => {
@@ -1007,7 +1014,7 @@ export default class Modal extends React.Component {
       // console.log(key, { lower, upper, percentage });
       if (percentage > Modal.axisDeadzone) {
         waitingForAxis = false;
-        this.deactivateModal(() => callback({ key, value }));
+        this.deactivateModal(() => callback(key, InputType.analogSlider));
       }
     };
 
