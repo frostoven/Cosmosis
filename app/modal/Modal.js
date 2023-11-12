@@ -307,7 +307,7 @@ export default class Modal extends React.Component {
       };
     }
 
-    if (optionalCallback && !options.actions) {
+    if (typeof optionalCallback === 'function' && !options.actions) {
       options.actions = [
         {
           name: 'OK',
@@ -338,7 +338,7 @@ export default class Modal extends React.Component {
       };
     }
 
-    if (!callback) {
+    if (typeof callback !== 'function') {
       callback = () => console.warn('No callbacks passed to confirm.');
     }
 
@@ -374,7 +374,7 @@ export default class Modal extends React.Component {
    * @param callback
    */
   buttonPrompt = (options={}, callback) => {
-    if (!callback) {
+    if (typeof callback !== 'function') {
       callback = () => console.warn('No callbacks passed to buttonPrompt.');
     }
 
@@ -429,7 +429,7 @@ export default class Modal extends React.Component {
       </div>
     );
 
-    if (!callback) {
+    if (typeof callback !== 'function') {
       callback = () => console.warn('No callbacks passed to prompt.');
     }
 
@@ -471,7 +471,7 @@ export default class Modal extends React.Component {
       options.actions = [ { name: 'Close', value: 0 } ];
     }
 
-    if (!callback) {
+    if (typeof callback !== 'function') {
       callback = () => console.warn('No callbacks passed to listPrompt.');
     }
 
@@ -683,6 +683,10 @@ export default class Modal extends React.Component {
     const mouseButton = InputType.mouseButton;
     const mouseAxis = InputType.mouseAxisInfinite;
 
+    if (typeof callback !== 'function') {
+      callback = () => console.warn('No callback passed to autoInputCapture');
+    }
+
     $modal.buttonPrompt({
       header: 'Input Capture',
       body: 'Please choose your input type:',
@@ -739,7 +743,7 @@ export default class Modal extends React.Component {
    * @param callback
    */
   captureKeyboardKey = (callback) => {
-    if (!callback) {
+    if (typeof callback !== 'function') {
       callback = () => console.warn('No callback passed to captureKeyboardKey.');
     }
 
@@ -766,7 +770,7 @@ export default class Modal extends React.Component {
    * @param callback
    */
   captureMouseButton = (callback) => {
-    if (!callback) {
+    if (typeof callback !== 'function') {
       callback = () => console.warn('No callback passed to captureMouseButton.');
     }
 
@@ -886,7 +890,7 @@ export default class Modal extends React.Component {
   };
 
   captureGamepadKey = (callback) => {
-    if (!callback) {
+    if (typeof callback !== 'function') {
       callback = () => console.warn('No callbacks passed to captureGamepadKey.');
     }
 
@@ -957,7 +961,7 @@ export default class Modal extends React.Component {
   };
 
   captureGamepadAxis = (callback) => {
-    if (!callback) {
+    if (typeof callback !== 'function') {
       callback = () => console.warn('No callbacks passed to captureGamepadKey.');
     }
 
