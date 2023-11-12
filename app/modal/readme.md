@@ -242,7 +242,7 @@ $modal.captureMouseButton((spCode) => {
 #### Mouse axis chooser
 
 ```javascript
-$modal.captureMouseDirection((spCode) => {
+$modal.captureMouseAxis((spCode) => {
   // Example outputs: 'spNorthSouth' or 'spEastWest'
   console.log(spCode);
 });
@@ -251,11 +251,9 @@ $modal.captureMouseDirection((spCode) => {
 #### Gamepad button capture
 
 ```javascript
-$modal.captureGamepadKey((buttonData) => {
-  // Example outputs:
-  //  * {key: 'bt0', value: 1}
-  //  * {key: 'hb24', value: 1}
-  console.log(buttonData);
+$modal.captureGamepadButton((buttonCode) => {
+  // Example outputs: 'bt0', 'hb24'
+  console.log(buttonCode);
 });
 ```
 
@@ -263,9 +261,7 @@ $modal.captureGamepadKey((buttonData) => {
 
 ```javascript
 $modal.captureGamepadAxis((axisData) => {
-  // Example outputs:
-  //  * {key: 'ax1', value: -0.25720998644828796}
-  //  * {key: 'ha3', value: 0.7199316620826721}
+  // Example outputs: 'ax1', 'ha3'
   console.log(axisData);
 });
 ```
