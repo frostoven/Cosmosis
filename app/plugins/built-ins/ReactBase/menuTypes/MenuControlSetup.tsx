@@ -320,8 +320,29 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
   };
 
   addNewBinding = () => {
-    console.log('--> addNewBinding tba');
-    console.log('  > selectionInfo:', this.selectionInfo);
+    const { group, actionName } = this.selectionInfo;
+    if (!group || !actionName) {
+      return console.error('Cannot add binding - invalid info:', {
+        group, actionName,
+      });
+    }
+    const entry: InputSchemeEntry = InputManager.allControlSchemes[group];
+
+    window.$modal.autoInputCapture((code: string | null, type: InputType) => {
+      if (code === null) {
+        // User cancelled.
+        return;
+      }
+
+      if (!Object.values(InputType).includes(type) || type === InputType.none) {
+        return console.error(
+          '[Modal] addNewBinding received invalid input type:', { type },
+        );
+      }
+
+      entry.modeController.addNewBinding(actionName, code, type);
+      this.forceUpdate();
+    });
   };
 
   removeExistBinding = () => {
