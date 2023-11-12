@@ -31,6 +31,7 @@ export default class Modal extends React.Component {
   // How much an axis should change, in percentage from initial position,
   // before it's accepted as a binding.
   static axisDeadzone = 0.2;
+
   // When a gamepad is captured for the first time, you'll often get a flood of
   // button presses. This number is the amount of time that should pass before
   // we assume the flood has passed.
@@ -59,6 +60,9 @@ export default class Modal extends React.Component {
     this.state = Modal.defaultState;
     this._currentMenu = null;
     this._modalQueue = [];
+    // Used specifically to listen for the user pressing escape. This is
+    // overwritten by buildModal whenever a new dialog is shown.
+    this._forceCloseListener = null;
   }
 
   componentDidMount() {
@@ -142,10 +146,18 @@ export default class Modal extends React.Component {
   buildModal = (
     {
       header='Message', body='', actions, unskippable=false, prioritise=false,
-      tag, inline=false, renderCustomDialog=null,
+      tag, inline=false, renderCustomDialog=null, onForceClose=()=>{},
     }
   ) => {
     Modal.allowExternalListeners = false;
+
+    if (onForceClose) {
+      this._forceCloseListener = onForceClose;
+    }
+    else {
+      this._forceCloseListener = () => {};
+    }
+
     this._registerKeyListeners();
     if (!actions) {
       actions = [
@@ -177,6 +189,7 @@ export default class Modal extends React.Component {
   _hide = (optionalCallback) => {
     this._removeKeyListeners();
     Modal.allowExternalListeners = true;
+    Modal.keyboardCaptureMode = false;
     this.setState({
       isVisible: false,
       currentClosedCount: 0,
@@ -194,6 +207,13 @@ export default class Modal extends React.Component {
 
   _receiveKeyEvent = (event) => {
     const { code } = event;
+    if (code === 'Escape') {
+      // Hard-quit; 'Escape' means cancel.
+      return this.deactivateModal(() => {
+        this._forceCloseListener && this._forceCloseListener(null);
+      });
+    }
+
     Modal.allowExternalListeners = false;
     if (Modal.keyboardCaptureMode) {
       return;
@@ -297,6 +317,8 @@ export default class Modal extends React.Component {
         },
       ];
     }
+
+    options.onForceClose = optionalCallback;
     this.buildModal(options);
   };
 
@@ -337,6 +359,7 @@ export default class Modal extends React.Component {
       ];
     }
 
+    options.onForceClose = callback;
     this.buildModal(options);
   };
 
@@ -370,6 +393,7 @@ export default class Modal extends React.Component {
         options.body = 'Please select an option:';
     }
 
+    options.onForceClose = callback;
     this.buildModal(options);
   };
 
@@ -430,6 +454,7 @@ export default class Modal extends React.Component {
       ];
     }
 
+    options.onForceClose = callback;
     this.buildModal(options);
   };
 
@@ -628,6 +653,7 @@ export default class Modal extends React.Component {
       return result;
     };
 
+    options.onForceClose = callback;
     this.buildModal(options);
   };
 
@@ -683,6 +709,11 @@ export default class Modal extends React.Component {
         },
       ]
     }, (userSelection) => {
+      if (userSelection === null) {
+        // User pressed Escape. We're wrapping buttonPrompt, which will have
+        // informed the caller of a null return by now, so just quit out.
+        return;
+      }
       this.deactivateModal(() => {
         const answer = userSelection.value;
         switch (answer) {
