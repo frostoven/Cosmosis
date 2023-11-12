@@ -8,7 +8,11 @@ import ScrollIntoView from '../reactExtra/components/ScrollIntoView';
 import GamepadDriver from '../GamepadDriver';
 import { InputType } from '../configs/types/InputTypes';
 import { keyTypeIcons } from '../configs/ui';
-import { MouseButtonName, ScrollName } from '../configs/types/MouseButtonName';
+import {
+  MouseButtonName,
+  scrollDeltaToEnum,
+  ScrollName,
+} from '../configs/types/MouseButtonName';
 
 // Unique name used to identify modals.
 const thisMenu = 'modal';
@@ -31,6 +35,16 @@ export default class Modal extends React.Component {
   // button presses. This number is the amount of time that should pass before
   // we assume the flood has passed.
   static gamepadSpamTimeMs = 40;
+
+  /**
+   * To prevent laptop users accidentally scrolling horizontally, we explicitly
+   * only allow vertical scrolling. Modders may enable 2-way scrolling like so:
+   * @example
+   * Modal.scrollDetector = scrollTouchpadDeltaToEnum;
+   * @tutorial - Modders will need to override the InputManager class as well.
+   * @type {(scrollDelta: number) => ScrollName.spScrollUp | ScrollName.spScrollDown}
+   */
+  static scrollDetector = scrollDeltaToEnum;
 
   static defaultState = {
     isVisible: false,
@@ -739,7 +753,7 @@ export default class Modal extends React.Component {
     const handleScroll = (event) => {
       event.preventDefault();
       event.stopPropagation();
-      let code = event.deltaY < 0 ? ScrollName.spScrollUp : ScrollName.spScrollDown;
+      let code = Modal.scrollDetector(event);
       this.deactivateModal(() => callback(code));
     };
 
