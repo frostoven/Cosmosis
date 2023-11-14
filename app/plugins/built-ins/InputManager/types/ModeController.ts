@@ -6,7 +6,7 @@ import { InputManager } from '../index';
 import { ModeId } from './ModeId';
 import { ActionType } from './ActionType';
 import { ControlSchema } from '../interfaces/ControlSchema';
-import { arrayContainsArray } from '../../../../local/utils';
+import { arrayContainsArray, capitaliseFirst } from '../../../../local/utils';
 import { InputType } from '../../../../configs/types/InputTypes';
 import { easeIntoExp, signRelativeMax } from '../../../../local/mathUtils';
 import { InputUiInfo } from '../interfaces/InputSchemeEntry';
@@ -80,20 +80,30 @@ export default class ModeController {
     this.pulse = {};
     this._analogFlutterCheck = {};
 
-    // Note: the indexes of this array MUST match the indexes in ./InputTypes
-    // or things will break.
-    this._actionReceivers = [
-      this.receiveAndIgnore.bind(this),
-      this.receiveAsKbButton.bind(this),
-      this.receiveAsAnalogButton.bind(this),
-      this.receiveAsAnalogStick.bind(this),
-      this.receiveAsMouseButton.bind(this),
-      this.receiveAsMouse.bind(this),
-      this.receiveAsMouseAxisGravity.bind(this),
-      this.receiveAsMouseAxisThreshold.bind(this),
-      this.receiveAsAnalogSlider.bind(this),
-      this.receiveAsScroller.bind(this),
-    ];
+    const inputTypesNames = Object.values(InputType);
+    // Enums always have double the amount entries, so divide by 2.
+    this._actionReceivers = Array(inputTypesNames.length / 2);
+
+    // Bind InputType entries to callback functions with names matching those
+    // in this class.
+    // Note: The indexes of this._actionReceivers MUST match the indexes in
+    // InputTypes or things will break.
+    for (let i = 0, len = inputTypesNames.length; i < len; i++) {
+      const inputTypeId = inputTypesNames[i];
+      if (typeof inputTypeId !== 'number') {
+        continue;
+      }
+
+      if (inputTypeId === 0) {
+        // Special case (better readability).
+        this._actionReceivers[0] = this.receiveAndIgnore.bind(this);
+        continue;
+      }
+
+      const inputTypeName: string = InputType[inputTypeId];
+      const callbackName = `receiveAs${capitaliseFirst(inputTypeName)}`;
+      this._actionReceivers[inputTypeId] = this[callbackName].bind(this);
+    }
 
     if (!name) {
       console.error('ModeController requires a name for lookup purposes.');
@@ -387,7 +397,7 @@ export default class ModeController {
 
   // Receives a non-pulsed keyboard button.
   // InputType: keyboardButton
-  receiveAsKbButton({ action, value, control }: FullActionData) {
+  receiveAsKeyboardButton({ action, value, control }: FullActionData) {
     // console.log('[button]', { action, actionType: ActionType[control.actionType], value, control });
     if (control.analogRemap) {
       // TODO: value multipliers should probably go into the control definition
@@ -413,7 +423,7 @@ export default class ModeController {
     }
 
     if (control.analogRemap) {
-      // @ts-ignore - See comment in receiveAsKbButton.
+      // @ts-ignore - See comment in receiveAsKeyboardButton.
       this.activeState[control.analogRemap] = value * control.multiplier.analogButton * control.sign;
     }
     else {
@@ -423,7 +433,7 @@ export default class ModeController {
   }
 
   // InputType: analogStickAxis
-  receiveAsAnalogStick({ action, value, control }: FullActionData) {
+  receiveAsAnalogStickAxis({ action, value, control }: FullActionData) {
     if (control.disallowSign !== 0) {
       if (control.disallowSign === 1 && value > 0) {
         return;
@@ -440,12 +450,12 @@ export default class ModeController {
 
       // Check the previous action to see if that, too, was effectively 0.
       if (this._analogFlutterCheck[action] === 0) {
-        // console.log(`[receiveAsAnalogStick] Preventing bad ${action} reset.`);
+        // console.log(`[receiveAsAnalogStickAxis] Preventing bad ${action} reset.`);
         return;
       }
     }
     else if (result !== 0) {
-      // @ts-ignore - See comment in receiveAsKbButton.
+      // @ts-ignore - See comment in receiveAsKeyboardButton.
       const multiplier = control.multiplier.analogStickAxis as number;
       const effectiveThreshold = multiplier * ANALOG_STICK_THRESHOLD;
       result = value * multiplier;
@@ -465,7 +475,7 @@ export default class ModeController {
     }
 
     if (ANALOG_STICK_EASING) {
-      // @ts-ignore - See comment in receiveAsKbButton.
+      // @ts-ignore - See comment in receiveAsKeyboardButton.
       const maxRange = control.multiplier.analogStickAxis - ANALOG_STICK_THRESHOLD;
       stateTarget[action] = easeIntoExp(result, maxRange);
     }
@@ -480,11 +490,11 @@ export default class ModeController {
   // InputType: mouseButton
   receiveAsMouseButton(actionData: FullActionData) {
     // This works pretty much identically to keyboard; send it there instead.
-    this.receiveAsKbButton(actionData);
+    this.receiveAsKeyboardButton(actionData);
   }
 
   // InputType: mouseAxisInfinite
-  receiveAsMouse({ action, value, analogData, control }: FullActionData) {
+  receiveAsMouseAxisInfinite({ action, value, analogData, control }: FullActionData) {
     if (control.disallowSign !== 0) {
       if (control.disallowSign === 1 && value > 0) {
         return;
@@ -496,21 +506,21 @@ export default class ModeController {
 
     // console.log('[mouse movement | standard]', { action, actionType: ActionType[control.actionType], value, analogData, control });
     // console.log(`--> analogData[${action}]: delta=${analogData.delta}; grav=${analogData.gravDelta}`);
-    // @ts-ignore - See comment in receiveAsKbButton.
+    // @ts-ignore - See comment in receiveAsKeyboardButton.
     this.state[action] += analogData.delta * control.multiplier.mouseAxisInfinite;
   }
 
   // InputType: mouseAxisGravity
   receiveAsMouseAxisGravity({ action, value, analogData, control }: FullActionData) {
     console.log('[mouse movement | gravity]', { action, actionType: ActionType[control.actionType], value, analogData, control });
-    // @ts-ignore - See comment in receiveAsKbButton.
+    // @ts-ignore - See comment in receiveAsKeyboardButton.
     this.state[action] += this.state[action] += analogData.delta;
   }
 
   // InputType: mouseAxisThreshold
   receiveAsMouseAxisThreshold({ action, value, analogData, control }: FullActionData) {
     console.log('[mouse movement | threshold]', { action, actionType: ActionType[control.actionType], value, analogData, control });
-    // @ts-ignore - See comment in receiveAsKbButton.
+    // @ts-ignore - See comment in receiveAsKeyboardButton.
     const result = this.state[action] += value * control.multiplier.mouseAxisInfinite;
     if (Math.abs(result) > 1) {
       this.state[action] = signRelativeMax(result, 1);
@@ -561,10 +571,10 @@ export default class ModeController {
     }
   }
 
-  receiveAsScroller({ action, value, control }: FullActionData) {
+  receiveAsScrollWheel({ action, value, control }: FullActionData) {
     if (control.actionType === ActionType.continuous) {
       return console.error(
-        '[ModeController] receiveAsScroller controls should be of type ' +
+        '[ModeController] receiveAsScrollWheel controls should be of type ' +
         'ActionType.pulse or ActionType.hybrid.'
       );
     }
