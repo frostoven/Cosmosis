@@ -15,7 +15,6 @@ enum InputType {
   /**
    * These range from -1 to 1.
    */
-  // TODO: rename to gamepadAxisStandard
   gamepadAxisStandard,
 
   /**
@@ -24,8 +23,7 @@ enum InputType {
    * Note: This is an extension of gamepadAxisStandard and should only be used
    * from within ControlSchema.
    */
-  // TODO: rename to gamepadSlider
-  analogSlider,
+  gamepadSlider,
 
   /**
    * Standard digital button.

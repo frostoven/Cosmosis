@@ -8,7 +8,7 @@ const { continuous, hybrid } = ActionType;
 
 const {
   keyboardButton, gamepadButton, gamepadAxisStandard, mouseAxisInfinite,
-  analogSlider, scrollWheel,
+  gamepadSlider, scrollWheel,
 } = InputType;
 
 const {
@@ -43,7 +43,7 @@ const freeCamControls: ControlSchema = {
   // Basic controls
   moveForward:         { actionType: continuous, sign: -1, analogRemap: 'moveForwardBackward', current: null, default: { KeyW: keyboardButton, ArrowUp: keyboardButton } },
   moveBackward:        { actionType: continuous, sign:  1, analogRemap: 'moveForwardBackward', current: null, default: { KeyS: keyboardButton, ArrowDown: keyboardButton } },
-  moveForwardBackward: { actionType: continuous, current: null, default: { ax1: gamepadAxisStandard, ha5: analogSlider }, isBidirectional: true, multiplier: { ...defaultBidirectionalMoveMulti } },
+  moveForwardBackward: { actionType: continuous, current: null, default: { ax1: gamepadAxisStandard, ha5: gamepadSlider }, isBidirectional: true, multiplier: { ...defaultBidirectionalMoveMulti } },
   //
   moveLeft:            { actionType: continuous, sign: -1, analogRemap: 'moveLeftRight', current: null, default: { ArrowLeft: keyboardButton, KeyA: keyboardButton } },
   moveRight:           { actionType: continuous, sign:  1, analogRemap: 'moveLeftRight', current: null, default: { ArrowRight: keyboardButton, KeyD: keyboardButton } },

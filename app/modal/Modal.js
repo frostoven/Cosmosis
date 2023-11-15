@@ -678,9 +678,6 @@ export default class Modal extends React.Component {
    * complete.
    */
   autoInputCapture = (filterOrCallback, optionalCallback) => {
-    // TODO: refactor:
-    //  * gamepadButton to gamepadButton
-    //  * analogSlider to gamepadSlider
     const keyboardButton = InputType.keyboardButton;
     const gamepadButton = InputType.gamepadButton;
     const gamepadAnalog = InputType.gamepadAxisStandard;

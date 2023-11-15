@@ -11,7 +11,7 @@ const keyTypeIcons: { [key: string]: SemanticICONS } = {
   [InputType.mouseAxisInfinite]: 'crosshairs',
   [InputType.mouseAxisThreshold]: 'bullseye',
   [InputType.mouseAxisGravity]: 'bullseye',
-  [InputType.analogSlider]: 'fighter jet',
+  [InputType.gamepadSlider]: 'fighter jet',
   [InputType.gamepadAxisStandard]: 'fighter jet',
   [InputType.gamepadButton]: 'gamepad',
   // By action name

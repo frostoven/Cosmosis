@@ -533,7 +533,7 @@ export default class ModeController {
     console.log(`[mouse{${this.name}}|${action}]`, this.state[action]);
   }
 
-  receiveAsAnalogSlider({ action, value, control }: FullActionData) {
+  receiveAsGamepadSlider({ action, value, control }: FullActionData) {
     if (control.disallowSign !== 0) {
       if (control.disallowSign === 1 && value > 0) {
         return;

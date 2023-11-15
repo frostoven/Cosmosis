@@ -5,7 +5,7 @@ import { genAutoFriendlyNames } from '../../../InputManager/utils';
 
 const { pulse, continuous } = ActionType;
 const { keyboardButton, gamepadButton, gamepadAxisStandard, mouseButton,
-  mouseAxisInfinite, mouseAxisGravity, mouseAxisThreshold, analogSlider,
+  mouseAxisInfinite, mouseAxisGravity, mouseAxisThreshold, gamepadSlider,
   scrollWheel,
 } = InputType;
 
@@ -20,7 +20,7 @@ const shipPilotControls: ControlSchema = {
   //
   thrustInc:     { actionType: continuous, sign: -1, analogRemap: 'thrustAnalog', current: null, default: { KeyW: keyboardButton } },
   thrustDec:     { actionType: continuous, sign:  1, analogRemap: 'thrustAnalog', current: null, default: { KeyS: keyboardButton } },
-  thrustAnalog:  { actionType: continuous, current: null, default: { ax1: gamepadAxisStandard, ha5: analogSlider }, isBidirectional: true },
+  thrustAnalog:  { actionType: continuous, current: null, default: { ax1: gamepadAxisStandard, ha5: gamepadSlider }, isBidirectional: true },
   //
   pitchUp:       { actionType: continuous, sign: -1, analogRemap: 'pitchAnalog', current: null, default: { Numpad8: keyboardButton } },
   pitchDown:     { actionType: continuous, sign:  1, analogRemap: 'pitchAnalog', current: null, default: { Numpad2: keyboardButton } },
