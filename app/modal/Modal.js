@@ -679,10 +679,10 @@ export default class Modal extends React.Component {
    */
   autoInputCapture = (filterOrCallback, optionalCallback) => {
     // TODO: refactor:
-    //  * analogButton to gamepadButton
+    //  * gamepadButton to gamepadButton
     //  * analogSlider to gamepadSlider
     const keyboardButton = InputType.keyboardButton;
-    const gamepadButton = InputType.analogButton;
+    const gamepadButton = InputType.gamepadButton;
     const gamepadAnalog = InputType.analogStickAxis;
     const mouseAxis = InputType.mouseAxisInfinite;
     const mouseButton = InputType.mouseButton;
@@ -997,7 +997,7 @@ export default class Modal extends React.Component {
     const receiveKey = _.debounce(() => {
       if (keysPressed.length === 1) {
         waitingForButton = false;
-        this.deactivateModal(() => callback(keysPressed[0], InputType.analogButton));
+        this.deactivateModal(() => callback(keysPressed[0], InputType.gamepadButton));
       }
       else if (keysPressed.length > 1) {
         const currentModal = this.getActiveModal();

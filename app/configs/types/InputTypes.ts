@@ -6,7 +6,7 @@ enum InputType {
   keyboardButton,
   // These range from 0 to 1 and include all buttons on gamepads and flight
   // sticks.
-  analogButton,
+  gamepadButton,
   // These range from -1 to 1.
   analogStickAxis,
   // Standard digital button.

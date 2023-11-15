@@ -7,26 +7,26 @@ import { genAutoFriendlyNames } from '../../../InputManager/utils';
 const { continuous, hybrid } = ActionType;
 
 const {
-  keyboardButton, analogButton, analogStickAxis, mouseAxisInfinite,
+  keyboardButton, gamepadButton, analogStickAxis, mouseAxisInfinite,
   analogSlider, scrollWheel,
 } = InputType;
 
 const {
   kbLookSpeed,
   kbRotationSpeed,
-  analogButtonLookSpeed,
-  analogButtonRotationSpeed,
+  gamepadButtonLookSpeed,
+  gamepadButtonRotationSpeed,
   analogStickLookSpeed,
   analogStickGhostWalkSpeed,
   mouseAxisInfiniteLookSpeed,
 } = DefaultInputSpeeds;
 
 const defaultButtonLookMulti = {
-  keyboardButton: kbLookSpeed, analogButton: analogButtonLookSpeed,
+  keyboardButton: kbLookSpeed, gamepadButton: gamepadButtonLookSpeed,
 };
 
 const defaultButtonRollMulti = {
-  keyboardButton: kbRotationSpeed, analogButton: analogButtonRotationSpeed,
+  keyboardButton: kbRotationSpeed, gamepadButton: gamepadButtonRotationSpeed,
 };
 
 const defaultBidirectionalLookMulti = {
@@ -49,8 +49,8 @@ const freeCamControls: ControlSchema = {
   moveRight:           { actionType: continuous, sign:  1, analogRemap: 'moveLeftRight', current: null, default: { ArrowRight: keyboardButton, KeyD: keyboardButton } },
   moveLeftRight:       { actionType: continuous, current: null, default: { ax0: analogStickAxis }, isBidirectional: true, multiplier: { ...defaultBidirectionalMoveMulti } },
   //
-  moveUp:              { actionType: continuous, sign:  1, analogRemap: 'moveUpDown', current: null, default: { KeyR: keyboardButton, Space: keyboardButton, bt3: analogButton } },
-  moveDown:            { actionType: continuous, sign: -1, analogRemap: 'moveUpDown', current: null, default: { KeyF: keyboardButton, bt0: analogButton } },
+  moveUp:              { actionType: continuous, sign:  1, analogRemap: 'moveUpDown', current: null, default: { KeyR: keyboardButton, Space: keyboardButton, bt3: gamepadButton } },
+  moveDown:            { actionType: continuous, sign: -1, analogRemap: 'moveUpDown', current: null, default: { KeyF: keyboardButton, bt0: gamepadButton } },
   moveUpDown:          { actionType: continuous, current: null, default: null, isBidirectional: true, multiplier: { ...defaultBidirectionalMoveMulti } },
   //
   speedUp:             { actionType: hybrid, current: null, default: { NumpadAdd: keyboardButton, spScrollUp: scrollWheel } },
@@ -64,8 +64,8 @@ const freeCamControls: ControlSchema = {
   lookDown:      { actionType: continuous, sign:  1, analogRemap: 'lookUpDown', current: null, default: { Numpad2: keyboardButton }, multiplier: { ...defaultButtonLookMulti } },
   lookUpDown:    { actionType: continuous, current: null, default: { spNorthSouth: mouseAxisInfinite, ax3: analogStickAxis }, isBidirectional: true, multiplier: { ...defaultBidirectionalLookMulti } },
   //
-  rollLeft:      { actionType: continuous, sign: -1, analogRemap: 'rollAnalog', current: null, default: { bt6: analogButton, Numpad7: keyboardButton }, multiplier: { ...defaultButtonRollMulti } },
-  rollRight:     { actionType: continuous, sign:  1, analogRemap: 'rollAnalog', current: null, default: { bt7: analogButton, Numpad9: keyboardButton }, multiplier: { ...defaultButtonRollMulti } },
+  rollLeft:      { actionType: continuous, sign: -1, analogRemap: 'rollAnalog', current: null, default: { bt6: gamepadButton, Numpad7: keyboardButton }, multiplier: { ...defaultButtonRollMulti } },
+  rollRight:     { actionType: continuous, sign:  1, analogRemap: 'rollAnalog', current: null, default: { bt7: gamepadButton, Numpad9: keyboardButton }, multiplier: { ...defaultButtonRollMulti } },
   rollAnalog: { actionType: continuous, current: null, default: null, isBidirectional: true, multiplier: { ...defaultBidirectionalLookMulti } },
   //
   lookLeft:      { actionType: continuous, sign: -1, analogRemap: 'lookLeftRight', current: null, default: { Numpad4: keyboardButton }, multiplier: { ...defaultButtonLookMulti } },

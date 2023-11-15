@@ -4,7 +4,7 @@ import { InputType } from '../../../../../configs/types/InputTypes';
 import { genAutoFriendlyNames } from '../../../InputManager/utils';
 
 const { pulse, continuous } = ActionType;
-const { keyboardButton, analogButton, analogStickAxis, mouseButton,
+const { keyboardButton, gamepadButton, analogStickAxis, mouseButton,
   mouseAxisInfinite, mouseAxisGravity, mouseAxisThreshold, analogSlider,
   scrollWheel,
 } = InputType;
@@ -13,7 +13,7 @@ const shipPilotControls: ControlSchema = {
   // Pulsed
   thrustUp10:          { actionType: pulse, current: null, default: { spScrollUp: scrollWheel }, friendly: 'Thrust Increase (10%)' },
   thrustReset:         { actionType: pulse, current: null, default: { spScrollDown: scrollWheel } },
-  mouseHeadLook:       { actionType: pulse, current: null, default: { spMouseMiddle: mouseButton, Numpad5: keyboardButton, bt11: analogButton, bt10: analogButton } },
+  mouseHeadLook:       { actionType: pulse, current: null, default: { spMouseMiddle: mouseButton, Numpad5: keyboardButton, bt11: gamepadButton, bt10: gamepadButton } },
   toggleFlightAssist:  { actionType: pulse, current: null, default: { KeyZ: keyboardButton } },
   //
   // Continuous

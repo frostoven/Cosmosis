@@ -419,8 +419,8 @@ export default class ModeController {
     // console.log('Key latency:', performance.now() - InputManager.lastPressTime);
   }
 
-  // InputType: analogButton
-  receiveAsAnalogButton({ action, value, control }: FullActionData) {
+  // InputType: gamepadButton
+  receiveAsGamepadButton({ action, value, control }: FullActionData) {
     // console.log('[analog button]', { action, actionType: ActionType[control.actionType], value, control });
     // Under normal circumstances this value is always in range of 0-1.
     if (value < ANALOG_BUTTON_THRESHOLD) {
@@ -429,7 +429,7 @@ export default class ModeController {
 
     if (control.analogRemap) {
       // @ts-ignore - See comment in receiveAsKeyboardButton.
-      this.activeState[control.analogRemap] = value * control.multiplier.analogButton * control.sign;
+      this.activeState[control.analogRemap] = value * control.multiplier.gamepadButton * control.sign;
     }
     else {
       // This has a range of 0 to 1.

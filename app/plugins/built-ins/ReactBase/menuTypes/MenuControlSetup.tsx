@@ -342,7 +342,7 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
 
     const buttonFilter = [
       InputType.keyboardButton,
-      InputType.analogButton,
+      InputType.gamepadButton,
       InputType.mouseButton,
     ];
 

@@ -4,7 +4,7 @@ import { InputType } from '../../../../configs/types/InputTypes';
 import { genAutoFriendlyNames } from '../../InputManager/utils';
 
 const { pulse, continuous } = ActionType;
-const { keyboardButton, analogButton, mouseButton } = InputType;
+const { keyboardButton, gamepadButton, mouseButton } = InputType;
 
 const reactMenuControls: ControlSchema = {
   // Keys that may be held
