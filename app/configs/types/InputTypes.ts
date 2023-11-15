@@ -2,25 +2,59 @@
 // currently hardcodes the numbers used here.
 enum InputType {
   none = 0,
-  // Standard digital button.
+  /**
+   * Standard digital button.
+   */
   keyboardButton,
-  // These range from 0 to 1 and include all buttons on gamepads and flight
-  // sticks.
+
+  /** These range from 0 to 1 and include all buttons on gamepads and flight
+   * sticks.
+   */
   gamepadButton,
-  // These range from -1 to 1.
+
+  /**
+   * These range from -1 to 1.
+   */
+  // TODO: rename to gamepadAxisStandard
   analogStickAxis,
-  // Standard digital button.
-  mouseButton,
-  // Raw values of any range. Generally used for head-look.
-  mouseAxisInfinite,
-  // Range from -1 to 1, but gradually returns to 0 byt itself.
-  mouseAxisGravity,
-  // Range from -1 to 1.
-  mouseAxisThreshold,
-  // Analog devices that stay in place after moving them (eg. the throttle
-  // control on a HOTAS box).
+
+  /**
+   * Analog devices that stay in place after moving them (eg. the throttle
+   * control on a HOTAS box).
+   * Note: This is an extension of analogStickAxis and should only be used
+   * from within ControlSchema.
+   */
+  // TODO: rename to gamepadSlider
   analogSlider,
-  // Up and down scrolling. Note that this is propagated as keyboard input.
+
+  /**
+   * Standard digital button.
+   */
+  mouseButton,
+
+  /**
+   * Raw values of any range. Generally used for head-look.
+   */
+  // TODO: rename to mouseAxisStandard
+  mouseAxisInfinite,
+
+  /**
+   * Range from -1 to 1, but gradually returns to 0 by itself.
+   * Note: This is an extension of mouseAxisInfinite and should only be used
+   * from within ControlSchema.
+   */
+  mouseAxisGravity,
+
+  /**
+   * Range from -1 to 1.
+   * Note: This is an extension of mouseAxisInfinite and should only be used
+   * from within ControlSchema.
+   */
+  mouseAxisThreshold,
+
+  /**
+   * Up and down scrolling. Note that this is propagated as keyboard input.
+   */
   scrollWheel
 }
 
