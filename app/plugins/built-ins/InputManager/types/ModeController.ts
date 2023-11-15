@@ -44,6 +44,7 @@ export default class ModeController {
   public controlSchema: ControlSchema;
   public controlsByKey: {};
   public keyLookup: {} = {};
+  public remapReceiverLookup: {} = {};
   public uiInfo: InputUiInfo;
   private readonly _actionReceivers: Array<Function>;
 
@@ -198,6 +199,10 @@ export default class ModeController {
           console.error(`[ModeController] Failed to set key for action '${actionName}'`, error);
         }
 
+      if (controlSchema[actionName].analogRemap) {
+        // @ts-ignore - Apparently the very previous line was never written.
+        this.remapReceiverLookup[controlSchema[actionName].analogRemap] = true;
+      }
 
       if (!controlSchema[actionName].sign) {
         controlSchema[actionName].sign = 1;
