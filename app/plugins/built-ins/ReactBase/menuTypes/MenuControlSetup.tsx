@@ -529,6 +529,27 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
             const descriptor = schema[actionName];
             const currentVerticalIndex = controlIndex++;
             let subIndexCount = 0;
+
+            let friendly: string | JSX.Element;
+            let fieldText: string = control.friendly || actionName;
+            const specialText = fieldText.match(/\[.*\]/)?.[0] || '';
+            if (specialText) {
+              fieldText = fieldText.substring(0, fieldText.length - specialText.length);
+              friendly = (
+                <>
+                  <div style={{ display: 'inline-block' }}>
+                    {fieldText}
+                  </div>
+                  <div style={{ display: 'inline-block', color: '#a8ffa0', }}>
+                    &nbsp;{specialText}
+                  </div>
+                </>
+              );
+            }
+            else {
+              friendly = fieldText;
+            }
+
             const isActive = currentVerticalIndex === selected;
             if (isActive) {
               this.selectionInfo = {
