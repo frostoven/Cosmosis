@@ -16,8 +16,11 @@ module.exports = {
     filename: '[name].js',
     // sourceMapFilename: '[name].js.map',
   },
-  // Could not get these to work properly (Chrome appears to have a but at time
-  // of writing), but these are our source-map options:
+  // This won't work out-of-the-box due to a bug in this version of the
+  // Chromium engine. If you'd like to use source maps, see the 9 November 23
+  // comment here:
+  // https://github.com/nwjs/nw.js/issues/7724
+  // Disabling it by default as it's incredibly slow anyway.
   // devtool: 'source-map',
   // devtool: 'eval-source-map',
   module: {
