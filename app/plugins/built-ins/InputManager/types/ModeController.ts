@@ -437,8 +437,8 @@ export default class ModeController {
     }
   }
 
-  // InputType: analogStickAxis
-  receiveAsAnalogStickAxis({ action, value, control }: FullActionData) {
+  // InputType: gamepadAxisStandard
+  receiveAsGamepadAxisStandard({ action, value, control }: FullActionData) {
     if (control.disallowSign !== 0) {
       if (control.disallowSign === 1 && value > 0) {
         return;
@@ -455,13 +455,13 @@ export default class ModeController {
 
       // Check the previous action to see if that, too, was effectively 0.
       if (this._analogFlutterCheck[action] === 0) {
-        // console.log(`[receiveAsAnalogStickAxis] Preventing bad ${action} reset.`);
+        // console.log(`[receiveAsGamepadAxisStandard] Preventing bad ${action} reset.`);
         return;
       }
     }
     else if (result !== 0) {
       // @ts-ignore - See comment in receiveAsKeyboardButton.
-      const multiplier = control.multiplier.analogStickAxis as number;
+      const multiplier = control.multiplier.gamepadAxisStandard as number;
       const effectiveThreshold = multiplier * ANALOG_STICK_THRESHOLD;
       result = value * multiplier;
       // This allows the user to ease into the turn without suddenly jumping to
@@ -481,7 +481,7 @@ export default class ModeController {
 
     if (ANALOG_STICK_EASING) {
       // @ts-ignore - See comment in receiveAsKeyboardButton.
-      const maxRange = control.multiplier.analogStickAxis - ANALOG_STICK_THRESHOLD;
+      const maxRange = control.multiplier.gamepadAxisStandard - ANALOG_STICK_THRESHOLD;
       stateTarget[action] = easeIntoExp(result, maxRange);
     }
     else {

@@ -16,12 +16,12 @@ enum InputType {
    * These range from -1 to 1.
    */
   // TODO: rename to gamepadAxisStandard
-  analogStickAxis,
+  gamepadAxisStandard,
 
   /**
    * Analog devices that stay in place after moving them (eg. the throttle
    * control on a HOTAS box).
-   * Note: This is an extension of analogStickAxis and should only be used
+   * Note: This is an extension of gamepadAxisStandard and should only be used
    * from within ControlSchema.
    */
   // TODO: rename to gamepadSlider

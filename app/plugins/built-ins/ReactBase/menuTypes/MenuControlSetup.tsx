@@ -347,7 +347,7 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
     ];
 
     const analogFiler = [
-      InputType.analogStickAxis,
+      InputType.gamepadAxisStandard,
       InputType.mouseAxisInfinite,
     ];
 

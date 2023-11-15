@@ -4,7 +4,7 @@ import { InputType } from '../../../../../configs/types/InputTypes';
 import { genAutoFriendlyNames } from '../../../InputManager/utils';
 
 const { pulse, continuous } = ActionType;
-const { keyboardButton, gamepadButton, analogStickAxis, mouseButton,
+const { keyboardButton, gamepadButton, gamepadAxisStandard, mouseButton,
   mouseAxisInfinite, mouseAxisGravity, mouseAxisThreshold, analogSlider,
   scrollWheel,
 } = InputType;
@@ -20,11 +20,11 @@ const shipPilotControls: ControlSchema = {
   //
   thrustInc:     { actionType: continuous, sign: -1, analogRemap: 'thrustAnalog', current: null, default: { KeyW: keyboardButton } },
   thrustDec:     { actionType: continuous, sign:  1, analogRemap: 'thrustAnalog', current: null, default: { KeyS: keyboardButton } },
-  thrustAnalog:  { actionType: continuous, current: null, default: { ax1: analogStickAxis, ha5: analogSlider }, isBidirectional: true },
+  thrustAnalog:  { actionType: continuous, current: null, default: { ax1: gamepadAxisStandard, ha5: analogSlider }, isBidirectional: true },
   //
   pitchUp:       { actionType: continuous, sign: -1, analogRemap: 'pitchAnalog', current: null, default: { Numpad8: keyboardButton } },
   pitchDown:     { actionType: continuous, sign:  1, analogRemap: 'pitchAnalog', current: null, default: { Numpad2: keyboardButton } },
-  pitchAnalog:   { actionType: continuous, current: null, default: { spNorthSouth: mouseAxisThreshold, ax3: InputType.analogStickAxis }, isBidirectional: true },
+  pitchAnalog:   { actionType: continuous, current: null, default: { spNorthSouth: mouseAxisThreshold, ax3: InputType.gamepadAxisStandard }, isBidirectional: true },
   //
   rollLeft:      { actionType: continuous, sign:  1, current: null, default: { KeyA: keyboardButton } },
   rollRight:     { actionType: continuous, sign: -1, current: null, default: { KeyD: keyboardButton } },

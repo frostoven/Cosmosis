@@ -683,7 +683,7 @@ export default class Modal extends React.Component {
     //  * analogSlider to gamepadSlider
     const keyboardButton = InputType.keyboardButton;
     const gamepadButton = InputType.gamepadButton;
-    const gamepadAnalog = InputType.analogStickAxis;
+    const gamepadAnalog = InputType.gamepadAxisStandard;
     const mouseAxis = InputType.mouseAxisInfinite;
     const mouseButton = InputType.mouseButton;
     const scrollWheel = InputType.scrollWheel;
@@ -1085,7 +1085,7 @@ export default class Modal extends React.Component {
       // console.log(key, { lower, upper, percentage });
       if (percentage > Modal.axisDeadzone) {
         waitingForAxis = false;
-        this.deactivateModal(() => callback(key, InputType.analogStickAxis));
+        this.deactivateModal(() => callback(key, InputType.gamepadAxisStandard));
       }
     };
 

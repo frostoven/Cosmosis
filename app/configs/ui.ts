@@ -12,7 +12,7 @@ const keyTypeIcons: { [key: string]: SemanticICONS } = {
   [InputType.mouseAxisThreshold]: 'bullseye',
   [InputType.mouseAxisGravity]: 'bullseye',
   [InputType.analogSlider]: 'fighter jet',
-  [InputType.analogStickAxis]: 'fighter jet',
+  [InputType.gamepadAxisStandard]: 'fighter jet',
   [InputType.gamepadButton]: 'gamepad',
   // By action name
   [ScrollName.spScrollUp]: 'sort amount up',
