@@ -671,47 +671,96 @@ export default class Modal extends React.Component {
 
   /**
    * Captures input based on what the user decides they want captured.
-   * @param callback
+   * @param {function|Array|null} [filterOrCallback] - Optional filter.
+   * Defaults to all possible actions. If you do not wish to apply a filter,
+   * make this your callback function instead.
+   * @param {function} [optionalCallback] - Function to be called after capture
+   * complete.
    */
-  autoInputCapture = (callback) => {
+  autoInputCapture = (filterOrCallback, optionalCallback) => {
     // TODO: refactor:
     //  * analogButton to gamepadButton
-    //  * analogSlider to gamepadSlide
+    //  * analogSlider to gamepadSlider
     const keyboardButton = InputType.keyboardButton;
     const gamepadButton = InputType.analogButton;
-    const gamepadAnalog = InputType.analogSlider;
-    const mouseButton = InputType.mouseButton;
+    const gamepadAnalog = InputType.analogStickAxis;
     const mouseAxis = InputType.mouseAxisInfinite;
+    const mouseButton = InputType.mouseButton;
+    const scrollWheel = InputType.scrollWheel;
+
+    const defaultFilter = [
+      keyboardButton, gamepadButton, gamepadAnalog, mouseButton, mouseAxis,
+      scrollWheel,
+    ];
+
+    let filter = null;
+    let callback = optionalCallback;
+    if (typeof filterOrCallback === 'function' && typeof optionalCallback === 'undefined') {
+      callback = filterOrCallback;
+      filter = defaultFilter;
+    }
+    else {
+      filter = filterOrCallback;
+    }
 
     if (typeof callback !== 'function') {
       callback = () => console.warn('No callback passed to autoInputCapture');
     }
 
+    if (!Array.isArray(filter)) {
+      return console.error('The autoInputCapture filter must be an array.');
+    }
+
+    if (!filter.length) {
+      filter = defaultFilter;
+    }
+
+    const allowScroller = filter.includes(scrollWheel);
+
+    const actions = [];
+
+    filter.includes(keyboardButton) && actions.push(
+      {
+        name: <><Icon name={keyTypeIcons[keyboardButton]}/> Keyboard Button</>,
+        value: keyboardButton,
+      }
+    );
+
+    filter.includes(gamepadButton) && actions.push(
+      {
+        name: <><Icon name={keyTypeIcons[gamepadButton]}/> Controller Button</>,
+        value: gamepadButton,
+      }
+    );
+
+    filter.includes(gamepadAnalog) && actions.push(
+      {
+        name: <><Icon name={keyTypeIcons[gamepadAnalog]}/> Controller Axis</>,
+        value: gamepadAnalog,
+      }
+    );
+
+    filter.includes(mouseAxis) && actions.push(
+      {
+        name: <><Icon name={keyTypeIcons[mouseAxis]}/> Mouse Axis</>,
+        value: mouseAxis,
+      }
+    );
+
+    filter.includes(mouseButton) && actions.push(
+      {
+        name: <>
+          <Icon name={keyTypeIcons[mouseButton]}/>&nbsp;
+          Mouse Button{allowScroller ? ' / Scroll Wheel' : ''}
+        </>,
+        value: mouseButton,
+      }
+    );
+
     $modal.buttonPrompt({
       header: 'Input Capture',
       body: 'Please choose your input type:',
-      actions: [
-        {
-          name: <><Icon name={keyTypeIcons[keyboardButton]}/> Keyboard Button</>,
-          value: keyboardButton,
-        },
-        {
-          name: <><Icon name={keyTypeIcons[gamepadButton]}/> Controller Button</>,
-          value: gamepadButton,
-        },
-        {
-          name: <><Icon name={keyTypeIcons[gamepadAnalog]}/> Controller Axis</>,
-          value: gamepadAnalog,
-        },
-        {
-          name: <><Icon name={keyTypeIcons[mouseButton]}/> Mouse Button</>,
-          value: mouseButton,
-        },
-        {
-          name: <><Icon name={keyTypeIcons[mouseAxis]}/> Mouse Axis</>,
-          value: mouseAxis,
-        },
-      ]
+      actions,
     }, (userSelection) => {
       if (userSelection === null) {
         // User pressed Escape. Report as cancellation.
@@ -726,10 +775,10 @@ export default class Modal extends React.Component {
             return this.captureGamepadButton(callback);
           case gamepadAnalog:
             return this.captureGamepadAxis(callback);
-          case mouseButton:
-            return this.captureMouseButton(callback);
           case mouseAxis:
             return this.captureMouseAxis(callback);
+          case mouseButton:
+            return this.captureMouseButton({ allowScroller }, callback);
           default:
             console.error('[Modal] Bug detected: unknown value', answer);
         }
@@ -769,16 +818,35 @@ export default class Modal extends React.Component {
 
   /**
    * Captures a mouse click, and calls back the result.
-   * @param callback
+   * @param optionsOrCallback
+   * @param optionsOrCallback.allowScroller {boolean}
+   * @param [callback]
    */
-  captureMouseButton = (callback) => {
-    if (typeof callback !== 'function') {
-      callback = () => console.warn('No callback passed to captureMouseButton.');
+  captureMouseButton = (optionsOrCallback, callback) => {
+    let options;
+    let defaultOptions = { allowScroller: false };
+    let defaultCallback = () => console.warn('No callback passed to captureMouseButton.');
+
+    if (typeof optionsOrCallback === 'function') {
+      callback = optionsOrCallback;
+      options = defaultOptions;
+    } else {
+      options = optionsOrCallback || defaultOptions;
     }
+    callback = callback || defaultCallback;
+    const allowScroller = options.allowScroller;
 
     let scrollSetupComplete = false;
     let type = InputType.mouseButton;
     const mousetrap = React.createRef();
+
+    let header = allowScroller ?
+      'Click or Scroll...' :
+      'Click the desired mouse button...';
+
+    let bodyText = allowScroller ?
+      'Click or scroll in this box:' :
+      'Click in this box:';
 
     const handleClick = (event) => {
       event.preventDefault();
@@ -804,6 +872,9 @@ export default class Modal extends React.Component {
     };
 
     const setupScroll = () => {
+      if (!allowScroller) {
+        return;
+      }
       if (!scrollSetupComplete && mousetrap.current) {
         scrollSetupComplete = true;
         mousetrap.current.addEventListener('wheel', handleScroll, {
@@ -814,10 +885,10 @@ export default class Modal extends React.Component {
 
     Modal.keyboardCaptureMode = true;
     this.alert({
-      header: 'Grabbing click...',
+      header,
       body: (
         <div style={{ textAlign: 'center' }}>
-          Click or scroll in this box:
+          {bodyText}
           <br/>
           <div
             ref={mousetrap}
@@ -1014,7 +1085,7 @@ export default class Modal extends React.Component {
       // console.log(key, { lower, upper, percentage });
       if (percentage > Modal.axisDeadzone) {
         waitingForAxis = false;
-        this.deactivateModal(() => callback(key, InputType.analogSlider));
+        this.deactivateModal(() => callback(key, InputType.analogStickAxis));
       }
     };
 
