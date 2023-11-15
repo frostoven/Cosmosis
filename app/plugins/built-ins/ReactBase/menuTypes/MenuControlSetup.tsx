@@ -11,6 +11,7 @@ import { InputType } from '../../../../configs/types/InputTypes';
 import { camelToTitleCase } from '../../../../local/utils';
 import { keyTypeIcons } from '../../../../configs/ui';
 import { ScrollName } from '../../../../configs/types/MouseButtonName';
+import { ActionType } from '../../InputManager/types/ActionType';
 
 const menuEntriesStyle: React.CSSProperties = {
   overflow: 'auto',
@@ -60,44 +61,6 @@ function keyCodeToJsx(keyCode: string | JSX.Element, type: InputType, includeIco
     icon = null;
   }
 
-  switch (keyCode) {
-    case 'spNorthSouth':
-      keyCode = <><Icon name={icons.MouseY}/> MouseY</>;
-      icon = null;
-      break;
-    case 'spEastWest':
-      icon = null;
-      keyCode = <><Icon name={icons.MouseX}/> MouseX</>;
-      break;
-    case 'spNorth':
-      keyCode = <><Icon name={icons.MouseY}/> MouseMoveUp</>;
-      icon = null;
-      break;
-    case 'spSouth':
-      keyCode = <><Icon name={icons.MouseY}/> MouseMoveDown</>;
-      icon = null;
-      break;
-    case 'spEast':
-      icon = null;
-      keyCode = <><Icon name={icons.MouseX}/> MouseMoveLeft</>;
-      break;
-    case 'spWest':
-      icon = null;
-      keyCode = <><Icon name={icons.MouseX}/> MouseMoveRight</>;
-      icon = null;
-      break;
-    case 'spScrollUp':
-      keyCode = <><Icon name={icons[ScrollName.spScrollUp]}/> MouseScrollUp</>;
-      icon = null;
-      break;
-    case 'spScrollDown':
-      keyCode = <>
-        <Icon name={icons[ScrollName.spScrollDown]}/> MouseScrollDown
-      </>;
-      icon = null;
-      break;
-  }
-
   if (type === InputType.keyboardButton) {
     let key = keyCode as string;
 
@@ -126,8 +89,48 @@ function keyCodeToJsx(keyCode: string | JSX.Element, type: InputType, includeIco
       </div>
     );
   }
+  else if (type === InputType.mouseButton) {
+    let key = keyCode as string;
+    keyCode = key.replace('spMouse', 'MouseButton');
+  }
   else {
-
+    switch (keyCode) {
+      case 'spNorthSouth':
+        keyCode = <><Icon name={icons.MouseY}/> MouseY</>;
+        icon = null;
+        break;
+      case 'spEastWest':
+        icon = null;
+        keyCode = <><Icon name={icons.MouseX}/> MouseX</>;
+        break;
+      case 'spNorth':
+        keyCode = <><Icon name={icons.MouseY}/> MouseMoveUp</>;
+        icon = null;
+        break;
+      case 'spSouth':
+        keyCode = <><Icon name={icons.MouseY}/> MouseMoveDown</>;
+        icon = null;
+        break;
+      case 'spEast':
+        icon = null;
+        keyCode = <><Icon name={icons.MouseX}/> MouseMoveLeft</>;
+        break;
+      case 'spWest':
+        icon = null;
+        keyCode = <><Icon name={icons.MouseX}/> MouseMoveRight</>;
+        icon = null;
+        break;
+      case 'spScrollUp':
+        keyCode = <><Icon name={icons[ScrollName.spScrollUp]}/> MouseScrollUp</>;
+        icon = null;
+        break;
+      case 'spScrollDown':
+        keyCode = <>
+          <Icon name={icons[ScrollName.spScrollDown]}/> MouseScrollDown
+        </>;
+        icon = null;
+        break;
+    }
   }
 
   return (
