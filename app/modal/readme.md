@@ -223,7 +223,7 @@ $modal.autoInputCapture((code) => {
 
 // You may optionally add a filter to reduce the amount of devices to choose
 // from:
-let filter = [ InputType.gamepadAxisStandard, InputType.mouseAxisInfinite ];
+let filter = [ InputType.gamepadAxisStandard, InputType.mouseAxisStandard ];
 $modal.autoInputCapture(filter, (code) => {
   // Example outputs: 'spEastWest', 'ax1'
   console.log(code);

@@ -348,7 +348,7 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
 
     const analogFiler = [
       InputType.gamepadAxisStandard,
-      InputType.mouseAxisInfinite,
+      InputType.mouseAxisStandard,
     ];
 
     if (analogRemap) {

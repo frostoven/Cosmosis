@@ -8,7 +8,7 @@ const keyTypeIcons: { [key: string]: SemanticICONS } = {
   // By input type
   [InputType.keyboardButton]: 'keyboard',
   [InputType.mouseButton]: 'mouse pointer',
-  [InputType.mouseAxisInfinite]: 'crosshairs',
+  [InputType.mouseAxisStandard]: 'crosshairs',
   [InputType.mouseAxisThreshold]: 'bullseye',
   [InputType.mouseAxisGravity]: 'bullseye',
   [InputType.gamepadSlider]: 'fighter jet',

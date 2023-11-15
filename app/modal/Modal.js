@@ -681,7 +681,7 @@ export default class Modal extends React.Component {
     const keyboardButton = InputType.keyboardButton;
     const gamepadButton = InputType.gamepadButton;
     const gamepadAnalog = InputType.gamepadAxisStandard;
-    const mouseAxis = InputType.mouseAxisInfinite;
+    const mouseAxis = InputType.mouseAxisStandard;
     const mouseButton = InputType.mouseButton;
     const scrollWheel = InputType.scrollWheel;
 
@@ -962,10 +962,10 @@ export default class Modal extends React.Component {
       ]
     }, (result) => {
       if (result === null) {
-        callback(result, InputType.mouseAxisInfinite);
+        callback(result, InputType.mouseAxisStandard);
       }
       else {
-        callback(result.value, InputType.mouseAxisInfinite);
+        callback(result.value, InputType.mouseAxisStandard);
       }
     });
   };

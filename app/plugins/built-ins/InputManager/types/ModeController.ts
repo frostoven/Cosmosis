@@ -498,8 +498,8 @@ export default class ModeController {
     this.receiveAsKeyboardButton(actionData);
   }
 
-  // InputType: mouseAxisInfinite
-  receiveAsMouseAxisInfinite({ action, value, analogData, control }: FullActionData) {
+  // InputType: mouseAxisStandard
+  receiveAsMouseAxisStandard({ action, value, analogData, control }: FullActionData) {
     if (control.disallowSign !== 0) {
       if (control.disallowSign === 1 && value > 0) {
         return;
@@ -512,7 +512,7 @@ export default class ModeController {
     // console.log('[mouse movement | standard]', { action, actionType: ActionType[control.actionType], value, analogData, control });
     // console.log(`--> analogData[${action}]: delta=${analogData.delta}; grav=${analogData.gravDelta}`);
     // @ts-ignore - See comment in receiveAsKeyboardButton.
-    this.state[action] += analogData.delta * control.multiplier.mouseAxisInfinite;
+    this.state[action] += analogData.delta * control.multiplier.mouseAxisStandard;
   }
 
   // InputType: mouseAxisGravity
@@ -526,7 +526,7 @@ export default class ModeController {
   receiveAsMouseAxisThreshold({ action, value, analogData, control }: FullActionData) {
     console.log('[mouse movement | threshold]', { action, actionType: ActionType[control.actionType], value, analogData, control });
     // @ts-ignore - See comment in receiveAsKeyboardButton.
-    const result = this.state[action] += value * control.multiplier.mouseAxisInfinite;
+    const result = this.state[action] += value * control.multiplier.mouseAxisStandard;
     if (Math.abs(result) > 1) {
       this.state[action] = signRelativeMax(result, 1);
     }

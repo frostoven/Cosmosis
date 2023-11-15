@@ -5,7 +5,7 @@ const DefaultInputSpeeds = {
   gamepadButtonRotationSpeed: 0.005,
   analogStickLookSpeed: 20,
   analogStickGhostWalkSpeed: 1,
-  mouseAxisInfiniteLookSpeed: 0.375,
+  mouseAxisStandardLookSpeed: 0.375,
 };
 
 export {

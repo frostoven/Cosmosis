@@ -5,7 +5,7 @@ import { genAutoFriendlyNames } from '../../../InputManager/utils';
 
 const { pulse, continuous } = ActionType;
 const { keyboardButton, gamepadButton, gamepadAxisStandard, mouseButton,
-  mouseAxisInfinite, mouseAxisGravity, mouseAxisThreshold, gamepadSlider,
+  mouseAxisStandard, mouseAxisGravity, mouseAxisThreshold, gamepadSlider,
   scrollWheel,
 } = InputType;
 
@@ -31,10 +31,10 @@ const shipPilotControls: ControlSchema = {
   yawLeft:       { actionType: continuous, sign: -1, current: null, default: { spWest: mouseAxisGravity, Numpad4: keyboardButton } },
   yawRight:      { actionType: continuous, sign:  1, current: null, default: { spEast: mouseAxisGravity, Numpad6: keyboardButton  } },
   //
-  lookUp:        { actionType: continuous, sign: -1, current: null, default: { spNorth: mouseAxisInfinite, Numpad8: keyboardButton }, allowKeyConflicts: [ 'pitchUp' ] },
-  lookDown:      { actionType: continuous, sign:  1, current: null, default: { spSouth: mouseAxisInfinite, Numpad2: keyboardButton }, allowKeyConflicts: [ 'pitchDown' ] },
-  lookLeft:      { actionType: continuous, sign: -1, current: null, default: { spWest: mouseAxisInfinite,  Numpad4: keyboardButton }, allowKeyConflicts: [ 'yawLeft' ] },
-  lookRight:     { actionType: continuous, sign:  1, current: null, default: { spEast: mouseAxisInfinite,  Numpad6: keyboardButton }, allowKeyConflicts: [ 'yawRight' ] },
+  lookUp:        { actionType: continuous, sign: -1, current: null, default: { spNorth: mouseAxisStandard, Numpad8: keyboardButton }, allowKeyConflicts: [ 'pitchUp' ] },
+  lookDown:      { actionType: continuous, sign:  1, current: null, default: { spSouth: mouseAxisStandard, Numpad2: keyboardButton }, allowKeyConflicts: [ 'pitchDown' ] },
+  lookLeft:      { actionType: continuous, sign: -1, current: null, default: { spWest: mouseAxisStandard,  Numpad4: keyboardButton }, allowKeyConflicts: [ 'yawLeft' ] },
+  lookRight:     { actionType: continuous, sign:  1, current: null, default: { spEast: mouseAxisStandard,  Numpad6: keyboardButton }, allowKeyConflicts: [ 'yawRight' ] },
   //
   // Dev controls.
   //

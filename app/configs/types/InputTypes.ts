@@ -31,21 +31,21 @@ enum InputType {
   mouseButton,
 
   /**
-   * Raw values of any range. Generally used for head-look.
+   * Raw values of any range (i.e. infinite in any direction). Generally used
+   * for functions like head-look.
    */
-  // TODO: rename to mouseAxisStandard
-  mouseAxisInfinite,
+  mouseAxisStandard,
 
   /**
    * Range from -1 to 1, but gradually returns to 0 by itself.
-   * Note: This is an extension of mouseAxisInfinite and should only be used
+   * Note: This is an extension of mouseAxisStandard and should only be used
    * from within ControlSchema.
    */
   mouseAxisGravity,
 
   /**
    * Range from -1 to 1.
-   * Note: This is an extension of mouseAxisInfinite and should only be used
+   * Note: This is an extension of mouseAxisStandard and should only be used
    * from within ControlSchema.
    */
   mouseAxisThreshold,
