@@ -333,17 +333,57 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
         group, actionName,
       });
     }
-    const entry: InputSchemeEntry = InputManager.allControlSchemes[group];
 
-    window.$modal.autoInputCapture((code: string | null, type: InputType) => {
+    const entry: InputSchemeEntry = InputManager.allControlSchemes[group];
+    const control = entry.modeController.controlSchema[actionName];
+    const { analogRemap, actionType } = control;
+
+    const filter: InputType[] = [];
+
+    const buttonFilter = [
+      InputType.keyboardButton,
+      InputType.analogButton,
+      InputType.mouseButton,
+    ];
+
+    const analogFiler = [
+      InputType.analogStickAxis,
+      InputType.mouseAxisInfinite,
+    ];
+
+    if (analogRemap) {
+      // Analog remap exists to indicate situations where buttons and analog
+      // mappings cannot coexist, so we make a point of keeping them separate.
+      filter.push(...buttonFilter);
+    }
+    else if (entry.modeController.remapReceiverLookup[actionName]) {
+      filter.push(...analogFiler);
+    }
+    else {
+      filter.push(...buttonFilter, ...analogFiler);
+    }
+
+    // Scroll wheels' "clicks" release immediately, making them pointless for
+    // use with continuous mapping types. They only function correctly with
+    // pulse and hybrid types.
+    if (
+      !analogRemap &&
+      (actionType === ActionType.pulse || actionType === ActionType.hybrid)
+    ) {
+      filter.push(InputType.scrollWheel);
+    }
+
+    window.$modal.autoInputCapture(filter, (code: string | null, type: InputType) => {
       if (code === null) {
         // User cancelled.
         return;
       }
 
+      console.log('[Modal] addNewBinding:', { type: InputType[type] });
+
       if (!Object.values(InputType).includes(type) || type === InputType.none) {
         return console.error(
-          '[Modal] addNewBinding received invalid input type:', { type },
+          '[Modal] addNewBinding received invalid input type:', { type: InputType[type] },
         );
       }
 
@@ -513,7 +553,7 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
                       });
                     }}
                   >
-                    {control.friendly || actionName}
+                    {friendly}
                   </KosmButton>
 
                   <div style={{
