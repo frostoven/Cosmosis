@@ -215,8 +215,17 @@ You can use `autoInputCapture()` to let the user decide the type of input to
 capture, which will then choose one of the methods in this section below.
 
 ```javascript
+// Let the user choose which device to capture:
 $modal.autoInputCapture((code) => {
   // Example outputs: 'KeyW', 'spMouseMiddle', 'bt10'
+  console.log(code);
+});
+
+// You may optionally add a filter to reduce the amount of devices to choose
+// from:
+let filter = [ InputType.analogStickAxis, InputType.mouseAxisInfinite ];
+$modal.autoInputCapture(filter, (code) => {
+  // Example outputs: 'spEastWest', 'ax1'
   console.log(code);
 });
 ```
@@ -233,8 +242,15 @@ $modal.captureKeyboardKey((keyCode) => {
 #### Mouse button / scroll chooser
 
 ```javascript
+// Capture a mouse click:
 $modal.captureMouseButton((spCode) => {
-  // Example outputs: 'spMouseLeft', 'spMouseMiddle', 'spScrollUp'
+  // Example outputs: 'spMouseLeft', 'spMouseMiddle'
+  console.log(spCode);
+});
+
+// To include the scroll wheel as an option:
+$modal.captureMouseButton({ allowScroller: true }, (spCode) => {
+  // Example outputs: 'spMouseRight','spScrollUp','spScrollDown'
   console.log(spCode);
 });
 ```
