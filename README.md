@@ -37,6 +37,11 @@ The game is rapidly changing, and constantly brings graphical improvements and n
     </a>
 </div>
 
+_Note to anyone who wants to test Cosmosis via git cloning - the game is
+currently undergoing a mass refactor. For a smoother experience, considering
+cloning or downloading tag
+[v0.73.0-beta.3](https://github.com/frostoven/Cosmosis/releases/tag/v0.73.0-beta.3)._
+
 ## What is Cosmosis?
 Cosmosis plans to eventually be a high quality open world space exploration
 game. It has the Milky Way galaxy as its home and currently uses real NASA data
