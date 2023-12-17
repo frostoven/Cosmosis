@@ -4,6 +4,7 @@ enum ControllerType {
   hotas,
   flightStick,
   racingWheel,
+  pedals,
 }
 
 function guessControllerType(id) {
@@ -37,6 +38,10 @@ function guessControllerType(id) {
     // should catch at least some cases:
     // https://devicehunt.com/view/type/usb/vendor/044F/device/0404
     return ControllerType.racingWheel;
+  }
+
+  if (id.includes('rudder') || id.includes('pedals')) {
+    return ControllerType.pedals;
   }
 
   // For all other cases, just assume it's a gamepad. This will work for Xbox

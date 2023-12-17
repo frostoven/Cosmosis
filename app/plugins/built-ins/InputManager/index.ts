@@ -1,10 +1,17 @@
+import _ from 'lodash';
 import CosmosisPlugin from '../../types/CosmosisPlugin';
+import Modal from '../../../modal/Modal';
 import { ModeId } from './types/ModeId';
 import { MouseDriver } from '../MouseDriver';
 import { gameRuntime } from '../../gameRuntime';
 import { AnalogSource } from './types/AnalogSource';
 import ModeController from './types/ModeController';
 import { CoreType } from '../Core';
+import { InputSchemeEntry } from './interfaces/InputSchemeEntry';
+import {
+  MouseButtonName,
+  scrollDeltaToEnum,
+} from '../../../configs/types/MouseButtonName';
 
 /*
  * Mechanism:
@@ -19,14 +26,28 @@ import { CoreType } from '../Core';
  * a key, gets that key.
  */
 
-const mouseFriendly = [
-  'Left', 'Middle', 'Right',
-];
-
 // Nomenclature:
 // Mode: a logical group of controllers.
 // Controller: something capable of responding to key input.
 class InputManager {
+  // Can be used to test key processing latency. At time the of wiring, takes
+  // less than 0.1ms (0.0001 seconds) under medium load, and immeasurably small
+  // (reported as 0ms) under low load, to reach the end of receiveAsKbButton.
+  // receiveAsKbButton is pretty much the last step in the processing queue.
+  // Unconscious human reflexes sit at around 80ms (0.08 seconds), so our
+  // performance is acceptable.
+  public static lastPressTime = -1;
+
+  /**
+   * To prevent laptop users accidentally scrolling horizontally, we explicitly
+   * only allow vertical scrolling. Modders may enable 2-way scrolling like so:
+   * @example
+   * InputManager.scrollDetector = scrollTouchpadDeltaToEnum;
+   * @tutorial - Modders will need to override the Modal class as well.
+   * @type {(scrollDelta: number) => ScrollName.spScrollUp | ScrollName.spScrollDown}
+   */
+  static scrollDetector = scrollDeltaToEnum;
+
   private _blockAllInput: boolean;
   private _blockKbMouse: boolean;
 
@@ -43,6 +64,35 @@ class InputManager {
   private _prevMouseY: number;
   private _prevControllerX: number;
   private _prevControllerY: number;
+
+  /**
+   * This allows plugins to make their control bindings known without the need
+   * to be activated first (useful for things like the control bindings menu).
+   * Plugins may use this simply by storing their controls in here when their
+   * constructors run. Use it like so:
+   *
+   * @example
+   * InputManager.allControlSchemes.yourControlSchema = {
+   *   schema: yourControlSchema,
+   *   friendly: 'Name You Want Displayed',
+   * };
+   */
+  public static allControlSchemes: Record<string, InputSchemeEntry> = {};
+
+  /** Contains reverse-lookup details of key bindings. */
+  public static allKeyLookups: Record<string, Object> = {};
+
+  /**
+   * Returns InputManager.allControlSchemes, ordered by priority, descending.
+   * @return InputSchemeEntry
+   */
+  public static getControlSchemes = (): InputSchemeEntry[] => {
+    return _.orderBy(
+      InputManager.allControlSchemes,
+      (entry: InputSchemeEntry,) => entry.priority || 0,
+      [ 'desc' ],
+    ) as InputSchemeEntry[];
+  };
 
   constructor() {
     this._blockAllInput = false;
@@ -108,9 +158,14 @@ class InputManager {
   // TODO: this method (and several others) were copy-pasted from previous
   //  very quick-and-dirty code that became important. It needs cleanup.
   _kbMouseEventListener(event) {
-    if (this._blockKbMouse) {
+      // Input manager is subservient to the modal system. Give up if active,
+      // or if something has requested inputs be disabled.
+    // if (this._blockKbMouse || Modal.modalActive) {
+    if (this._blockKbMouse || !Modal.allowExternalListeners) {
       return;
     }
+
+    InputManager.lastPressTime = performance.now();
 
     // Note: code is retained for keyboard events, but modified for other event
     // types. For example, mouse click left will be stored as code=spMouseLeft
@@ -160,10 +215,10 @@ class InputManager {
         );
         break;
       case 'mousedown':
-        key = `spMouse${mouseFriendly[event.button]}`;
+        key = MouseButtonName[event.button];
         break;
       case 'mouseup':
-        key = `spMouse${mouseFriendly[event.button]}`;
+        key = MouseButtonName[event.button];
       // Note: fallthrough is intentional here.
       case 'keyup':
         value = 0;
@@ -171,7 +226,7 @@ class InputManager {
       case 'wheel':
         // Note: a wheel scroll is always classed as a press.
         isNeverHeld = true;
-        key = this.keyFromWheelDelta(event.deltaY);
+        key = InputManager.scrollDetector(event);
         if (!key) {
           // TODO: check if returning out after zero is bad thing. Maybe we need it for resets.
           return;
@@ -228,23 +283,6 @@ class InputManager {
 
   blockKbMouse(enabled = true) {
     this._blockKbMouse = enabled;
-  }
-
-  /**
-   * Returns spScrollDown or spScrollUp. Returns null if delta is 0.
-   * @param {number} deltaY
-   * @returns {string|null}
-   */
-  keyFromWheelDelta(deltaY) {
-    if (deltaY === 0){
-      return null;
-    } else if (deltaY > 0) {
-      // Scrolling down.
-      return 'spScrollDown';
-    } else {
-      // Scrolling up.
-      return 'spScrollUp';
-    }
   }
 
   /**
@@ -340,7 +378,7 @@ class InputManager {
         continue;
       }
 
-      if (actions.length === 0) {
+      if (actions.length === 1) {
         // const keyType = actions[0]
         controller.receiveAction({ action: actions[0], key, value, analogData });
         return;

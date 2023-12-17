@@ -10,6 +10,11 @@ export default class Pluggable {
   }
 
   intoPowerOutletOf(otherDevice) {
+    if (!this.device) {
+      console.error('Device not defined correctly.');
+      return;
+    }
+
     if (!otherDevice.connectDrain) {
       throw new Error(
         `${otherDevice.friendlyName} does not have a power outlet.`,

@@ -1,12 +1,8 @@
 import {
-  BoxGeometry,
-  MeshBasicMaterial,
-  Mesh,
+  Layers,
   PerspectiveCamera,
   Scene,
   WebGLRenderer,
-  Vector3,
-  sRGBEncoding,
 } from 'three';
 import { RectAreaLightUniformsLib } from 'three/examples/jsm/lights/RectAreaLightUniformsLib.js';
 import CosmosisPlugin from '../../types/CosmosisPlugin';
@@ -28,6 +24,9 @@ import PropulsionManager
 import { Location } from '../Location';
 import VisorHud from '../shipModules/VisorHud/types/VisorHud';
 
+const BLOOM_SCENE = 1;
+const bloomLayer = new Layers();
+bloomLayer.set( BLOOM_SCENE );
 
 // TODO:
 //  The space scene can load a vehicle. The player can be attached to the
@@ -45,7 +44,7 @@ import VisorHud from '../shipModules/VisorHud/types/VisorHud';
 //  ship while the player's original ship is now just a prop in the hangar,
 //  which they may later interact with to reenter.
 
-class LevelScene extends Scene {
+export default class LevelScene extends Scene {
   moduleHub: ShipModuleHub | undefined;
 
   // @ts-ignore
@@ -62,6 +61,7 @@ class LevelScene extends Scene {
     super();
     this._cachedCamera = new PerspectiveCamera();
     this._cachedLocation = gameRuntime.tracked.location.cachedValue;
+    // this.fog = new FogExp2(0xDFE9F3, 0.0000005);
 
     // @ts-ignore
     this._vehicle = null;
@@ -77,11 +77,11 @@ class LevelScene extends Scene {
     });
 
     // --------------------------------------------------------------------- //
-    const geometry = new BoxGeometry(1, 1, 1);
-    const material = new MeshBasicMaterial({ color: 0x00ff00 });
-    const cube = new Mesh(geometry, material);
-    this.add(cube);
-    cube.position.copy(new Vector3(-1.5, 0.25, -6));
+    // const geometry = new BoxGeometry(1, 1, 1);
+    // const material = new MeshBasicMaterial({ color: 0x00ff00 });
+    // const cube = new Mesh(geometry, material);
+    // this.add(cube);
+    // cube.position.copy(new Vector3(-1.5, 0.25, -6));
     // --------------------------------------------------------------------- //
 
     this.onVehicleEntered = new ChangeTracker();
@@ -110,24 +110,19 @@ class LevelScene extends Scene {
       // @ts-ignore
       canvas: nearObjectCanvas,
       powerPreference: "high-performance",
-      antialias: false,
+      antialias: true,
     });
 
+    renderer.useLegacyLights = false;
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.shadowMap.enabled = !!graphics.enableShadows;
     renderer.shadowMap.type = graphics.shadowType;
     renderer.toneMapping = display.toneMapping;
 
-    renderer.outputEncoding = sRGBEncoding;
+    // renderer.outputEncoding = sRGBEncoding;
 
     this._renderer = renderer;
-
-    // Allows for crazy-good fast rectangle area lights. Note that these
-    // unfortunately don't case shadows, so only use them for wall lighting
-    // where shadows wouldn't naturally form anyway (we can probably
-    // investigate stenciling at some point).
-    RectAreaLightUniformsLib.init();
   }
 
   onWindowResize() {
@@ -154,10 +149,11 @@ class LevelScene extends Scene {
     });
     let ship = playerInfo?.vehicleInfo?.piloting;
     if (typeof ship === 'undefined') {
-      console.error('Could get read ship info from configs. Defaulting to DS69F.');
+      ship = 'DS69F';
+      // ship = 'minimal scene';
+      console.error(`Could get read ship info from configs. Defaulting to ${ship}.`);
       // TODO: if this happens, we should actually offer a save rollback
       //  option, and/or go to ship selector.
-      ship = 'DS69F';
     }
 
     this.loadVehicle(ship, this.enterVehicle);
@@ -173,6 +169,12 @@ class LevelScene extends Scene {
     this._vehicleInventory = inventory;
     // console.log('-> gltf:', gltf);
     const scene = this._vehicle.scene;
+
+    // // Temporary hack to always face Orion.
+    // scene.rotateY(3.5);
+    // scene.rotateX(-0.2);
+    // this._cachedLocation.universeRotationM.quaternion.copy(scene.quaternion);
+
     this.add(scene);
     scene.add(this._cachedCamera);
     // Blender direction is 90 degrees off from what three.js considers to be

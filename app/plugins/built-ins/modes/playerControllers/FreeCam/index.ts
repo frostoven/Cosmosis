@@ -8,6 +8,10 @@ import { InputManager } from '../../../InputManager';
 import { applyPolarRotation, clamp, zAxis } from '../../../../../local/mathUtils';
 import Speed from '../../../../../local/Speed';
 
+const SPEED_FACTOR = 1;
+// const SPEED_FACTOR = 1 * 0.0125;
+// const SPEED_FACTOR = 1 * 0.005;
+
 class FreeCam extends ModeController {
   // @ts-ignore
   private _cachedCamera: Camera;
@@ -15,7 +19,9 @@ class FreeCam extends ModeController {
   public maxMoveSpeed: Speed;
 
   constructor() {
-    super('freeCam', ModeId.playerControl, freeCamControls);
+    const uiInfo = { friendly: 'Free-Flight Camera', priority: 70 };
+    super('freeCam', ModeId.playerControl, freeCamControls, uiInfo);
+
     this._cachedInputManager = gameRuntime.tracked.inputManager.cachedValue;
     this.maxMoveSpeed = new Speed(1);
 
@@ -35,6 +41,14 @@ class FreeCam extends ModeController {
   _setupPulseListeners() {
     this.pulse.interact.getEveryChange(() => {
       console.log('grabbing interactable.');
+    });
+
+    this.pulse.speedUp.getEveryChange(() => {
+      this.maxMoveSpeed.rampUpSmall(Math.pow(SPEED_FACTOR, 5));
+    });
+
+    this.pulse.slowDown.getEveryChange(() => {
+      this.maxMoveSpeed.rampDownSmall(Math.pow(SPEED_FACTOR, 5));
     });
 
     this.pulse._devChangeCamMode.getEveryChange(() => {
@@ -60,13 +74,13 @@ class FreeCam extends ModeController {
     // gamepad stick at the 50% mark means add 0.5 units per x unit time).
     this.state.lookLeftRight += this.activeState.lookLeftRight * bigDelta;
     this.state.lookUpDown += this.activeState.lookUpDown * bigDelta;
-    this.state.rollLeftRight += this.activeState.rollLeftRight * bigDelta;
+    this.state.rollAnalog += this.activeState.rollAnalog * bigDelta;
     //
     const moveLeftRight = clamp(this.state.moveLeftRight + this.activeState.moveLeftRight, -1, 1);
     const moveUpDown = clamp(this.state.moveUpDown + this.activeState.moveUpDown, -1, 1);
     const moveForwardBackward = clamp(this.state.moveForwardBackward + this.activeState.moveForwardBackward, -1, 1);
 
-    let speedFactor = 1;
+    let speedFactor = SPEED_FACTOR;
     this.state.halfSpeed && (speedFactor = 0.5);
     this.state.doubleSpeed && (speedFactor = 2);
 
@@ -87,7 +101,7 @@ class FreeCam extends ModeController {
     this._cachedCamera.translateZ((moveForwardBackward * speed) * delta * speedFactor);
 
     // Apply camera roll.
-    this._cachedCamera.quaternion.setFromAxisAngle(zAxis, -this.state.rollLeftRight);
+    this._cachedCamera.quaternion.setFromAxisAngle(zAxis, -this.state.rollAnalog);
 
     // Note: don't use delta here. We don't want mouse speed to be dependent on
     // framerate.

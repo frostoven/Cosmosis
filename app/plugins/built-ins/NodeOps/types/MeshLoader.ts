@@ -10,13 +10,15 @@ import { MeshLoaderOpts } from '../interfaces/MeshLoaderOpts';
 const gltfLoader = new GLTFLoader();
 const dracoLoader = new DRACOLoader();
 
-dracoLoader.setDecoderPath('./node_modules/three/examples/js/libs/draco/');
+dracoLoader.setDecoderPath('./node_modules/three/examples/jsm/libs/draco/');
 dracoLoader.setDecoderConfig({ type: 'js' });
 dracoLoader.preload();
 gltfLoader.setDRACOLoader(dracoLoader);
 
 export default class MeshLoader {
   public trackedMesh: ChangeTracker;
+  public assetName: string;
+  public nodeOpts: MeshLoaderOpts;
 
   static defaultNodeOpts: MeshLoaderOpts = {
     backfaceCulling: true,
@@ -25,12 +27,26 @@ export default class MeshLoader {
     materialOverrideCallback: null,
   };
 
-  constructor(assetFunctionName: string, assetName: string, nodeOpts?: MeshLoaderOpts) {
+  constructor(
+    assetName: string = '',
+    assetFunctionName: string = '',
+    nodeOpts?: MeshLoaderOpts
+  ) {
     if (!nodeOpts) {
       nodeOpts = MeshLoader.defaultNodeOpts;
     }
 
     this.trackedMesh = new ChangeTracker();
+    this.assetName = assetName;
+    this.nodeOpts = nodeOpts;
+
+    if (assetFunctionName) {
+      this._loadMesh(assetFunctionName);
+    }
+  }
+
+  _loadMesh = (assetFunctionName) => {
+    const { assetName, nodeOpts } = this;
 
     const find = AssetFinder[assetFunctionName].bind(AssetFinder);
     find({
@@ -46,9 +62,11 @@ export default class MeshLoader {
           const meshCodeHandler = new MeshCodeHandler(gltf);
 
           gltf.scene.traverse(function(node) {
+            // @ts-ignore
             if (node.isMesh) {
               // Backface culling. Without this shadows get somewhat insane
               // because all faces then emit shadows.
+              // @ts-ignore
               node.material.side = nodeOpts?.backfaceCulling ? FrontSide : BackSide;
               node.castShadow = nodeOpts?.castShadow;
               node.receiveShadow = nodeOpts?.receiveShadow;
@@ -66,5 +84,20 @@ export default class MeshLoader {
         });
       }
     });
-  }
+  };
+
+  getHudModel = () => {
+    this._loadMesh('getHudModel');
+    return this;
+  };
+
+  getStarCatalog = () => {
+    this._loadMesh('getHudModel');
+    return this;
+  };
+
+  getSpaceship = () => {
+    this._loadMesh('getSpaceship');
+    return this;
+  };
 }

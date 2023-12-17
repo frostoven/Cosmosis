@@ -103,6 +103,7 @@ export default class Hijacker {
     propertyName: string,
     onGet: onGetSignature = () => {},
     onSet: onSetSignature = () => {},
+    suppressCrashError = false,
   ) {
     if (this._target === null) {
       console.error(
@@ -177,7 +178,9 @@ export default class Hijacker {
       Object.defineProperty(this._target, propertyName, property);
     }
     catch (error) {
-      console.error('[Hijacker]', error);
+      if (!suppressCrashError) {
+        console.error('[Hijacker]', error);
+      }
       return false;
     }
 

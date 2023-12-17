@@ -21,8 +21,12 @@ import { nodeOpsPlugin } from './built-ins/NodeOps';
 import { externalLightsModulePlugin } from './built-ins/shipModules/ExternalLights';
 import { propulsionManagerModulePlugin } from './built-ins/shipModules/PropulsionManager';
 import { warpDriveModulePlugin } from './built-ins/shipModules/WarpDrive';
-import { gamepadDriverPlugin } from './built-ins/GamepadDriver';
+import { gamepadConnectorPlugin } from './built-ins/GamepadConnector';
 import { visorHudModulePlugin } from './built-ins/shipModules/VisorHud';
+import { generatePluginCompletion } from './generatePluginCompletion';
+import { offscreenGalaxyWorkerPlugin } from './built-ins/OffscreenGalaxyWorker';
+import { devGimbalPlugin } from './built-ins/DevGimbal';
+import { reactBasePlugin } from './built-ins/ReactBase';
 
 const builtInPluginsEnabled: PluginEntry[] = [
   // General
@@ -36,17 +40,21 @@ const builtInPluginsEnabled: PluginEntry[] = [
   { name: 'navigation', pluginInstance: navigationPlugin, dependencies: [ 'core', 'location' ] },
   { name: 'levelScene', pluginInstance: levelScenePlugin, dependencies: [ 'core', 'nodeOps', 'location', 'player' ], optional: [ 'shipModuleHub' ] },
   { name: 'spaceScene', pluginInstance: spaceScenePlugin, dependencies: [ 'core', 'location' ] },
+  { name: 'offscreenGalaxyWorker', pluginInstance: offscreenGalaxyWorkerPlugin, dependencies: [ 'core', 'player', 'spaceScene' ] },
 
   // HUD and control visuals
-  { name: 'hud3d', pluginInstance: hud3DPlugin, dependencies: [ 'nodeOps', 'spaceScene', 'player' ] },
+  { name: 'hud3D', pluginInstance: hud3DPlugin, dependencies: [ 'nodeOps', 'spaceScene', 'player' ] },
 
   // Input
   { name: 'mouseDriver', pluginInstance: mouseDriverPlugin, dependencies: [ 'core' ] },
-  { name: 'gamepadDriver', pluginInstance: gamepadDriverPlugin, dependencies: [ 'core' ] },
+  { name: 'gamepadConnector', pluginInstance: gamepadConnectorPlugin, dependencies: [ 'core', 'inputManager' ] },
   { name: 'inputManager', pluginInstance: inputManagerPlugin, dependencies: [ 'core', 'mouseDriver' ] },
   { name: 'generalControl', pluginInstance: generalControlPlugin, dependencies: [ 'inputManager' ] },
   { name: 'freeCam', pluginInstance: freeCamPlugin, dependencies: [ 'player', 'inputManager' ] },
   { name: 'shipPilot', pluginInstance: shipPilotPlugin, dependencies: [ 'player', 'inputManager', 'levelScene' ] },
+
+  // React UI
+  { name: 'reactBase', pluginInstance: reactBasePlugin, dependencies: [ 'core', 'inputManager' ] },
 
   // ------------------------------------------------------------ //
 
@@ -70,7 +78,14 @@ const builtInPluginsEnabled: PluginEntry[] = [
   // Always place this last. The module hub should have programmatic access to
   // all ship modules.
   { name: 'shipModuleHub', pluginInstance: shipModuleHubPlugin, dependencies: [ '*' ] },
+
+  // ------------------------------------------------------------ //
+
+  // Dev plugins
+  { name: 'devGimbalPlugin', pluginInstance: devGimbalPlugin, dependencies: [ 'core', 'player' ] },
 ];
+
+generatePluginCompletion(builtInPluginsEnabled, 'PluginNames');
 
 export {
   builtInPluginsEnabled,

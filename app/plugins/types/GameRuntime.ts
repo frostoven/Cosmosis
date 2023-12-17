@@ -1,11 +1,14 @@
 import ChangeTracker from 'change-tracker/src';
+import { PluginNames } from './PluginNames';
 
 export default class GameRuntime {
-  private readonly _tracked: { [key: string]: ChangeTracker };
+  private readonly _tracked: Record<PluginNames, ChangeTracker>;
   private readonly _untracked: { [key: string]: any };
   private readonly _types: { [key: string]: any };
 
+  // TODO: consider adding gameRuntime.waitFor() option.
   constructor() {
+    // @ts-ignore
     this._tracked = {};
     this._untracked = {};
     this._types = {};

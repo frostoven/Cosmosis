@@ -9,7 +9,9 @@ class GeneralControl extends ModeController {
   private _mouseDriver: MouseDriver;
 
   constructor() {
-    super('general', ModeId.appControl, generalControls);
+    const uiInfo = { friendly: 'General Controls', priority: 5 };
+    super('general', ModeId.appControl, generalControls, uiInfo);
+
     this._mouseDriver = gameRuntime.tracked.mouseDriver.cachedValue;
 
     this.pulse.toggleMousePointer.getEveryChange(() => {

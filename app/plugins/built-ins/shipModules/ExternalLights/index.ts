@@ -8,6 +8,7 @@ import { externalLightControls } from './controls';
 class ExternalLightsModule extends ModuleSpawner {
   constructor() {
     super();
+
     gameRuntime.tracked.shipPilot.getOnce((shipPilot: ShipPilot) => {
       shipPilot.extendControlSchema(externalLightControls);
     });

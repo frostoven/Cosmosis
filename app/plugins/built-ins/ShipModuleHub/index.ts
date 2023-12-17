@@ -21,7 +21,8 @@ class ShipModuleHub {
   acquirePart({ name, inventory } : { name: string, inventory: {} }) {
     const deviceSpawner: ModuleSpawner = gameRuntime.tracked[`${name}Module`]?.cachedValue;
     if (!deviceSpawner) {
-      throw `Part type '${name}' (aka ${name}Module) does not seem to exist in this reality.`;
+      console.error(`Part type '${name}' (aka ${name}Module) does not seem to exist in this reality.`);
+      return null;
     }
     return deviceSpawner.createPart({ inventory });
   }

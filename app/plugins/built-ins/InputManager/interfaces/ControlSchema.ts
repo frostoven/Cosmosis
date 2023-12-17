@@ -1,12 +1,11 @@
 import { ActionType } from '../types/ActionType';
-import { InputType, InputTypeKeyFields } from '../types/InputTypes';
+import { InputType, InputTypeKeyFields } from '../../../../configs/types/InputTypes';
 
 interface ControlSchema {
   [key: string]: {
-    // Continuous, toggle, etc.
+    // Continuous, pulse, etc.
     actionType: ActionType,
     // The direction in which the value goes.
-    // @deprecated
     sign?: number,
     // Used for cases where digital keys are used in analog contexts. This
     // should almost always be used with the sign option.
@@ -52,8 +51,12 @@ interface ControlSchema {
     },
 
     // If true, only the mouse and analog sticks are allowed to interface with
-    // control.
+    // the control.
     isBidirectional?: boolean,
+
+    // The text to show in a UI. Note that you can use genAutoFriendlyNames()
+    // to auto-gen friendly names for controls that don't specify any.
+    friendly?: string,
   };
 }
 

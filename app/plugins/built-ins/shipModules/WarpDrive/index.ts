@@ -8,6 +8,7 @@ import { warpDriveControls } from './controls';
 class WarpDriveModule extends ModuleSpawner {
   constructor() {
     super();
+
     gameRuntime.tracked.shipPilot.getOnce((shipPilot: ShipPilot) => {
       shipPilot.extendControlSchema(warpDriveControls);
     });

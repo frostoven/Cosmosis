@@ -1,10 +1,8 @@
 import './polyfills';
 import './earlyLoad';
+import './modal';
 import './local/PerfTest';
 import './debugger';
-import React from 'react';
-import * as ReactDOM from 'react-dom';
-// import RootNode from './reactComponents/RootNode';
 import v8 from 'v8';
 
 import { loadPlugins } from './plugins';
@@ -19,6 +17,9 @@ import * as THREE from 'three';
 import * as CANNON from 'cannon';
 import { startupEvent, getStartupEmitter } from './emitters';
 import userProfile from './userProfile';
+
+// THREE.ShaderLib.basic.vertexShader = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx ' + THREE.ShaderLib.basic.fragmentShader;
+// THREE.ShaderLib.basic.fragmentShader = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx ' + THREE.ShaderLib.basic.fragmentShader;
 
 const startupEmitter = getStartupEmitter();
 

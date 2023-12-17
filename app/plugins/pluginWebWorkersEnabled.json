@@ -1,0 +1,6 @@
+{
+  "Developer comment": "Format: { bundleName: root-relative-path/entry.js }",
+  "pluginWorkers": {
+    "offscreenGalaxy": "./app/plugins/built-ins/OffscreenGalaxyWorker/webWorker/index.ts"
+  }
+}

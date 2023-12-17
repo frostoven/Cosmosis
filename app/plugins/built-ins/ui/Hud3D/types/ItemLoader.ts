@@ -4,6 +4,6 @@ export default class ItemLoader {
   mesh: MeshLoader;
 
   constructor(name: string) {
-    this.mesh = new MeshLoader('getHudModel', name);
+    this.mesh = new MeshLoader(name, 'getHudModel');
   }
 }

@@ -20,9 +20,14 @@
     bottom: 0;
     left: 0;
     z-index: -1;
-    margin: -3px;
+    margin-top: -3px;
+    margin-bottom: -3px;
     border-radius: inherit;
-    background: linear-gradient(to right, #f8fccf, #6f706a, #f8fccf);
+    /*background: linear-gradient(to right, #f8fccf, #6f706a, #f8fccf);*/
+    background: linear-gradient(to right, rgba(248, 252, 207, 0), #77af44, rgba(248, 252, 207, 0));
+    border: none !important;
+    border-top: 3px solid black !important;
+    border-bottom: 3px solid black !important;
 
     animation-name: kosm-oscillate-opacity;
     animation-duration: 872ms; /* Japanese style. */
@@ -42,7 +47,9 @@
 }
 
 .kosm-active-primary-button {
-    background-color: #000000bf !important;
+    /*background-color: #000000bf !important;*/
+    /*background: linear-gradient(90deg, rgb(0 0 0 / 69%) 0%, rgb(1 0 14 / 71%) 5%, rgb(0 0 0 / 67%) 50%, rgb(0 0 0 / 71%) 95%, rgb(0 0 0 / 69%) 100%) !important;*/
+    background-color: #00000000 !important;
 }
 
 /* TODO: figure out why we need '!important' for everything; using it for now
@@ -98,8 +105,12 @@
     background: #333333 !important;
 }
 
+.kosm-half-wide {
+    min-width: 156px;
+}
+
 .kosm-wide {
-    width: 313px;
+    min-width: 313px;
 }
 
 .kosm-block, .kosm-inline-block {
@@ -186,7 +197,12 @@
 .ui.page.modals.dimmer.transition.visible.active {
     background-color: #0000002b;
 }
- .kosm-modal input, .kosm-modal .icon.input {
-     color: white !important;
-     background-color: #333333 !important;
- }
+
+.kosm-modal input, .kosm-modal .icon.input {
+    color: white !important;
+    background-color: #333333 !important;
+}
+
+.bold-on-hover:hover {
+   font-weight: bold;
+}

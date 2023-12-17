@@ -6,9 +6,15 @@ import { InputManager } from '../index';
 import { ModeId } from './ModeId';
 import { ActionType } from './ActionType';
 import { ControlSchema } from '../interfaces/ControlSchema';
-import { arrayContainsArray } from '../../../../local/utils';
-import { InputType } from './InputTypes';
+import { arrayContainsArray, capitaliseFirst } from '../../../../local/utils';
+import { InputType } from '../../../../configs/types/InputTypes';
 import { easeIntoExp, signRelativeMax } from '../../../../local/mathUtils';
+import { InputUiInfo } from '../interfaces/InputSchemeEntry';
+import {
+  BasicActionData,
+  FullActionData,
+  ReceiverActionData,
+} from '../interfaces/ActionData';
 
 // TODO: move to user configs, and expose to UI. Minimum value should be zero,
 //  and max should be 0.95 to prevent bugs.
@@ -37,6 +43,9 @@ export default class ModeController {
   public modeId: ModeId;
   public controlSchema: ControlSchema;
   public controlsByKey: {};
+  public keyLookup: {} = {};
+  public remapReceiverLookup: {} = {};
+  public uiInfo: InputUiInfo;
   private readonly _actionReceivers: Array<Function>;
 
   // Passive state. This only changes when something external changes. Stores
@@ -60,49 +69,85 @@ export default class ModeController {
   // the input is ignored instead of being reset in state.
   private _analogFlutterCheck: { [actionName: string]: number };
 
-  constructor(name: string, modeId: ModeId, controlSchema: ControlSchema) {
+  constructor(name: string, modeId: ModeId, controlSchema: ControlSchema, uiInfo: InputUiInfo) {
     this.name = name;
     this.modeId = modeId;
     this.controlSchema = {};
     this.controlsByKey = {};
+    this.uiInfo = uiInfo;
 
     this.state = {};
     this.activeState = {};
     this.pulse = {};
     this._analogFlutterCheck = {};
 
-    // Note: the indexes of this array MUST match the indexes in ./InputTypes
-    // or things will break.
-    this._actionReceivers = [
-      this.receiveAndIgnore.bind(this),
-      this.receiveAsKbButton.bind(this),
-      this.receiveAsAnalogButton.bind(this),
-      this.receiveAsAnalogStick.bind(this),
-      this.receiveAsMouseButton.bind(this),
-      this.receiveAsMouse.bind(this),
-      this.receiveAsMouseAxisGravity.bind(this),
-      this.receiveAsMouseAxisThreshold.bind(this),
-      this.receiveAsAnalogSlider.bind(this),
-    ];
+    const inputTypesNames = Object.values(InputType);
+    // Enums always have double the amount entries, so divide by 2.
+    this._actionReceivers = Array(inputTypesNames.length / 2);
+
+    // Bind InputType entries to callback functions with names matching those
+    // in this class.
+    // Note: The indexes of this._actionReceivers MUST match the indexes in
+    // InputTypes or things will break.
+    for (let i = 0, len = inputTypesNames.length; i < len; i++) {
+      const inputTypeId = inputTypesNames[i];
+      if (typeof inputTypeId !== 'number') {
+        continue;
+      }
+
+      if (inputTypeId === 0) {
+        // Special case (better readability).
+        this._actionReceivers[0] = this.receiveAndIgnore.bind(this);
+        continue;
+      }
+
+      const inputTypeName: string = InputType[inputTypeId];
+      const callbackName = `receiveAs${capitaliseFirst(inputTypeName)}`;
+      this._actionReceivers[inputTypeId] = this[callbackName].bind(this);
+    }
+
+    if (!name) {
+      console.error('ModeController requires a name for lookup purposes.');
+      return;
+    }
+    if (!modeId) {
+      console.error(
+        'ModeController requires ModeId number. Please have a look at ' +
+        'built-in plugins such as FreeCam for examples.',
+      );
+      return;
+    }
+    if (!controlSchema) {
+      console.error(
+        'ModeController requires a ControlSchema object. Please have a look ' +
+        'at built-in plugins such as FreeCam for examples.',
+      );
+      return;
+    }
 
     // Control setup.
     this.extendControlSchema(controlSchema);
 
     const inputManager: InputManager = gameRuntime.tracked.inputManager.cachedValue;
     inputManager.registerController(this);
+    this._setupSchemeLookups();
+  }
+
+  _setupSchemeLookups() {
+    InputManager.allControlSchemes[this.name] = {
+      ...this.uiInfo,
+      modeController: this,
+      key: this.name,
+    };
   }
 
   // This allows both core code and modders to add their own control bindings.
   extendControlSchema(controlSchema: ControlSchema) {
     const savedControls = userProfile.getCurrentConfig({ identifier: 'controls' }).controls;
-    const actionInputMap = {
-      /* Example: */
-      /* forward: { action: 'KeyW', inputType: InputTypes.keyboardButton } */
-    };
+
     _.each(controlSchema, (control, actionName) => {
       // ---> do not remove this, it's part of the structure below.
       // if (savedControls[actionName]) {
-
 
         // TODO: remove me
         if (Array.isArray(control.default)) {
@@ -149,111 +194,186 @@ export default class ModeController {
             controlSchema[actionName].disallowSign = 0;
           }
         }
-          // console.log('85========>', `controlSchema[${actionName}].current = { ...`, controlSchema[actionName].default, '}')
 
         catch (error) {
           console.error(`[ModeController] Failed to set key for action '${actionName}'`, error);
         }
-      // }
 
-
-      /* Example: */
-      /* actionInputMap = { forward: { action: 'KeyW', inputType: InputTypes.keyboardButton } };*/
-      // controlSchema[actionName].actionInputMap = {
-      //   actionName
-      // };
+      if (controlSchema[actionName].analogRemap) {
+        // @ts-ignore - Apparently the very previous line was never written.
+        this.remapReceiverLookup[controlSchema[actionName].analogRemap] = true;
+      }
 
       if (!controlSchema[actionName].sign) {
         controlSchema[actionName].sign = 1;
       }
     });
 
-    const allowedConflicts = {};
 
     _.each(controlSchema, (control: ControlSchema['key'], actionName: string) => {
-      if (this.controlSchema[actionName]) {
-        return console.error(
-          `[ModeController] Ignoring attempt to set register control action ` +
-          `'${actionName}' in mode ${this.name} - ${this.name} already has `
-          + `that action defined for something else.`
-        );
+      this.registerControl(control, actionName);
+    });
+
+    InputManager.allKeyLookups[this.name] = this.keyLookup;
+  }
+
+  registerControl(control: ControlSchema['key'], actionName: string) {
+    // Used by parts of the application that want to display the bindings for a
+    // particular action, such as tutorials or instructional info blocks.
+    const keyLookup = this.keyLookup;
+
+    const allowedConflicts = {};
+
+    InputManager.allKeyLookups[this.name] = keyLookup;
+    if (this.controlSchema[actionName]) {
+      return console.error(
+        `[ModeController] Ignoring attempt to set register control action ` +
+        `'${actionName}' in mode ${this.name} - ${this.name} already has `
+        + `that action defined for something else.`
+      );
+    }
+
+    this.controlSchema[actionName] = {
+      // Note that this can possibly be undefined, but that's ok because
+      // { ...undefined } is just {}.
+      ...this.controlSchema[actionName],
+      ...control,
+    };
+    // console.log(`this.controlSchema[${actionName}] = { ...`, control, '}');
+
+
+    // Conflicts are rarely allowed in cases where a single mode internally
+    // disambiguates conflicts.
+    if (control.allowKeyConflicts) {
+      if (!allowedConflicts[actionName]) {
+        allowedConflicts[actionName] = [];
       }
 
-      this.controlSchema[actionName] = { ...control };
-      // console.log(`this.controlSchema[${actionName}] = { ...`, control, '}');
-
-
-      // Conflicts are rarely allowed in cases where a single mode internally
-      // disambiguates conflicts.
-      if (control.allowKeyConflicts) {
-        if (!allowedConflicts[actionName]) {
-          allowedConflicts[actionName] = [];
+      _.each(control.allowKeyConflicts, (conflictAction) => {
+        if (!allowedConflicts[actionName].includes(conflictAction)) {
+          // Example: allowedConflicts['lookUp'] = [ 'pitchUp' ];
+          allowedConflicts[actionName].push(conflictAction);
         }
 
-        _.each(control.allowKeyConflicts, (conflictAction) => {
-          if (!allowedConflicts[actionName].includes(conflictAction)) {
-            // Example: allowedConflicts['lookUp'] = [ 'pitchUp' ];
-            allowedConflicts[actionName].push(conflictAction);
-          }
-
-          // Rewrite the conflicting keys to allow conflict with these keys. This
-          // allows devs and modders to define allowed conflicts in any order.
-          if (!allowedConflicts[conflictAction]) {
-            allowedConflicts[conflictAction] = [];
-          }
-          if (!allowedConflicts[conflictAction].includes(actionName)) {
-            // Example: allowedConflicts['pitchUp'] = [ 'lookUp' ];
-            allowedConflicts[conflictAction].push(actionName);
-          }
-        });
-      }
-
-      const keys = control.current;
-      // The user can assign multiple keys to each action; store them all in
-      // controlsByKey individually.
-      _.each(keys, (inputType, key) => {
-        // console.log('149------->', key);
-        const ctrlByKey = this.controlsByKey[key];
-        // console.log(`-> arrayContainsArray(`, allowedConflicts?.[actionName], `,`, this.controlsByKey[key], `) === `, arrayContainsArray(allowedConflicts?.[actionName], this.controlsByKey[key]));
-        if (this.controlsByKey[key] && !arrayContainsArray(allowedConflicts?.[actionName], this.controlsByKey[key])) {
-          console.warn(
-            `[ModeController] Ignoring attempt to set the same key (${key}) ` +
-            `for than one action (${actionName} would conflict with ` +
-            `${this.controlsByKey[key]}).`,
-            'From:',
-            keys,
-          );
+        // Rewrite the conflicting keys to allow conflict with these keys. This
+        // allows devs and modders to define allowed conflicts in any order.
+        if (!allowedConflicts[conflictAction]) {
+          allowedConflicts[conflictAction] = [];
         }
-        else {
-          if (!this.controlsByKey[key]) {
-            this.controlsByKey[key] = [];
-          }
-          this.controlsByKey[key].push(actionName);
+        if (!allowedConflicts[conflictAction].includes(actionName)) {
+          // Example: allowedConflicts['pitchUp'] = [ 'lookUp' ];
+          allowedConflicts[conflictAction].push(actionName);
         }
       });
+    }
 
-      if (control.actionType === ActionType.pulse) {
-        this.pulse[actionName] = new ChangeTracker();
-        this.pulse[actionName].setSilent(0);
+    const keys = control.current;
+    // The user can assign multiple keys to each action; store them all in
+    // controlsByKey individually.
+    _.each(keys, (inputType, key) => {
+      const ctrlByKey = this.controlsByKey[key];
+      // console.log(`-> arrayContainsArray(`, allowedConflicts?.[actionName], `,`, this.controlsByKey[key], `) === `, arrayContainsArray(allowedConflicts?.[actionName], this.controlsByKey[key]));
+      if (this.controlsByKey[key] && !arrayContainsArray(allowedConflicts?.[actionName], this.controlsByKey[key])) {
+        console.warn(
+          `[ModeController] Ignoring attempt to set the same key (${key}) ` +
+          `for than one action (${actionName} would conflict with ` +
+          `${this.controlsByKey[key]}).`,
+          'From:',
+          keys,
+        );
       }
       else {
-        this.state[actionName] = 0;
-        this.activeState[actionName] = 0;
+        if (!this.controlsByKey[key]) {
+          this.controlsByKey[key] = [];
+        }
+        this.controlsByKey[key].push(actionName);
+      }
+    });
+
+    const actionType = control.actionType;
+    const pulse = ActionType.pulse;
+    const continuous = ActionType.continuous;
+    const hybrid = ActionType.hybrid;
+    //
+    if (actionType === pulse || actionType === hybrid) {
+      this.pulse[actionName] = new ChangeTracker();
+      this.pulse[actionName].setSilent(0);
+    }
+    //
+    if (actionType === continuous || actionType === hybrid) {
+      this.state[actionName] = 0;
+      this.activeState[actionName] = 0;
+    }
+
+    // Save reverse lookup data.
+    if (!keyLookup[actionName]) {
+      keyLookup[actionName] = [];
+    }
+    _.each(control.current, (type, key) => {
+      // Example result:
+      // groupControls.myAction = [{ type: 7, key: 'spNorthSouth', ... }]
+      keyLookup[actionName].push({ type, key });
+    });
+  }
+
+  resetActionBindings(actionName: string, saveChanges = true) {
+    const { controlSchema, controlsByKey } = this;
+    const oldBindings = controlSchema[actionName].current;
+    _.each(oldBindings, (type: InputType, keyCode: string) => {
+      this.deleteBinding(actionName, keyCode, false);
+    });
+
+    const defaultBindings = controlSchema[actionName].default;
+    controlSchema[actionName].current = { ...defaultBindings };
+    // this.registerBinding(controlSchema[actionName], actionName, false);
+    // _.each(defaultBindings, (type, keyCode) => {
+    //   this.registerBinding(keyCode, actionName, false);
+    // });
+
+    _.each(defaultBindings, (type, keyCode) => {
+      const controlsByKeyIndex = controlsByKey[keyCode].indexOf(actionName);
+      if (controlsByKeyIndex === -1) {
+        controlsByKey[keyCode].push(actionName);
       }
     });
   }
 
-  receiveAction(
-    {
-      action,
-      key,
-      value,
-      analogData,
-    }: { action: string, key: string | undefined, value: number, analogData: object | undefined },
-  ) {
+  deleteBinding(actionName: string, key: string, saveChanges = true) {
+    const { controlSchema, controlsByKey } = this;
+
+    // The key schema is used during boot, and when saving controls to disk.
+    // Remove the entry being deleted.
+    const keyMap = controlSchema[actionName].current;
+    keyMap !== null && delete keyMap[key];
+
+    // controlsByKey is used for live lookups. Delete here so we don't need a
+    // reboot.
+    const controlsByKeyIndex = controlsByKey[key].indexOf(actionName);
+    if (controlsByKeyIndex !== -1) {
+      controlsByKey[key].splice(controlsByKeyIndex, 1);
+    }
+  }
+
+  addNewBinding(actionName: string, key: string, type: InputType) {
+    const { controlSchema, controlsByKey } = this;
+
+    if (controlSchema[actionName].current === null) {
+      controlSchema[actionName].current = {};
+    }
+
+    if (!controlsByKey[key]) {
+      controlsByKey[key] = [];
+    }
+
+    controlSchema[actionName].current![key] = type;
+    controlsByKey[key].push(actionName);
+  };
+
+  receiveAction({ action, key, value, analogData }: ReceiverActionData) {
     const control = this.controlSchema[action];
     const actionType = control.actionType;
     const sign = control.sign;
+    // console.log(`[receiveAction:${action}] control:`, control);
 
     // @ts-ignore - this is set during init. If not, this point isn't
     // reachable unless by bug.
@@ -266,6 +386,7 @@ export default class ModeController {
 
     if (actionType === ActionType.pulse && inputType !== 0) {
       this.handlePulse({ action, value });
+      // console.log(`[handlePulse:${action}]`, { value });
     }
     else {
       this._actionReceivers[inputType]({ action, value, analogData, control });
@@ -275,29 +396,31 @@ export default class ModeController {
   // --------------------------------------------------------------------------
 
   // InputType: none
-  receiveAndIgnore({ action }) {
+  receiveAndIgnore({ action }: FullActionData) {
     console.log('Received but ignoring', action);
   }
 
   // Receives a non-pulsed keyboard button.
   // InputType: keyboardButton
-  receiveAsKbButton({ action, value, control }) {
-    // console.log('[keyboard button]', { action, actionType: ActionType[control.actionType], value, control });
+  receiveAsKeyboardButton({ action, value, control }: FullActionData) {
+    // console.log('[button]', { action, actionType: ActionType[control.actionType], value, control });
     if (control.analogRemap) {
       // TODO: value multipliers should probably go into the control definition
       //  as we probably don't want things being arbitrarily multiplied for no
       //  reason. Maybe call it 'remapMultiplier' to indicate it's only used
       //  for analog remaps.
+      // @ts-ignore - See previous comment.
       this.activeState[control.analogRemap] = value * control.multiplier.keyboardButton * control.sign;
     }
     else {
       // Under normal circumstances this value is always either 0 or 1.
       this.state[action] = value;
     }
+    // console.log('Key latency:', performance.now() - InputManager.lastPressTime);
   }
 
-  // InputType: analogButton
-  receiveAsAnalogButton({ action, value, control }) {
+  // InputType: gamepadButton
+  receiveAsGamepadButton({ action, value, control }: FullActionData) {
     // console.log('[analog button]', { action, actionType: ActionType[control.actionType], value, control });
     // Under normal circumstances this value is always in range of 0-1.
     if (value < ANALOG_BUTTON_THRESHOLD) {
@@ -305,7 +428,8 @@ export default class ModeController {
     }
 
     if (control.analogRemap) {
-      this.activeState[control.analogRemap] = value * control.multiplier.analogButton * control.sign;
+      // @ts-ignore - See comment in receiveAsKeyboardButton.
+      this.activeState[control.analogRemap] = value * control.multiplier.gamepadButton * control.sign;
     }
     else {
       // This has a range of 0 to 1.
@@ -313,8 +437,8 @@ export default class ModeController {
     }
   }
 
-  // InputType: analogStickAxis
-  receiveAsAnalogStick({ action, value, control }) {
+  // InputType: gamepadAxisStandard
+  receiveAsGamepadAxisStandard({ action, value, control }: FullActionData) {
     if (control.disallowSign !== 0) {
       if (control.disallowSign === 1 && value > 0) {
         return;
@@ -331,12 +455,13 @@ export default class ModeController {
 
       // Check the previous action to see if that, too, was effectively 0.
       if (this._analogFlutterCheck[action] === 0) {
-        // console.log(`[receiveAsAnalogStick] Preventing bad ${action} reset.`);
+        // console.log(`[receiveAsGamepadAxisStandard] Preventing bad ${action} reset.`);
         return;
       }
     }
     else if (result !== 0) {
-      const multiplier = control.multiplier.analogStickAxis;
+      // @ts-ignore - See comment in receiveAsKeyboardButton.
+      const multiplier = control.multiplier.gamepadAxisStandard as number;
       const effectiveThreshold = multiplier * ANALOG_STICK_THRESHOLD;
       result = value * multiplier;
       // This allows the user to ease into the turn without suddenly jumping to
@@ -355,7 +480,8 @@ export default class ModeController {
     }
 
     if (ANALOG_STICK_EASING) {
-      const maxRange = control.multiplier.analogStickAxis - ANALOG_STICK_THRESHOLD;
+      // @ts-ignore - See comment in receiveAsKeyboardButton.
+      const maxRange = control.multiplier.gamepadAxisStandard - ANALOG_STICK_THRESHOLD;
       stateTarget[action] = easeIntoExp(result, maxRange);
     }
     else {
@@ -367,12 +493,13 @@ export default class ModeController {
   }
 
   // InputType: mouseButton
-  receiveAsMouseButton({ action, value, control }) {
-    console.log('[mouse button]', { action, actionType: ActionType[control.actionType], value, control });
+  receiveAsMouseButton(actionData: FullActionData) {
+    // This works pretty much identically to keyboard; send it there instead.
+    this.receiveAsKeyboardButton(actionData);
   }
 
-  // InputType: mouseAxisInfinite
-  receiveAsMouse({ action, value, analogData, control }) {
+  // InputType: mouseAxisStandard
+  receiveAsMouseAxisStandard({ action, value, analogData, control }: FullActionData) {
     if (control.disallowSign !== 0) {
       if (control.disallowSign === 1 && value > 0) {
         return;
@@ -384,26 +511,29 @@ export default class ModeController {
 
     // console.log('[mouse movement | standard]', { action, actionType: ActionType[control.actionType], value, analogData, control });
     // console.log(`--> analogData[${action}]: delta=${analogData.delta}; grav=${analogData.gravDelta}`);
-    this.state[action] += analogData.delta * control.multiplier.mouseAxisInfinite;
+    // @ts-ignore - See comment in receiveAsKeyboardButton.
+    this.state[action] += analogData.delta * control.multiplier.mouseAxisStandard;
   }
 
   // InputType: mouseAxisGravity
-  receiveAsMouseAxisGravity({ action, value, analogData, control }) {
+  receiveAsMouseAxisGravity({ action, value, analogData, control }: FullActionData) {
     console.log('[mouse movement | gravity]', { action, actionType: ActionType[control.actionType], value, analogData, control });
+    // @ts-ignore - See comment in receiveAsKeyboardButton.
     this.state[action] += this.state[action] += analogData.delta;
   }
 
   // InputType: mouseAxisThreshold
-  receiveAsMouseAxisThreshold({ action, value, analogData, control }) {
+  receiveAsMouseAxisThreshold({ action, value, analogData, control }: FullActionData) {
     console.log('[mouse movement | threshold]', { action, actionType: ActionType[control.actionType], value, analogData, control });
-    const result = this.state[action] += value * control.multiplier.mouseAxisInfinite;
+    // @ts-ignore - See comment in receiveAsKeyboardButton.
+    const result = this.state[action] += value * control.multiplier.mouseAxisStandard;
     if (Math.abs(result) > 1) {
       this.state[action] = signRelativeMax(result, 1);
     }
     console.log(`[mouse{${this.name}}|${action}]`, this.state[action]);
   }
 
-  receiveAsAnalogSlider({ action, value, control }) {
+  receiveAsGamepadSlider({ action, value, control }: FullActionData) {
     if (control.disallowSign !== 0) {
       if (control.disallowSign === 1 && value > 0) {
         return;
@@ -446,15 +576,39 @@ export default class ModeController {
     }
   }
 
+  receiveAsScrollWheel({ action, value, control }: FullActionData) {
+    if (control.actionType === ActionType.continuous) {
+      return console.error(
+        '[ModeController] receiveAsScrollWheel controls should be of type ' +
+        'ActionType.pulse or ActionType.hybrid.'
+      );
+    }
+
+    this.handlePulse({ action, value });
+  }
+
   // Pulse once if the button is down. We don't pulse on release. Doesn't pulse
   // if receiving two subsequent non-zero values without first getting a zero.
   //
   // Dev note: this does not support mouse movement.
-  handlePulse({ action, value }) {
+  handlePulse({ action, value }: BasicActionData) {
+    // Dev note: if not read carefully, the code below may appear as though it
+    // triggers pulses twice (one on press, one on release). This is not the
+    // case - on release, pulseAction.setSilent(0) resets pulse state without
+    // informing mode controller plugins. This is intentional and should not be
+    // changed.
+
+    const pulseAction = this.pulse[action];
+    if (!pulseAction) {
+      return console.error(
+        `[ModeController] Pulsed control '${action}' requires a pulse ` +
+        `mapping to be defined (missing in ${this.name}).`,
+      );
+    }
+
     if (value > ANALOG_BUTTON_THRESHOLD) {
-      if (this.pulse[action].cachedValue === 0) {
-        console.log('[input-agnostic pulse]', { action, value });
-        this.pulse[action].setValue(1);
+      if (pulseAction.cachedValue === 0) {
+        pulseAction.setValue(1);
       }
     }
     else if (value > 0) {
@@ -463,9 +617,9 @@ export default class ModeController {
       // console.log(`-> ignoring bad value ${value} < ${ANALOG_BUTTON_THRESHOLD}`);
       return;
     }
-    else if (this.pulse[action].cachedValue !== 0) {
+    else if (pulseAction.cachedValue !== 0) {
       // console.log('[input-agnostic pulse] -- RESET --', { action, value });
-      this.pulse[action].setSilent(0);
+      pulseAction.setSilent(0);
     }
   }
 

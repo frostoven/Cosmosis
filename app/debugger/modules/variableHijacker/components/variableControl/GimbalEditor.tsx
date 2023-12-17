@@ -6,6 +6,8 @@ import PreventRender from '../../../../components/PreventRender';
 import NumberEditor from './NumberEditor';
 import { guessTypeInfo } from '../../../../debuggerUtils';
 import ChangeTracker from 'change-tracker/src';
+import { cosmDbg } from '../../../../index';
+import { HeightSetting } from '../../../../components/types/HeightSetting';
 
 const INPUT_STYLE: React.CSSProperties = {
   marginTop: -1,
@@ -392,13 +394,18 @@ export default class GimbalEditor extends React.Component<Props> {
   };
 
   render() {
+    const canvasFrame = { ...CANVAS_FRAME };
+    if (cosmDbg.getState().uiState?.modalSize !== HeightSetting.large) {
+      canvasFrame.width = 27;
+    }
+
     return (
       <div style={CONTAINER_STYLE}>
         <div>
           {this.genNumberEditors()}
         </div>
         <PreventRender>
-          <div style={CANVAS_FRAME}>
+          <div style={canvasFrame}>
             <div style={CANVAS_BACKGROUND}></div>
             <canvas key="gimbal-canvas" ref={this.canvasRef} style={CANVAS_STYLE} tabIndex={1}/>
           </div>

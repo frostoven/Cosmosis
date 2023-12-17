@@ -1,5 +1,6 @@
 const webpack = require('webpack');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const pluginManifest = require('./app/plugins/pluginWebWorkersEnabled.json');
 
 module.exports = {
   mode: "production",
@@ -7,8 +8,7 @@ module.exports = {
   target: 'node-webkit',
   entry: {
     game: './app/index.js',
-    offscreenSkybox: './app/webWorkers/offscreenSkybox.js',
-    // physicsWorker: './app/webWorkers/physicsWorker.js',
+    ...pluginManifest.pluginWorkers,
   },
   output: {
     path: __dirname + '/build',
@@ -16,8 +16,11 @@ module.exports = {
     filename: '[name].js',
     // sourceMapFilename: '[name].js.map',
   },
-  // Could not get these to work properly (Chrome appears to have a but at time
-  // of writing), but these are our source-map options:
+  // This won't work out-of-the-box due to a bug in this version of the
+  // Chromium engine. If you'd like to use source maps, see the 9 November 23
+  // comment here:
+  // https://github.com/nwjs/nw.js/issues/7724
+  // Disabling it by default as it's incredibly slow anyway.
   // devtool: 'source-map',
   // devtool: 'eval-source-map',
   module: {
@@ -36,7 +39,12 @@ module.exports = {
             ],
           '@babel/preset-react'
           ],
-          plugins: [ '@babel/plugin-proposal-class-properties', '@babel/plugin-proposal-optional-chaining' ]
+          plugins: [
+            '@babel/plugin-proposal-class-properties',
+            '@babel/plugin-proposal-optional-chaining',
+            '@babel/plugin-proposal-numeric-separator',
+            '@babel/plugin-transform-nullish-coalescing-operator',
+          ]
         }
       },
       {

@@ -25,6 +25,7 @@
           'object from anywhere in the project. This is to make debugging ' +
           'easier from the developer console.'
       };
+      // nw.Window.get().showDevTools();
     </script>
     <script type="text/javascript" src="build/game.js"></script>
 
@@ -45,6 +46,7 @@
 
 </head>
 <body style="background-color:#111111;">
+    <div id="modalRoot"></div>
     <div id="reactRoot"></div>
 
     <div>
@@ -66,21 +68,25 @@
     <div id="crosshairs"></div>
     <div id="speed-tracker"></div>
     <div id="boot-log"></div>
+    <canvas id="galaxy-canvas"></canvas>
     <canvas id="far-object-canvas"></canvas>
     <canvas id="near-object-canvas"></canvas>
-    <canvas id="starfield-canvas"></canvas> <!-- maybe offer rendering method in g.settings: skybox | realtime. skybox default  -->
-                                         <!--
-                                           Description:
-                                           'Skybox' caches star renders and only updates them once the players has moved a
-                                           considerable distance. 'Realtime' on the other hand updates each frame. The
-                                           'Skybox' option is therefore much gentles on the GPU as it will often need to
-                                           recalculate star data as little as once an hour (or less) when not travelling
-                                           much. 'Realtime' on the other hand will recalculate star data 60 times a second
-                                           (or more, on fast GPUs) making it far more resource intensive.
+    <canvas id="starfield-canvas"></canvas>
+    <!-- maybe offer rendering method in g.settings: skybox | realtime. skybox default  -->
+    <!--
+        Description:
+        'Skybox' caches star renders and only updates them once the players has moved a
+        considerable distance. 'Realtime' on the other hand updates each frame. The
+        'Skybox' option is therefore much gentles on the GPU as it will often need to
+        recalculate star data as little as once an hour (or less) when not travelling
+        much. 'Realtime' on the other hand will recalculate star data 60 times a second
+        (or more, on fast GPUs) making it far more resource intensive.
 
-                                           Benefits of either:
-                                           * Skybox uses far fewer resources. Might cause a tiny amount of stutter for a second when it updates.
-                                           * Worse performance, but performance is more consistent. Star movement might look a tiny amount more realistic during very distance hyperspace jumps.
-                                         -->
+        Benefits of either:
+        * Skybox uses far fewer resources. Might cause a tiny amount of stutter for a
+            second when it updates.
+        * Worse performance, but performance is more consistent. Star movement might
+          look a tiny amount more realistic during very distance hyperspace jumps.
+    -->
 </body>
 </html>

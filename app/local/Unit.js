@@ -59,6 +59,11 @@ Unit.parsec.inMeters = Number(Unit.parsec.inMetersBigInt);
 // ^^ factors:
 // 1801n, 12269n, 22096469n, 1396457317n
 
+// Convert parsecs to light years by multiplying parsecs with this constant.
+Unit.parsecToLy = 3.26156377716744;
+// Convert light year to parsecs by multiplying LY with this constant.
+Unit.lyToParsec = 1 / 3.26156377716744;
+
 Unit.centiParsec = {};
 Unit.centiParsec.inMeters = 3085677581491367.3; // loses accuracy to .5
 

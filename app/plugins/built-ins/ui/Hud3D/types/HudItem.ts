@@ -147,8 +147,8 @@ export default class HudItem {
   }
 
   _loadMesh(options) {
-    // const loader = new MeshLoader('getHudModel', 'ndcTester', options);
-    const loader = new MeshLoader('getHudModel', this._modelFileName, options);
+    // const loader = new MeshLoader('ndcTester', 'getHudModel', options);
+    const loader = new MeshLoader(this._modelFileName, 'getHudModel', options);
     loader.trackedMesh.getOnce(({ gltf }) => {
       this.mesh = gltf;
       this.scene = gltf.scene;

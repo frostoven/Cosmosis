@@ -20,26 +20,30 @@ html, body {
     cursor: url(/potatoLqAssets/icons/cursor1_sharp_32.png) 3 3, auto;
 }
 
-#far-object-canvas {
-    z-index: 10;
+#galaxy-canvas, #far-object-canvas, #near-object-canvas {
     position: fixed;
     top: 0;
     bottom: 0;
     left: 0;
     right: 0;
+    width: 100%;
+    height: 100%;
+}
+
+#galaxy-canvas {
+    z-index: 10;
+}
+
+#far-object-canvas {
+    z-index: 11;
 }
 
 #near-object-canvas {
-    z-index: 11;
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    z-index: 12;
 }
 
 #starfield-canvas {
-    z-index: 12;
+    z-index: 13;
     position: fixed;
     bottom: 0;
     right: 0;

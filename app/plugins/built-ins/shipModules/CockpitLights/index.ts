@@ -8,6 +8,7 @@ import { cockpitLightControls } from './controls';
 class CockpitLightsModule extends ModuleSpawner {
   constructor() {
     super();
+
     gameRuntime.tracked.shipPilot.getOnce((shipPilot: ShipPilot) => {
       shipPilot.extendControlSchema(cockpitLightControls);
     });
