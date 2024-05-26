@@ -5,7 +5,7 @@ import CosmosisPlugin from '../../types/CosmosisPlugin';
 import { CoordType } from './types/CoordType';
 import { capitaliseFirst } from '../../../local/utils';
 
-class Location {
+class SpacetimeControl {
   // TODO: shift world based on last known position during boot.
 
   // public worldScaleVector: Vector3;
@@ -73,7 +73,7 @@ class Location {
       this._adder = adder;
     }
     else {
-      console.error('[Location] Bad coordMode', mode);
+      console.error('[SpacetimeControl] Bad coordMode', mode);
     }
   }
 
@@ -113,9 +113,9 @@ class Location {
   }
 }
 
-const locationPlugin = new CosmosisPlugin('location', Location);
+const spacetimeControl = new CosmosisPlugin('spacetimeControl', SpacetimeControl);
 
 export {
-  Location,
-  locationPlugin,
+  SpacetimeControl,
+  spacetimeControl,
 }

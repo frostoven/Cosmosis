@@ -1,8 +1,8 @@
 import ShipModule from '../../types/ShipModule';
 import { gameRuntime } from '../../../../gameRuntime';
 import { ShipPilot } from '../../../modes/playerControllers/ShipPilot';
-import { Location } from '../../../Location';
-import { CoordType } from '../../../Location/types/CoordType';
+import { SpacetimeControl } from '../../../SpacetimeControl';
+import { CoordType } from '../../../SpacetimeControl/types/CoordType';
 import PropulsionManager from '../../PropulsionManager/types/PropulsionManager';
 import { PropulsionManagerModule } from '../../PropulsionManager';
 import WarpEngineMechanism from './WarpEngineMechanism';
@@ -16,7 +16,7 @@ export default class WarpDrive extends ShipModule {
   private readonly _warpChargeTime: number;
   private _warpCountdown: number;
   private _cachedPropulsionManager: PropulsionManagerModule;
-  private _cachedLocation: Location;
+  private _cachedLocation: SpacetimeControl;
   private _parentPropulsionManger: PropulsionManager | undefined;
   private _warpEngine: WarpEngineMechanism;
 
@@ -36,7 +36,7 @@ export default class WarpDrive extends ShipModule {
     this._warpEngine = new WarpEngineMechanism();
 
     this._cachedPropulsionManager = gameRuntime.tracked.propulsionManagerModule.cachedValue;
-    this._cachedLocation = gameRuntime.tracked.location.cachedValue;
+    this._cachedLocation = gameRuntime.tracked.spacetimeControl.cachedValue;
     this._setupListeners();
   }
 
@@ -48,7 +48,7 @@ export default class WarpDrive extends ShipModule {
     gameRuntime.tracked.propulsionManagerModule.getEveryChange((manager: PropulsionManagerModule) => {
       this._cachedPropulsionManager = manager;
     });
-    gameRuntime.tracked.location.getEveryChange((location) => {
+    gameRuntime.tracked.spacetimeControl.getEveryChange((location) => {
       this._cachedLocation = location;
     });
   }

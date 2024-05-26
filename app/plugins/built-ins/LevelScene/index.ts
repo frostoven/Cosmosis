@@ -21,7 +21,7 @@ import ExternalLights from '../shipModules/ExternalLights/types/ExternalLights';
 import WarpDrive from '../shipModules/WarpDrive/types/WarpDrive';
 import PropulsionManager
   from '../shipModules/PropulsionManager/types/PropulsionManager';
-import { Location } from '../Location';
+import { SpacetimeControl } from '../SpacetimeControl';
 import VisorHud from '../shipModules/VisorHud/types/VisorHud';
 
 const BLOOM_SCENE = 1;
@@ -49,7 +49,7 @@ export default class LevelScene extends Scene {
 
   // @ts-ignore
   private _renderer: WebGLRenderer;
-  private _cachedLocation: Location;
+  private _cachedLocation: SpacetimeControl;
   private _cachedCamera: PerspectiveCamera;
   private _vehicle: GLTFInterface;
   private _vehicleInventory: { [moduleHookName: string]: Array<any> };
@@ -60,7 +60,7 @@ export default class LevelScene extends Scene {
   constructor() {
     super();
     this._cachedCamera = new PerspectiveCamera();
-    this._cachedLocation = gameRuntime.tracked.location.cachedValue;
+    this._cachedLocation = gameRuntime.tracked.spacetimeControl.cachedValue;
     // this.fog = new FogExp2(0xDFE9F3, 0.0000005);
 
     // @ts-ignore
@@ -94,7 +94,7 @@ export default class LevelScene extends Scene {
     gameRuntime.tracked.player.getEveryChange((player) => {
       this._cachedCamera = player.camera;
     });
-    gameRuntime.tracked.location.getEveryChange((location) => {
+    gameRuntime.tracked.spacetimeControl.getEveryChange((location) => {
       this._cachedLocation = location;
     });
   }

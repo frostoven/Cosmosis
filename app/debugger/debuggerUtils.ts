@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import ChangeTracker from 'change-tracker/src';
-import { Location } from '../plugins/built-ins/Location';
+import { SpacetimeControl } from '../plugins/built-ins/SpacetimeControl';
 import ShipModule from '../plugins/built-ins/shipModules/types/ShipModule';
 import Generator from '../plugins/built-ins/shipModules/Generator/types/Generator';
 import VisorHud from '../plugins/built-ins/shipModules/VisorHud/types/VisorHud';
@@ -162,8 +162,8 @@ function guessTypeInfo(value): {
 
   // -- Internals and ship modules------------------------------- //
 
-  else if (value instanceof Location) {
-    result.friendlyName = '[Internal]Location';
+  else if (value instanceof SpacetimeControl) {
+    result.friendlyName = '[Internal]SpacetimeControl';
   }
   else if (value instanceof ShipModule) {
     if (value instanceof VisorHud) {

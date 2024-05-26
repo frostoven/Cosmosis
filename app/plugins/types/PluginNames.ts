@@ -8,11 +8,10 @@ type PluginNames =
   'core' | 
   'nodeOps' | 
   'player' | 
-  'location' | 
+  'spacetimeControl' | 
   'navigation' | 
   'levelScene' | 
   'spaceScene' | 
-  'offscreenGalaxyWorker' | 
   'hud3D' | 
   'mouseDriver' | 
   'gamepadConnector' | 
