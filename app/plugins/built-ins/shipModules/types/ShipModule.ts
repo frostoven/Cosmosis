@@ -29,34 +29,62 @@ export default class ShipModule {
   }
 
   connectPowerIn() {
-    //
+    console.error(
+      `[connectPowerIn] '${this.friendlyName}': interface no supported.`,
+    );
   }
 
   disconnectPowerIn() {
-    //
+    console.error(
+      `[disconnectPowerIn] '${this.friendlyName}': interface no supported.`,
+    );
   }
 
   connectPowerOut() {
-    //
+    console.error(
+      `[connectPowerOut] '${this.friendlyName}': interface no supported.`,
+    );
   }
 
   disconnectPowerOut() {
-    //
+    console.error(
+      `[disconnectPowerOut] '${this.friendlyName}': interface no supported.`,
+    );
   }
 
   connectDataIn() {
-    //
+    console.error(
+      `[connectDataIn] '${this.friendlyName}': interface no supported.`,
+    );
   }
 
   disconnectDataIn() {
-    //
+    console.error(
+      `[disconnectDataIn] '${this.friendlyName}': interface no supported.`,
+    );
   }
 
   connectDataOut() {
-    //
+    console.error(
+      `[connectDataOut] '${this.friendlyName}': interface no supported.`,
+    );
   }
 
   disconnectDataOut() {
-    //
+    console.error(
+      `[disconnectDataOut] '${this.friendlyName}': interface no supported.`,
+    );
+  }
+
+  activateControlInterface() {
+    console.error(
+      `[activateControlInterface] '${this.friendlyName}': interface no supported.`,
+    );
+  }
+
+  deactivateControlInterface() {
+    console.error(
+      `[deactivateControlInterface] '${this.friendlyName}': interface no supported.`,
+    );
   }
 }
