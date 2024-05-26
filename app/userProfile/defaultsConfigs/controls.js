@@ -18,6 +18,7 @@ const config = {
       },
       general: {
         _description: 'Controls that may be activated from almost everywhere.',
+        F5: '_devReloadGame',
         F8: '_devChangeCamMode',
         F7: '_devChangeCamMode',
         ControlLeft: 'toggleMousePointer', // a.k.a. PointerLockControls.

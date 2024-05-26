@@ -10,6 +10,7 @@ const generalControls: ControlSchema = {
   toggleMousePointer: { actionType: pulse, current: null, default: { ControlLeft: keyboardButton } },
   toggleFullScreen:   { actionType: pulse, current: null, default: { F11: keyboardButton } },
   showDevConsole:     { actionType: pulse, current: null, default: { F12: keyboardButton } },
+  _devReloadGame:     { actionType: pulse, current: null, default: { F5: keyboardButton } },
 };
 
 genAutoFriendlyNames(generalControls);

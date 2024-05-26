@@ -135,6 +135,8 @@ export default class CosmDbgMain extends React.Component<Props> {
   bindDevToolKey(event) {
     if (this.state.hoverActive) {
       // @ts-ignore
+      (event.code === 'F5') && chrome.tabs.reload();
+      // @ts-ignore
       (event.code === 'F11') && nw.Window.get().toggleFullscreen();
       // @ts-ignore
       (event.code === 'F12') && nw.Window.get().showDevTools();

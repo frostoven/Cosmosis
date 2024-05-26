@@ -18,6 +18,11 @@ class GeneralControl extends ModeController {
       this._mouseDriver.toggle();
     });
 
+    this.pulse._devReloadGame.getEveryChange(() => {
+      // @ts-ignore
+      chrome.tabs.reload();
+    });
+
     this.pulse.toggleFullScreen.getEveryChange(() => {
       // @ts-ignore
       nw.Window.get().toggleFullscreen();
