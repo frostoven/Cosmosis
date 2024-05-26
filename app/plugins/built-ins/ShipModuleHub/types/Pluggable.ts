@@ -1,15 +1,17 @@
 // Intended use is with the ShipModuleHub hub. Example:
 // hub.plug(cockpitLights).intoPowerOutletOf(generator);
+import Generator from '../../shipModules/Generator/types/Generator';
+import ShipModule from '../../shipModules/types/ShipModule';
 import { HubError } from './HubError';
 
 export default class Pluggable {
   private readonly device: any;
 
-  constructor(device) {
+  constructor(device: ShipModule) {
     this.device = device;
   }
 
-  intoPowerOutletOf(otherDevice) {
+  intoPowerOutletOf(otherDevice: Generator) {
     if (!this.device) {
       console.error('Device not defined correctly.');
       return;

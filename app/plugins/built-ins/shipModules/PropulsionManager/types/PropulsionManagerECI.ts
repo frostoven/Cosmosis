@@ -4,10 +4,6 @@ interface PropulsionManagerECI extends EciStructure {
   capabilities: {
     setThrust: boolean,
     cycleEngineType: boolean,
-    // activateSpecificEngineType: boolean,
-    // availableEngineTypes: string[], // use enum instead?
-    // Model names of all engines connected to the propulsion manager.
-    // availableEngines: string[],
     impulse: boolean,
     warp: boolean,
     hyper: boolean,
