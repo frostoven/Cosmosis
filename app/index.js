@@ -104,7 +104,7 @@ function init() {
       identifier: 'gameState',
     });
 
-    api.setPlayerShipLocation(currentPosition.location);
+    api.setPlayerShipLocation(currentPosition.spacetimeControl);
     api.setPlayerShipRotation(currentPosition.rotation);
   });
 }

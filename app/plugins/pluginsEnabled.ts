@@ -1,7 +1,7 @@
 import { PluginEntry } from './interfaces/PluginEntry';
 import { metadataPlugin } from './built-ins/Metadata';
 import { playerPlugin } from './built-ins/Player';
-import { locationPlugin } from './built-ins/Location';
+import { spacetimeControl } from './built-ins/SpacetimeControl';
 import { navigationPlugin } from './built-ins/Navigation';
 import { levelScenePlugin } from './built-ins/LevelScene';
 import { spaceScenePlugin } from './built-ins/SpaceScene';
@@ -36,10 +36,10 @@ const builtInPluginsEnabled: PluginEntry[] = [
   { name: 'player', pluginInstance: playerPlugin, dependencies: [ 'core' ] },
 
   // Universe
-  { name: 'location', pluginInstance: locationPlugin, dependencies: [ 'core', 'player' ] },
-  { name: 'navigation', pluginInstance: navigationPlugin, dependencies: [ 'core', 'location' ] },
-  { name: 'levelScene', pluginInstance: levelScenePlugin, dependencies: [ 'core', 'nodeOps', 'location', 'player' ], optional: [ 'shipModuleHub' ] },
-  { name: 'spaceScene', pluginInstance: spaceScenePlugin, dependencies: [ 'core', 'location' ] },
+  { name: 'spacetimeControl', pluginInstance: spacetimeControl, dependencies: [ 'core', 'player' ] },
+  { name: 'navigation', pluginInstance: navigationPlugin, dependencies: [ 'core', 'spacetimeControl' ] },
+  { name: 'levelScene', pluginInstance: levelScenePlugin, dependencies: [ 'core', 'nodeOps', 'spacetimeControl', 'player' ], optional: [ 'shipModuleHub' ] },
+  { name: 'spaceScene', pluginInstance: spaceScenePlugin, dependencies: [ 'core', 'spacetimeControl' ] },
   { name: 'offscreenGalaxyWorker', pluginInstance: offscreenGalaxyWorkerPlugin, dependencies: [ 'core', 'player', 'spaceScene' ] },
 
   // HUD and control visuals

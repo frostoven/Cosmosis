@@ -1,8 +1,8 @@
 // Note:
 // shipPilot mode does not do anything to the spaceship, or to space. It
-// tells Navigation (or Location?) that space is being warped, or that bubbles
-// are being entered/exited. It's Nav's (or Location's) job to figure out what
-// that means.
+// tells Navigation (or SpacetimeControl?) that space is being warped, or that
+// bubbles are being entered/exited. It's Nav's (or SpacetimeControl's) job to
+// figure out what that means.
 
 import { Camera } from 'three';
 import Core from '../../../Core';

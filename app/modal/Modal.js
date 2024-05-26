@@ -3,7 +3,7 @@ import { Icon, Input, Modal as SemanticModal } from 'semantic-ui-react';
 import Button from '../reactExtra/components/KosmButton';
 import { MoveDown } from '../reactExtra/animations/MoveDown';
 import { MoveUp } from '../reactExtra/animations/MoveUp';
-import { FadeIn } from "../reactExtra/animations/FadeIn";
+import { FadeIn } from '../reactExtra/animations/FadeIn';
 import ScrollIntoView from '../reactExtra/components/ScrollIntoView';
 import GamepadDriver from '../GamepadDriver';
 import { InputType } from '../configs/types/InputTypes';
@@ -69,7 +69,7 @@ export default class Modal extends React.Component {
     if (++totalInstances > 1) {
       console.warn(
         'More than one modal component has been mounted. This will likely ' +
-        'cause bugs. Please investigate.'
+        'cause bugs. Please investigate.',
       );
     }
 
@@ -145,9 +145,17 @@ export default class Modal extends React.Component {
    */
   buildModal = (
     {
-      header='Message', body='', actions, unskippable=false, prioritise=false,
-      tag, inline=false, renderCustomDialog=null, onForceClose=()=>{},
-    }
+      header = 'Message',
+      body = '',
+      actions,
+      unskippable = false,
+      prioritise = false,
+      tag,
+      inline = false,
+      renderCustomDialog = null,
+      onForceClose = () => {
+      },
+    },
   ) => {
     Modal.allowExternalListeners = false;
 
@@ -155,7 +163,8 @@ export default class Modal extends React.Component {
       this._forceCloseListener = onForceClose;
     }
     else {
-      this._forceCloseListener = () => {};
+      this._forceCloseListener = () => {
+      };
     }
 
     this._registerKeyListeners();
@@ -218,12 +227,12 @@ export default class Modal extends React.Component {
     if (Modal.keyboardCaptureMode) {
       return;
     }
-    else{
+    else {
       // Capture mode is used by features such as setting key bindings to
       // detect which controls the user wants to map. Unless we're capturing
       // keys, we have no need for special keys, and can allow external
       // listeners such as the input manager plugin to process keys.
-      if (code === 'F11' || code === 'F12') {
+      if ([ 'F5', 'F11', 'F12' ].includes(code)) {
         Modal.allowExternalListeners = true;
         return;
       }
@@ -313,7 +322,7 @@ export default class Modal extends React.Component {
           name: 'OK',
           onSelect: () => {
             this.deactivateModal(() => optionalCallback(true));
-          }
+          },
         },
       ];
     }
@@ -348,13 +357,13 @@ export default class Modal extends React.Component {
           name: options.yesText ? options.yesText : 'Yes',
           onSelect: () => {
             this.deactivateModal(() => callback(true));
-          }
+          },
         },
         {
           name: options.noText ? options.noText : 'No',
           onSelect: () => {
             this.deactivateModal(() => callback(false));
-          }
+          },
         },
       ];
     }
@@ -373,24 +382,24 @@ export default class Modal extends React.Component {
    * @param {undefined|JSX.Element} options.actions
    * @param callback
    */
-  buttonPrompt = (options={}, callback) => {
+  buttonPrompt = (options = {}, callback) => {
     if (typeof callback !== 'function') {
       callback = () => console.warn('No callbacks passed to buttonPrompt.');
     }
 
     if (!options.actions) {
-      options.actions = [{ name: 'Default', value: 0 }];
+      options.actions = [ { name: 'Default', value: 0 } ];
     }
 
     options.actions.forEach((item) => {
       item.onSelect = () => {
         this.deactivateModal(() => callback(item));
-      }
+      };
     });
 
     options.inline = true;
     if (typeof options.body !== 'string') {
-        options.body = 'Please select an option:';
+      options.body = 'Please select an option:';
     }
 
     options.onForceClose = callback;
@@ -443,13 +452,13 @@ export default class Modal extends React.Component {
           name: 'Submit',
           onSelect: () => {
             this.deactivateModal(() => callback(recordedText));
-          }
+          },
         },
         {
           name: 'Cancel',
           onSelect: () => {
             this.deactivateModal(() => callback(null));
-          }
+          },
         },
       ];
     }
@@ -505,7 +514,7 @@ export default class Modal extends React.Component {
       if (options.enableAnimations === false) {
         FadeComponent = (props) => (
           <div
-            className='bold-on-hover'
+            className="bold-on-hover"
             style={{ display: 'inline-block' }}
             onClick={props.onClick}
           >
@@ -514,7 +523,7 @@ export default class Modal extends React.Component {
         );
         MoveComponent = (props) => (
           <div
-            className='bold-on-hover'
+            className="bold-on-hover"
             style={{ display: 'block' }}
             onClick={props.onClick}
           >
@@ -540,7 +549,7 @@ export default class Modal extends React.Component {
         if (index < selectionIndex) {
           topItems.push(
             <MoveComponent
-              className='bold-on-hover'
+              className="bold-on-hover"
               key={`listPrompt-${index}`}
               style={{ paddingBottom: 4 }}
               distance={`${moveDistance}%`} duration={duration}
@@ -553,7 +562,7 @@ export default class Modal extends React.Component {
         else if (index > selectionIndex) {
           bottomItems.push(
             <MoveComponent
-              className='bold-on-hover'
+              className="bold-on-hover"
               key={`listPrompt-${index}`}
               style={{ paddingTop: 4 }}
               distance={`${moveDistance}%`} duration={duration}
@@ -625,7 +634,7 @@ export default class Modal extends React.Component {
                     <div
                       style={{ display: 'inline-block' }}
                     >
-                        <ScrollIntoView>{activeItem.name}</ScrollIntoView>
+                      <ScrollIntoView>{activeItem.name}</ScrollIntoView>
                     </div>
                   </MoveComponent>
                 </FadeComponent>
@@ -720,28 +729,29 @@ export default class Modal extends React.Component {
       {
         name: <><Icon name={keyTypeIcons[keyboardButton]}/> Keyboard Button</>,
         value: keyboardButton,
-      }
+      },
     );
 
     filter.includes(gamepadButton) && actions.push(
       {
-        name: <><Icon name={keyTypeIcons[gamepadButton]}/> Controller Button</>,
+        name: <><Icon name={keyTypeIcons[gamepadButton]}/> Controller
+          Button</>,
         value: gamepadButton,
-      }
+      },
     );
 
     filter.includes(gamepadAnalog) && actions.push(
       {
         name: <><Icon name={keyTypeIcons[gamepadAnalog]}/> Controller Axis</>,
         value: gamepadAnalog,
-      }
+      },
     );
 
     filter.includes(mouseAxis) && actions.push(
       {
         name: <><Icon name={keyTypeIcons[mouseAxis]}/> Mouse Axis</>,
         value: mouseAxis,
-      }
+      },
     );
 
     filter.includes(mouseButton) && actions.push(
@@ -751,7 +761,7 @@ export default class Modal extends React.Component {
           Mouse Button{allowScroller ? ' / Scroll Wheel' : ''}
         </>,
         value: mouseButton,
-      }
+      },
     );
 
     $modal.buttonPrompt({
@@ -827,7 +837,8 @@ export default class Modal extends React.Component {
     if (typeof optionsOrCallback === 'function') {
       callback = optionsOrCallback;
       options = defaultOptions;
-    } else {
+    }
+    else {
       options = optionsOrCallback || defaultOptions;
     }
     callback = callback || defaultCallback;
@@ -936,14 +947,14 @@ export default class Modal extends React.Component {
           name: (
             <>
               <div style={iconContainer}>
-                <Icon name='arrows alternate horizontal'/>
+                <Icon name="arrows alternate horizontal"/>
               </div>
               <code style={axisText}>
                 Mouse X <i style={extraInfo}>Left-Right; Yaw</i>
               </code>
             </>
           ),
-          value: 'spEastWest'
+          value: 'spEastWest',
         },
         {
           name: (
@@ -959,7 +970,7 @@ export default class Modal extends React.Component {
           ),
           value: 'spNorthSouth',
         },
-      ]
+      ],
     }, (result) => {
       if (result === null) {
         callback(result, InputType.mouseAxisStandard);
@@ -1130,12 +1141,12 @@ export default class Modal extends React.Component {
           {activeModal.header}
         </SemanticModal.Header>
         <SemanticModal.Content>
-            {activeModal.body}
+          {activeModal.body}
         </SemanticModal.Content>
         <div
           {...this.props}
         >
-          <div className='kosm-modal-actions'>
+          <div className="kosm-modal-actions">
             {activeModal?.actions?.map((menuEntry, index) => {
               return (
                 <Button
@@ -1152,7 +1163,7 @@ export default class Modal extends React.Component {
                 >
                   {menuEntry.name}
                 </Button>
-              )
+              );
             })}
             {activeModal?.actions?.length === 0 ? (<><br/><br/></>) : null}
           </div>

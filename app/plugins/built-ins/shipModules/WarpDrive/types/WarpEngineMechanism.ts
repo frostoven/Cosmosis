@@ -1,11 +1,11 @@
 import { Object3D, Vector3 } from 'three';
 import { WarpEngineType } from './WarpEngineType';
 import { gameRuntime } from '../../../../gameRuntime';
-import { Location } from '../../../Location';
+import { SpacetimeControl } from '../../../SpacetimeControl';
 import { ShipPilot } from '../../../modes/playerControllers/ShipPilot';
 import { lerpToZero, signRelativeMax } from '../../../../../local/mathUtils';
 
-// TODO: Refactor this into the Location module.
+// TODO: Refactor this into the SpacetimeControl module.
 // Just to alleviate some confusion: 1 means 'nothing', less then 1 is negative
 // ambient energy. In other words, this number should always be 1 or more. It
 // gets exponentially higher as you get closer to a planet/star/whatever.
@@ -48,7 +48,7 @@ export default class WarpEngineMechanism {
   public engineType: WarpEngineType;
   public maxThrottle: number;
 
-  private _cachedLocation: Location;
+  private _cachedLocation: SpacetimeControl;
   private _cachedShipPilot: ShipPilot;
 
   constructor() {
@@ -66,13 +66,13 @@ export default class WarpEngineMechanism {
     this.engineType = WarpEngineType.linearAcceleration;
     this.maxThrottle = 100;
 
-    this._cachedLocation = gameRuntime.tracked.location.cachedValue;
+    this._cachedLocation = gameRuntime.tracked.spacetimeControl.cachedValue;
     this._cachedShipPilot = gameRuntime.tracked.shipPilot.cachedValue;
     this._setupWatchers();
   }
 
   _setupWatchers() {
-    gameRuntime.tracked.location.getEveryChange((location) => {
+    gameRuntime.tracked.spacetimeControl.getEveryChange((location) => {
       this._cachedLocation = location;
     });
     gameRuntime.tracked.shipPilot.getEveryChange((shipPilot) => {
