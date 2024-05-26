@@ -1,5 +1,10 @@
+import { EciRegistrationSignature } from './EciRegistrationSignature';
+
 export default class ModuleSpawner {
-  createPart({ inventory } : { inventory? } = {}): any {
+  createPart({ inventory, eciRegistration }: {
+    inventory?,
+    eciRegistration?: EciRegistrationSignature
+  } = {}): any {
     throw 'Child class has not implemented createPart()';
   }
 }

@@ -4,7 +4,6 @@ import {
   Scene,
   WebGLRenderer,
 } from 'three';
-import { RectAreaLightUniformsLib } from 'three/examples/jsm/lights/RectAreaLightUniformsLib.js';
 import CosmosisPlugin from '../../types/CosmosisPlugin';
 import { gameRuntime } from '../../gameRuntime';
 import { CoreType } from '../Core';
@@ -16,17 +15,24 @@ import { ShipModuleHub } from '../ShipModuleHub';
 import Generator from '../shipModules/Generator/types/Generator';
 import CockpitLights from '../shipModules/CockpitLights/types/CockpitLights';
 import Multimeter from '../shipModules/Multimeter/types/Multimeter';
-import ElectricalHousing from '../shipModules/ElectricalHousing/types/ElectricalHousing';
-import ExternalLights from '../shipModules/ExternalLights/types/ExternalLights';
+import ElectricalHousing
+  from '../shipModules/ElectricalHousing/types/ElectricalHousing';
+import ExternalLights
+  from '../shipModules/ExternalLights/types/ExternalLights';
 import WarpDrive from '../shipModules/WarpDrive/types/WarpDrive';
 import PropulsionManager
   from '../shipModules/PropulsionManager/types/PropulsionManager';
 import { SpacetimeControl } from '../SpacetimeControl';
 import VisorHud from '../shipModules/VisorHud/types/VisorHud';
+import { EciEnum } from '../shipModules/types/EciEnum';
+import {
+  EciRegistrationObject,
+  EciRegistrationSignature,
+} from '../shipModules/types/EciRegistrationSignature';
 
 const BLOOM_SCENE = 1;
 const bloomLayer = new Layers();
-bloomLayer.set( BLOOM_SCENE );
+bloomLayer.set(BLOOM_SCENE);
 
 // TODO:
 //  The space scene can load a vehicle. The player can be attached to the
@@ -53,6 +59,7 @@ export default class LevelScene extends Scene {
   private _cachedCamera: PerspectiveCamera;
   private _vehicle: GLTFInterface;
   private _vehicleInventory: { [moduleHookName: string]: Array<any> };
+  private _eciRegistrations: Map<EciEnum, EciRegistrationObject[]> = new Map();
 
   public onVehicleEntered: ChangeTracker;
   private _electricalHousing: ElectricalHousing | null;
@@ -101,7 +108,7 @@ export default class LevelScene extends Scene {
 
   _configureRenderer() {
     const { display, graphics } = userProfile.getCurrentConfig({
-      identifier: 'userOptions'
+      identifier: 'userOptions',
     });
 
     const nearObjectCanvas = document.getElementById('near-object-canvas');
@@ -109,7 +116,7 @@ export default class LevelScene extends Scene {
       alpha: true,
       // @ts-ignore
       canvas: nearObjectCanvas,
-      powerPreference: "high-performance",
+      powerPreference: 'high-performance',
       antialias: true,
     });
 
@@ -145,7 +152,7 @@ export default class LevelScene extends Scene {
   // Load last vehicle the player was piloting previous sessions, and enter it.
   loadAndEnterLastVehicle() {
     const { playerInfo } = userProfile.getCurrentConfig({
-      identifier: 'gameState'
+      identifier: 'gameState',
     });
     let ship = playerInfo?.vehicleInfo?.piloting;
     if (typeof ship === 'undefined') {
@@ -189,28 +196,45 @@ export default class LevelScene extends Scene {
     //
   }
 
+  _spawnSimplePart(hub: ShipModuleHub, name: string) {
+    const inventory = this._vehicleInventory;
+    return hub.acquirePart({
+      name,
+      inventory,
+      eciRegistration: this._setUpEciHook,
+    });
+  }
+
   bootShip() {
     // TODO: formalise the hardcoded ship modules here into a proper system.
     gameRuntime.tracked.shipModuleHub.getOnce((hub: ShipModuleHub) => {
       this.moduleHub = hub;
       const inventory = this._vehicleInventory;
 
-      const electricalHousing: ElectricalHousing = hub.acquirePart({ name: 'electricalHousing', inventory });
-      const generator: Generator = hub.acquirePart({ name: 'generator', inventory });
-      const visorHud: VisorHud = hub.acquirePart({ name: 'visorHud', inventory });
-      const cockpitLights: CockpitLights = hub.acquirePart({ name: 'cockpitLights', inventory });
-      const externalLights: ExternalLights = hub.acquirePart({ name: 'externalLights', inventory });
-      const multimeter: Multimeter = hub.acquirePart({ name: 'multimeter', inventory });
-      
+      const electricalHousing: ElectricalHousing =
+        this._spawnSimplePart(hub, 'electricalHousing');
       this._electricalHousing = electricalHousing;
 
-      const propulsionManager: PropulsionManager = hub.acquirePart({ name: 'propulsionManager', inventory });
-      const warpDrive: WarpDrive = hub.acquirePart({ name: 'warpDrive', inventory });
+      const multimeter: Multimeter =
+        this._spawnSimplePart(hub, 'multimeter');
+      const generator: Generator =
+        this._spawnSimplePart(hub, 'generator');
+      const visorHud: VisorHud =
+        this._spawnSimplePart(hub, 'visorHud');
+      const cockpitLights: CockpitLights =
+        this._spawnSimplePart(hub, 'cockpitLights');
+      const externalLights: ExternalLights =
+        this._spawnSimplePart(hub, 'externalLights');
+      const propulsionManager: PropulsionManager =
+        this._spawnSimplePart(hub, 'propulsionManager');
+      const warpDrive: WarpDrive =
+        this._spawnSimplePart(hub, 'warpDrive');
 
       // Note: this starts the process of stepping modules each frame. We do
       // this before assembly, and not after, because it has potential to show
       // the player things going online spontaneously (though, realistically,
       // code setup probably happens in under one frame).
+      // TODO: Add module boot delays.
       electricalHousing.embed([
         generator, visorHud, cockpitLights, externalLights, multimeter,
         propulsionManager, warpDrive,
@@ -229,6 +253,33 @@ export default class LevelScene extends Scene {
 
       console.log('Generator state:', generator.getSupplyState());
     });
+  }
+
+  // Any system that wants to send commands to a generic interface may do so
+  // via this mechanism.
+  _setUpEciHook: EciRegistrationSignature = ({ key, getEci }) => {
+    if (!this._eciRegistrations.get(key)) {
+      this._eciRegistrations.set(key, []);
+    }
+    this._eciRegistrations.get(key)!.push({ key, getEci });
+  };
+
+  // Modules may optionally expose an electronic control interface, which other
+  // modules or non-module system may send commands to. An example of this is
+  // the shipPilot plugin, which uses the electronic control interface to send
+  // propulsion commands. Note that the ECI works on a key:value system, and
+  // will expose only the last interface that overrides the given key name.
+  // Where system require dynamic switching, a management interface should be
+  // such, such as the propulsionManager in the case of multi-engine support.
+  getElectronicControlInterface(target: EciEnum) {
+    const entry = this._eciRegistrations.get(target);
+    if (entry && entry.length) {
+      // Return the latest ECI registration with the specified name;
+      return entry[entry.length - 1];
+    }
+    else {
+      return null;
+    }
   }
 
   resetCameraSeatPosition() {
@@ -259,4 +310,4 @@ const levelScenePlugin = new CosmosisPlugin('levelScene', LevelScene);
 
 export {
   levelScenePlugin,
-}
+};

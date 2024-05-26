@@ -1,13 +1,15 @@
-import ShipModule from '../../types/ShipModule';
 import { gameRuntime } from '../../../../gameRuntime';
 import { ShipPilot } from '../../../modes/playerControllers/ShipPilot';
 import { SpacetimeControl } from '../../../SpacetimeControl';
 import { CoordType } from '../../../SpacetimeControl/types/CoordType';
-import PropulsionManager from '../../PropulsionManager/types/PropulsionManager';
+import PropulsionManager
+  from '../../PropulsionManager/types/PropulsionManager';
 import { PropulsionManagerModule } from '../../PropulsionManager';
 import WarpEngineMechanism from './WarpEngineMechanism';
+import PropulsionModule from '../../types/PropulsionModule';
+import { PropulsionTypeEnum } from '../../types/PropulsionTypeEnum';
 
-export default class WarpDrive extends ShipModule {
+export default class WarpDrive extends PropulsionModule {
   readonly friendlyName: string;
   warpBubbleActive: boolean;
   _powerSource: any;
@@ -22,6 +24,7 @@ export default class WarpDrive extends ShipModule {
 
   constructor() {
     super();
+    this.type = PropulsionTypeEnum.warp;
     this.friendlyName = 'warp drive';
     this.powerNeeded = 5;
     this.bootPowerNeeded = 12;
