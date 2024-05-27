@@ -5,6 +5,17 @@ import CosmosisPlugin from '../../types/CosmosisPlugin';
 import { CoordType } from './types/CoordType';
 import { capitaliseFirst } from '../../../local/utils';
 
+/**
+ * Controls spacetime from the level origin's point of view.
+ * The following paradigm is important to understand:
+ * * Spaceships you inhabit are treated as levels.
+ * * Spaceships other players inhabit are treated as actors.
+ * * The rest of the universe's contents (whether stars, planets, stations, or
+ *   rocks) are actors.
+ * * If an actor can be landed on (space station, planet), and you land on it,
+ *   that actor becomes the level and your spaceship becomes an actor within
+ *   the new level.
+ */
 class SpacetimeControl {
   // TODO: shift world based on last known position during boot.
 
