@@ -3,28 +3,36 @@ import Pluggable from './types/Pluggable';
 import { gameRuntime } from '../../gameRuntime';
 import ModuleSpawner from '../shipModules/types/ModuleSpawner';
 import Delegable from './types/Delegable';
+import ShipModule from '../shipModules/types/ShipModule';
+import {
+  EciRegistrationSignature
+} from '../shipModules/types/EciRegistrationSignature';
 
 class ShipModuleHub {
   constructor() {
   }
 
-  plug(device) {
+  plug(device: ShipModule) {
     return new Pluggable(device);
   }
 
-  delegate(device) {
+  delegate(device: ShipModule) {
     return new Delegable(device);
   }
 
   // TODO: Decide on naming here. spawnPart might be more appropriate if we
   //  continue to use this function for unconditional part spawning.
-  acquirePart({ name, inventory } : { name: string, inventory: {} }) {
+  acquirePart({ name, inventory, eciRegistration }: {
+    name: string,
+    inventory: {},
+    eciRegistration: EciRegistrationSignature,
+  }) {
     const deviceSpawner: ModuleSpawner = gameRuntime.tracked[`${name}Module`]?.cachedValue;
     if (!deviceSpawner) {
       console.error(`Part type '${name}' (aka ${name}Module) does not seem to exist in this reality.`);
       return null;
     }
-    return deviceSpawner.createPart({ inventory });
+    return deviceSpawner.createPart({ inventory, eciRegistration });
   }
 }
 
@@ -52,4 +60,4 @@ const shipModuleHubPlugin = new CosmosisPlugin('shipModuleHub', ShipModuleHub);
 export {
   ShipModuleHub,
   shipModuleHubPlugin,
-}
+};

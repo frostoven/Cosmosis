@@ -10,17 +10,20 @@ const { keyboardButton, gamepadButton, gamepadAxisStandard, mouseButton,
 } = InputType;
 
 const shipPilotControls: ControlSchema = {
+  //
   // Pulsed
+  //
   thrustUp10:          { actionType: pulse, current: null, default: { spScrollUp: scrollWheel }, friendly: 'Thrust Increase (10%)' },
   thrustReset:         { actionType: pulse, current: null, default: { spScrollDown: scrollWheel } },
   mouseHeadLook:       { actionType: pulse, current: null, default: { spMouseMiddle: mouseButton, Numpad5: keyboardButton, bt11: gamepadButton, bt10: gamepadButton } },
   toggleFlightAssist:  { actionType: pulse, current: null, default: { KeyZ: keyboardButton } },
+  cycleEngineType:     { actionType: pulse, current: null, default: { KeyJ: keyboardButton } },
   //
   // Continuous
   //
-  thrustInc:     { actionType: continuous, sign: -1, analogRemap: 'thrustAnalog', current: null, default: { KeyW: keyboardButton } },
-  thrustDec:     { actionType: continuous, sign:  1, analogRemap: 'thrustAnalog', current: null, default: { KeyS: keyboardButton } },
-  thrustAnalog:  { actionType: continuous, current: null, default: { ax1: gamepadAxisStandard, ha5: gamepadSlider }, isBidirectional: true },
+  thrustInc:     { actionType: continuous, sign: -1, multiplier: { keyboardButton: 0.025 }, analogRemap: 'thrustAnalog', current: null, default: { KeyW: keyboardButton } },
+  thrustDec:     { actionType: continuous, sign:  1, multiplier: { keyboardButton: 0.025 }, analogRemap: 'thrustAnalog', current: null, default: { KeyS: keyboardButton } },
+  thrustAnalog:  { actionType: continuous, current: null, default: { ax1: gamepadAxisStandard, ha2: gamepadSlider }, isBidirectional: true },
   //
   pitchUp:       { actionType: continuous, sign: -1, analogRemap: 'pitchAnalog', current: null, default: { Numpad8: keyboardButton } },
   pitchDown:     { actionType: continuous, sign:  1, analogRemap: 'pitchAnalog', current: null, default: { Numpad2: keyboardButton } },

@@ -12,9 +12,18 @@ import { shipPilotControls } from './controls';
 import { ModeId } from '../../../InputManager/types/ModeId';
 import { gameRuntime } from '../../../../gameRuntime';
 import { InputManager } from '../../../InputManager';
-import { applyPolarRotation, chaseValue, clamp } from '../../../../../local/mathUtils';
+import {
+  applyPolarRotation,
+  chaseValue,
+  clamp,
+} from '../../../../../local/mathUtils';
 import PluginCacheTracker from '../../../../../emitters/PluginCacheTracker';
 import Player from '../../../Player';
+import LevelScene from '../../../LevelScene';
+import { EciEnum } from '../../../shipModules/types/EciEnum';
+import {
+  PropulsionManagerECI,
+} from '../../../shipModules/PropulsionManager/types/PropulsionManagerECI';
 
 // TODO: move me into user profile.
 const MOUSE_SPEED = 0.7;
@@ -25,12 +34,19 @@ const headXMax = 2200;
 const headYMax = 1150;
 
 type PluginCompletion = PluginCacheTracker & {
-  player: Player, camera: Camera, inputManager: InputManager,
+  player: Player,
+  camera: Camera,
+  inputManager: InputManager,
+  levelScene: LevelScene,
 };
 
+// Pilot control interface.
 class ShipPilot extends ModeController {
-  private _prettyPosition: number;
-  private _throttlePosition: number;
+  private _prettyPosition: number = 0;
+  // Important for input devices such as keyboards. Not used by analog devices.
+  private _throttleAccumulation: number = 0;
+  // Combines keyboard and analog outputs. Is the final source of truth.
+  private _throttlePosition: number = 0;
   private _pluginCache: PluginCacheTracker | PluginCompletion;
 
   constructor() {
@@ -38,7 +54,7 @@ class ShipPilot extends ModeController {
     super('shipPilot', ModeId.playerControl, shipPilotControls, uiInfo);
 
     this._pluginCache = new PluginCacheTracker(
-      [ 'player', 'core', 'inputManager' ],
+      [ 'player', 'core', 'inputManager', 'levelScene' ],
       { player: { camera: 'camera' } },
     );
 
@@ -49,9 +65,6 @@ class ShipPilot extends ModeController {
     this._pluginCache.inputManager = gameRuntime.tracked.inputManager.cachedValue;
     // this._pluginCache.inputManager.activateController(ModeId.playerControl, this.name);
 
-    this._prettyPosition = 0;
-    this._throttlePosition = 0;
-
     this._setupPulseListeners();
   }
 
@@ -59,6 +72,25 @@ class ShipPilot extends ModeController {
     this.pulse.mouseHeadLook.getEveryChange(() => {
       this.state.mouseHeadLook = Number(!this.state.mouseHeadLook);
       this.resetLookState();
+    });
+
+    this.pulse.thrustReset.getEveryChange(() => {
+      // Local accumulation cache.
+      this._throttleAccumulation = 0;
+      this._throttlePosition = 0;
+      // Tracked input state.
+      this.activeState.thrustAnalog = 0;
+      this.state.thrustAnalog = 0;
+    });
+
+    this.pulse.cycleEngineType.getEveryChange(() => {
+      // Inform the propulsion manager of what's going on.
+      const level: LevelScene = this._pluginCache.levelScene;
+      const eciLookup = level.getElectronicControlInterface(EciEnum.propulsion);
+      if (eciLookup) {
+        const eci = eciLookup.getEci() as PropulsionManagerECI;
+        eci.cli.cycleEngineType();
+      }
     });
 
     this.pulse._devChangeCamMode.getEveryChange(() => {
@@ -194,8 +226,14 @@ class ShipPilot extends ModeController {
     this.setNeckPosition(x, y);
   }
 
-  processShipControls(delta, bigDelta) {
-    this._throttlePosition = clamp(this.state.thrustAnalog + this.activeState.thrustAnalog, -1, 1);
+  processShipControls(delta: number, bigDelta: number) {
+    this._throttleAccumulation = clamp(
+      this._throttleAccumulation + this.activeState.thrustAnalog, -1, 1,
+    );
+    this._throttlePosition = clamp(
+      this._throttleAccumulation + this.state.thrustAnalog, -1, 1,
+    );
+
     // The pretty position is a way of making very sudden changes (like with a
     // keyboard button press) look a bit more natural by gradually going to
     // where it needs to, but does not reduce actual throttle position.
@@ -205,7 +243,7 @@ class ShipPilot extends ModeController {
     Core.unifiedView.throttlePrettyPosition = this._prettyPosition;
   }
 
-  step(delta, bigDelta) {
+  step(delta: number, bigDelta: number) {
     this.processShipControls(delta, bigDelta);
   }
 
@@ -226,4 +264,4 @@ const shipPilotPlugin = new CosmosisPlugin('shipPilot', ShipPilot);
 export {
   ShipPilot,
   shipPilotPlugin,
-}
+};

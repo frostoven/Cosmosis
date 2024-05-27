@@ -3,14 +3,16 @@ import PropulsionManager from './types/PropulsionManager';
 import ModuleSpawner from '../types/ModuleSpawner';
 
 class PropulsionManagerModule extends ModuleSpawner {
-  createPart() {
-    return new PropulsionManager();
+  createPart({ eciRegistration }) {
+    return new PropulsionManager({ eciRegistration });
   }
 }
 
-const propulsionManagerModulePlugin = new CosmosisPlugin('propulsionManagerModule', PropulsionManagerModule);
+const propulsionManagerModulePlugin = new CosmosisPlugin(
+  'propulsionManagerModule', PropulsionManagerModule,
+);
 
 export {
   PropulsionManagerModule,
   propulsionManagerModulePlugin,
-}
+};

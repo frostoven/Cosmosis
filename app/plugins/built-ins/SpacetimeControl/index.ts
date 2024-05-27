@@ -1,36 +1,48 @@
 import _ from 'lodash';
-import { Object3D, Quaternion, Vector3 } from 'three';
+import * as THREE from 'three';
 import { gameRuntime } from '../../gameRuntime';
 import CosmosisPlugin from '../../types/CosmosisPlugin';
 import { CoordType } from './types/CoordType';
 import { capitaliseFirst } from '../../../local/utils';
 
+/**
+ * Controls spacetime from the level origin's point of view.
+ * The following paradigm is important to understand:
+ * * Spaceships you inhabit are treated as levels.
+ * * Spaceships other players inhabit are treated as actors.
+ * * The rest of the universe's contents (whether stars, planets, stations, or
+ *   rocks) are actors.
+ * * If an actor can be landed on (space station, planet), and you land on it,
+ *   that actor becomes the level and your spaceship becomes an actor within
+ *   the new level.
+ */
 class SpacetimeControl {
   // TODO: shift world based on last known position during boot.
 
-  // public worldScaleVector: Vector3;
+  // public worldScaleVector: THREE.Vector3;
 
   // Our real coordinates inside the universe, in meters.
-  public universeCoordsM: Object3D;
-  public universeRotationM: Object3D;
+  public universeCoordsM: THREE.Object3D;
+  public universeRotationM: THREE.Object3D;
   private _coordMode: CoordType;
   // private _cachedCamera: PerspectiveCamera;
   // private _cachedLevelScene: Scene;
   // private _cachedSpaceScene: Scene;
   private readonly _movementFunctions: any[];
-  private _adder: (direction: Vector3, speed: number) => void;
+  private _adder: (direction: THREE.Vector3, speed: number) => void;
 
   constructor() {
     this._setupWatchers();
-    this.universeCoordsM = new Object3D();
-    this.universeRotationM = new Object3D();
+    this.universeCoordsM = new THREE.Object3D();
+    this.universeRotationM = new THREE.Object3D();
     this._coordMode = CoordType.playerCentric;
 
     // this._cachedCamera = new PerspectiveCamera();
     // this._cachedLevelScene = new Scene();
     // this._cachedSpaceScene = new Scene();
 
-    this._adder = () => {};
+    this._adder = () => {
+    };
     this._movementFunctions = [];
     this._setupAdders();
   }
@@ -60,6 +72,7 @@ class SpacetimeControl {
         }
       }
     });
+    console.log('--> _movementFunctions:', this._movementFunctions);
   }
 
   get coordMode() {
@@ -78,35 +91,35 @@ class SpacetimeControl {
   }
 
   calculateEffectiveCoords() {
-    // const v = new Vector3();
+    // const v = new THREE.Vector3();
     console.log('tba');
   }
 
   // Moves the player relative to the world, or moves the world relative to the
   // player, depending on current world coordinate mode.
-  add(direction: Vector3, speed) {
+  add(direction: THREE.Vector3, speed) {
     // Example: this.addPlayerCentric(direction, speed);
     this._adder(direction, speed);
   }
 
   // Move galaxy around the player.
-  addPlayerCentric(direction: Vector3, speed) {
+  addVectorPlayerCentric(direction: THREE.Vector3, speed) {
     // console.log('---> 1 | addPlayerCentric');
     this.universeCoordsM.position.addScaledVector(direction, speed);
   }
 
   // Move player through galaxy.
-  addGalaxyCentric(direction: Vector3, speed) {
+  addVectorGalaxyCentric(direction: THREE.Vector3, speed) {
     // console.log('---> 2 | addGalaxyCentric');
   }
 
   // Move player relative to level.
-  addGhostCentric(direction: Vector3, speed) {
+  addVectorGhostCentric(direction: THREE.Vector3, speed) {
     // console.log('---> 3 | addGhostCentric');
   }
 
   // Update effective coordinates, and updates the world to reflect this.
-  set(location: Vector3) {
+  set(location: THREE.Vector3, levelOrigin: THREE.Scene) {
     this.universeCoordsM.position.copy(location);
     // TODO:
     //  * set player ship location to zero.
@@ -118,4 +131,4 @@ const spacetimeControl = new CosmosisPlugin('spacetimeControl', SpacetimeControl
 export {
   SpacetimeControl,
   spacetimeControl,
-}
+};
