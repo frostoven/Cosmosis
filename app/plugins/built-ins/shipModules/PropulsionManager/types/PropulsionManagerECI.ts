@@ -11,7 +11,6 @@ interface PropulsionManagerECI extends EciStructure {
     modalShift: boolean,
   },
   cli: {
-    setThrottle: Function,
     // Cycles to the next engine type (example: impulse, warp).
     cycleEngineType: Function,
     // Activates the first engine of the specified type.

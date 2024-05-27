@@ -33,6 +33,8 @@ export default class Core {
    */
   static unifiedView: { [key: string]: any } = {
     gameClock: 0,
+    throttlePosition: 0,
+    throttlePrettyPosition: 0,
   };
 
   public onPreAnimate: ChangeTracker;

@@ -7,6 +7,9 @@ import { PropulsionTypeEnum } from '../../types/PropulsionTypeEnum';
 const nop = () => {
 };
 
+// Dev note: Once an engine is plugged in, it cannot be plugged out without
+// shutting down the system. Damage should be handled without things being
+// unplugged.
 export default class PropulsionManager extends ShipModule {
   readonly friendlyName: string;
   _powerSource: any;
@@ -36,8 +39,7 @@ export default class PropulsionManager extends ShipModule {
         modalShift: false,
       },
       cli: {
-        setThrottle: nop,
-        cycleEngineType: nop,
+        cycleEngineType: this.cyclePropulsionDevice,
         activateSpecificEngineType: nop,
       },
       manufacturerInfo: {
@@ -92,7 +94,7 @@ export default class PropulsionManager extends ShipModule {
       if (deviceOrIndex === -1) {
         return null;
       }
-      device = this._propulsionInterfaces[deviceOrIndex];
+      device = this._propulsionInterfaces[deviceOrIndex] || null;
     }
     else {
       if (!this._propulsionInterfaces.includes(deviceOrIndex)) {
@@ -128,6 +130,31 @@ export default class PropulsionManager extends ShipModule {
 
     device.deactivateControlInterface();
   }
+
+  cyclePropulsionDevice = () => {
+    if (this._propulsionInterfaces.length === 0) {
+      return false;
+    }
+
+    if (this._activePropulsionInterface === null) {
+      this.activatePropulsionSystem(this._propulsionInterfaces[0]);
+      return true;
+    }
+
+    let index = this._propulsionInterfaces.indexOf(this._activePropulsionInterface);
+    if (index === -1) {
+      console.error(
+        '[cyclePropulsionDevice] Bug detected: Propulsion device is not plugged in.',
+      );
+      return;
+    }
+
+    index++;
+    if (index + 1 > this._propulsionInterfaces.length) {
+      index = 0;
+    }
+    this.activatePropulsionSystem(index);
+  };
 
   step() {
     if (!this._powerSource) {

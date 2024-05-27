@@ -83,6 +83,16 @@ class ShipPilot extends ModeController {
       this.state.thrustAnalog = 0;
     });
 
+    this.pulse.cycleEngineType.getEveryChange(() => {
+      // Inform the propulsion manager of what's going on.
+      const level: LevelScene = this._pluginCache.levelScene;
+      const eciLookup = level.getElectronicControlInterface(EciEnum.propulsion);
+      if (eciLookup) {
+        const eci = eciLookup.getEci() as PropulsionManagerECI;
+        eci.cli.cycleEngineType();
+      }
+    });
+
     this.pulse._devChangeCamMode.getEveryChange(() => {
       this._pluginCache.inputManager.activateController(ModeId.playerControl, 'freeCam');
     });
@@ -231,14 +241,6 @@ class ShipPilot extends ModeController {
 
     Core.unifiedView.throttlePosition = this._throttlePosition;
     Core.unifiedView.throttlePrettyPosition = this._prettyPosition;
-
-    // Inform the propulsion manager of what's going on.
-    const level: LevelScene = this._pluginCache.levelScene;
-    const eciLookup = level.getElectronicControlInterface(EciEnum.propulsion);
-    if (eciLookup) {
-      const eci = eciLookup.getEci() as PropulsionManagerECI;
-      eci.cli.setThrottle(this._throttlePosition);
-    }
   }
 
   step(delta: number, bigDelta: number) {

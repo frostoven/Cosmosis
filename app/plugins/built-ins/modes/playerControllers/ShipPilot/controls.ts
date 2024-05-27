@@ -10,11 +10,14 @@ const { keyboardButton, gamepadButton, gamepadAxisStandard, mouseButton,
 } = InputType;
 
 const shipPilotControls: ControlSchema = {
+  //
   // Pulsed
+  //
   thrustUp10:          { actionType: pulse, current: null, default: { spScrollUp: scrollWheel }, friendly: 'Thrust Increase (10%)' },
   thrustReset:         { actionType: pulse, current: null, default: { spScrollDown: scrollWheel } },
   mouseHeadLook:       { actionType: pulse, current: null, default: { spMouseMiddle: mouseButton, Numpad5: keyboardButton, bt11: gamepadButton, bt10: gamepadButton } },
   toggleFlightAssist:  { actionType: pulse, current: null, default: { KeyZ: keyboardButton } },
+  cycleEngineType:     { actionType: pulse, current: null, default: { KeyJ: keyboardButton } },
   //
   // Continuous
   //
