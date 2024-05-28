@@ -5,6 +5,8 @@ import CosmosisPlugin from '../../types/CosmosisPlugin';
 import { CoordType } from './types/CoordType';
 import { capitaliseFirst } from '../../../local/utils';
 
+type AdderSignature = (direction: THREE.Vector3, speed: number) => void;
+
 /**
  * Controls spacetime from the level origin's point of view.
  * The following paradigm is important to understand:
@@ -28,8 +30,8 @@ class SpacetimeControl {
   // private _cachedCamera: PerspectiveCamera;
   // private _cachedLevelScene: Scene;
   // private _cachedSpaceScene: Scene;
-  private readonly _movementFunctions: any[];
-  private _adder: (direction: THREE.Vector3, speed: number) => void;
+  private readonly _movementFunctions: (AdderSignature)[];
+  private _adder: AdderSignature;
 
   constructor() {
     this._setupWatchers();
@@ -65,7 +67,7 @@ class SpacetimeControl {
     _.each(CoordType, (numericKey, stringKey) => {
       if (!isNaN(numericKey)) {
         // Example of what this looks like: addPlayerCentric
-        const adder = `add${capitaliseFirst(stringKey)}`;
+        const adder = `addVector${capitaliseFirst(stringKey)}`;
         // console.log(`===> found: ${numericKey}; adder:`, adder);
         if (typeof this[adder] === 'function') {
           this._movementFunctions[numericKey] = this[adder].bind(this);
@@ -103,7 +105,7 @@ class SpacetimeControl {
   }
 
   // Move galaxy around the player.
-  addVectorPlayerCentric(direction: THREE.Vector3, speed) {
+  addVectorPlayerCentric(direction: THREE.Vector3, speed: number) {
     // console.log('---> 1 | addPlayerCentric');
     this.universeCoordsM.position.addScaledVector(direction, speed);
   }
