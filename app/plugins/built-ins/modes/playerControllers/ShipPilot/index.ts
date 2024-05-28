@@ -250,8 +250,19 @@ class ShipPilot extends ModeController {
     helmView.throttlePrettyPosition = -this._prettyPosition;
   }
 
+  processRotation(delta: number, bigDelta: number) {
+    // if (Math.random() < 0.05) {
+    //   console.log('passiveState:', ...Object.entries(this.state));
+    //   console.log('activeState:', ...Object.entries(this.activeState));
+    // }
+
+    console.log('passiveState:', this.state.rollAnalog, this.state.rollAnalog);
+    console.log('activeState:', this.activeState.rollAnalog, this.activeState.rollAnalog);
+  }
+
   step(delta: number, bigDelta: number) {
-    this.processShipControls(delta, bigDelta);
+    this.processThrottle(delta);
+    this.processRotation(delta, bigDelta);
   }
 
   // step(delta) {

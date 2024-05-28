@@ -15,6 +15,7 @@ const DefaultInputSpeeds = {
   gamepadButtonLookSpeed: 5,
   gamepadButtonRotationSpeed: 0.005,
   gamepadStickAsSlider: 0.1,
+  gamepadStickAsSteering: 1.34,
   analogStickLookSpeed: 20,
   analogStickGhostWalkSpeed: 1,
   mouseAxisStandardLookSpeed: 0.375,
