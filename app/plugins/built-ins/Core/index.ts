@@ -31,10 +31,15 @@ export default class Core {
    * This object is currently used internally by the visor HUD to read ship
    * stats such as throttle, walking speed, etc.
    */
-  static unifiedView: { [key: string]: any } = {
+  static unifiedView = {
     gameClock: 0,
-    throttlePosition: 0,
-    throttlePrettyPosition: 0,
+    helm: {
+      throttlePosition: 0,
+      throttlePrettyPosition: 0,
+    },
+    propulsion: {
+      canReverse: true,
+    }
   };
 
   public onPreAnimate: ChangeTracker;

@@ -197,7 +197,7 @@ class ShipPilot extends ModeController {
     );
   }
 
-  stepAim(delta) {
+  stepAim(delta: number) {
     const state = this.state;
     // state.yawLeft = Math.min(state.yawLeft, -1);
     // state.yawRight = Math.max(state.yawRight, 1);
@@ -237,10 +237,15 @@ class ShipPilot extends ModeController {
     // The pretty position is a way of making very sudden changes (like with a
     // keyboard button press) look a bit more natural by gradually going to
     // where it needs to, but does not reduce actual throttle position.
-    this._prettyPosition = chaseValue(delta * 25, this._prettyPosition, this._throttlePosition);
+    this._prettyPosition = chaseValue(
+      delta * 25, this._prettyPosition,
+      this._throttlePosition,
+    );
 
-    Core.unifiedView.throttlePosition = this._throttlePosition;
-    Core.unifiedView.throttlePrettyPosition = this._prettyPosition;
+    // Invert the throttle values stored in the unified view because
+    // controllers for some reason use -1 for 100% and +1 for 0%.
+    Core.unifiedView.helm.throttlePosition = -this._throttlePosition;
+    Core.unifiedView.helm.throttlePrettyPosition = -this._prettyPosition;
   }
 
   step(delta: number, bigDelta: number) {

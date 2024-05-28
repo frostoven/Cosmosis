@@ -81,6 +81,6 @@ export default class VisorHud extends ShipModule {
     // TODO: on power dim, consider implementing this, it's very satisfying:
     // this.throttle.setProgress(Math.random(), true);
 
-    this._throttle.setProgress(-Core.unifiedView.throttlePrettyPosition);
+    this._throttle.setProgress(Core.unifiedView.helm.throttlePrettyPosition);
   }
 }
