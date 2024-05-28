@@ -8,6 +8,7 @@
  * start firing the GPU). Operational power should thus be defined by the child
  * classes, and not here.
  */
+import { ModuleUpdateMode } from './ModuleUpdateMode';
 
 export default class ShipModule {
   friendlyName: string;
@@ -16,6 +17,8 @@ export default class ShipModule {
   powerNeeded: number;
   // Power spike created when device is booted or rebooted.
   bootPowerNeeded: number;
+  // Determines whether the module waits for updates and scans for updates.
+  updateMode: ModuleUpdateMode = ModuleUpdateMode.passive;
 
   constructor() {
     this.friendlyName = 'unnamed module';

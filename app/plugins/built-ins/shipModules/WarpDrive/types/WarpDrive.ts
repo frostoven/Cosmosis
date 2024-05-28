@@ -8,6 +8,7 @@ import { PropulsionManagerModule } from '../../PropulsionManager';
 import WarpEngineMechanism from './WarpEngineMechanism';
 import PropulsionModule from '../../types/PropulsionModule';
 import { PropulsionTypeEnum } from '../../types/PropulsionTypeEnum';
+import { ModuleUpdateMode } from '../../types/ModuleUpdateMode';
 
 export default class WarpDrive extends PropulsionModule {
   readonly friendlyName: string;
@@ -18,7 +19,7 @@ export default class WarpDrive extends PropulsionModule {
   private readonly _warpChargeTime: number;
   private _warpCountdown: number;
   private _cachedPropulsionManager: PropulsionManagerModule;
-  private _cachedLocation: SpacetimeControl;
+  private _cachedSpacetime: SpacetimeControl;
   private _parentPropulsionManger: PropulsionManager | undefined;
   private _warpEngine: WarpEngineMechanism;
 
@@ -28,6 +29,7 @@ export default class WarpDrive extends PropulsionModule {
     this.friendlyName = 'warp drive';
     this.powerNeeded = 5;
     this.bootPowerNeeded = 12;
+    this.updateMode = ModuleUpdateMode.active;
 
     this.warpBubbleActive = false;
 
@@ -39,7 +41,7 @@ export default class WarpDrive extends PropulsionModule {
     this._warpEngine = new WarpEngineMechanism();
 
     this._cachedPropulsionManager = gameRuntime.tracked.propulsionManagerModule.cachedValue;
-    this._cachedLocation = gameRuntime.tracked.spacetimeControl.cachedValue;
+    this._cachedSpacetime = gameRuntime.tracked.spacetimeControl.cachedValue;
     this._setupListeners();
   }
 
@@ -52,7 +54,7 @@ export default class WarpDrive extends PropulsionModule {
       this._cachedPropulsionManager = manager;
     });
     gameRuntime.tracked.spacetimeControl.getEveryChange((location) => {
-      this._cachedLocation = location;
+      this._cachedSpacetime = location;
     });
   }
 
@@ -95,7 +97,7 @@ export default class WarpDrive extends PropulsionModule {
   _manifestWarpBubble() {
     // This part is very important: playerCentric means that we don't move the
     // ship, but rather move the universe.
-    this._cachedLocation.coordMode = CoordType.playerCentric;
+    this._cachedSpacetime.coordMode = CoordType.playerCentric;
     this.warpBubbleActive = true;
     console.log(`-> Warp bubble has been created.`);
     // TODO: inform propulsion manager of the change.
@@ -112,7 +114,11 @@ export default class WarpDrive extends PropulsionModule {
     this._controlInterfaceActive = false;
   }
 
-  step({ delta }) {
+  setThrottle(throttle: number) {
+    this._warpEngine.currentThrottle = throttle;
+  }
+
+  step({ delta, bigDelta }) {
     if (!this._powerSource || !this._controlInterfaceActive) {
       return;
     }
@@ -128,7 +134,7 @@ export default class WarpDrive extends PropulsionModule {
     }
 
     if (this.warpBubbleActive) {
-      this._warpEngine.stepWarp(delta);
+      this._warpEngine.stepWarp(delta, bigDelta, this._cachedSpacetime);
     }
   }
 }
