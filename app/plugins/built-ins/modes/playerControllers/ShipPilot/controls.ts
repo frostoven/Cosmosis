@@ -41,14 +41,15 @@ const shipPilotControls: ControlSchema = {
   //
   pitchUp:       { actionType: continuous, sign: -1, analogRemap: 'pitchAnalog', current: null, default: { Numpad8: keyboardButton } },
   pitchDown:     { actionType: continuous, sign:  1, analogRemap: 'pitchAnalog', current: null, default: { Numpad2: keyboardButton } },
-  pitchAnalog:   { actionType: continuous, current: null, default: { spNorthSouth: mouseAxisThreshold, ax3: InputType.gamepadAxisStandard }, isBidirectional: true },
+  pitchAnalog:   { actionType: continuous, current: null, default: { spNorthSouth: mouseAxisThreshold, ax3: InputType.gamepadAxisStandard }, isBidirectional: true, multiplier: { ...defaultBidirectionalLookMulti } },
   //
   rollLeft:      { actionType: continuous, sign: -1, analogRemap: 'rollAnalog', current: null, default: { KeyA: keyboardButton } },
   rollRight:     { actionType: continuous, sign:  1, analogRemap: 'rollAnalog', current: null, default: { KeyD: keyboardButton } },
   rollAnalog:    { actionType: continuous, current: null, default: { ax2: gamepadAxisStandard }, isBidirectional: true, multiplier: { ...defaultBidirectionalLookMulti } },
   //
-  yawLeft:       { actionType: continuous, sign: -1, current: null, default: { spWest: mouseAxisGravity, Numpad4: keyboardButton } },
-  yawRight:      { actionType: continuous, sign:  1, current: null, default: { spEast: mouseAxisGravity, Numpad6: keyboardButton  } },
+  yawLeft:       { actionType: continuous, sign: -1, analogRemap: 'yawAnalog', current: null, default: { spWest: mouseAxisGravity, Numpad4: keyboardButton } },
+  yawRight:      { actionType: continuous, sign:  1, analogRemap: 'yawAnalog', current: null, default: { spEast: mouseAxisGravity, Numpad6: keyboardButton  } },
+  yawAnalog:     { actionType: continuous, current: null, default: { ax0: gamepadAxisStandard }, isBidirectional: true, multiplier: { ...defaultBidirectionalLookMulti } },
   //
   lookUp:        { actionType: continuous, sign: -1, current: null, default: { spNorth: mouseAxisStandard, Numpad8: keyboardButton }, allowKeyConflicts: [ 'pitchUp' ] },
   lookDown:      { actionType: continuous, sign:  1, current: null, default: { spSouth: mouseAxisStandard, Numpad2: keyboardButton }, allowKeyConflicts: [ 'pitchDown' ] },

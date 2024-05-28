@@ -278,13 +278,12 @@ class ShipPilot extends ModeController {
   }
 
   processRotation(delta: number, bigDelta: number) {
-    // if (Math.random() < 0.05) {
-    //   console.log('passiveState:', ...Object.entries(this.state));
-    //   console.log('activeState:', ...Object.entries(this.activeState));
-    // }
-
-    console.log('passiveState:', this.state.rollAnalog, this.state.rollAnalog);
-    console.log('activeState:', this.activeState.rollAnalog, this.activeState.rollAnalog);
+    // We just outright use absolute values without further processing because
+    // we don't let rotations "build up". That's because the propulsion engine
+    // itself decides if and how build-up will happen based on flightAssist.
+    helmView.pitch = clamp(this.activeState.pitchAnalog, -1, 1);
+    helmView.yaw = clamp(this.activeState.yawAnalog, -1, 1);
+    helmView.roll = clamp(this.activeState.rollAnalog, -1, 1);
   }
 
   step(delta: number, bigDelta: number) {

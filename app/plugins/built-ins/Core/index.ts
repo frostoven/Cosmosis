@@ -39,6 +39,9 @@ export default class Core {
     helm: {
       throttlePosition: 0,
       throttlePrettyPosition: 0,
+      roll: 0,
+      yaw: 0,
+      pitch: 0,
     },
     propulsion: {
       canReverse: true,
