@@ -91,9 +91,9 @@ export default class PropulsionManager extends ShipModule {
       capabilities.cycleEngineType = true;
     }
 
-    // if (this._activePropulsionInterface === null) {
-    //   this.activatePropulsionSystem(device);
-    // }
+    if (this._activePropulsionInterface === null) {
+      this.activatePropulsionSystem(0);
+    }
   }
 
   getPropulsionDevice(deviceOrIndex: PropulsionModule | number) {
