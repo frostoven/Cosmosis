@@ -228,12 +228,16 @@ class ShipPilot extends ModeController {
     this.setNeckPosition(x, y);
   }
 
-  processShipControls(delta: number, bigDelta: number) {
+  processThrottle(delta: number) {
+    // Prevent reversing throttle if the engine does not allow it. We limit +1
+    // instead of -1 because analog controllers invert Y axes.
+    const upperBound = Core.unifiedView.propulsion.canReverse ? 1 : 0;
+
     this._throttleAccumulation = clamp(
-      this._throttleAccumulation + this.activeState.thrustAnalog, -1, 1,
+      this._throttleAccumulation + this.activeState.thrustAnalog, -1, upperBound,
     );
     this._throttlePosition = clamp(
-      this._throttleAccumulation + this.state.thrustAnalog, -1, 1,
+      this._throttleAccumulation + this.state.thrustAnalog, -1, upperBound,
     );
 
     // The pretty position is a way of making very sudden changes (like with a

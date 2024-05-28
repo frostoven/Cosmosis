@@ -31,12 +31,16 @@ export default class PropulsionManager extends ShipModule {
     this._eciSpec = {
       capabilities: {
         setThrust: false,
+        canReverse: false,
         cycleEngineType: false,
         impulse: false,
         warp: false,
         hyper: false,
         cascade: false,
         modalShift: false,
+      },
+      activeFlags: {
+        canReverse: false,
       },
       cli: {
         cycleEngineType: this.cyclePropulsionDevice,
@@ -63,6 +67,7 @@ export default class PropulsionManager extends ShipModule {
       case PropulsionTypeEnum.impulse:
         capabilities.impulse = true;
         capabilities.setThrust = true;
+        capabilities.canReverse = true;
         break;
       case PropulsionTypeEnum.warp:
         capabilities.warp = true;
@@ -88,8 +93,8 @@ export default class PropulsionManager extends ShipModule {
     // }
   }
 
-  getPropulsionDevice(deviceOrIndex: ShipModule | number) {
-    let device: ShipModule;
+  getPropulsionDevice(deviceOrIndex: PropulsionModule | number) {
+    let device: PropulsionModule;
     if (typeof deviceOrIndex === 'number') {
       if (deviceOrIndex === -1) {
         return null;
@@ -116,6 +121,9 @@ export default class PropulsionManager extends ShipModule {
       return;
     }
 
+    // Currently, only impulse drives can reverse.
+    this._eciSpec.activeFlags.canReverse = propulsionView.canReverse =
+      device.type === PropulsionTypeEnum.impulse;
     device.activateControlInterface();
   }
 
