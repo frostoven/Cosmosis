@@ -228,17 +228,40 @@ class ShipPilot extends ModeController {
     this.setNeckPosition(x, y);
   }
 
+  /**
+   * Used for situations where input can gradually build up a slider, such as
+   * using the keyboard to push up a persistent throttle.
+   */
+  computeSliderBuildup(
+    accumulated: number,
+    absoluteNext: number,
+    cumulativeNext: number,
+    upperBound: number | null,
+  ) {
+    upperBound === null && (upperBound = 1);
+
+    // What this looked like before it was made generic:
+    //  throttleAccumulation = clamp(throttleAccumulation + activeState.thrustAnalog, -1, upperBound);
+    //  throttlePosition = clamp(throttleAccumulation + state.thrustAnalog, -1, upperBound);
+    accumulated = clamp(accumulated + absoluteNext, -1, upperBound);
+    const actualPosition = clamp(accumulated + cumulativeNext, -1, upperBound);
+    return [ accumulated, actualPosition ];
+  }
+
   processThrottle(delta: number) {
     // Prevent reversing throttle if the engine does not allow it. We limit +1
     // instead of -1 because analog controllers invert Y axes.
     const upperBound = Core.unifiedView.propulsion.canReverse ? 1 : 0;
 
-    this._throttleAccumulation = clamp(
-      this._throttleAccumulation + this.activeState.thrustAnalog, -1, upperBound,
+    const [ accumulated, actualPosition ] = this.computeSliderBuildup(
+      this._throttleAccumulation,
+      this.activeState.thrustAnalog,
+      this.state.thrustAnalog,
+      upperBound,
     );
-    this._throttlePosition = clamp(
-      this._throttleAccumulation + this.state.thrustAnalog, -1, upperBound,
-    );
+
+    this._throttleAccumulation = accumulated;
+    this._throttlePosition = actualPosition;
 
     // The pretty position is a way of making very sudden changes (like with a
     // keyboard button press) look a bit more natural by gradually going to
