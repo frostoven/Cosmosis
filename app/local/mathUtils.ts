@@ -47,7 +47,7 @@ function getQuatAngle(quaternion: Quaternion) {
 
 // Returns a max relative to the amount's sign. Acts like Math.max if amount
 // positive, or Math.min with a negative max if amount is negative.
-function signRelativeMax(amount, max) {
+function signRelativeMax(amount: number, max: number) {
   if (amount > max) return max;
   else if (amount < -max) return -max;
   else return amount;

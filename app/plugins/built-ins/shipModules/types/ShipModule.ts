@@ -24,7 +24,7 @@ export default class ShipModule {
     this.bootPowerNeeded = -Infinity;
   }
 
-  step(options) {
+  step(options: { delta: number, bigDelta: number }) {
     //
   }
 

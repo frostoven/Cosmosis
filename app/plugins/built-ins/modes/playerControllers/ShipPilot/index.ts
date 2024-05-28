@@ -33,6 +33,8 @@ const headXMax = 2200;
 // Maximum number y-look can be at.
 const headYMax = 1150;
 
+const helmView = Core.unifiedView.helm;
+
 type PluginCompletion = PluginCacheTracker & {
   player: Player,
   camera: Camera,
@@ -244,8 +246,8 @@ class ShipPilot extends ModeController {
 
     // Invert the throttle values stored in the unified view because
     // controllers for some reason use -1 for 100% and +1 for 0%.
-    Core.unifiedView.helm.throttlePosition = -this._throttlePosition;
-    Core.unifiedView.helm.throttlePrettyPosition = -this._prettyPosition;
+    helmView.throttlePosition = -this._throttlePosition;
+    helmView.throttlePrettyPosition = -this._prettyPosition;
   }
 
   step(delta: number, bigDelta: number) {

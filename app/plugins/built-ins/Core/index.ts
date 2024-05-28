@@ -33,6 +33,9 @@ export default class Core {
    */
   static unifiedView = {
     gameClock: 0,
+    custom: {
+      example1166877: 'Community modding area.',
+    },
     helm: {
       throttlePosition: 0,
       throttlePrettyPosition: 0,
