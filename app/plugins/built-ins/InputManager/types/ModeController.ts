@@ -48,13 +48,13 @@ export default class ModeController {
   public uiInfo: InputUiInfo;
   private readonly _actionReceivers: Array<Function>;
 
+  // TODO: Consider renaming passive and active to something else. I think the
+  //  passive|active vars would make more sense named cumulative|absolute.
   // Passive state. This only changes when something external changes. Stores
   // last known pressed values.
   public state: { [action: string]: number };
   // This actively updates this.state. Useful for situations where action is
   // implied (for example a gamepad stick sitting at -1.0 without changing).
-  // TODO: rename to additive state instead? Because that's technically what
-  //  it's for - its state is added to this.state each frame.
   public activeState: { [action: string]: number };
   // Designed for instant actions and toggleables. Contains change trackers.
   public pulse: { [actionName: string]: ChangeTracker };
@@ -466,9 +466,13 @@ export default class ModeController {
       result = value * multiplier;
       // This allows the user to ease into the turn without suddenly jumping to
       // for example 50%. It's basically makes the threshold an offset.
+      // TODO: Test me with H.O.T.A.S. throttle, gamepad throttle, and gamepad
+      //  bumper-as-button. I think I probably just forgot
+      //  ANALOG_STICK_THRESHOLD here, but it's a long time ago and I could be
+      //  wrong.
       result > 0
-        ? result -= effectiveThreshold + -ANALOG_STICK_THRESHOLD
-        : result += effectiveThreshold + -ANALOG_STICK_THRESHOLD;
+        ? result -= effectiveThreshold //+ -ANALOG_STICK_THRESHOLD
+        : result += effectiveThreshold; //+ -ANALOG_STICK_THRESHOLD;
     }
 
     let stateTarget;

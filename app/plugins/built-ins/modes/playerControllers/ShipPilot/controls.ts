@@ -23,7 +23,7 @@ const shipPilotControls: ControlSchema = {
   //
   thrustInc:     { actionType: continuous, sign: -1, multiplier: { keyboardButton: 0.025 }, analogRemap: 'thrustAnalog', current: null, default: { KeyW: keyboardButton } },
   thrustDec:     { actionType: continuous, sign:  1, multiplier: { keyboardButton: 0.025 }, analogRemap: 'thrustAnalog', current: null, default: { KeyS: keyboardButton } },
-  thrustAnalog:  { actionType: continuous, current: null, default: { ax1: gamepadAxisStandard, ha2: gamepadSlider }, isBidirectional: true },
+  thrustAnalog:  { actionType: continuous, multiplier: { gamepadAxisStandard: 0.1, }, current: null, default: { ax1: gamepadAxisStandard, ha2: gamepadSlider }, isBidirectional: true },
   //
   pitchUp:       { actionType: continuous, sign: -1, analogRemap: 'pitchAnalog', current: null, default: { Numpad8: keyboardButton } },
   pitchDown:     { actionType: continuous, sign:  1, analogRemap: 'pitchAnalog', current: null, default: { Numpad2: keyboardButton } },
