@@ -48,15 +48,16 @@ export default class Core {
     }
   };
 
+  static animationData: { delta: number; bigDelta: number } = animationData;
+
   public onPreAnimate: ChangeTracker;
   public onAnimate: ChangeTracker;
   public onAnimateDone: ChangeTracker;
-  public _maxFrameDelta: number;
-  public _frameLimitCount: number;
+  private _maxFrameDelta: number;
+  private _frameLimitCount: number;
   private _clock: Clock;
   private readonly _stats: any;
   private readonly _rendererHooks: Function[];
-  private animationData: { delta: number; bigDelta: number };
 
   constructor() {
     // Do not place game logic in pre-animate. It's meant for setup used by
@@ -70,7 +71,6 @@ export default class Core {
     this._maxFrameDelta = 0;
     this._frameLimitCount = 0;
     this._rendererHooks = [];
-    this.animationData = animationData;
 
     // @ts-ignore
     this._stats = new Stats();
