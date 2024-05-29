@@ -27,6 +27,7 @@ import {
 
 // TODO: move me into user profile.
 const MOUSE_SPEED = 0.7;
+const PITCH_DIRECTION = -1;
 
 // Maximum number x-look can be at.
 const headXMax = 2200;
@@ -266,10 +267,12 @@ class ShipPilot extends ModeController {
     // The pretty position is a way of making very sudden changes (like with a
     // keyboard button press) look a bit more natural by gradually going to
     // where it needs to, but does not reduce actual throttle position.
+    if (this._prettyPosition !== this._throttlePosition) {
     this._prettyPosition = chaseValue(
       delta * 25, this._prettyPosition,
       this._throttlePosition,
     );
+    }
 
     // Invert the throttle values stored in the unified view because
     // controllers for some reason use -1 for 100% and +1 for 0%.
@@ -281,9 +284,16 @@ class ShipPilot extends ModeController {
     // We just outright use absolute values without further processing because
     // we don't let rotations "build up". That's because the propulsion engine
     // itself decides if and how build-up will happen based on flightAssist.
-    helmView.pitch = clamp(this.activeState.pitchAnalog, -1, 1);
-    helmView.yaw = clamp(this.activeState.yawAnalog, -1, 1);
-    helmView.roll = clamp(this.activeState.rollAnalog, -1, 1);
+    // console.log('passive:', this.state.pitchAnalog, 'active:', this.activeState.pitchAnalog);
+    helmView.pitch = clamp(
+      this.state.pitchAnalog + this.activeState.pitchAnalog, -1, 1,
+    ) * PITCH_DIRECTION;
+    helmView.yaw = -clamp(
+      this.state.yawAnalog + this.activeState.yawAnalog, -1, 1,
+    );
+    helmView.roll = -clamp(
+      this.state.rollAnalog + this.activeState.rollAnalog, -1, 1,
+    );
   }
 
   step(delta: number, bigDelta: number) {
