@@ -8,7 +8,10 @@ import { ActionType } from './ActionType';
 import { ControlSchema } from '../interfaces/ControlSchema';
 import { arrayContainsArray, capitaliseFirst } from '../../../../local/utils';
 import { InputType } from '../../../../configs/types/InputTypes';
-import { easeIntoExp, signRelativeMax } from '../../../../local/mathUtils';
+import {
+  clamp,
+  easeIntoExp,
+} from '../../../../local/mathUtils';
 import { InputUiInfo } from '../interfaces/InputSchemeEntry';
 import {
   BasicActionData,
@@ -34,9 +37,8 @@ const ANALOG_STICK_THRESHOLD = 0.25;
 
 // TODO: move me into user profile.
 const ANALOG_STICK_EASING = false;
-
-// TODO: move me into user profile.
 const SLIDER_EPSILON = 0.01;
+const MOUSE_SPEED = 0.7;
 
 export default class ModeController {
   public name: string;
@@ -521,20 +523,17 @@ export default class ModeController {
 
   // InputType: mouseAxisGravity
   receiveAsMouseAxisGravity({ action, value, analogData, control }: FullActionData) {
-    console.log('[mouse movement | gravity]', { action, actionType: ActionType[control.actionType], value, analogData, control });
+    // console.log('[mouse movement | gravity]', { action, actionType: ActionType[control.actionType], value, analogData, control });
     // @ts-ignore - See comment in receiveAsKeyboardButton.
     this.state[action] += this.state[action] += analogData.delta;
   }
 
   // InputType: mouseAxisThreshold
   receiveAsMouseAxisThreshold({ action, value, analogData, control }: FullActionData) {
-    console.log('[mouse movement | threshold]', { action, actionType: ActionType[control.actionType], value, analogData, control });
     // @ts-ignore - See comment in receiveAsKeyboardButton.
-    const result = this.state[action] += value * control.multiplier.mouseAxisStandard;
-    if (Math.abs(result) > 1) {
-      this.state[action] = signRelativeMax(result, 1);
-    }
-    console.log(`[mouse{${this.name}}|${action}]`, this.state[action]);
+    const result = this.state[action] += analogData.delta * control.multiplier.mouseAxisStandard * MOUSE_SPEED;
+    this.state[action] = clamp(result, -1, 1);
+    // console.log('[receiveAsMouseAxisThreshold]', value)
   }
 
   receiveAsGamepadSlider({ action, value, control }: FullActionData) {
