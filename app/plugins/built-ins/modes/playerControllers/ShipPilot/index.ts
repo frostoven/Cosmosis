@@ -287,6 +287,7 @@ class ShipPilot extends ModeController {
   }
 
   step(delta: number, bigDelta: number) {
+    super.step(delta, bigDelta);
     this.processThrottle(delta);
     this.processRotation(delta, bigDelta);
   }

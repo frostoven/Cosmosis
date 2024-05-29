@@ -62,7 +62,8 @@ class FreeCam extends ModeController {
   }
 
   // noinspection JSSuspiciousNameCombination
-  step(delta, bigDelta) {
+  step(delta: number, bigDelta: number) {
+    super.step(delta, bigDelta);
     if (!this._cachedCamera) {
       return;
     }
