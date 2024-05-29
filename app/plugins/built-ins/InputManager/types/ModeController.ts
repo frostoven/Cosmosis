@@ -527,7 +527,7 @@ export default class ModeController {
   // InputType: mouseAxisThreshold
   receiveAsMouseAxisThreshold({ action, value, analogData, control }: FullActionData) {
     // @ts-ignore - See comment in receiveAsKeyboardButton.
-    const result = this.state[action] += analogData.delta * control.multiplier.mouseAxisStandard * MOUSE_SPEED;
+    const result = this.state[action] += analogData.delta * control.multiplier.mouseAxisStandard * 0.01;
     this.state[action] = clamp(result, -1, 1);
   }
 
