@@ -177,6 +177,26 @@ export default class Core {
   };
 }
 
+// --- Debug - Jank Detection ---------------------------------------------- //
+function measureJank(threshold = 23) {
+  let lastFrameTime = performance.now();
+  (function checkJank() {
+    const currentFrameTime = performance.now();
+    const frameDuration = currentFrameTime - lastFrameTime;
+
+    if (frameDuration > threshold) {
+      console.log(`Jank detected! Frame took ${frameDuration.toFixed(2)}ms`);
+    }
+
+    lastFrameTime = currentFrameTime;
+    requestAnimationFrame(checkJank);
+  })();
+}
+
+// @ts-ignore
+window.measureJank = measureJank;
+// ------------------------------------------------------------------------- //
+
 const corePlugin = new CosmosisPlugin('core', Core);
 
 interface CoreType extends Core {
