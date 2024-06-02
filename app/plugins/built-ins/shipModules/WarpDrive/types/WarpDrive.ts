@@ -115,7 +115,7 @@ export default class WarpDrive extends PropulsionModule {
   }
 
   setThrottle(throttle: number) {
-    this._warpEngine.currentThrottle = throttle;
+    this._warpEngine.currentThrottle = throttle * 100;
   }
 
   step({ delta, bigDelta }) {
