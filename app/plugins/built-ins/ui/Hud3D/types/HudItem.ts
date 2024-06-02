@@ -200,11 +200,12 @@ export default class HudItem {
     this._animationSlider = new AnimationSlider(this.mesh);
   }
 
-  setProgress(percentage, disableBlip = false) {
-    const absPerc = Math.abs(percentage);
+  setProgress(playerThrottle, actualThrottle, disableBlip = false) {
+    const sliderPerc = Math.abs(playerThrottle);
+    const blipPerc = Math.abs(actualThrottle);
 
     if (this.flipOnNegativeProgress) {
-      if (percentage < 0) {
+      if (playerThrottle < 0) {
         // @ts-ignore
         this.scene.rotation.x = Math.PI;
       }
@@ -213,7 +214,7 @@ export default class HudItem {
         this.scene.rotation.x = 0;
       }
     }
-    this._animationSlider.seek(absPerc);
+    this._animationSlider.seek(sliderPerc);
 
     if (disableBlip) {
       return;
@@ -223,7 +224,7 @@ export default class HudItem {
       let lowColor = new Color(this.colors.inactive);
       let highColor = new Color(this.colors.active);
 
-      const step = absPerc * 10;
+      const step = blipPerc * 10;
       const blips = this._progressBlips;
       for (let i = 0, len = blips.length; i < len; i++) {
         const node = this._progressBlips[i];
@@ -235,7 +236,7 @@ export default class HudItem {
           progress = Math.abs(clamp(((step - i) / 10), -1, 0));
           highColor = new Color(this.colors.lowlights);
         }
-        else if (percentage !== absPerc) {
+        else if (actualThrottle !== blipPerc) {
           highColor = new Color(this.colors.reverse);
         }
 

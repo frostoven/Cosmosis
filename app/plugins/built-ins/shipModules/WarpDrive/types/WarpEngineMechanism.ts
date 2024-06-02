@@ -280,7 +280,9 @@ export default class WarpEngineMechanism {
     this.applyMovement(delta);
     this.applyRotation(delta, bigDelta);
 
-    // this.applyThrust(delta);
+    propulsionView.currentSpeedLy = this.currentSpeed;
+    propulsionView.outputLevel = this.actualThrottle * 0.01;
+    propulsionView.outputLevelPretty = Math.round(this.actualThrottle) * 0.01;
 
     // if (this.currentThrottle)
     // spacetimeControl.add()

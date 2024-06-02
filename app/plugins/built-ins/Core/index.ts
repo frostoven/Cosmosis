@@ -72,7 +72,10 @@ export default class Core {
     },
     propulsion: {
       canReverse: true,
-    }
+      outputLevel: 0,
+      outputLevelPretty: 0,
+      currentSpeedLy: 0,
+    },
   };
 
   static animationData: {
