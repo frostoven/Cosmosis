@@ -12,18 +12,23 @@ import { CoreType } from '../Core';
 import userProfile from '../../../userProfile';
 import * as THREE from 'three';
 import { cubeToSphere } from '../../../local/mathUtils';
+import { SpacetimeControl } from '../SpacetimeControl';
+
 export default class SpaceScene extends Scene {
   public skybox: Mesh<BoxGeometry, MeshBasicMaterial[]> | null = null;
   private _renderer: WebGLRenderer;
+  private _cachedSpacetime: SpacetimeControl;
   private _cachedCamera: PerspectiveCamera;
 
   constructor() {
     super();
     this._cachedCamera = new PerspectiveCamera();
+    this._cachedSpacetime = gameRuntime.tracked.spacetimeControl.cachedValue;
+    this._cachedSpacetime.enterReality(this);
     this._setupWatchers();
 
     const { display, graphics } = userProfile.getCurrentConfig({
-      identifier: 'userOptions'
+      identifier: 'userOptions',
     });
 
     const farObjectCanvas = document.getElementById('far-object-canvas');
@@ -32,7 +37,7 @@ export default class SpaceScene extends Scene {
       alpha: true,
       // @ts-ignore
       canvas: farObjectCanvas,
-      powerPreference: "high-performance",
+      powerPreference: 'high-performance',
       antialias: false,
       stencil: false,
       depth: false,
@@ -41,16 +46,16 @@ export default class SpaceScene extends Scene {
     renderer.useLegacyLights = false;
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.shadowMap.enabled = !!graphics.enableShadows;
-    renderer.shadowMap.type = graphics.shadowType;
-    renderer.toneMapping = display.toneMapping;
+    renderer.shadowMap.enabled = false;
+    renderer.shadowMap.type = THREE.BasicShadowMap;
+    renderer.toneMapping = THREE.NoToneMapping;
 
     // renderer.outputEncoding = sRGBEncoding;
 
     this._renderer = renderer;
 
     gameRuntime.tracked.core.getOnce((core: CoreType) => {
-      core.appendRenderHook(this.render.bind(this));
+      core.appendRenderHook(this.render);
     });
 
     // --------------------------------------------------------------------- //
@@ -68,6 +73,9 @@ export default class SpaceScene extends Scene {
   _setupWatchers() {
     gameRuntime.tracked.player.getEveryChange((player) => {
       this._cachedCamera = player.camera;
+    });
+    gameRuntime.tracked.spacetimeControl.getEveryChange((location: SpacetimeControl) => {
+      this._cachedSpacetime = location;
     });
   }
 
@@ -135,13 +143,13 @@ export default class SpaceScene extends Scene {
     }
   }
 
-  render() {
+  render = () => {
     this._renderer.render(this, this._cachedCamera);
-  }
+  };
 }
 
 const spaceScenePlugin = new CosmosisPlugin('spaceScene', SpaceScene);
 
 export {
   spaceScenePlugin,
-}
+};
