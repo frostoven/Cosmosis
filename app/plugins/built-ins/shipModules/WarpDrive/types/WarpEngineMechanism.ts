@@ -1,9 +1,21 @@
-import { Object3D, Vector3 } from 'three';
+import * as THREE from 'three';
 import { WarpEngineType } from './WarpEngineType';
 import { gameRuntime } from '../../../../gameRuntime';
 import { SpacetimeControl } from '../../../SpacetimeControl';
 import { ShipPilot } from '../../../modes/playerControllers/ShipPilot';
-import { lerpToZero, signRelativeMax } from '../../../../../local/mathUtils';
+import Core from '../../../Core';
+import LevelScene from '../../../LevelScene';
+import SpaceScene from '../../../SpaceScene';
+import {
+  chaseValue,
+  clamp,
+} from '../../../../../local/mathUtils';
+
+const { linearAcceleration, exponentialAcceleration } = WarpEngineType;
+const helmView = Core.unifiedView.helm;
+const propulsionView = Core.unifiedView.propulsion;
+
+const debugWarpStatus = true;
 
 // TODO: Refactor this into the SpacetimeControl module.
 // Just to alleviate some confusion: 1 means 'nothing', less then 1 is negative
@@ -18,65 +30,81 @@ export default class WarpEngineMechanism {
   // huge falloff past 206 because every extra 0.1 eventually scales to 1c
   // faster. 195 is junk, 199 is beginner. 206 is end-game. 209 is something
   // achievable only through insane grind.
-  public maxSpeed: number;
+  public maxSpeed: number = 100; //209;
   // 195=1kc, 199=1.5kc, 202=2kc, 206=3kc, 209=4kc.
-  public currentSpeed: number;
+  public currentSpeed: number = 0;
   // Throttle. 0-100.
-  public currentThrottle: number;
+  public currentThrottle: number = 0;
   // 0-100 - lags behind real throttle, and struggles at higher numbers.
-  public actualThrottle: number;
+  public actualThrottle: number = 0;
   // Instantly pushes warp speed to max, bypassing acceleration and gravitational
   // drag.
-  public debugFullWarpSpeed: boolean;
+  public debugFullWarpSpeed: boolean = false;
   // Hyperdrive rotation speed.
-  public pitchAndYawSpeed: number;
-  // When pressing A and D.
-  public rollSpeed: number;
+  public pitchMaxSpeed: number = 1.1;
+  public pitchAcceleration: number = 0.01;
+  // Yaw is slower with real aircraft. It doesn't really make sense for a warp
+  // drive, but it's painful when you're used to a snappy warp bubble and then
+  // drop to impulse just to feel like you're being dragged through mud. We
+  // should probably allow players to unlock this via ship customization.
+  public yawMaxSpeed: number = 1.1;
+  private yawAcceleration: number = 0.005; // 0.0025;;
+  //
+  public rollAcceleration: number = 0.01;
+  public rollMaxSpeed: number = 1.1;
   // Used to ease in/out of spinning.
-  public rollBuildup: number;
+  public rollBuildup: number = 0;
   // Used to ease in/out of spinning.
-  public yawBuildup: number;
+  public yawBuildup: number = 0;
   // Used to ease in/out of spinning.
-  public pitchBuildup: number;
+  public pitchBuildup: number = 0;
   // If true, ship will automatically try to stop rotation when the thrusters
   // aren't active.
-  public flightAssist: boolean;
+  public flightAssist: boolean = true;
+  // Flight assist causes the engines to blast in various directions to correct
+  // ship movement, thus taking main power away from what the user is
+  // explicitly pressing, or so it is told. This is multiplied by rotational
+  // speeds to speed down the ship while flight assist is on.
+  public flightAssistPenaltyFactor: number = 0.9;
   // Honestly unsure which one to use, so offering both to devs at the moment.
   // Note that the top speed for all engine types is the same. Something to
   // consider: we'll have gravity to hurt our acceleration, so exponential might
   // be annoyingly slow when inside a solar system.
-  public engineType: WarpEngineType;
-  public maxThrottle: number;
+  public engineType: WarpEngineType = WarpEngineType.exponentialAcceleration;
+  public maxThrottle: number = 100;
 
-  private _cachedLocation: SpacetimeControl;
+  private _cachedSpacetime: SpacetimeControl;
   private _cachedShipPilot: ShipPilot;
+  private _cachedLevelScene: LevelScene;
+  private _cachedSpaceScene: SpaceScene;
+  private _cachedCamera: THREE.PerspectiveCamera;
 
   constructor() {
-    this.maxSpeed = 209;
-    this.currentSpeed = 0;
-    this.currentThrottle = 0;
-    this.actualThrottle = 0;
-    this.debugFullWarpSpeed = false;
-    this.pitchAndYawSpeed = 0.005;
-    this.rollSpeed = 0.01;
-    this.rollBuildup = 0;
-    this.yawBuildup = 0;
-    this.pitchBuildup = 0;
-    this.flightAssist = true;
-    this.engineType = WarpEngineType.linearAcceleration;
-    this.maxThrottle = 100;
-
-    this._cachedLocation = gameRuntime.tracked.spacetimeControl.cachedValue;
+    this._cachedSpacetime = gameRuntime.tracked.spacetimeControl.cachedValue;
     this._cachedShipPilot = gameRuntime.tracked.shipPilot.cachedValue;
+    this._cachedLevelScene = gameRuntime.tracked.levelScene.cachedValue;
+    this._cachedSpaceScene = gameRuntime.tracked.spaceScene.cachedValue;
+    this._cachedCamera = gameRuntime.tracked.player.cachedValue.camera;
     this._setupWatchers();
   }
 
   _setupWatchers() {
-    gameRuntime.tracked.spacetimeControl.getEveryChange((location) => {
-      this._cachedLocation = location;
+    gameRuntime.tracked.spacetimeControl.getEveryChange((location: SpacetimeControl) => {
+      this._cachedSpacetime = location;
     });
-    gameRuntime.tracked.shipPilot.getEveryChange((shipPilot) => {
+    gameRuntime.tracked.shipPilot.getEveryChange((shipPilot: ShipPilot) => {
       this._cachedShipPilot = shipPilot;
+    });
+    gameRuntime.tracked.levelScene.getEveryChange((levelScene: LevelScene) => {
+      this._cachedLevelScene = levelScene;
+    });
+    gameRuntime.tracked.levelScene.getEveryChange((spaceScene: SpaceScene) => {
+      this._cachedSpaceScene = spaceScene;
+    });
+    gameRuntime.tracked.player.getEveryChange((player: {
+      camera: THREE.PerspectiveCamera;
+    }) => {
+      this._cachedCamera = player.camera;
     });
   }
 
@@ -91,15 +119,14 @@ export default class WarpEngineMechanism {
    * @param delta
    * @param {number} amount - Decimal percentage.
    */
-  changeThrottle(delta, amount) {
+  changeThrottle(delta: number, amount: number) {
     return (this.maxThrottle * amount) * (delta * 60);
   }
-
 
   /**
    * Used to slow the throttle needle following the player's request.
    */
-  dampenTorque(delta, value, target, growthSpeed) {
+  dampenTorque(delta: number, value: number, target: number, growthSpeed: number) {
     growthSpeed *= delta;
     if (value < target) {
       return value + growthSpeed;
@@ -113,17 +140,25 @@ export default class WarpEngineMechanism {
    * Used to slow the throttle needle more as it approaches 100% engine power.
    * Similar to dampenTorque, but here the growth speed is dynamic.
    */
-  dampenByFactor(delta, value, target) {
-    let result;
+  dampenByFactor(value: number, target: number) {
+    // The unfortunate reality is that a standard delta causes massive
+    // flickering on the throttle visuals. A smooth delta isn't great because
+    // it reduces accuracy, but does drastically the flickering.
+    const delta = Core.animationData.smoothDelta;
+    let result: number;
     // Do not use delta here - it's applied in dampenTorque.
     const warpFactor = 4; // equivalent to delta [at 0.016] * 250 growth.
-    if (target > value) {
+
+    // If accelerating, the throttle changes slowly. If decelerating, the
+    // throttle changes quickly. The reason we check in a range is to reduce
+    // throttle flickering due to delta fluctuations; else, we'd just do a '>'.
+    if (target >= value * 0.9) {
       const ratio = -((this.actualThrottle / (this.maxThrottle / ambientGravity)) - 1);
       result = this.dampenTorque(delta, value, target, ratio * warpFactor);
     }
     else {
       // Allow fast deceleration.
-      result = this.dampenTorque(delta, value, target, warpFactor**2);
+      result = this.dampenTorque(delta, value, target, warpFactor ** 2);
     }
 
     if (result < 0) {
@@ -136,156 +171,130 @@ export default class WarpEngineMechanism {
    * Blows meters per second into light years per second for fun and profit.
    * @param amount
    */
-  scaleHyperSpeed(amount) {
+  scaleHyperSpeed(amount: number) {
     return Math.exp(amount / 10);
   }
 
-  /**
-   * Function that eases into targets.
-   */
-  // easeIntoBuildup(delta, buildup, target, rollSpeed, factor=1) {
-  //   // rollSpeed *= delta;
-  //   const total = (target + buildup);
-  //
-  //   if (Math.abs(total) > rollSpeed) {
-  //     return rollSpeed * Math.sign(total);
-  //   }
-  //
-  //   return total * factor;
-  // }
-  // easeIntoBuildup(delta, buildup, rollSpeed, factor, direction=1) {
-  //   buildup = Math.abs(buildup);
-  //
-  //   const effectiveSpin = (rollSpeed * delta) * factor;
-  //   buildup += effectiveSpin;
-  //   if (buildup > effectiveSpin) {
-  //     buildup = effectiveSpin;
-  //   }
-  //
-  //   return buildup * direction;
-  // };
+  applyMovement(delta: number) {
+    // Can't reverse when in a warp field.
+    if (this.currentThrottle < 0) {
+      this.currentThrottle = 0;
+    }
 
-  easeOutOfBuildup(delta, rollBuildup, easeFactor) {
-    if (Math.abs(rollBuildup) < delta * 0.1) {
-      rollBuildup = 0;
+    const throttle = (this.currentThrottle / this.maxThrottle) * 100;
+    let actualThrottle = this.actualThrottle;
+
+    actualThrottle = this.dampenByFactor(actualThrottle, throttle);
+    if (actualThrottle > this.maxThrottle - 0.01) {
+      // This helps prevent a bug where the throttle can sometimes get stuck at
+      // more than 100%; when this happens, throttling down does nothing and
+      // gravity increases acceleration.
+      actualThrottle = throttle - 0.01;
+    }
+    this.actualThrottle = actualThrottle;
+
+    if (this.debugFullWarpSpeed) {
+      this.actualThrottle = this.maxThrottle;
+    }
+
+    this.currentSpeed = (actualThrottle / 100) * this.maxSpeed;
+
+    let hyperSpeed: number;
+    if (this.engineType === linearAcceleration) {
+      const maxHyper = this.scaleHyperSpeed(this.maxSpeed);
+      hyperSpeed = (actualThrottle / 100) * maxHyper;
+    }
+    else if (this.engineType === exponentialAcceleration) {
+      hyperSpeed = this.scaleHyperSpeed(this.currentSpeed);
     }
     else {
-      rollBuildup /= 1 + (easeFactor * delta);
+      // Very slow, reduces speed to meters per second.
+      hyperSpeed = this.currentSpeed;
     }
 
-    return rollBuildup;
+    if (!hyperSpeed) {
+      return;
+    }
+
+    hyperSpeed *= delta;
+
+    // Move the world around the ship.
+
+    this._cachedSpacetime.moveForwardPlayerCentric(hyperSpeed, this._cachedLevelScene);
   }
 
-  easeIntoBuildup(delta, currentValue, requestedValue, maxAllowed, acceleration=1) {
-    let currentAbs = Math.abs(currentValue);
-    let requestedAbs = Math.abs(requestedValue);
-    let maxAbs = Math.abs(maxAllowed);
+  applyRotation(delta: number, bigDelta: number) {
+    const { pitch, yaw, roll } = helmView;
 
-    if (requestedAbs > maxAbs) {
-      requestedAbs = maxAbs;
-    }
+    let pitchMax: number;
+    let yawMax: number;
+    let rollMax: number;
+    if (this.flightAssist) {
+      pitchMax = this.pitchMaxSpeed * this.flightAssistPenaltyFactor;
+      yawMax = this.yawMaxSpeed * this.flightAssistPenaltyFactor;
+      rollMax = this.rollMaxSpeed * this.flightAssistPenaltyFactor;
 
-    if (currentAbs > requestedAbs) {
-      // This is to prevent an automatic ease-out.
-      return currentValue;
-    }
-
-    currentAbs += (delta * acceleration);
-    if (currentAbs > requestedAbs) {
-      return requestedAbs * (Math.sign(requestedValue) || 1);
+      if (pitch || this.pitchBuildup) {
+        this.pitchBuildup = chaseValue(delta * 5, this.pitchBuildup, pitch);
+      }
+      if (yaw || this.yawBuildup) {
+        this.yawBuildup = chaseValue(delta * 5, this.yawBuildup, yaw);
+      }
+      if (roll || this.rollBuildup) {
+        this.rollBuildup = chaseValue(delta * 5, this.rollBuildup, roll);
+      }
     }
     else {
-      return currentAbs * (Math.sign(requestedValue) || 1);
+      pitchMax = this.pitchMaxSpeed;
+      yawMax = this.yawMaxSpeed;
+      rollMax = this.rollMaxSpeed;
+
+      if (pitch || this.pitchBuildup) {
+        this.pitchBuildup = chaseValue(delta * 5, this.pitchBuildup, (this.pitchBuildup + pitch));
+      }
+      if (yaw || this.yawBuildup) {
+        this.yawBuildup = chaseValue(delta * 5, this.yawBuildup, (this.yawBuildup + yaw));
+      }
+      if (roll || this.rollBuildup) {
+        this.rollBuildup = chaseValue(delta * 5, this.rollBuildup, (this.rollBuildup + roll));
+      }
     }
-  }
 
-  quadEaseOut(time, startValue, change, duration) {
-    time /= duration / 2;
-    if (time < 1)  {
-      return change / 2 * time * time + startValue;
-    }
+    this.pitchBuildup = clamp(this.pitchBuildup, -pitchMax, pitchMax);
+    this.yawBuildup = clamp(this.yawBuildup, -yawMax, yawMax);
+    this.rollBuildup = clamp(this.rollBuildup, -rollMax, rollMax);
 
-    time--;
-    return -change / 2 * (time * (time - 2) - 1) + startValue;
-  };
-
-  lerp (t, b, c, d) {
-    return c*t/d + b;
-  }
-
-  applyRotation(delta) {
-    const state = this._cachedShipPilot.state;
-
-    const {
-      pitchDown, pitchUp, rollLeft, rollRight, yawLeft, yawRight
-    } = this._cachedShipPilot.state;
-
-    const rotation = this._cachedLocation.universeRotationM;
-
-    // const yaw = yawLeft + yawRight;
-    // const pitch = pitchUp - pitchDown;
-    // const roll = rollLeft - rollRight;
-
-
-    // ---------------
-    let yaw = (state.yawLeft + state.yawRight) * 0.00001;
-    let pitch = (state.pitchUp + state.pitchDown) * 0.00001;
-    let roll = (state.rollLeft + state.rollRight) * 0.0001;
-
-    // if (yaw) {
-    //
-    // }
-
-    // this.rollBuildup = this.easeIntoBuildup(delta, this.rollBuildup, roll, this.rollSpeed, 0.01);
-    // this.rollBuildup = this.lerp();
-
-    // console.log({roll, rollBuildup: this.rollBuildup });
-
-    // state.yawRight = yaw;
-    // state.yawLeft = -yaw;
-    // ---------------
-    rotation.rotateY(signRelativeMax(-yaw, this.pitchAndYawSpeed));
-    rotation.rotateX(signRelativeMax(-pitch, this.pitchAndYawSpeed));
-    rotation.rotateZ(this.rollBuildup);
-    // ---------------
-
-
-
-    // console.log('172 ->', { yaw, pitch, roll });
-    // console.log('172 ->', { yaw });
-
-    // if (yaw) {
-    //   this.yawBuildup = this.easeIntoBuildup(delta, this.yawBuildup, -yaw, this.pitchAndYawSpeed);
-    // }
-
-    // console.log('yawBuildup:', this.yawBuildup);
-
-    // if (pitch) {
-    //   this.pitchBuildup = this.easeIntoBuildup(delta, this.pitchBuildup, pitch, this.pitchAndYawSpeed);
-    // }
-
-    // if (roll) {
-    //   this.rollBuildup = this.easeIntoBuildup(delta, this.rollBuildup, roll, this.rollSpeed);
-    // }
-
-    // rotation.rotateY(this.yawBuildup);
-    // rotation.rotateX(this.pitchBuildup);
-    // rotation.rotateZ(this.rollBuildup);
-    //
-    // if (this.flightAssist) {
-    //   yaw = this.easeOutOfBuildup(delta, yaw, 10);
-    //   // this.pitchBuildup = this.easeOutOfBuildup(delta, this.pitchBuildup, 10);
-    //   this.rollBuildup = this.easeOutOfBuildup(delta, this.rollBuildup, 10);
-    // }
+    this._cachedSpacetime.rotatePlayerCentric(
+      this.pitchBuildup * this.pitchAcceleration,
+      this.yawBuildup * this.yawAcceleration,
+      this.rollBuildup * this.rollAcceleration,
+    );
   }
 
   // FIXME: update me to work with new plugin system.
-  stepWarp(delta) {
+  stepWarp(delta: number, bigDelta: number, spacetimeControl: SpacetimeControl) {
     if (!this._cachedShipPilot) {
       return;
     }
 
-    this.applyRotation(delta);
-    // this.applyThrust(delta);
+    this.applyMovement(delta);
+    this.applyRotation(delta, bigDelta);
+
+    propulsionView.currentSpeedLy = this.currentSpeed;
+    propulsionView.outputLevel = this.actualThrottle * 0.01;
+    propulsionView.outputLevelPretty = Math.round(this.actualThrottle) * 0.01;
+
+    if (debugWarpStatus) {
+      const div = document.getElementById('hyperdrive-stats');
+      if (div) {
+        const throttle = Math.round((this.currentThrottle / this.maxThrottle) * 100);
+        div.innerText = `
+          y: ${throttle}%
+          Player throttle: ${throttle}% (${Math.round(this.currentThrottle)}/${this.maxThrottle})
+          Actual throttle: ${this.actualThrottle.toFixed(1)}
+          Pretty actual: ${Core.unifiedView.propulsion.outputLevelPretty.toFixed(2)}
+      `;
+      }
+    }
   }
 }

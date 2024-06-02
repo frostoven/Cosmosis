@@ -1,5 +1,6 @@
 import {
   Layers,
+  Group,
   PerspectiveCamera,
   Scene,
   WebGLRenderer,
@@ -29,6 +30,7 @@ import {
   EciRegistrationObject,
   EciRegistrationSignature,
 } from '../shipModules/types/EciRegistrationSignature';
+import Player from '../Player';
 
 const BLOOM_SCENE = 1;
 const bloomLayer = new Layers();
@@ -50,12 +52,12 @@ bloomLayer.set(BLOOM_SCENE);
 //  ship while the player's original ship is now just a prop in the hangar,
 //  which they may later interact with to reenter.
 
-export default class LevelScene extends Scene {
+export default class LevelScene extends Group {
   moduleHub: ShipModuleHub | undefined;
 
   // @ts-ignore
   private _renderer: WebGLRenderer;
-  private _cachedLocation: SpacetimeControl;
+  private _cachedSpacetime: SpacetimeControl;
   private _cachedCamera: PerspectiveCamera;
   private _vehicle: GLTFInterface;
   private _vehicleInventory: { [moduleHookName: string]: Array<any> };
@@ -67,7 +69,8 @@ export default class LevelScene extends Scene {
   constructor() {
     super();
     this._cachedCamera = new PerspectiveCamera();
-    this._cachedLocation = gameRuntime.tracked.spacetimeControl.cachedValue;
+    this._cachedSpacetime = gameRuntime.tracked.spacetimeControl.cachedValue;
+    this._cachedSpacetime.enterReality(this);
     // this.fog = new FogExp2(0xDFE9F3, 0.0000005);
 
     // @ts-ignore
@@ -80,7 +83,7 @@ export default class LevelScene extends Scene {
     this._configureRenderer();
 
     gameRuntime.tracked.core.getOnce((core: CoreType) => {
-      core.appendRenderHook(this.render.bind(this));
+      core.appendRenderHook(this.render);
     });
 
     // --------------------------------------------------------------------- //
@@ -98,11 +101,11 @@ export default class LevelScene extends Scene {
   }
 
   _setupWatchers() {
-    gameRuntime.tracked.player.getEveryChange((player) => {
+    gameRuntime.tracked.player.getEveryChange((player: Player) => {
       this._cachedCamera = player.camera;
     });
-    gameRuntime.tracked.spacetimeControl.getEveryChange((location) => {
-      this._cachedLocation = location;
+    gameRuntime.tracked.spacetimeControl.getEveryChange((location: SpacetimeControl) => {
+      this._cachedSpacetime = location;
     });
   }
 
@@ -172,6 +175,7 @@ export default class LevelScene extends Scene {
   }
 
   enterVehicle({ gltf, inventory }: { gltf: GLTFInterface, inventory: {} }) {
+    this._cachedSpacetime.setLevel(this.id);
     this._vehicle = gltf;
     this._vehicleInventory = inventory;
     // console.log('-> gltf:', gltf);
@@ -295,13 +299,9 @@ export default class LevelScene extends Scene {
     if (!this._vehicle) {
       return;
     }
-
-    this._vehicle.scene.position.copy(this._cachedLocation.universeCoordsM.position);
-    this._vehicle.scene.quaternion.copy(this._cachedLocation.universeRotationM.quaternion);
   }
 
-  render() {
-    this.step();
+  render = () => {
     this._renderer.render(this, this._cachedCamera);
   }
 }

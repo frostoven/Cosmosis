@@ -7,7 +7,11 @@ interface BasicActionData {
 
 interface ReceiverActionData extends BasicActionData {
   key: string | undefined,
-  analogData: object | undefined
+  analogData: {
+    delta: number,
+    gravDelta: number,
+    complement: number | undefined
+  } | undefined,
 }
 
 interface FullActionData extends ReceiverActionData {

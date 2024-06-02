@@ -378,13 +378,19 @@ class InputManager {
         continue;
       }
 
+      // console.log(
+      //   '-> [input] action:', actions[0],
+      //   ` | key: ${key}, value=${value}, analogData:`, analogData,
+      // );
+
       if (actions.length === 1) {
-        // const keyType = actions[0]
+        // @ts-ignore
         controller.receiveAction({ action: actions[0], key, value, analogData });
         return;
       }
       else {
         for (let i = 0, len = actions.length; i < len; i++) {
+          // @ts-ignore
           controller.receiveAction({ action: actions[i], key, value, analogData });
         }
       }

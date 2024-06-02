@@ -8,6 +8,9 @@ import { Hud3D } from '../../../ui/Hud3D';
 import Core from '../../../Core';
 import ChangeTracker from 'change-tracker/src';
 
+const helmView = Core.unifiedView.helm;
+const propulsionView = Core.unifiedView.propulsion;
+
 export default class VisorHud extends ShipModule {
   readonly friendlyName: string;
   _powerSource: any;
@@ -81,6 +84,9 @@ export default class VisorHud extends ShipModule {
     // TODO: on power dim, consider implementing this, it's very satisfying:
     // this.throttle.setProgress(Math.random(), true);
 
-    this._throttle.setProgress(-Core.unifiedView.throttlePrettyPosition);
+    this._throttle.setProgress(
+      helmView.throttlePrettyPosition,
+      propulsionView.outputLevelPretty,
+    );
   }
 }

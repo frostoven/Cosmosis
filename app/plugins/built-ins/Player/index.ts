@@ -26,9 +26,9 @@ export default class Player {
     // const light = new PointLight(0xffffff, 2, 10);
     const light = new AmbientLight(0xffffff);
     // @ts-ignore
-    const allumination = new THREE.PointLight(0xffffff, 5);
+    const illumination = new THREE.PointLight(0xffffff, 5);
     this.camera.add(light);
-    this.camera.add(allumination);
+    this.camera.add(illumination);
 
     // const timerId = setInterval(() => {
     //   if (!window.debug.sol) {

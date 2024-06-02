@@ -1,16 +1,43 @@
 import CosmosisPlugin from '../../types/CosmosisPlugin';
 import ChangeTracker from 'change-tracker/src';
-import { Clock } from 'three';
 import Stats from '../../../../hackedlibs/stats/stats.module';
+import { lerp } from '../../../local/mathUtils';
 
-// Note to modders: this object is never recreated, meaning you can use it as
-// a quick-n-dirty way to patch data into any per-frame function. An example of
-// how you may patch the object is as follows:
-// core.onAnimate.getOnce(animationData => { animationData.__myField = 'Yo'; });
-// Please always put 2 underscores in front of your variable to prevent
-// clashing with built-in functions (built-ins never place 2 underscored in
-// front of any var names, making your patch somewhat safe).
-const animationData = { delta: 0, bigDelta: 0 };
+/**
+ * The animationData object is sent to all per-frame functions each frame.
+ *
+ * Note to modders: the animationData object is never recreated, meaning you
+ * can use it as a quick-n-dirty way to patch data into any per-frame function.
+ * An example of how you may patch the object is as follows:
+ * core.onAnimate.getOnce(animationData => { animationData.__myField = 'Yo'; });
+ * Please always put 2 underscores in front of your variable to prevent
+ * clashing with built-in functions (built-ins never place 2 underscored in
+ * front of any var names, making your patch somewhat safe).
+ */
+const animationData = {
+  delta: 0,
+  // For situations where we want numbers to remain intuitive instead of
+  // varying wildly (i.e. close to non-delta'd) if we forgot to apply delta
+  // during initial design. bigDelta is 1 at 120Hz, 2 at 60Hz, and 4 at 30Hz.
+  bigDelta: 0,
+  // Interpolates between the previous and next frame. Can ease jitter in
+  // visually-critical sections, but hurts accuracy during sudden frame drops.
+  smoothDelta: 1,
+  // This engine supports running the CPU and GPU at different frame rates.
+  // This value is the delta for GFX-related work.
+  gpuDelta: 0,
+};
+
+// We use setTimeout to throttle between requestAnimationFrame calls, so this
+// isn't entirely accurate as setTimeout has a lowest wait time of 4ms.
+const logicFpsTarget = 225;
+const gfxFpsTarget = 225;
+const idealLogicFrameDelay = 1000 / logicFpsTarget;
+const idealGfxFrameDelay = 1000 / gfxFpsTarget;
+const syncLogicAndGfx = true;
+let lastLogicRender = 0;
+let lastGfxRender = 0;
+let triggerGfxRender = false;
 
 export default class Core {
   /**
@@ -31,21 +58,35 @@ export default class Core {
    * This object is currently used internally by the visor HUD to read ship
    * stats such as throttle, walking speed, etc.
    */
-  static unifiedView: { [key: string]: any } = {
+  static unifiedView = {
     gameClock: 0,
-    throttlePosition: 0,
-    throttlePrettyPosition: 0,
+    custom: {
+      example1166877: 'Community modding area.',
+    },
+    helm: {
+      throttlePosition: 0,
+      throttlePrettyPosition: 0,
+      roll: 0,
+      yaw: 0,
+      pitch: 0,
+    },
+    propulsion: {
+      canReverse: true,
+      outputLevel: 0,
+      outputLevelPretty: 0,
+      currentSpeedLy: 0,
+    },
   };
+
+  static animationData: {
+    delta: number; bigDelta: number, smoothDelta: number, gpuDelta: number,
+  } = animationData;
 
   public onPreAnimate: ChangeTracker;
   public onAnimate: ChangeTracker;
   public onAnimateDone: ChangeTracker;
-  public _maxFrameDelta: number;
-  public _frameLimitCount: number;
-  private _clock: Clock;
   private readonly _stats: any;
   private readonly _rendererHooks: Function[];
-  private animationData: { delta: number; bigDelta: number };
 
   constructor() {
     // Do not place game logic in pre-animate. It's meant for setup used by
@@ -55,76 +96,35 @@ export default class Core {
     this.onAnimate = new ChangeTracker();
     // Stuff that should happen after game logic resolution for this frame.
     this.onAnimateDone = new ChangeTracker();
-
-    this._maxFrameDelta = 0;
-    this._frameLimitCount = 0;
+    // Graphical renderers are stored here.
     this._rendererHooks = [];
-    this.animationData = animationData;
 
     // @ts-ignore
     this._stats = new Stats();
     document.body.append(this._stats.dom);
-
-    this._clock = new Clock(true);
-    this._animate();
+    this._renderIfNeeded(0);
   }
 
-  get maxFramerate() {
-    return 1000 / this._maxFrameDelta / 1000;
-  }
-
-  set maxFramerate(framesPerSecond) {
-    if (framesPerSecond <= 0) {
-      this._maxFrameDelta = 0;
-    }
-    else {
-      this._maxFrameDelta = 1000 / framesPerSecond / 1000;
-    }
-  }
-
-  _animate() {
-    requestAnimationFrame(this._animate.bind(this));
-    let delta = this._clock.getDelta();
-
-    // Used for custom framerate control.
-    if (this._maxFrameDelta) {
-      // TODO: this method increases cpu by 20% on my system (though it
-      //  eliminates stuttering and frame inaccuracy that setTimeout tends to
-      //  cause) Perhaps make a dynamic system where setTimout delay only
-      //  50%-75% of all frames. Which a bit of luck we can achieve a
-      //  stutterless hybrid that doesn't increase CPU usage.
-      // TODO: until the previous point is resolved, add note in menu that
-      //  manual frame control increases CPU temperature and that
-      //  system-managed is the most optimal.
-      this._frameLimitCount += delta;
-      if ((this._frameLimitCount) <= this._maxFrameDelta) {
-        return;
-      }
-      else {
-        delta = this._frameLimitCount;
-        this._frameLimitCount -= this._maxFrameDelta;
-      }
-    }
-
-    // For situations where we want numbers to remain intuitive instead of
-    // varying wildly (i.e. close to non-delta'd) if we forgot to apply delta
-    // during initial design. bigDelta is 1 at 120Hz, 2 at 60Hz, and 4 at 30Hz.
-    const bigDelta = delta * 120;
-
-    // The animationData object is sent to all per-frame functions each frame.
+  _updateCpuDeltas(delta: number) {
     animationData.delta = delta;
-    animationData.bigDelta = bigDelta;
+    animationData.bigDelta = delta * 120;
+    animationData.smoothDelta = lerp(animationData.smoothDelta, delta, 0.5);
     Core.unifiedView.gameClock += delta;
+  }
 
-    // TODO: check if level logic needs to go before rendering, or if it's ok
-    // to place in onAnimate.
+  _updateGfxDeltas(delta: number) {
+    animationData.gpuDelta = delta;
+  }
 
+  _animateGfx = () => {
     // Call all renderers.
     const renderers = this._rendererHooks;
     for (let i = 0, len = renderers.length; i < len; i++) {
       renderers[i]();
     }
+  };
 
+  _animateLogic = () => {
     // Anything that should happen before core game logic goes here.
     this.onPreAnimate.setValue(animationData);
 
@@ -138,7 +138,7 @@ export default class Core {
 
     // Update the FPS and latency meter.
     this._stats.update();
-  }
+  };
 
   prependRendererHook(callback: Function) {
     this._rendererHooks.unshift(callback);
@@ -147,10 +147,63 @@ export default class Core {
   appendRenderHook(callback: Function) {
     this._rendererHooks.push(callback);
   }
+
+  // Renders the scene if a sufficient amount of time has passed.
+  _renderIfNeeded = (timestamp: number = 0.1) => {
+    let gfxDelta = timestamp - lastGfxRender;
+    let logicDelta = timestamp - lastLogicRender;
+
+    if (syncLogicAndGfx || gfxDelta >= idealGfxFrameDelay) {
+      triggerGfxRender = true;
+    }
+
+    if (logicDelta >= idealLogicFrameDelay) {
+      // We're lagging, or have met our target. Animate.
+      requestAnimationFrame(this._renderIfNeeded);
+      lastLogicRender = timestamp;
+      this._updateCpuDeltas(logicDelta * 0.01);
+      this._animateLogic();
+
+      if (triggerGfxRender) {
+        triggerGfxRender = false;
+        lastGfxRender = timestamp;
+        this._updateGfxDeltas(gfxDelta * 0.01);
+        this._animateGfx();
+      }
+    }
+    else {
+      const delay = (idealLogicFrameDelay - logicDelta);
+      setTimeout(() => {
+        requestAnimationFrame(this._renderIfNeeded);
+      }, delay);
+    }
+  };
 }
 
+// --- Debug - Jank Detection ---------------------------------------------- //
+function measureJank(threshold = 23) {
+  let lastFrameTime = performance.now();
+  (function checkJank() {
+    const currentFrameTime = performance.now();
+    const frameDuration = currentFrameTime - lastFrameTime;
+
+    if (frameDuration > threshold) {
+      console.log(`Jank detected! Frame took ${frameDuration.toFixed(2)}ms`);
+    }
+
+    lastFrameTime = currentFrameTime;
+    requestAnimationFrame(checkJank);
+  })();
+}
+
+// @ts-ignore
+window.measureJank = measureJank;
+// ------------------------------------------------------------------------- //
+
 const corePlugin = new CosmosisPlugin('core', Core);
-interface CoreType extends Core{}
+
+interface CoreType extends Core {
+}
 
 // Debugging:
 // @ts-ignore
@@ -159,4 +212,4 @@ window.$unifiedView = Core.unifiedView;
 export {
   corePlugin,
   CoreType,
-}
+};

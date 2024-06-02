@@ -21,6 +21,7 @@ const yAxis = new Vector3(0, 1, 0);
 const zAxis = new Vector3(0, 0, 1);
 
 const _aprEuler = new Euler(0, 0, 0, 'YXZ');
+
 function applyPolarRotation(x, y, observerQuaternion, minPolarAngle = 0, maxPolarAngle = pi) {
   const halfPi = pi / 2;
 
@@ -47,7 +48,7 @@ function getQuatAngle(quaternion: Quaternion) {
 
 // Returns a max relative to the amount's sign. Acts like Math.max if amount
 // positive, or Math.min with a negative max if amount is negative.
-function signRelativeMax(amount, max) {
+function signRelativeMax(amount: number, max: number) {
   if (amount > max) return max;
   else if (amount < -max) return -max;
   else return amount;
@@ -97,7 +98,7 @@ function clamp(n, low, high) {
 }
 
 // Moves toward a target value at a set speed.
-function chaseValue(stepSize, current: number, target: number) {
+function chaseValue(stepSize: number, current: number, target: number/*, from*/) {
   if (current === target) {
     return target;
   }
@@ -144,7 +145,7 @@ function extractVertsFromGeo(geo: BufferGeometry): Vector3[] {
 // points. After vertex extraction, it then runs along the line again,
 // artificially producing verts along each path matching that smallest
 // distance.
-function extractAndPopulateVerts(geo: BufferGeometry, /* distReduction=0 */) {
+function extractAndPopulateVerts(geo: BufferGeometry /* distReduction=0 */) {
   let smallestDistance = Infinity;
   // @ts-ignore
   const vertices: BufferAttribute = geo.attributes.position;
@@ -171,7 +172,7 @@ function extractAndPopulateVerts(geo: BufferGeometry, /* distReduction=0 */) {
 
   for (let i = 0, len = vertPositions.length; i < len; i++) {
     if (i === 0) {
-    // if (i < 20) {
+      // if (i < 20) {
       continue;
     }
     const vertex = vertPositions[i];
@@ -210,10 +211,10 @@ function extractAndPopulateVerts(geo: BufferGeometry, /* distReduction=0 */) {
 // axis - the axis of rotation (normalized THREE.Vector3)
 // theta - radian value of rotation
 // pointIsWorld - boolean indicating the point is in world coordinates (default = false)
-function rotateAboutPoint(obj, point, axis, theta, pointIsWorld){
-  pointIsWorld = (pointIsWorld === undefined)? false : pointIsWorld;
+function rotateAboutPoint(obj, point, axis, theta, pointIsWorld) {
+  pointIsWorld = (pointIsWorld === undefined) ? false : pointIsWorld;
 
-  if(pointIsWorld){
+  if (pointIsWorld) {
     obj.parent.localToWorld(obj.position); // compensate for world coordinate
   }
 
@@ -221,7 +222,7 @@ function rotateAboutPoint(obj, point, axis, theta, pointIsWorld){
   obj.position.applyAxisAngle(axis, theta); // rotate the POSITION
   obj.position.add(point); // re-add the offset
 
-  if(pointIsWorld){
+  if (pointIsWorld) {
     obj.parent.worldToLocal(obj.position); // undo world coordinates compensation
   }
 
@@ -246,7 +247,7 @@ function cubeToSphere(geometry: BufferGeometry, radius: number) {
     // Obtain the vertex.
     vector.fromBufferAttribute(positionAttribute, i);
     vector.normalize().multiplyScalar(radius);
-    positionAttribute.setXYZ(i, vector.x, vector.y, vector.z)
+    positionAttribute.setXYZ(i, vector.x, vector.y, vector.z);
   }
 }
 
@@ -267,4 +268,4 @@ export {
   extractAndPopulateVerts,
   rotateAboutPoint,
   cubeToSphere,
-}
+};

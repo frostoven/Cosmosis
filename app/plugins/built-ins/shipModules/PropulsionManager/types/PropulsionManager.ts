@@ -3,9 +3,12 @@ import { PropulsionManagerECI } from './PropulsionManagerECI';
 import PropulsionModule from '../../types/PropulsionModule';
 import { EciEnum } from '../../types/EciEnum';
 import { PropulsionTypeEnum } from '../../types/PropulsionTypeEnum';
+import Core from '../../../Core';
 
 const nop = () => {
 };
+
+const propulsionView = Core.unifiedView.propulsion;
 
 // Dev note: Once an engine is plugged in, it cannot be plugged out without
 // shutting down the system. Damage should be handled without things being
@@ -13,7 +16,7 @@ const nop = () => {
 export default class PropulsionManager extends ShipModule {
   readonly friendlyName: string;
   _powerSource: any;
-  private _activePropulsionInterface: any;
+  private _activePropulsionInterface: PropulsionModule | null;
   private readonly _propulsionInterfaces: Array<any>;
   private readonly _eciSpec: PropulsionManagerECI;
 
@@ -31,12 +34,16 @@ export default class PropulsionManager extends ShipModule {
     this._eciSpec = {
       capabilities: {
         setThrust: false,
+        canReverse: false,
         cycleEngineType: false,
         impulse: false,
         warp: false,
         hyper: false,
         cascade: false,
         modalShift: false,
+      },
+      activeFlags: {
+        canReverse: false,
       },
       cli: {
         cycleEngineType: this.cyclePropulsionDevice,
@@ -63,6 +70,7 @@ export default class PropulsionManager extends ShipModule {
       case PropulsionTypeEnum.impulse:
         capabilities.impulse = true;
         capabilities.setThrust = true;
+        capabilities.canReverse = true;
         break;
       case PropulsionTypeEnum.warp:
         capabilities.warp = true;
@@ -83,13 +91,13 @@ export default class PropulsionManager extends ShipModule {
       capabilities.cycleEngineType = true;
     }
 
-    // if (this._activePropulsionInterface === null) {
-    //   this.activatePropulsionSystem(device);
-    // }
+    if (this._activePropulsionInterface === null) {
+      this.activatePropulsionSystem(0);
+    }
   }
 
-  getPropulsionDevice(deviceOrIndex: ShipModule | number) {
-    let device: ShipModule;
+  getPropulsionDevice(deviceOrIndex: PropulsionModule | number) {
+    let device: PropulsionModule;
     if (typeof deviceOrIndex === 'number') {
       if (deviceOrIndex === -1) {
         return null;
@@ -116,6 +124,9 @@ export default class PropulsionManager extends ShipModule {
       return;
     }
 
+    // Currently, only impulse drives can reverse.
+    this._eciSpec.activeFlags.canReverse = propulsionView.canReverse =
+      device.type === PropulsionTypeEnum.impulse;
     device.activateControlInterface();
   }
 
@@ -157,9 +168,12 @@ export default class PropulsionManager extends ShipModule {
   };
 
   step() {
-    if (!this._powerSource) {
+    if (!this._powerSource || !this._activePropulsionInterface) {
       return;
     }
+
+    const engine: PropulsionModule = this._activePropulsionInterface;
+    engine.setThrottle(Core.unifiedView.helm.throttlePosition);
 
     // if (this._activePropulsionInterface !== null) {
     //   // pass steer commands to this._activePropulsionInterface

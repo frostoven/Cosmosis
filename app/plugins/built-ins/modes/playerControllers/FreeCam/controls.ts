@@ -1,3 +1,6 @@
+// @formatter:off
+// ^ Control-binding files become unreadable when formatted.
+
 import { ActionType } from '../../../InputManager/types/ActionType';
 import { ControlSchema } from '../../../InputManager/interfaces/ControlSchema';
 import { InputType } from '../../../../../configs/types/InputTypes';
@@ -66,7 +69,7 @@ const freeCamControls: ControlSchema = {
   //
   rollLeft:      { actionType: continuous, sign: -1, analogRemap: 'rollAnalog', current: null, default: { bt6: gamepadButton, Numpad7: keyboardButton }, multiplier: { ...defaultButtonRollMulti } },
   rollRight:     { actionType: continuous, sign:  1, analogRemap: 'rollAnalog', current: null, default: { bt7: gamepadButton, Numpad9: keyboardButton }, multiplier: { ...defaultButtonRollMulti } },
-  rollAnalog: { actionType: continuous, current: null, default: null, isBidirectional: true, multiplier: { ...defaultBidirectionalLookMulti } },
+  rollAnalog:    { actionType: continuous, current: null, default: null, isBidirectional: true, multiplier: { ...defaultBidirectionalLookMulti } },
   //
   lookLeft:      { actionType: continuous, sign: -1, analogRemap: 'lookLeftRight', current: null, default: { Numpad4: keyboardButton }, multiplier: { ...defaultButtonLookMulti } },
   lookRight:     { actionType: continuous, sign:  1, analogRemap: 'lookLeftRight', current: null, default: { Numpad6: keyboardButton }, multiplier: { ...defaultButtonLookMulti } },

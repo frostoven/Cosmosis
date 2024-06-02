@@ -8,7 +8,11 @@ import { ActionType } from './ActionType';
 import { ControlSchema } from '../interfaces/ControlSchema';
 import { arrayContainsArray, capitaliseFirst } from '../../../../local/utils';
 import { InputType } from '../../../../configs/types/InputTypes';
-import { easeIntoExp, signRelativeMax } from '../../../../local/mathUtils';
+import {
+  chaseValue,
+  clamp,
+  easeIntoExp,
+} from '../../../../local/mathUtils';
 import { InputUiInfo } from '../interfaces/InputSchemeEntry';
 import {
   BasicActionData,
@@ -34,9 +38,8 @@ const ANALOG_STICK_THRESHOLD = 0.25;
 
 // TODO: move me into user profile.
 const ANALOG_STICK_EASING = false;
-
-// TODO: move me into user profile.
 const SLIDER_EPSILON = 0.01;
+const MOUSE_SPEED = 0.7;
 
 export default class ModeController {
   public name: string;
@@ -48,16 +51,18 @@ export default class ModeController {
   public uiInfo: InputUiInfo;
   private readonly _actionReceivers: Array<Function>;
 
+  // TODO: Consider renaming passive and active to something else. I think the
+  //  passive|active vars would make more sense named cumulative|absolute.
   // Passive state. This only changes when something external changes. Stores
   // last known pressed values.
   public state: { [action: string]: number };
   // This actively updates this.state. Useful for situations where action is
   // implied (for example a gamepad stick sitting at -1.0 without changing).
-  // TODO: rename to additive state instead? Because that's technically what
-  //  it's for - its state is added to this.state each frame.
   public activeState: { [action: string]: number };
   // Designed for instant actions and toggleables. Contains change trackers.
   public pulse: { [actionName: string]: ChangeTracker };
+  // Used for the mouseAxisGravity mode. Resets the mouse to 0 after a delay.
+  private readonly _gravAction: { [action: string]: number } = {};
 
   // This fixes an issues where, if an analog stick and another device such as
   // the keyboard are mapped to the same action, eg. walk forward, the keyboard
@@ -67,7 +72,7 @@ export default class ModeController {
   // being released. This object keeps track of previous analog values. If, by
   // threshold, it was effectively zero the last time it was activated, then
   // the input is ignored instead of being reset in state.
-  private _analogFlutterCheck: { [actionName: string]: number };
+  private readonly _analogFlutterCheck: { [actionName: string]: number };
 
   constructor(name: string, modeId: ModeId, controlSchema: ControlSchema, uiInfo: InputUiInfo) {
     this.name = name;
@@ -229,7 +234,7 @@ export default class ModeController {
       return console.error(
         `[ModeController] Ignoring attempt to set register control action ` +
         `'${actionName}' in mode ${this.name} - ${this.name} already has `
-        + `that action defined for something else.`
+        + `that action defined for something else.`,
       );
     }
 
@@ -466,9 +471,13 @@ export default class ModeController {
       result = value * multiplier;
       // This allows the user to ease into the turn without suddenly jumping to
       // for example 50%. It's basically makes the threshold an offset.
+      // TODO: Test me with H.O.T.A.S. throttle, gamepad throttle, and gamepad
+      //  bumper-as-button. I think I probably just forgot
+      //  ANALOG_STICK_THRESHOLD here, but it's a long time ago and I could be
+      //  wrong.
       result > 0
-        ? result -= effectiveThreshold + -ANALOG_STICK_THRESHOLD
-        : result += effectiveThreshold + -ANALOG_STICK_THRESHOLD;
+        ? result -= effectiveThreshold //+ -ANALOG_STICK_THRESHOLD
+        : result += effectiveThreshold; //+ -ANALOG_STICK_THRESHOLD;
     }
 
     let stateTarget;
@@ -515,22 +524,27 @@ export default class ModeController {
     this.state[action] += analogData.delta * control.multiplier.mouseAxisStandard;
   }
 
-  // InputType: mouseAxisGravity
-  receiveAsMouseAxisGravity({ action, value, analogData, control }: FullActionData) {
-    console.log('[mouse movement | gravity]', { action, actionType: ActionType[control.actionType], value, analogData, control });
-    // @ts-ignore - See comment in receiveAsKeyboardButton.
-    this.state[action] += this.state[action] += analogData.delta;
-  }
-
   // InputType: mouseAxisThreshold
   receiveAsMouseAxisThreshold({ action, value, analogData, control }: FullActionData) {
-    console.log('[mouse movement | threshold]', { action, actionType: ActionType[control.actionType], value, analogData, control });
     // @ts-ignore - See comment in receiveAsKeyboardButton.
-    const result = this.state[action] += value * control.multiplier.mouseAxisStandard;
-    if (Math.abs(result) > 1) {
-      this.state[action] = signRelativeMax(result, 1);
-    }
-    console.log(`[mouse{${this.name}}|${action}]`, this.state[action]);
+    const result = this.state[action] += analogData.delta * control.multiplier.mouseAxisStandard * 0.01;
+    this.state[action] = clamp(result, -1, 1);
+  }
+
+  // InputType: mouseAxisGravity
+  receiveAsMouseAxisGravity({
+    action,
+    value,
+    analogData,
+    control,
+  }: FullActionData) {
+    // @ts-ignore - See comment in receiveAsKeyboardButton.
+    const result = this.state[action] + (analogData.delta * control.multiplier.mouseAxisStandard * 0.01);
+    const clamped = clamp(result, -1, 1);
+    this.state[action] = clamped;
+
+    // console.log('grav start');
+    this._gravAction[action] = 1;
   }
 
   receiveAsGamepadSlider({ action, value, control }: FullActionData) {
@@ -580,7 +594,7 @@ export default class ModeController {
     if (control.actionType === ActionType.continuous) {
       return console.error(
         '[ModeController] receiveAsScrollWheel controls should be of type ' +
-        'ActionType.pulse or ActionType.hybrid.'
+        'ActionType.pulse or ActionType.hybrid.',
       );
     }
 
@@ -627,7 +641,20 @@ export default class ModeController {
     // The ModeController base class does not use activation itself.
   }
 
-  step(delta, bigDelta) {
-    // The ModeController base class does not use stepping itself.
+  step(delta: number, bigDelta: number) {
+    const gravValues = Object.entries(this._gravAction);
+    if (gravValues.length) {
+      for (let i = 0; i < gravValues.length; i++) {
+        const [ action, value ] = gravValues[i];
+        const newValue = chaseValue(delta * 10, value, 0);
+        if (newValue) {
+          this._gravAction[action] = newValue;
+        }
+        else {
+          this.state[action] = 0;
+          delete this._gravAction[action];
+        }
+      }
+    }
   }
 }

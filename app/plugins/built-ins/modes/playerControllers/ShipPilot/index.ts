@@ -24,14 +24,21 @@ import { EciEnum } from '../../../shipModules/types/EciEnum';
 import {
   PropulsionManagerECI,
 } from '../../../shipModules/PropulsionManager/types/PropulsionManagerECI';
+import speedTracker from '../../../../../local/speedTracker';
+import { SpacetimeControl } from '../../../SpacetimeControl';
+
+const debugPositionAndSpeed = true;
 
 // TODO: move me into user profile.
 const MOUSE_SPEED = 0.7;
+const PITCH_DIRECTION = -1;
 
 // Maximum number x-look can be at.
 const headXMax = 2200;
 // Maximum number y-look can be at.
 const headYMax = 1150;
+
+const helmView = Core.unifiedView.helm;
 
 type PluginCompletion = PluginCacheTracker & {
   player: Player,
@@ -66,6 +73,15 @@ class ShipPilot extends ModeController {
     // this._pluginCache.inputManager.activateController(ModeId.playerControl, this.name);
 
     this._setupPulseListeners();
+
+    if (debugPositionAndSpeed) {
+      gameRuntime.tracked.spacetimeControl.getOnce((location: SpacetimeControl) => {
+        gameRuntime.tracked.player.getOnce(({ camera }) => {
+          // @ts-ignore
+          this.speedTimer = speedTracker.trackCameraSpeed(location._reality, this._pluginCache.camera);
+        });
+      });
+    }
   }
 
   _setupPulseListeners() {
@@ -197,7 +213,7 @@ class ShipPilot extends ModeController {
     );
   }
 
-  stepAim(delta) {
+  stepAim(delta: number) {
     const state = this.state;
     // state.yawLeft = Math.min(state.yawLeft, -1);
     // state.yawRight = Math.max(state.yawRight, 1);
@@ -226,25 +242,77 @@ class ShipPilot extends ModeController {
     this.setNeckPosition(x, y);
   }
 
-  processShipControls(delta: number, bigDelta: number) {
-    this._throttleAccumulation = clamp(
-      this._throttleAccumulation + this.activeState.thrustAnalog, -1, 1,
+  /**
+   * Used for situations where input can gradually build up a slider, such as
+   * using the keyboard to push up a persistent throttle.
+   */
+  computeSliderBuildup(
+    accumulated: number,
+    absoluteNext: number,
+    cumulativeNext: number,
+    upperBound: number | null,
+  ) {
+    upperBound === null && (upperBound = 1);
+
+    // What this looked like before it was made generic:
+    //  throttleAccumulation = clamp(throttleAccumulation + activeState.thrustAnalog, -1, upperBound);
+    //  throttlePosition = clamp(throttleAccumulation + state.thrustAnalog, -1, upperBound);
+    accumulated = clamp(accumulated + absoluteNext, -1, upperBound);
+    const actualPosition = clamp(accumulated + cumulativeNext, -1, upperBound);
+    return [ accumulated, actualPosition ];
+  }
+
+  processThrottle(delta: number) {
+    // Prevent reversing throttle if the engine does not allow it. We limit +1
+    // instead of -1 because analog controllers invert Y axes.
+    const upperBound = Core.unifiedView.propulsion.canReverse ? 1 : 0;
+
+    const [ accumulated, actualPosition ] = this.computeSliderBuildup(
+      this._throttleAccumulation,
+      this.activeState.thrustAnalog,
+      this.state.thrustAnalog,
+      upperBound,
     );
-    this._throttlePosition = clamp(
-      this._throttleAccumulation + this.state.thrustAnalog, -1, 1,
-    );
+
+    this._throttleAccumulation = accumulated;
+    this._throttlePosition = actualPosition;
 
     // The pretty position is a way of making very sudden changes (like with a
     // keyboard button press) look a bit more natural by gradually going to
     // where it needs to, but does not reduce actual throttle position.
-    this._prettyPosition = chaseValue(delta * 25, this._prettyPosition, this._throttlePosition);
+    if (this._prettyPosition !== this._throttlePosition) {
+      this._prettyPosition = chaseValue(
+        delta * 25, this._prettyPosition,
+        this._throttlePosition,
+      );
+    }
 
-    Core.unifiedView.throttlePosition = this._throttlePosition;
-    Core.unifiedView.throttlePrettyPosition = this._prettyPosition;
+    // Invert the throttle values stored in the unified view because
+    // controllers for some reason use -1 for 100% and +1 for 0%.
+    helmView.throttlePosition = -this._throttlePosition;
+    helmView.throttlePrettyPosition = -this._prettyPosition;
+  }
+
+  processRotation(delta: number, bigDelta: number) {
+    // We just outright use absolute values without further processing because
+    // we don't let rotations "build up". That's because the propulsion engine
+    // itself decides if and how build-up will happen based on flightAssist.
+    // console.log('passive:', this.state.pitchAnalog, 'active:', this.activeState.pitchAnalog);
+    helmView.pitch = clamp(
+      this.state.pitchAnalog + this.activeState.pitchAnalog, -1, 1,
+    ) * PITCH_DIRECTION;
+    helmView.yaw = -clamp(
+      this.state.yawAnalog + this.activeState.yawAnalog, -1, 1,
+    );
+    helmView.roll = -clamp(
+      this.state.rollAnalog + this.activeState.rollAnalog, -1, 1,
+    );
   }
 
   step(delta: number, bigDelta: number) {
-    this.processShipControls(delta, bigDelta);
+    super.step(delta, bigDelta);
+    this.processThrottle(delta);
+    this.processRotation(delta, bigDelta);
   }
 
   // step(delta) {
