@@ -6,6 +6,8 @@ import { capitaliseFirst } from '../../../local/utils';
 
 type AdderSignature = (direction: THREE.Vector3, speed: number) => void;
 
+let _tmpDirection = new THREE.Vector3();
+
 /**
  * Controls spacetime from the level origin's point of view.
  * The following paradigm is important to understand:
@@ -118,9 +120,27 @@ class SpacetimeControl {
   }
 
   // Move galaxy around the player.
-  addVectorPlayerCentric(direction: THREE.Vector3, speed: number) {
+  moveForwardPlayerCentric(speed: number, forwardObject: THREE.Object3D) {
+    forwardObject.getWorldDirection(_tmpDirection);
+    this._reality.position.addScaledVector(_tmpDirection, speed);
+    this._levelBubble.position.addScaledVector(_tmpDirection, -speed);
+  }
+
+  rotatePlayerCentric(pitch: number, yaw: number, roll: number) {
+    // The level bubble should only ever contain 1 or 0 children (we can make
+    // it size agnostic, but doing so is semantically meaningless and thus a
+    // waste of CPU).
+    const level = this._levelBubble.children[0];
+    if (level) {
+      level.rotateX(pitch);
+      level.rotateY(yaw);
+      level.rotateZ(roll);
+    }
+  }
+
+  // Move galaxy around the player.
+  addVectorPlayerCentric(speed: number, camera: THREE.PerspectiveCamera) {
     // console.log('---> 1 | addPlayerCentric');
-    this.universeCoordsM.position.addScaledVector(direction, speed);
   }
 
   // Move player through galaxy.
@@ -135,9 +155,6 @@ class SpacetimeControl {
 
   // Update effective coordinates, and updates the world to reflect this.
   set(location: THREE.Vector3, levelOrigin: THREE.Scene) {
-    this.universeCoordsM.position.copy(location);
-    // TODO:
-    //  * set player ship location to zero.
   }
 }
 

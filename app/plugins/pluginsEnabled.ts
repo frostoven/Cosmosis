@@ -36,7 +36,7 @@ const builtInPluginsEnabled: PluginEntry[] = [
   { name: 'player', pluginInstance: playerPlugin, dependencies: [ 'core' ] },
 
   // Universe
-  { name: 'spacetimeControl', pluginInstance: spacetimeControl, dependencies: [ 'core', 'player' ] },
+  { name: 'spacetimeControl', pluginInstance: spacetimeControl, dependencies: [] },
   { name: 'navigation', pluginInstance: navigationPlugin, dependencies: [ 'core', 'spacetimeControl' ] },
   { name: 'levelScene', pluginInstance: levelScenePlugin, dependencies: [ 'core', 'nodeOps', 'spacetimeControl', 'player' ], optional: [ 'shipModuleHub' ] },
   { name: 'spaceScene', pluginInstance: spaceScenePlugin, dependencies: [ 'core', 'spacetimeControl' ] },
