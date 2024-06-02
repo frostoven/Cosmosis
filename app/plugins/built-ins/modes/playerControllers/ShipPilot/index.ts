@@ -24,6 +24,10 @@ import { EciEnum } from '../../../shipModules/types/EciEnum';
 import {
   PropulsionManagerECI,
 } from '../../../shipModules/PropulsionManager/types/PropulsionManagerECI';
+import speedTracker from '../../../../../local/speedTracker';
+import { SpacetimeControl } from '../../../SpacetimeControl';
+
+const debugPositionAndSpeed = true;
 
 // TODO: move me into user profile.
 const MOUSE_SPEED = 0.7;
@@ -69,6 +73,15 @@ class ShipPilot extends ModeController {
     // this._pluginCache.inputManager.activateController(ModeId.playerControl, this.name);
 
     this._setupPulseListeners();
+
+    if (debugPositionAndSpeed) {
+      gameRuntime.tracked.spacetimeControl.getOnce((location: SpacetimeControl) => {
+        gameRuntime.tracked.player.getOnce(({ camera }) => {
+          // @ts-ignore
+          this.speedTimer = speedTracker.trackCameraSpeed(location._reality, this._pluginCache.camera);
+        });
+      });
+    }
   }
 
   _setupPulseListeners() {
@@ -268,10 +281,10 @@ class ShipPilot extends ModeController {
     // keyboard button press) look a bit more natural by gradually going to
     // where it needs to, but does not reduce actual throttle position.
     if (this._prettyPosition !== this._throttlePosition) {
-    this._prettyPosition = chaseValue(
-      delta * 25, this._prettyPosition,
-      this._throttlePosition,
-    );
+      this._prettyPosition = chaseValue(
+        delta * 25, this._prettyPosition,
+        this._throttlePosition,
+      );
     }
 
     // Invert the throttle values stored in the unified view because
