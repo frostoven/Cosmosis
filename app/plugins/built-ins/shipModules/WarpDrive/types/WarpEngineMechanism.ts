@@ -284,7 +284,17 @@ export default class WarpEngineMechanism {
     propulsionView.outputLevel = this.actualThrottle * 0.01;
     propulsionView.outputLevelPretty = Math.round(this.actualThrottle) * 0.01;
 
-    // if (this.currentThrottle)
-    // spacetimeControl.add()
+    if (debugWarpStatus) {
+      const div = document.getElementById('hyperdrive-stats');
+      if (div) {
+        const throttle = Math.round((this.currentThrottle / this.maxThrottle) * 100);
+        div.innerText = `
+          y: ${throttle}%
+          Player throttle: ${throttle}% (${Math.round(this.currentThrottle)}/${this.maxThrottle})
+          Actual throttle: ${this.actualThrottle.toFixed(1)}
+          Pretty actual: ${Core.unifiedView.propulsion.outputLevelPretty.toFixed(2)}
+      `;
+      }
+    }
   }
 }
