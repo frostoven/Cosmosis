@@ -42,15 +42,6 @@ html, body {
     z-index: 12;
 }
 
-#starfield-canvas {
-    z-index: 13;
-    position: fixed;
-    bottom: 0;
-    right: 0;
-    width: 12px;
-    height: 12px;
-}
-
 /* Snackbar - a toast implementation.*/
 #snackbar {
     visibility: hidden; /* Hidden by default. Visible on click */
