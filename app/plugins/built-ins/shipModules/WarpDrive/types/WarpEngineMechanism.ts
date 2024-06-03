@@ -238,13 +238,13 @@ export default class WarpEngineMechanism {
       rollMax = this.rollMaxSpeed * this.flightAssistPenaltyFactor;
 
       if (pitch || this.pitchBuildup) {
-        this.pitchBuildup = chaseValue(delta * 5, this.pitchBuildup, pitch);
+        this.pitchBuildup = chaseValue(bigDelta, this.pitchBuildup, pitch);
       }
       if (yaw || this.yawBuildup) {
-        this.yawBuildup = chaseValue(delta * 5, this.yawBuildup, yaw);
+        this.yawBuildup = chaseValue(bigDelta, this.yawBuildup, yaw);
       }
       if (roll || this.rollBuildup) {
-        this.rollBuildup = chaseValue(delta * 5, this.rollBuildup, roll);
+        this.rollBuildup = chaseValue(bigDelta, this.rollBuildup, roll);
       }
     }
     else {
@@ -253,13 +253,13 @@ export default class WarpEngineMechanism {
       rollMax = this.rollMaxSpeed;
 
       if (pitch || this.pitchBuildup) {
-        this.pitchBuildup = chaseValue(delta * 5, this.pitchBuildup, (this.pitchBuildup + pitch));
+        this.pitchBuildup = chaseValue(bigDelta, this.pitchBuildup, (this.pitchBuildup + pitch));
       }
       if (yaw || this.yawBuildup) {
-        this.yawBuildup = chaseValue(delta * 5, this.yawBuildup, (this.yawBuildup + yaw));
+        this.yawBuildup = chaseValue(bigDelta, this.yawBuildup, (this.yawBuildup + yaw));
       }
       if (roll || this.rollBuildup) {
-        this.rollBuildup = chaseValue(delta * 5, this.rollBuildup, (this.rollBuildup + roll));
+        this.rollBuildup = chaseValue(bigDelta, this.rollBuildup, (this.rollBuildup + roll));
       }
     }
 
