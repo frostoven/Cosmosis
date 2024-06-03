@@ -19,6 +19,9 @@ import {
   FullActionData,
   ReceiverActionData,
 } from '../interfaces/ActionData';
+import Core from '../../Core';
+
+const animationData = Core.animationData;
 
 // TODO: move to user configs, and expose to UI. Minimum value should be zero,
 //  and max should be 0.95 to prevent bugs.
@@ -641,7 +644,9 @@ export default class ModeController {
     // The ModeController base class does not use activation itself.
   }
 
-  step(delta: number, bigDelta: number) {
+  step() {
+    const { delta } = animationData;
+
     const gravValues = Object.entries(this._gravAction);
     if (gravValues.length) {
       for (let i = 0; i < gravValues.length; i++) {

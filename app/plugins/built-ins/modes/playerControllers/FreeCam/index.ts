@@ -5,8 +5,15 @@ import { freeCamControls } from './controls';
 import { ModeId } from '../../../InputManager/types/ModeId';
 import { gameRuntime } from '../../../../gameRuntime';
 import { InputManager } from '../../../InputManager';
-import { applyPolarRotation, clamp, zAxis } from '../../../../../local/mathUtils';
+import {
+  applyPolarRotation,
+  clamp,
+  zAxis,
+} from '../../../../../local/mathUtils';
 import Speed from '../../../../../local/Speed';
+import Core from '../../../Core';
+
+const animationData = Core.animationData;
 
 const SPEED_FACTOR = 1;
 // const SPEED_FACTOR = 1 * 0.0125;
@@ -62,11 +69,13 @@ class FreeCam extends ModeController {
   }
 
   // noinspection JSSuspiciousNameCombination
-  step(delta: number, bigDelta: number) {
-    super.step(delta, bigDelta);
+  step() {
+    super.step();
     if (!this._cachedCamera) {
       return;
     }
+
+    const { delta, bigDelta } = animationData;
 
     // Note: this method of adding delta is intentional - we don't want passive
     // values delta'd, because passive values come from absolute numbers (such
@@ -119,4 +128,4 @@ const freeCamPlugin = new CosmosisPlugin('freeCam', FreeCam);
 export {
   FreeCam,
   freeCamPlugin,
-}
+};

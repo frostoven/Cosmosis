@@ -12,6 +12,7 @@ type PluginNames =
   'navigation' | 
   'levelScene' | 
   'spaceScene' | 
+  'offscreenGalaxyWorker' | 
   'hud3D' | 
   'mouseDriver' | 
   'gamepadConnector' | 

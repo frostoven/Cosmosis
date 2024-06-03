@@ -38,6 +38,7 @@ const headXMax = 2200;
 // Maximum number y-look can be at.
 const headYMax = 1150;
 
+const animationData = Core.animationData;
 const helmView = Core.unifiedView.helm;
 
 type PluginCompletion = PluginCacheTracker & {
@@ -213,29 +214,6 @@ class ShipPilot extends ModeController {
     );
   }
 
-  stepAim(delta: number) {
-    const state = this.state;
-    // state.yawLeft = Math.min(state.yawLeft, -1);
-    // state.yawRight = Math.max(state.yawRight, 1);
-    // state.yawLeft = lerpToZero(signRelativeMax(state.yawLeft, 1), delta);
-    // state.yawRight = lerpToZero(signRelativeMax(state.yawRight, 1), delta);
-    // state.yawLeft = lerpToZero(signRelativeMax(state.yawLeft, 1), delta);
-    // state.yawRight = lerpToZero(signRelativeMax(state.yawRight, 1), delta);
-    // state.pitchUp = signRelativeMax(state.pitchUp, 1);
-    // state.pitchDown = signRelativeMax(state.pitchDown, 1);
-    // state.rollLeft = signRelativeMax(state.rollLeft, 1);
-    // state.rollRight = signRelativeMax(state.rollRight, 1);
-
-    // console.log('149 ->', {
-    //   yawLeft: state.yawLeft,
-    //   yawRight: state.yawRight,
-    //   // pitchUp: state.pitchUp,
-    //   // pitchDown: state.pitchDown,
-    //   // rollLeft: state.rollLeft,
-    //   // rollRight: state.rollRight,
-    // });
-  }
-
   stepFreeLook() {
     let x = this.state.lookLeft + this.state.lookRight;
     let y = this.state.lookUp + this.state.lookDown;
@@ -295,7 +273,7 @@ class ShipPilot extends ModeController {
     helmView.throttlePrettyPosition = -this._prettyPosition;
   }
 
-  processRotation(delta: number, bigDelta: number) {
+  processRotation(bigDelta: number) {
     // We just outright use absolute values without further processing because
     // we don't let rotations "build up". That's because the propulsion engine
     // itself decides if and how build-up will happen based on flightAssist.
@@ -311,10 +289,11 @@ class ShipPilot extends ModeController {
     );
   }
 
-  step(delta: number, bigDelta: number) {
-    super.step(delta, bigDelta);
+  step() {
+    super.step();
+    const { delta, bigDelta } = animationData;
     this.processThrottle(delta, bigDelta);
-    this.processRotation(delta, bigDelta);
+    this.processRotation(bigDelta);
   }
 
   // step(delta) {

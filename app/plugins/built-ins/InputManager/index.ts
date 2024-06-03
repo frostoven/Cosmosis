@@ -397,12 +397,12 @@ class InputManager {
     }
   }
 
-  stepActiveControllers({ delta, bigDelta }) {
+  stepActiveControllers() {
     const active = this._activeControllers;
     for (let i = 0, len = active.length; i < len; i++) {
       const controller: ModeController = this._allControllers[active[i]];
       if (controller?.step) {
-        controller.step(delta, bigDelta);
+        controller.step();
       }
     }
   }

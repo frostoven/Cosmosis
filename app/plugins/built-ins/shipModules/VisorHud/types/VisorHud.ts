@@ -76,7 +76,7 @@ export default class VisorHud extends ShipModule {
     this._powerSource = device;
   }
 
-  step({ delta }) {
+  step() {
     if (!this._powerSource || !this._uiLoaded) {
       return;
     }

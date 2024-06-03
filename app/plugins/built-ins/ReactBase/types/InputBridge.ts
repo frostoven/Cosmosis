@@ -7,6 +7,8 @@ import Core from '../../Core';
 import { InputManager } from '../../InputManager';
 import ChangeTracker from 'change-tracker/src';
 
+const animationData = Core.animationData;
+
 const ARROW_DELAY = 500;
 const ARROW_REPEAT_MS = 50;
 
@@ -88,7 +90,9 @@ export default class InputBridge {
   }
 
   // Manages arrow timing.
-  stepArrowStream(_, bigDelta) {
+  stepArrowStream() {
+    const { normalizedDelta } = animationData;
+
     // Disable all key repeat processing while menu is closed.
     if (!this.enableArrowStepping) {
       return;
@@ -98,7 +102,7 @@ export default class InputBridge {
     let { up, down, left, right } = mc.state;
 
     if (up || down || left || right) {
-      this._repeatDelta = bigDelta;
+      this._repeatDelta = normalizedDelta;
       this._repeatArrow();
     }
     else {

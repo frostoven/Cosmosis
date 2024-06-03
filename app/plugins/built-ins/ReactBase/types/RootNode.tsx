@@ -177,6 +177,7 @@ export default class RootNode extends React.Component<Props> {
     return (
       <FadeInDown style={rootNodeStyle}>
         <MenuControlSetup
+          // @ts-ignore - still being developed.
           options={menuOptions}
         >
           Test

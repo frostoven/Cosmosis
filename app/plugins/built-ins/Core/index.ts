@@ -15,6 +15,8 @@ import { lerp } from '../../../local/mathUtils';
  * front of any var names, making your patch somewhat safe).
  */
 const animationData = {
+  // The amount of time it took to transition from the previous frame to this
+  // one. Typical values: 0.0083.. @ 120 FPS, 0.016..7 @ 60FPS, 0.03.. @30FPS.
   delta: 0,
   // We multiply by 5 a lot in this game, so we have a premultiplied
   // convenience var for it here.
@@ -22,7 +24,7 @@ const animationData = {
   // For situations where we want numbers to remain intuitive instead of
   // varying wildly (i.e. close to non-delta'd) if we forgot to apply delta
   // during initial design. bigDelta is 1 at 120Hz, 2 at 60Hz, and 4 at 30Hz.
-  hugeDelta: 0,
+  normalizedDelta: 0,
   // Interpolates between the previous and next frame. Can ease jitter in
   // visually-critical sections, but hurts accuracy during sudden frame drops.
   smoothDelta: 1,
@@ -101,7 +103,8 @@ export default class Core {
   };
 
   static animationData: {
-    delta: number; bigDelta: number, smoothDelta: number, gpuDelta: number,
+    delta: number; bigDelta: number, smoothDelta: number,
+    normalizedDelta: number, gpuDelta: number,
   } = animationData;
 
   public onPreAnimate: ChangeTracker;
@@ -130,7 +133,7 @@ export default class Core {
   _updateCpuDeltas(delta: number) {
     animationData.delta = delta;
     animationData.bigDelta = delta * 5;
-    animationData.hugeDelta = delta * 120;
+    animationData.normalizedDelta = delta * 120;
     animationData.smoothDelta = lerp(animationData.smoothDelta, delta, 0.5);
   }
 

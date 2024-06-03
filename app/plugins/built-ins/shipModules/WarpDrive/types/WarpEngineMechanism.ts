@@ -122,15 +122,6 @@ export default class WarpEngineMechanism {
   }
 
   /**
-   * Changes the throttle by the specified percentage.
-   * @param delta
-   * @param {number} amount - Decimal percentage.
-   */
-  changeThrottle(delta: number, amount: number) {
-    return (this.maxThrottle * amount) * (delta * 60);
-  }
-
-  /**
    * Used to slow the throttle needle following the player's request.
    */
   dampenTorque(delta: number, value: number, target: number, growthSpeed: number) {
@@ -275,10 +266,12 @@ export default class WarpEngineMechanism {
   }
 
   // FIXME: update me to work with new plugin system.
-  stepWarp(delta: number, bigDelta: number, spacetimeControl: SpacetimeControl) {
+  stepWarp(spacetimeControl: SpacetimeControl) {
     if (!this._cachedShipPilot) {
       return;
     }
+
+    const { delta, bigDelta } = animationData;
 
     this.applyMovement(delta);
     this.applyRotation(delta, bigDelta);
