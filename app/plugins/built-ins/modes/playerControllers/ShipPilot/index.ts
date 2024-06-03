@@ -262,14 +262,16 @@ class ShipPilot extends ModeController {
     return [ accumulated, actualPosition ];
   }
 
-  processThrottle(delta: number) {
+  processThrottle(delta: number, bigDelta: number) {
     // Prevent reversing throttle if the engine does not allow it. We limit +1
     // instead of -1 because analog controllers invert Y axes.
     const upperBound = Core.unifiedView.propulsion.canReverse ? 1 : 0;
 
     const [ accumulated, actualPosition ] = this.computeSliderBuildup(
       this._throttleAccumulation,
-      this.activeState.thrustAnalog,
+      // Active state accumulates from digital inputs, so it needs a delta.
+      this.activeState.thrustAnalog * bigDelta,
+      // Passive state is an absolute value, so no delta is applied.
       this.state.thrustAnalog,
       upperBound,
     );
@@ -311,7 +313,7 @@ class ShipPilot extends ModeController {
 
   step(delta: number, bigDelta: number) {
     super.step(delta, bigDelta);
-    this.processThrottle(delta);
+    this.processThrottle(delta, bigDelta);
     this.processRotation(delta, bigDelta);
   }
 
