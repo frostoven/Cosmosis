@@ -1,14 +1,5 @@
 /*
- * Visually tracks current camera speed.
- */
-
-/*
- * TODO:
- *  consider doing the following.
- *  top, mid, bottom bar.
- *  top bar: c, ALWAYS 6 chars regardless.
- *  mid: MM/s
- *  bottom: m/s up to 10, then km/s. bottom scales font smaller as value gets bigger.
+ * Debugging tool for tracking current player speed.
  */
 
 import * as THREE from 'three';
@@ -16,6 +7,9 @@ import Unit from './Unit';
 
 const au = Unit.au.inMeters;
 const lightSpeed = Unit.lightSpeed.inMeters;
+
+const { floor } = Math;
+const radToDeg = THREE.MathUtils.radToDeg;
 
 // How often we calculate distance. This is variable, change as needed.
 let freq = 1000;
@@ -72,9 +66,9 @@ function trackCameraSpeed(warpBubble, camera) {
     dist = dist / (freq / perUnit);
 
     // Positions.
-    let psx = Math.floor(camPs.x);
-    let psy = Math.floor(camPs.y);
-    let psz = Math.floor(camPs.z);
+    let psx = floor(camPs.x);
+    let psy = floor(camPs.y);
+    let psz = floor(camPs.z);
 
     // Convert / make pretty.
     if (useAu) {
@@ -90,9 +84,9 @@ function trackCameraSpeed(warpBubble, camera) {
 
     let rx, ry, rz;
     if (useDegrees) {
-      rx = THREE.Math.radToDeg(camRt.x).toFixed(4) + ' °';
-      ry = THREE.Math.radToDeg(camRt.y).toFixed(4) + ' °';
-      rz = THREE.Math.radToDeg(camRt.z).toFixed(4) + ' °';
+      rx = radToDeg(camRt.x).toFixed(4) + ' °';
+      ry = radToDeg(camRt.y).toFixed(4) + ' °';
+      rz = radToDeg(camRt.z).toFixed(4) + ' °';
     }
     else {
       rx = camRt.x.toFixed(4);
