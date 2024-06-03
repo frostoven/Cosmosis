@@ -16,10 +16,13 @@ import { lerp } from '../../../local/mathUtils';
  */
 const animationData = {
   delta: 0,
+  // We multiply by 5 a lot in this game, so we have a premultiplied
+  // convenience var for it here.
+  bigDelta: 0,
   // For situations where we want numbers to remain intuitive instead of
   // varying wildly (i.e. close to non-delta'd) if we forgot to apply delta
   // during initial design. bigDelta is 1 at 120Hz, 2 at 60Hz, and 4 at 30Hz.
-  bigDelta: 0,
+  hugeDelta: 0,
   // Interpolates between the previous and next frame. Can ease jitter in
   // visually-critical sections, but hurts accuracy during sudden frame drops.
   smoothDelta: 1,
@@ -34,8 +37,8 @@ const animationData = {
 
 // We use setTimeout to throttle between requestAnimationFrame calls, so this
 // isn't entirely accurate as setTimeout has a lowest wait time of 4ms.
-const logicFpsTarget = 225;
-const gfxFpsTarget = 225;
+const logicFpsTarget = 225; // 120; // 65; // 45;
+const gfxFpsTarget = 225; // 120; // 65; // 45;
 const idealLogicFrameDelay = 1000 / logicFpsTarget;
 const idealGfxFrameDelay = 1000 / gfxFpsTarget;
 const syncLogicAndGfx = true;
@@ -126,7 +129,8 @@ export default class Core {
 
   _updateCpuDeltas(delta: number) {
     animationData.delta = delta;
-    animationData.bigDelta = delta * 120;
+    animationData.bigDelta = delta * 5;
+    animationData.hugeDelta = delta * 120;
     animationData.smoothDelta = lerp(animationData.smoothDelta, delta, 0.5);
   }
 
