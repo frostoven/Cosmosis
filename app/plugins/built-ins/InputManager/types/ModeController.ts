@@ -54,14 +54,12 @@ export default class ModeController {
   public uiInfo: InputUiInfo;
   private readonly _actionReceivers: Array<Function>;
 
-  // TODO: Consider renaming passive and active to something else. I think the
-  //  passive|active vars would make more sense named cumulative|absolute.
   // Passive state. This only changes when something external changes. Stores
   // last known pressed values.
-  public state: { [action: string]: number };
+  public absoluteInput: { [action: string]: number };
   // This actively updates this.state. Useful for situations where action is
   // implied (for example a gamepad stick sitting at -1.0 without changing).
-  public activeState: { [action: string]: number };
+  public cumulativeInput: { [action: string]: number };
   // Designed for instant actions and toggleables. Contains change trackers.
   public pulse: { [actionName: string]: ChangeTracker };
   // Used for the mouseAxisGravity mode. Resets the mouse to 0 after a delay.
@@ -84,8 +82,8 @@ export default class ModeController {
     this.controlsByKey = {};
     this.uiInfo = uiInfo;
 
-    this.state = {};
-    this.activeState = {};
+    this.absoluteInput = {};
+    this.cumulativeInput = {};
     this.pulse = {};
     this._analogFlutterCheck = {};
 
@@ -309,8 +307,8 @@ export default class ModeController {
     }
     //
     if (actionType === continuous || actionType === hybrid) {
-      this.state[actionName] = 0;
-      this.activeState[actionName] = 0;
+      this.absoluteInput[actionName] = 0;
+      this.cumulativeInput[actionName] = 0;
     }
 
     // Save reverse lookup data.
@@ -418,11 +416,11 @@ export default class ModeController {
       //  reason. Maybe call it 'remapMultiplier' to indicate it's only used
       //  for analog remaps.
       // @ts-ignore - See previous comment.
-      this.activeState[control.analogRemap] = value * control.multiplier.keyboardButton * control.sign;
+      this.cumulativeInput[control.analogRemap] = value * control.multiplier.keyboardButton * control.sign;
     }
     else {
       // Under normal circumstances this value is always either 0 or 1.
-      this.state[action] = value;
+      this.absoluteInput[action] = value;
     }
     // console.log('Key latency:', performance.now() - InputManager.lastPressTime);
   }
@@ -437,11 +435,11 @@ export default class ModeController {
 
     if (control.analogRemap) {
       // @ts-ignore - See comment in receiveAsKeyboardButton.
-      this.activeState[control.analogRemap] = value * control.multiplier.gamepadButton * control.sign;
+      this.cumulativeInput[control.analogRemap] = value * control.multiplier.gamepadButton * control.sign;
     }
     else {
       // This has a range of 0 to 1.
-      this.state[action] = value;
+      this.absoluteInput[action] = value;
     }
   }
 
@@ -485,10 +483,10 @@ export default class ModeController {
 
     let stateTarget;
     if (control.isBidirectional) {
-      stateTarget = this.activeState;
+      stateTarget = this.cumulativeInput;
     }
     else {
-      stateTarget = this.state;
+      stateTarget = this.absoluteInput;
     }
 
     if (ANALOG_STICK_EASING) {
@@ -524,14 +522,14 @@ export default class ModeController {
     // console.log('[mouse movement | standard]', { action, actionType: ActionType[control.actionType], value, analogData, control });
     // console.log(`--> analogData[${action}]: delta=${analogData.delta}; grav=${analogData.gravDelta}`);
     // @ts-ignore - See comment in receiveAsKeyboardButton.
-    this.state[action] += analogData.delta * control.multiplier.mouseAxisStandard;
+    this.absoluteInput[action] += analogData.delta * control.multiplier.mouseAxisStandard;
   }
 
   // InputType: mouseAxisThreshold
   receiveAsMouseAxisThreshold({ action, value, analogData, control }: FullActionData) {
     // @ts-ignore - See comment in receiveAsKeyboardButton.
-    const result = this.state[action] += analogData.delta * control.multiplier.mouseAxisStandard * 0.01;
-    this.state[action] = clamp(result, -1, 1);
+    const result = this.absoluteInput[action] += analogData.delta * control.multiplier.mouseAxisStandard * 0.01;
+    this.absoluteInput[action] = clamp(result, -1, 1);
   }
 
   // InputType: mouseAxisGravity
@@ -542,9 +540,9 @@ export default class ModeController {
     control,
   }: FullActionData) {
     // @ts-ignore - See comment in receiveAsKeyboardButton.
-    const result = this.state[action] + (analogData.delta * control.multiplier.mouseAxisStandard * 0.01);
+    const result = this.absoluteInput[action] + (analogData.delta * control.multiplier.mouseAxisStandard * 0.01);
     const clamped = clamp(result, -1, 1);
-    this.state[action] = clamped;
+    this.absoluteInput[action] = clamped;
 
     // console.log('grav start');
     this._gravAction[action] = 1;
@@ -567,8 +565,8 @@ export default class ModeController {
       if (Math.sign(value) === Math.sign(info.threshold)) {
         if (Math.abs(value) >= Math.abs(info.threshold)) {
           this.handlePulse({ action: info.remapToPulse, value: 1 });
-          this.state[action] = info.ghostValue;
-          this.activeState[action] = 0;
+          this.absoluteInput[action] = info.ghostValue;
+          this.cumulativeInput[action] = 0;
           return;
         }
         else {
@@ -581,15 +579,15 @@ export default class ModeController {
     // absolute value. This makes mode implementations easier. Note that this
     // does not disallow the user from using a stick and a slider for the same
     // control at the same time.
-    this.activeState[action] = 0;
+    this.cumulativeInput[action] = 0;
 
     // If the value is very close to 0, then we're at that annoying point where
     // the player wants a zero but can't quite get it. Just set to 0.
     if (Math.abs(value) < SLIDER_EPSILON) {
-      this.state[action] = 0;
+      this.absoluteInput[action] = 0;
     }
     else {
-      this.state[action] = value;
+      this.absoluteInput[action] = value;
     }
   }
 
@@ -656,7 +654,7 @@ export default class ModeController {
           this._gravAction[action] = newValue;
         }
         else {
-          this.state[action] = 0;
+          this.absoluteInput[action] = 0;
           delete this._gravAction[action];
         }
       }

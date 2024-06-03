@@ -96,8 +96,8 @@ class ShipPilot extends ModeController {
       this._throttleAccumulation = 0;
       this._throttlePosition = 0;
       // Tracked input state.
-      this.activeState.thrustAnalog = 0;
-      this.state.thrustAnalog = 0;
+      this.cumulativeInput.thrustAnalog = 0;
+      this.absoluteInput.thrustAnalog = 0;
     });
 
     this.pulse.cycleEngineType.getEveryChange(() => {
@@ -131,8 +131,8 @@ class ShipPilot extends ModeController {
   }
 
   set throttlePosition(value) {
-    this.state.thrustAnalog = clamp(value, -1, 1);
-    this.activeState.thrustAnalog = 0;
+    this.absoluteInput.thrustAnalog = clamp(value, -1, 1);
+    this.cumulativeInput.thrustAnalog = 0;
   }
 
   // ----------------------------------------------------------------------- //
@@ -147,14 +147,14 @@ class ShipPilot extends ModeController {
 
   // Sets stick and pedal input to 0.
   resetPrincipleAxesInput() {
-    const state = this.state;
+    const state = this.absoluteInput;
     state.yawLeft = state.yawRight = state.pitchUp = state.pitchDown =
       state.rollLeft = state.rollRight = 0;
   }
 
   // Sets neck inputs to 0.
   resetNeckAxesInput() {
-    const state = this.state;
+    const state = this.absoluteInput;
     state.lookUp = state.lookDown = state.lookLeft = state.lookRight = 0;
   }
 
@@ -202,8 +202,8 @@ class ShipPilot extends ModeController {
       return;
     }
 
-    this.constrainNeck(x, headXMax, this.state, 'lookLeft', 'lookRight');
-    this.constrainNeck(y, headYMax, this.state, 'lookUp', 'lookDown');
+    this.constrainNeck(x, headXMax, this.absoluteInput, 'lookLeft', 'lookRight');
+    this.constrainNeck(y, headYMax, this.absoluteInput, 'lookUp', 'lookDown');
 
     // Note: don't use delta here. We don't want mouse speed to be dependent on
     // framerate.
@@ -215,8 +215,8 @@ class ShipPilot extends ModeController {
   }
 
   stepFreeLook() {
-    let x = this.state.lookLeft + this.state.lookRight;
-    let y = this.state.lookUp + this.state.lookDown;
+    let x = this.absoluteInput.lookLeft + this.absoluteInput.lookRight;
+    let y = this.absoluteInput.lookUp + this.absoluteInput.lookDown;
     this.setNeckPosition(x, y);
   }
 
@@ -247,10 +247,10 @@ class ShipPilot extends ModeController {
 
     const [ accumulated, actualPosition ] = this.computeSliderBuildup(
       this._throttleAccumulation,
-      // Active state accumulates from digital inputs, so it needs a delta.
-      this.activeState.thrustAnalog * bigDelta,
-      // Passive state is an absolute value, so no delta is applied.
-      this.state.thrustAnalog,
+      // This accumulates from digital inputs over time, so it needs a delta.
+      this.cumulativeInput.thrustAnalog * bigDelta,
+      // This is an absolute value (e.g. from a stick), so no delta is applied.
+      this.absoluteInput.thrustAnalog,
       upperBound,
     );
 
@@ -279,13 +279,13 @@ class ShipPilot extends ModeController {
     // itself decides if and how build-up will happen based on flightAssist.
     // console.log('passive:', this.state.pitchAnalog, 'active:', this.activeState.pitchAnalog);
     helmView.pitch = clamp(
-      this.state.pitchAnalog + this.activeState.pitchAnalog, -1, 1,
+      this.absoluteInput.pitchAnalog + this.cumulativeInput.pitchAnalog, -1, 1,
     ) * PITCH_DIRECTION;
     helmView.yaw = -clamp(
-      this.state.yawAnalog + this.activeState.yawAnalog, -1, 1,
+      this.absoluteInput.yawAnalog + this.cumulativeInput.yawAnalog, -1, 1,
     );
     helmView.roll = -clamp(
-      this.state.rollAnalog + this.activeState.rollAnalog, -1, 1,
+      this.absoluteInput.rollAnalog + this.cumulativeInput.rollAnalog, -1, 1,
     );
   }
 

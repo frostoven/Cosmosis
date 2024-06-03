@@ -23,7 +23,7 @@ const animationData = {
   bigDelta: 0,
   // For situations where we want numbers to remain intuitive instead of
   // varying wildly (i.e. close to non-delta'd) if we forgot to apply delta
-  // during initial design. bigDelta is 1 at 120Hz, 2 at 60Hz, and 4 at 30Hz.
+  // during initial design. Value is 1 at 120Hz, 2 at 60Hz, and 4 at 30Hz.
   normalizedDelta: 0,
   // Interpolates between the previous and next frame. Can ease jitter in
   // visually-critical sections, but hurts accuracy during sudden frame drops.

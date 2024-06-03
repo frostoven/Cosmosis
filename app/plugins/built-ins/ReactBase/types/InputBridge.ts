@@ -99,7 +99,7 @@ export default class InputBridge {
     }
 
     const mc = this._modeController;
-    let { up, down, left, right } = mc.state;
+    let { up, down, left, right } = mc.absoluteInput;
 
     if (up || down || left || right) {
       this._repeatDelta = normalizedDelta;
@@ -113,7 +113,7 @@ export default class InputBridge {
   // Handles arrow logic.
   tickArrow() {
     const mc = this._modeController;
-    let { up, down, left, right } = mc.state;
+    let { up, down, left, right } = mc.absoluteInput;
 
     // Disallow confusion.
     if (up && down) {
