@@ -64,9 +64,6 @@ export default class WarpEngineMechanism {
   public yawBuildup: number = 0;
   // Used to ease in/out of spinning.
   public pitchBuildup: number = 0;
-  // If true, ship will automatically try to stop rotation when the thrusters
-  // aren't active.
-  public flightAssist: boolean = true;
   // Flight assist causes the engines to blast in various directions to correct
   // ship movement, thus taking main power away from what the user is
   // explicitly pressing, or so it is told. This is multiplied by rotational
@@ -210,7 +207,7 @@ export default class WarpEngineMechanism {
       return;
     }
 
-    hyperSpeed *= delta;
+    hyperSpeed *= delta * 100;
 
     // Move the world around the ship.
 
@@ -218,41 +215,33 @@ export default class WarpEngineMechanism {
   }
 
   applyRotation(delta: number, bigDelta: number) {
-    const { pitch, yaw, roll } = helmView;
+    const pitch = clamp(helmView.pitch, -1, 1);
+    const yaw = clamp(helmView.yaw, -1, 1);
+    const roll = clamp(helmView.roll, -1, 1);
 
     let pitchMax: number;
     let yawMax: number;
     let rollMax: number;
-    if (this.flightAssist) {
+    if (helmView.flightAssist) {
       pitchMax = this.pitchMaxSpeed * this.flightAssistPenaltyFactor;
       yawMax = this.yawMaxSpeed * this.flightAssistPenaltyFactor;
       rollMax = this.rollMaxSpeed * this.flightAssistPenaltyFactor;
-
-      if (pitch || this.pitchBuildup) {
-        this.pitchBuildup = chaseValue(bigDelta, this.pitchBuildup, pitch);
-      }
-      if (yaw || this.yawBuildup) {
-        this.yawBuildup = chaseValue(bigDelta, this.yawBuildup, yaw);
-      }
-      if (roll || this.rollBuildup) {
-        this.rollBuildup = chaseValue(bigDelta, this.rollBuildup, roll);
-      }
     }
     else {
       pitchMax = this.pitchMaxSpeed;
       yawMax = this.yawMaxSpeed;
       rollMax = this.rollMaxSpeed;
+    }
 
       if (pitch || this.pitchBuildup) {
-        this.pitchBuildup = chaseValue(bigDelta, this.pitchBuildup, (this.pitchBuildup + pitch));
+        this.pitchBuildup = chaseValue(delta * 0.5, this.pitchBuildup, pitch);
       }
       if (yaw || this.yawBuildup) {
-        this.yawBuildup = chaseValue(bigDelta, this.yawBuildup, (this.yawBuildup + yaw));
+        this.yawBuildup = chaseValue(delta * 0.5, this.yawBuildup, yaw);
       }
       if (roll || this.rollBuildup) {
-        this.rollBuildup = chaseValue(bigDelta, this.rollBuildup, (this.rollBuildup + roll));
+        this.rollBuildup = chaseValue(delta * 0.5, this.rollBuildup, roll);
       }
-    }
 
     this.pitchBuildup = clamp(this.pitchBuildup, -pitchMax, pitchMax);
     this.yawBuildup = clamp(this.yawBuildup, -yawMax, yawMax);
