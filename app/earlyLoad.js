@@ -57,7 +57,7 @@ if (process.env && process.env.NODE_ENV !== 'production') {
         else {
           // Currently a bug in nw.js. TODO: remove once they fix it.
           // nw.Window.get().reload();
-          chrome.tabs.reload();
+          window.location = window.location;
         }
       }, 250);
     }
