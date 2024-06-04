@@ -7,6 +7,7 @@ import {
 } from 'three';
 import * as THREE from 'three';
 
+const abs = Math.abs;
 const acos = Math.acos;
 const floor = Math.floor;
 const max = Math.max;
@@ -117,6 +118,31 @@ function chaseValue(stepSize: number, current: number, target: number/*, from*/)
   }
 
   return current;
+}
+
+/**
+ * Rounds the value to a number other than 1.
+ * @example
+ * roundToNearest(0.33, 0.2) // 0.4
+ */
+function roundToNearest(value: number, step: number) {
+  return Math.round(value / step) * step;
+}
+
+/**
+ * Checks if the larger number is within a certain percentage of the smaller
+ * number, where 0 is 0% and 1 is 100%.
+ *
+ * @example
+ * isWithinRange(0.1, 90, 100) // true
+ * isWithinRange(0.1, 100, 90) // true
+ * isWithinRange(0.1, 80, 100) // false
+ */
+function isWithinRange(percentage: number, number1, number2) {
+  const difference = abs(number1 - number2);
+  const largerNumber = max(number1, number2);
+  const percentOfLarger = percentage * largerNumber;
+  return difference <= percentOfLarger;
 }
 
 // Extract vertices and return them as a Vector3 array.
@@ -264,6 +290,8 @@ export {
   easeIntoExp,
   clamp,
   chaseValue,
+  roundToNearest,
+  isWithinRange,
   extractVertsFromGeo,
   extractAndPopulateVerts,
   rotateAboutPoint,

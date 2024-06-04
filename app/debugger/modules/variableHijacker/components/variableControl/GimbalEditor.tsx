@@ -73,6 +73,8 @@ const typeDefinition: SpatialDefinitions = {
     },
     copyToSource: (local: THREE.Quaternion, target: THREE.Vector3) => {
       tempEuler.setFromQuaternion(local);
+      // @ts-ignore - TODO: Investigate if this has been silently deprecated or
+      //                    something.
       target.copy(tempEuler.toVector3())
     },
   },

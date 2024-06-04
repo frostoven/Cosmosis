@@ -15,11 +15,16 @@ import { lerp } from '../../../local/mathUtils';
  * front of any var names, making your patch somewhat safe).
  */
 const animationData = {
+  // The amount of time it took to transition from the previous frame to this
+  // one. Typical values: 0.0083.. @ 120 FPS, 0.016..7 @ 60FPS, 0.03.. @30FPS.
   delta: 0,
+  // We multiply by 5 a lot in this game, so we have a premultiplied
+  // convenience var for it here.
+  bigDelta: 0,
   // For situations where we want numbers to remain intuitive instead of
   // varying wildly (i.e. close to non-delta'd) if we forgot to apply delta
-  // during initial design. bigDelta is 1 at 120Hz, 2 at 60Hz, and 4 at 30Hz.
-  bigDelta: 0,
+  // during initial design. Value is 1 at 120Hz, 2 at 60Hz, and 4 at 30Hz.
+  normalizedDelta: 0,
   // Interpolates between the previous and next frame. Can ease jitter in
   // visually-critical sections, but hurts accuracy during sudden frame drops.
   smoothDelta: 1,
@@ -28,10 +33,14 @@ const animationData = {
   gpuDelta: 0,
 };
 
+// TODO: Import package.json. Check if frame throttling is enabled. If yes, set
+//  experimentalFrameControl to true, which supports the below. Else, if false,
+//  just do a regular requestAnimationFrame.
+
 // We use setTimeout to throttle between requestAnimationFrame calls, so this
 // isn't entirely accurate as setTimeout has a lowest wait time of 4ms.
-const logicFpsTarget = 225;
-const gfxFpsTarget = 225;
+const logicFpsTarget = 225; // 120; // 65; // 45;
+const gfxFpsTarget = 225; // 120; // 65; // 45;
 const idealLogicFrameDelay = 1000 / logicFpsTarget;
 const idealGfxFrameDelay = 1000 / gfxFpsTarget;
 const syncLogicAndGfx = true;
@@ -42,44 +51,60 @@ let triggerGfxRender = false;
 export default class Core {
   /**
    * The unified view is meant as a friendly place that all modules may report
-   * their significant values. For example, ship speed is ship speed regardless
-   * of what manages it, so whatever manages it may choose to store is here as
-   * shipSpeed. Note that these values should not be altered by code that don't
-   * own those values, as they are ignored by the actual owners. For example,
-   * setting ship speed to something else won't change the physical systems
-   * governing ship speed - the value here is effectively read-only, but
-   * updated each frame. That why it's called the unified "view" - it's just a
-   * high-level view into game state.
+   * their significant values. Specifically, this is for *high-level* read-only
+   * values, set only by modules that own them. For example, ship speed is ship
+   * speed regardless of what manages it, so whatever manages it may choose to
+   * store is here as shipSpeed. Note that these values should not be altered
+   * by code that don't own those values, as changes are almost always ignored
+   * by the actual owners. For example, setting ship speed to something else
+   * won't change the physical systems governing ship speed. That why it's
+   * called the unified "view" - it's just a high-level view into game state.
    *
    * The reason this object exists is for easy stat lookups without needing to
    * explicitly hook into dependencies. For example, this allows the user to
    * manually hook custom values into custom UIs without writing any code.
    *
-   * This object is currently used internally by the visor HUD to read ship
-   * stats such as throttle, walking speed, etc.
+   * The unified view may be seen as the Cosmosis ship specification and ship
+   * kernel output.
    */
   static unifiedView = {
     gameClock: 0,
     custom: {
       example1166877: 'Community modding area.',
     },
+    // Represents controls as per instructions from the pilot's controls.
     helm: {
+      // If true, ship will automatically try to stop rotation when the thrusters
+      // aren't active.
+      flightAssist: true,
+      // The requested throttle position (whether by pilot or hardware driver).
       throttlePosition: 0,
+      // Slightly lags behind throttlePosition. Used to make visuals smoother.
       throttlePrettyPosition: 0,
-      roll: 0,
-      yaw: 0,
+      // Nose up/down angle.
       pitch: 0,
+      // How close the wings are to horizontal.
+      roll: 0,
+      // Nose left/right angle.
+      yaw: 0,
     },
+    // Represents the current state of the active propulsion system.
     propulsion: {
+      // If true, the active engine can reverse.
       canReverse: true,
-      outputLevel: 0,
-      outputLevelPretty: 0,
       currentSpeedLy: 0,
-    },
+      // How close the engine is to max speed, where 0 is idle and 1 is max
+      // speed.
+      outputLevel: 0,
+      // A slightly less accurate version of outputLevel. Exists to smooth out
+      // rapid fluctuations to the frame delta. Used by the HUD.
+      outputLevelPretty: 0,
+    }
   };
 
   static animationData: {
-    delta: number; bigDelta: number, smoothDelta: number, gpuDelta: number,
+    delta: number; bigDelta: number, smoothDelta: number,
+    normalizedDelta: number, gpuDelta: number,
   } = animationData;
 
   public onPreAnimate: ChangeTracker;
@@ -107,9 +132,9 @@ export default class Core {
 
   _updateCpuDeltas(delta: number) {
     animationData.delta = delta;
-    animationData.bigDelta = delta * 120;
+    animationData.bigDelta = delta * 5;
+    animationData.normalizedDelta = delta * 120;
     animationData.smoothDelta = lerp(animationData.smoothDelta, delta, 0.5);
-    Core.unifiedView.gameClock += delta;
   }
 
   _updateGfxDeltas(delta: number) {
@@ -152,6 +177,7 @@ export default class Core {
   _renderIfNeeded = (timestamp: number = 0.1) => {
     let gfxDelta = timestamp - lastGfxRender;
     let logicDelta = timestamp - lastLogicRender;
+    Core.unifiedView.gameClock += logicDelta;
 
     if (syncLogicAndGfx || gfxDelta >= idealGfxFrameDelay) {
       triggerGfxRender = true;

@@ -10,12 +10,18 @@ import {
   chaseValue,
   clamp,
 } from '../../../../../local/mathUtils';
+import FastDeterministicRandom
+  from '../../../../../random/FastDeterministicRandom';
 
 const { linearAcceleration, exponentialAcceleration } = WarpEngineType;
-const helmView = Core.unifiedView.helm;
-const propulsionView = Core.unifiedView.propulsion;
+
+const { abs, exp, max, round } = Math;
 
 const debugWarpStatus = true;
+
+const animationData = Core.animationData;
+const helmView = Core.unifiedView.helm;
+const propulsionView = Core.unifiedView.propulsion;
 
 // TODO: Refactor this into the SpacetimeControl module.
 // Just to alleviate some confusion: 1 means 'nothing', less then 1 is negative
@@ -58,9 +64,6 @@ export default class WarpEngineMechanism {
   public yawBuildup: number = 0;
   // Used to ease in/out of spinning.
   public pitchBuildup: number = 0;
-  // If true, ship will automatically try to stop rotation when the thrusters
-  // aren't active.
-  public flightAssist: boolean = true;
   // Flight assist causes the engines to blast in various directions to correct
   // ship movement, thus taking main power away from what the user is
   // explicitly pressing, or so it is told. This is multiplied by rotational
@@ -72,6 +75,7 @@ export default class WarpEngineMechanism {
   // be annoyingly slow when inside a solar system.
   public engineType: WarpEngineType = WarpEngineType.exponentialAcceleration;
   public maxThrottle: number = 100;
+  public severelyDamaged: boolean = false;
 
   private _cachedSpacetime: SpacetimeControl;
   private _cachedShipPilot: ShipPilot;
@@ -115,15 +119,6 @@ export default class WarpEngineMechanism {
   }
 
   /**
-   * Changes the throttle by the specified percentage.
-   * @param delta
-   * @param {number} amount - Decimal percentage.
-   */
-  changeThrottle(delta: number, amount: number) {
-    return (this.maxThrottle * amount) * (delta * 60);
-  }
-
-  /**
    * Used to slow the throttle needle following the player's request.
    */
   dampenTorque(delta: number, value: number, target: number, growthSpeed: number) {
@@ -140,11 +135,7 @@ export default class WarpEngineMechanism {
    * Used to slow the throttle needle more as it approaches 100% engine power.
    * Similar to dampenTorque, but here the growth speed is dynamic.
    */
-  dampenByFactor(value: number, target: number) {
-    // The unfortunate reality is that a standard delta causes massive
-    // flickering on the throttle visuals. A smooth delta isn't great because
-    // it reduces accuracy, but does drastically the flickering.
-    const delta = Core.animationData.smoothDelta;
+  dampenByFactor(delta: number, value: number, target: number) {
     let result: number;
     // Do not use delta here - it's applied in dampenTorque.
     const warpFactor = 4; // equivalent to delta [at 0.016] * 250 growth.
@@ -172,7 +163,7 @@ export default class WarpEngineMechanism {
    * @param amount
    */
   scaleHyperSpeed(amount: number) {
-    return Math.exp(amount / 10);
+    return exp(amount / 10);
   }
 
   applyMovement(delta: number) {
@@ -184,7 +175,7 @@ export default class WarpEngineMechanism {
     const throttle = (this.currentThrottle / this.maxThrottle) * 100;
     let actualThrottle = this.actualThrottle;
 
-    actualThrottle = this.dampenByFactor(actualThrottle, throttle);
+    actualThrottle = this.dampenByFactor(delta, actualThrottle, throttle);
     if (actualThrottle > this.maxThrottle - 0.01) {
       // This helps prevent a bug where the throttle can sometimes get stuck at
       // more than 100%; when this happens, throttling down does nothing and
@@ -216,7 +207,7 @@ export default class WarpEngineMechanism {
       return;
     }
 
-    hyperSpeed *= delta;
+    hyperSpeed *= delta * 100;
 
     // Move the world around the ship.
 
@@ -224,41 +215,33 @@ export default class WarpEngineMechanism {
   }
 
   applyRotation(delta: number, bigDelta: number) {
-    const { pitch, yaw, roll } = helmView;
+    const pitch = clamp(helmView.pitch, -1, 1);
+    const yaw = clamp(helmView.yaw, -1, 1);
+    const roll = clamp(helmView.roll, -1, 1);
 
     let pitchMax: number;
     let yawMax: number;
     let rollMax: number;
-    if (this.flightAssist) {
+    if (helmView.flightAssist) {
       pitchMax = this.pitchMaxSpeed * this.flightAssistPenaltyFactor;
       yawMax = this.yawMaxSpeed * this.flightAssistPenaltyFactor;
       rollMax = this.rollMaxSpeed * this.flightAssistPenaltyFactor;
-
-      if (pitch || this.pitchBuildup) {
-        this.pitchBuildup = chaseValue(delta * 5, this.pitchBuildup, pitch);
-      }
-      if (yaw || this.yawBuildup) {
-        this.yawBuildup = chaseValue(delta * 5, this.yawBuildup, yaw);
-      }
-      if (roll || this.rollBuildup) {
-        this.rollBuildup = chaseValue(delta * 5, this.rollBuildup, roll);
-      }
     }
     else {
       pitchMax = this.pitchMaxSpeed;
       yawMax = this.yawMaxSpeed;
       rollMax = this.rollMaxSpeed;
+    }
 
       if (pitch || this.pitchBuildup) {
-        this.pitchBuildup = chaseValue(delta * 5, this.pitchBuildup, (this.pitchBuildup + pitch));
+        this.pitchBuildup = chaseValue(delta * 0.5, this.pitchBuildup, pitch);
       }
       if (yaw || this.yawBuildup) {
-        this.yawBuildup = chaseValue(delta * 5, this.yawBuildup, (this.yawBuildup + yaw));
+        this.yawBuildup = chaseValue(delta * 0.5, this.yawBuildup, yaw);
       }
       if (roll || this.rollBuildup) {
-        this.rollBuildup = chaseValue(delta * 5, this.rollBuildup, (this.rollBuildup + roll));
+        this.rollBuildup = chaseValue(delta * 0.5, this.rollBuildup, roll);
       }
-    }
 
     this.pitchBuildup = clamp(this.pitchBuildup, -pitchMax, pitchMax);
     this.yawBuildup = clamp(this.yawBuildup, -yawMax, yawMax);
@@ -272,27 +255,51 @@ export default class WarpEngineMechanism {
   }
 
   // FIXME: update me to work with new plugin system.
-  stepWarp(delta: number, bigDelta: number, spacetimeControl: SpacetimeControl) {
+  stepWarp(spacetimeControl: SpacetimeControl) {
     if (!this._cachedShipPilot) {
       return;
     }
+
+    const { delta, bigDelta } = animationData;
 
     this.applyMovement(delta);
     this.applyRotation(delta, bigDelta);
 
     propulsionView.currentSpeedLy = this.currentSpeed;
     propulsionView.outputLevel = this.actualThrottle * 0.01;
-    propulsionView.outputLevelPretty = Math.round(this.actualThrottle) * 0.01;
+
+    if (!this.severelyDamaged) {
+      // Thanks to delta fluctuations, the HUD flickers severely like a broken
+      // LED panel. chaseValue here with the 0.1 factor ensures we interpolate
+      // fast on massive change and slowly on subtle change, thus killing the
+      // flicker. That's also why we skip this during damage: It adds to the
+      // broken ship effect.
+      propulsionView.outputLevelPretty = chaseValue(
+        abs(propulsionView.outputLevel - propulsionView.outputLevelPretty) * 0.1,
+        propulsionView.outputLevelPretty,
+        propulsionView.outputLevel,
+      );
+    }
+    else {
+      const rng = FastDeterministicRandom.bad();
+      if (rng > 0.9) {
+        propulsionView.outputLevelPretty = 0;
+      }
+      else {
+        propulsionView.outputLevelPretty =
+          max(0, propulsionView.outputLevel + FastDeterministicRandom.bad() * 0.01);
+      }
+    }
 
     if (debugWarpStatus) {
       const div = document.getElementById('hyperdrive-stats');
       if (div) {
-        const throttle = Math.round((this.currentThrottle / this.maxThrottle) * 100);
+        const throttle = round((this.currentThrottle / this.maxThrottle) * 100);
         div.innerText = `
           y: ${throttle}%
-          Player throttle: ${throttle}% (${Math.round(this.currentThrottle)}/${this.maxThrottle})
-          Actual throttle: ${this.actualThrottle.toFixed(1)}
-          Pretty actual: ${Core.unifiedView.propulsion.outputLevelPretty.toFixed(2)}
+          Player throttle: ${throttle}% (${round(this.currentThrottle)}/${this.maxThrottle})
+          Actual throttle: ${propulsionView.outputLevel.toFixed(3)}
+          Pretty actual: ${propulsionView.outputLevelPretty.toFixed(3)}
       `;
       }
     }

@@ -38,6 +38,7 @@ const headXMax = 2200;
 // Maximum number y-look can be at.
 const headYMax = 1150;
 
+const animationData = Core.animationData;
 const helmView = Core.unifiedView.helm;
 
 type PluginCompletion = PluginCacheTracker & {
@@ -49,16 +50,29 @@ type PluginCompletion = PluginCacheTracker & {
 
 // Pilot control interface.
 class ShipPilot extends ModeController {
-  private _prettyPosition: number = 0;
+  // If true, flight controls will move the player head around. If false,
+  // player controls will move the ship around.
+  private _headLookActive: boolean = false;
+  private _pluginCache: PluginCacheTracker | PluginCompletion;
+
   // Important for input devices such as keyboards. Not used by analog devices.
   private _throttleAccumulation: number = 0;
+  private _pitchAccumulation: number = 0;
+  private _yawAccumulation: number = 0;
+  private _rollAccumulation: number = 0;
+
   // Combines keyboard and analog outputs. Is the final source of truth.
   private _throttlePosition: number = 0;
-  private _pluginCache: PluginCacheTracker | PluginCompletion;
+  private _pitchPosition: number = 0;
+  private _yawPosition: number = 0;
+  private _rollPosition: number = 0;
+
+  // Exists exclusively to make the UI appear nicer.
+  private _prettyThrottlePosition: number = 0;
 
   constructor() {
     const uiInfo = { friendly: 'Ship Pilot Controls', priority: 80 };
-    super('shipPilot', ModeId.playerControl, shipPilotControls, uiInfo);
+    super('shipPilot', ModeId.flightControl, shipPilotControls, uiInfo);
 
     this._pluginCache = new PluginCacheTracker(
       [ 'player', 'core', 'inputManager', 'levelScene' ],
@@ -66,7 +80,7 @@ class ShipPilot extends ModeController {
     );
 
     // This controller activates itself by default:
-    this._pluginCache.inputManager.activateController(ModeId.playerControl, this.name);
+    this._pluginCache.inputManager.activateController(ModeId.flightControl, this.name);
 
     // This controller activates itself by default:
     this._pluginCache.inputManager = gameRuntime.tracked.inputManager.cachedValue;
@@ -86,8 +100,13 @@ class ShipPilot extends ModeController {
 
   _setupPulseListeners() {
     this.pulse.mouseHeadLook.getEveryChange(() => {
-      this.state.mouseHeadLook = Number(!this.state.mouseHeadLook);
+      this._headLookActive = !this._headLookActive;
       this.resetLookState();
+      console.log('head look', this._headLookActive ? 'enabled' : 'disabled');
+    });
+
+    this.pulse.toggleFlightAssist.getEveryChange(() => {
+      helmView.flightAssist = !helmView.flightAssist;
     });
 
     this.pulse.thrustReset.getEveryChange(() => {
@@ -95,8 +114,8 @@ class ShipPilot extends ModeController {
       this._throttleAccumulation = 0;
       this._throttlePosition = 0;
       // Tracked input state.
-      this.activeState.thrustAnalog = 0;
-      this.state.thrustAnalog = 0;
+      this.cumulativeInput.thrustAnalog = 0;
+      this.absoluteInput.thrustAnalog = 0;
     });
 
     this.pulse.cycleEngineType.getEveryChange(() => {
@@ -110,14 +129,14 @@ class ShipPilot extends ModeController {
     });
 
     this.pulse._devChangeCamMode.getEveryChange(() => {
-      this._pluginCache.inputManager.activateController(ModeId.playerControl, 'freeCam');
+      this._pluginCache.inputManager.activateController(ModeId.flightControl, 'freeCam');
     });
   }
 
   // --- Getters and setters ----------------------------------------------- //
 
   get prettyThrottle() {
-    return this._prettyPosition;
+    return this._prettyThrottlePosition;
   }
 
   set prettyThrottle(value) {
@@ -130,8 +149,8 @@ class ShipPilot extends ModeController {
   }
 
   set throttlePosition(value) {
-    this.state.thrustAnalog = clamp(value, -1, 1);
-    this.activeState.thrustAnalog = 0;
+    this.absoluteInput.thrustAnalog = clamp(value, -1, 1);
+    this.cumulativeInput.thrustAnalog = 0;
   }
 
   // ----------------------------------------------------------------------- //
@@ -146,14 +165,14 @@ class ShipPilot extends ModeController {
 
   // Sets stick and pedal input to 0.
   resetPrincipleAxesInput() {
-    const state = this.state;
+    const state = this.absoluteInput;
     state.yawLeft = state.yawRight = state.pitchUp = state.pitchDown =
       state.rollLeft = state.rollRight = 0;
   }
 
   // Sets neck inputs to 0.
   resetNeckAxesInput() {
-    const state = this.state;
+    const state = this.absoluteInput;
     state.lookUp = state.lookDown = state.lookLeft = state.lookRight = 0;
   }
 
@@ -163,8 +182,12 @@ class ShipPilot extends ModeController {
     // TODO: consider making this next line a user-changeable option, because
     //  whether or not this is useful depends on controller setup.
     this.resetPrincipleAxesInput();
-
     this.setNeckPosition(0, 0);
+    if (helmView.flightAssist) {
+      this.absoluteInput.pitchAnalog = this.cumulativeInput.pitchAnalog = 0;
+      this.absoluteInput.yawAnalog = this.cumulativeInput.yawAnalog = 0;
+      this.absoluteInput.rollAnalog = this.cumulativeInput.rollAnalog = 0;
+    }
   }
 
   // Disallows a 360 degree neck, but also prevent the player's head from
@@ -201,8 +224,8 @@ class ShipPilot extends ModeController {
       return;
     }
 
-    this.constrainNeck(x, headXMax, this.state, 'lookLeft', 'lookRight');
-    this.constrainNeck(y, headYMax, this.state, 'lookUp', 'lookDown');
+    this.constrainNeck(x, headXMax, this.absoluteInput, 'lookLeft', 'lookRight');
+    this.constrainNeck(y, headYMax, this.absoluteInput, 'lookUp', 'lookDown');
 
     // Note: don't use delta here. We don't want mouse speed to be dependent on
     // framerate.
@@ -213,32 +236,9 @@ class ShipPilot extends ModeController {
     );
   }
 
-  stepAim(delta: number) {
-    const state = this.state;
-    // state.yawLeft = Math.min(state.yawLeft, -1);
-    // state.yawRight = Math.max(state.yawRight, 1);
-    // state.yawLeft = lerpToZero(signRelativeMax(state.yawLeft, 1), delta);
-    // state.yawRight = lerpToZero(signRelativeMax(state.yawRight, 1), delta);
-    // state.yawLeft = lerpToZero(signRelativeMax(state.yawLeft, 1), delta);
-    // state.yawRight = lerpToZero(signRelativeMax(state.yawRight, 1), delta);
-    // state.pitchUp = signRelativeMax(state.pitchUp, 1);
-    // state.pitchDown = signRelativeMax(state.pitchDown, 1);
-    // state.rollLeft = signRelativeMax(state.rollLeft, 1);
-    // state.rollRight = signRelativeMax(state.rollRight, 1);
-
-    // console.log('149 ->', {
-    //   yawLeft: state.yawLeft,
-    //   yawRight: state.yawRight,
-    //   // pitchUp: state.pitchUp,
-    //   // pitchDown: state.pitchDown,
-    //   // rollLeft: state.rollLeft,
-    //   // rollRight: state.rollRight,
-    // });
-  }
-
   stepFreeLook() {
-    let x = this.state.lookLeft + this.state.lookRight;
-    let y = this.state.lookUp + this.state.lookDown;
+    let x = this.absoluteInput.lookLeft + this.absoluteInput.lookRight;
+    let y = this.absoluteInput.lookUp + this.absoluteInput.lookDown;
     this.setNeckPosition(x, y);
   }
 
@@ -262,15 +262,17 @@ class ShipPilot extends ModeController {
     return [ accumulated, actualPosition ];
   }
 
-  processThrottle(delta: number) {
+  processWarpThrottle(delta: number, bigDelta: number) {
     // Prevent reversing throttle if the engine does not allow it. We limit +1
     // instead of -1 because analog controllers invert Y axes.
     const upperBound = Core.unifiedView.propulsion.canReverse ? 1 : 0;
 
     const [ accumulated, actualPosition ] = this.computeSliderBuildup(
       this._throttleAccumulation,
-      this.activeState.thrustAnalog,
-      this.state.thrustAnalog,
+      // This accumulates from digital inputs over time, so it needs a delta.
+      this.cumulativeInput.thrustAnalog * bigDelta,
+      // This is an absolute value (e.g. from a stick), so no delta is applied.
+      this.absoluteInput.thrustAnalog,
       upperBound,
     );
 
@@ -280,9 +282,9 @@ class ShipPilot extends ModeController {
     // The pretty position is a way of making very sudden changes (like with a
     // keyboard button press) look a bit more natural by gradually going to
     // where it needs to, but does not reduce actual throttle position.
-    if (this._prettyPosition !== this._throttlePosition) {
-      this._prettyPosition = chaseValue(
-        delta * 25, this._prettyPosition,
+    if (this._prettyThrottlePosition !== this._throttlePosition) {
+      this._prettyThrottlePosition = chaseValue(
+        delta * 25, this._prettyThrottlePosition,
         this._throttlePosition,
       );
     }
@@ -290,29 +292,84 @@ class ShipPilot extends ModeController {
     // Invert the throttle values stored in the unified view because
     // controllers for some reason use -1 for 100% and +1 for 0%.
     helmView.throttlePosition = -this._throttlePosition;
-    helmView.throttlePrettyPosition = -this._prettyPosition;
+    helmView.throttlePrettyPosition = -this._prettyThrottlePosition;
   }
 
-  processRotation(delta: number, bigDelta: number) {
-    // We just outright use absolute values without further processing because
-    // we don't let rotations "build up". That's because the propulsion engine
-    // itself decides if and how build-up will happen based on flightAssist.
-    // console.log('passive:', this.state.pitchAnalog, 'active:', this.activeState.pitchAnalog);
-    helmView.pitch = clamp(
-      this.state.pitchAnalog + this.activeState.pitchAnalog, -1, 1,
-    ) * PITCH_DIRECTION;
-    helmView.yaw = -clamp(
-      this.state.yawAnalog + this.activeState.yawAnalog, -1, 1,
+  processWarpRotation(delta: number, bigDelta: number) {
+    // Temp vars we reuse for all rotations.
+    let accumulated: number;
+    let actualPosition: number;
+
+    // -- Pitch -------------------------------------------------- /
+
+    [ accumulated, actualPosition ] = this.computeSliderBuildup(
+      this._pitchAccumulation,
+      // This accumulates from digital inputs over time, so it needs a delta.
+      this.cumulativeInput.pitchAnalog * delta,
+      // This is an absolute value (e.g. from a stick), so no delta is applied.
+      this.absoluteInput.pitchAnalog,
+      null,
     );
-    helmView.roll = -clamp(
-      this.state.rollAnalog + this.activeState.rollAnalog, -1, 1,
+
+    this._pitchAccumulation = accumulated;
+    this._pitchPosition = actualPosition;
+
+    helmView.pitch = -actualPosition;
+
+    // -- Yaw ---------------------------------------------------- /
+
+    [ accumulated, actualPosition ] = this.computeSliderBuildup(
+      this._yawAccumulation,
+      // This accumulates from digital inputs over time, so it needs a delta.
+      this.cumulativeInput.yawAnalog * delta,
+      // This is an absolute value (e.g. from a stick), so no delta is applied.
+      this.absoluteInput.yawAnalog,
+      null,
     );
+
+    this._yawAccumulation = accumulated;
+    this._yawPosition = actualPosition;
+
+    helmView.yaw = -actualPosition;
+
+    // -- Roll --------------------------------------------------- /
+
+    [ accumulated, actualPosition ] = this.computeSliderBuildup(
+      this._rollAccumulation,
+      // This accumulates from digital inputs over time, so it needs a delta.
+      this.cumulativeInput.rollAnalog * delta,
+      // This is an absolute value (e.g. from a stick), so no delta is applied.
+      this.absoluteInput.rollAnalog,
+      null,
+    );
+
+    this._rollAccumulation = accumulated;
+    this._rollPosition = actualPosition;
+
+    helmView.roll = -actualPosition;
+
+    // -- Flight assist ------------------------------------------ /
+
+    if (helmView.flightAssist) {
+      // The negation checks here ensure that we only apply assist corrections
+      // when the user has reset their input position to zero.
+      if (!this.cumulativeInput.pitchAnalog) {
+        this._pitchAccumulation = chaseValue(delta * 0.5, this._pitchAccumulation, 0);
+      }
+      if (!this.cumulativeInput.yawAnalog) {
+        this._yawAccumulation = chaseValue(delta * 0.5, this._yawAccumulation, 0);
+      }
+      if (!this.cumulativeInput.rollAnalog) {
+        this._rollAccumulation = chaseValue(delta * 0.5, this._rollAccumulation, 0);
+      }
+    }
   }
 
-  step(delta: number, bigDelta: number) {
-    super.step(delta, bigDelta);
-    this.processThrottle(delta);
-    this.processRotation(delta, bigDelta);
+  step() {
+    super.step();
+    const { delta, bigDelta } = animationData;
+    this.processWarpThrottle(delta, bigDelta);
+    this.processWarpRotation(delta, bigDelta);
   }
 
   // step(delta) {

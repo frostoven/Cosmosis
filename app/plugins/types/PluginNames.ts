@@ -12,14 +12,15 @@ type PluginNames =
   'navigation' | 
   'levelScene' | 
   'spaceScene' | 
+  'offscreenGalaxyWorker' | 
   'hud3D' | 
   'mouseDriver' | 
   'gamepadConnector' | 
+  'reactBase' | 
   'inputManager' | 
   'generalControl' | 
   'freeCam' | 
   'shipPilot' | 
-  'reactBase' | 
   'electricalHousingModule' | 
   'propulsionManagerModule' | 
   'warpDriveModule' | 

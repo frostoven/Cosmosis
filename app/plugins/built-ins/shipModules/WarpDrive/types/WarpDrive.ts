@@ -9,6 +9,9 @@ import WarpEngineMechanism from './WarpEngineMechanism';
 import PropulsionModule from '../../types/PropulsionModule';
 import { PropulsionTypeEnum } from '../../types/PropulsionTypeEnum';
 import { ModuleUpdateMode } from '../../types/ModuleUpdateMode';
+import Core from '../../../Core';
+
+const animationData = Core.animationData;
 
 export default class WarpDrive extends PropulsionModule {
   readonly friendlyName: string;
@@ -118,10 +121,12 @@ export default class WarpDrive extends PropulsionModule {
     this._warpEngine.currentThrottle = throttle * 100;
   }
 
-  step({ delta, bigDelta }) {
+  step() {
     if (!this._powerSource || !this._controlInterfaceActive) {
       return;
     }
+
+    const { delta } = animationData;
 
     // If our count is greater than 0, and it hits zero, initiate warp. Do this
     // regardless of whether or not the player requested it: anything that
@@ -134,7 +139,7 @@ export default class WarpDrive extends PropulsionModule {
     }
 
     if (this.warpBubbleActive) {
-      this._warpEngine.stepWarp(delta, bigDelta, this._cachedSpacetime);
+      this._warpEngine.stepWarp(this._cachedSpacetime);
     }
   }
 }

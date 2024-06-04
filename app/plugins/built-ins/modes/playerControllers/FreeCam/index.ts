@@ -5,12 +5,17 @@ import { freeCamControls } from './controls';
 import { ModeId } from '../../../InputManager/types/ModeId';
 import { gameRuntime } from '../../../../gameRuntime';
 import { InputManager } from '../../../InputManager';
-import { applyPolarRotation, clamp, zAxis } from '../../../../../local/mathUtils';
+import {
+  applyPolarRotation,
+  clamp,
+  zAxis,
+} from '../../../../../local/mathUtils';
 import Speed from '../../../../../local/Speed';
+import Core from '../../../Core';
 
-const SPEED_FACTOR = 1;
-// const SPEED_FACTOR = 1 * 0.0125;
-// const SPEED_FACTOR = 1 * 0.005;
+const animationData = Core.animationData;
+
+const SPEED_FACTOR = 0.5;
 
 class FreeCam extends ModeController {
   // @ts-ignore
@@ -20,7 +25,7 @@ class FreeCam extends ModeController {
 
   constructor() {
     const uiInfo = { friendly: 'Free-Flight Camera', priority: 70 };
-    super('freeCam', ModeId.playerControl, freeCamControls, uiInfo);
+    super('freeCam', ModeId.flightControl, freeCamControls, uiInfo);
 
     this._cachedInputManager = gameRuntime.tracked.inputManager.cachedValue;
     this.maxMoveSpeed = new Speed(1);
@@ -52,43 +57,47 @@ class FreeCam extends ModeController {
     });
 
     this.pulse._devChangeCamMode.getEveryChange(() => {
-      this._cachedInputManager.activateController(ModeId.playerControl, 'shipPilot');
+      this._cachedInputManager.activateController(ModeId.flightControl, 'shipPilot');
     });
   }
 
   onActivateController() {
-    const state = this.state;
+    const state = this.absoluteInput;
     state.lookLeftRight = state.lookUpDown = 0;
   }
 
   // noinspection JSSuspiciousNameCombination
-  step(delta: number, bigDelta: number) {
-    super.step(delta, bigDelta);
+  step() {
+    super.step();
     if (!this._cachedCamera) {
       return;
     }
 
-    // Note: this method of adding delta is intentional - we don't want passive
-    // values delta'd, because passive values come from absolute numbers (such
-    // as actual mouse position). We do however want active values delta'd,
-    // because they represent a relative change on a per-frame basis (ex. a
-    // gamepad stick at the 50% mark means add 0.5 units per x unit time).
-    this.state.lookLeftRight += this.activeState.lookLeftRight * bigDelta;
-    this.state.lookUpDown += this.activeState.lookUpDown * bigDelta;
-    this.state.rollAnalog += this.activeState.rollAnalog * bigDelta;
+    const { delta, bigDelta } = animationData;
+
+    // TODO: Revise this. I'm unsure if modifying mode controller state is
+    //  still the right way to go, the base class is far more mature now and
+    //  ShipPilot gets by just fine (so far) treating input states as
+    //  read-only. Might not matter anyway though, FreeCam is only for
+    //  debugging.
+    // Note: While cumulativeInput *must* be delta'd, absoluteInput should
+    // *never* be delta'd.
+    this.absoluteInput.lookLeftRight += this.cumulativeInput.lookLeftRight * bigDelta;
+    this.absoluteInput.lookUpDown += this.cumulativeInput.lookUpDown * bigDelta;
+    this.absoluteInput.rollAnalog += this.cumulativeInput.rollAnalog * bigDelta;
     //
-    const moveLeftRight = clamp(this.state.moveLeftRight + this.activeState.moveLeftRight, -1, 1);
-    const moveUpDown = clamp(this.state.moveUpDown + this.activeState.moveUpDown, -1, 1);
-    const moveForwardBackward = clamp(this.state.moveForwardBackward + this.activeState.moveForwardBackward, -1, 1);
+    const moveLeftRight = clamp(this.absoluteInput.moveLeftRight + this.cumulativeInput.moveLeftRight, -1, 1);
+    const moveUpDown = clamp(this.absoluteInput.moveUpDown + this.cumulativeInput.moveUpDown, -1, 1);
+    const moveForwardBackward = clamp(this.absoluteInput.moveForwardBackward + this.cumulativeInput.moveForwardBackward, -1, 1);
 
     let speedFactor = SPEED_FACTOR;
-    this.state.halfSpeed && (speedFactor = 0.5);
-    this.state.doubleSpeed && (speedFactor = 2);
+    this.absoluteInput.halfSpeed && (speedFactor = 0.5);
+    this.absoluteInput.doubleSpeed && (speedFactor = 2);
 
-    if (this.state.speedUp) {
+    if (this.absoluteInput.speedUp) {
       this.maxMoveSpeed.rampUpSmall(delta * Math.pow(speedFactor, 10));
     }
-    if (this.state.slowDown) {
+    if (this.absoluteInput.slowDown) {
       this.maxMoveSpeed.rampDownSmall(delta * Math.pow(speedFactor, 10));
     }
 
@@ -102,13 +111,13 @@ class FreeCam extends ModeController {
     this._cachedCamera.translateZ((moveForwardBackward * speed) * delta * speedFactor);
 
     // Apply camera roll.
-    this._cachedCamera.quaternion.setFromAxisAngle(zAxis, -this.state.rollAnalog);
+    this._cachedCamera.quaternion.setFromAxisAngle(zAxis, -this.absoluteInput.rollAnalog);
 
     // Note: don't use delta here. We don't want mouse speed to be dependent on
     // framerate.
     applyPolarRotation(
-      (this.state.lookLeftRight),
-      (this.state.lookUpDown),
+      (this.absoluteInput.lookLeftRight),
+      (this.absoluteInput.lookUpDown),
       this._cachedCamera.quaternion,
     );
   }
@@ -119,4 +128,4 @@ const freeCamPlugin = new CosmosisPlugin('freeCam', FreeCam);
 export {
   FreeCam,
   freeCamPlugin,
-}
+};
