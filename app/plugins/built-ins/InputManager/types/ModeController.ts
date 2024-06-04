@@ -75,6 +75,18 @@ export default class ModeController {
   // the input is ignored instead of being reset in state.
   private readonly _analogFlutterCheck: { [actionName: string]: number };
 
+  /**
+   * @param name - Unique identifying this mode.
+   * @param modeId - The hierarchical authority/priority of this mode. When two
+   *   modes have the same keybinding, the mode with the higher number will
+   *   receive the input (for example, menus take priority over ship controls).
+   *   Modes with the same modeId are mutually exclusive; for example, helm
+   *   control and free-cam have the same priority, and cannot be active at the
+   *   same time. Activating one will automatically cause the input system to
+   *   deactivate the other.
+   * @param controlSchema - Control bindings for this mode.
+   * @param uiInfo - Used to generate the controls bindings UI.
+   */
   constructor(name: string, modeId: ModeId, controlSchema: ControlSchema, uiInfo: InputUiInfo) {
     this.name = name;
     this.modeId = modeId;

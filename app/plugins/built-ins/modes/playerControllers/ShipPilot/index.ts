@@ -72,7 +72,7 @@ class ShipPilot extends ModeController {
 
   constructor() {
     const uiInfo = { friendly: 'Ship Pilot Controls', priority: 80 };
-    super('shipPilot', ModeId.playerControl, shipPilotControls, uiInfo);
+    super('shipPilot', ModeId.flightControl, shipPilotControls, uiInfo);
 
     this._pluginCache = new PluginCacheTracker(
       [ 'player', 'core', 'inputManager', 'levelScene' ],
@@ -80,7 +80,7 @@ class ShipPilot extends ModeController {
     );
 
     // This controller activates itself by default:
-    this._pluginCache.inputManager.activateController(ModeId.playerControl, this.name);
+    this._pluginCache.inputManager.activateController(ModeId.flightControl, this.name);
 
     // This controller activates itself by default:
     this._pluginCache.inputManager = gameRuntime.tracked.inputManager.cachedValue;
@@ -100,15 +100,12 @@ class ShipPilot extends ModeController {
 
   _setupPulseListeners() {
     this.pulse.mouseHeadLook.getEveryChange(() => {
-      console.log('-> mouseHeadLook triggered');
+      this._headLookActive = !this._headLookActive;
       this.resetLookState();
+      console.log('head look', this._headLookActive ? 'enabled' : 'disabled');
     });
 
     this.pulse.toggleFlightAssist.getEveryChange(() => {
-      console.log('-> toggling flight assist');
-      // console.log('this.absoluteInput.toggleFlightAssist:', this.absoluteInput.toggleFlightAssist);
-      // this.absoluteInput.toggleFlightAssist = Number(!this.absoluteInput.mouseHeadLook);
-      // this.resetLookState();
       helmView.flightAssist = !helmView.flightAssist;
     });
 
@@ -132,7 +129,7 @@ class ShipPilot extends ModeController {
     });
 
     this.pulse._devChangeCamMode.getEveryChange(() => {
-      this._pluginCache.inputManager.activateController(ModeId.playerControl, 'freeCam');
+      this._pluginCache.inputManager.activateController(ModeId.flightControl, 'freeCam');
     });
   }
 
@@ -186,7 +183,6 @@ class ShipPilot extends ModeController {
     //  whether or not this is useful depends on controller setup.
     this.resetPrincipleAxesInput();
     this.setNeckPosition(0, 0);
-    console.log('FA enabled:', helmView.flightAssist);
     if (helmView.flightAssist) {
       this.absoluteInput.pitchAnalog = this.cumulativeInput.pitchAnalog = 0;
       this.absoluteInput.yawAnalog = this.cumulativeInput.yawAnalog = 0;

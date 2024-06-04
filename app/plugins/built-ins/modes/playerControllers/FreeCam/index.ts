@@ -25,7 +25,7 @@ class FreeCam extends ModeController {
 
   constructor() {
     const uiInfo = { friendly: 'Free-Flight Camera', priority: 70 };
-    super('freeCam', ModeId.playerControl, freeCamControls, uiInfo);
+    super('freeCam', ModeId.flightControl, freeCamControls, uiInfo);
 
     this._cachedInputManager = gameRuntime.tracked.inputManager.cachedValue;
     this.maxMoveSpeed = new Speed(1);
@@ -57,7 +57,7 @@ class FreeCam extends ModeController {
     });
 
     this.pulse._devChangeCamMode.getEveryChange(() => {
-      this._cachedInputManager.activateController(ModeId.playerControl, 'shipPilot');
+      this._cachedInputManager.activateController(ModeId.flightControl, 'shipPilot');
     });
   }
 

@@ -48,6 +48,11 @@ class InputManager {
    */
   static scrollDetector = scrollDeltaToEnum;
 
+  // This should only be disabled for debugging purposes. When this is
+  // disabled, mode priority is ignored completely.
+  public enableBindingCache = true;
+  public bindingCache: { [keyName: string]: ModeController } | null = null;
+
   private _blockAllInput: boolean;
   private _blockKbMouse: boolean;
 
@@ -89,7 +94,7 @@ class InputManager {
   public static getControlSchemes = (): InputSchemeEntry[] => {
     return _.orderBy(
       InputManager.allControlSchemes,
-      (entry: InputSchemeEntry,) => entry.priority || 0,
+      (entry: InputSchemeEntry) => entry.priority || 0,
       [ 'desc' ],
     ) as InputSchemeEntry[];
   };
@@ -101,17 +106,12 @@ class InputManager {
     // Note: we divide by 2 because TS generates both an index and a key name
     // for each entry.
     const modeCount = Object.keys(ModeId).length / 2;
+    this._activeControllers = [];
     this._modes = [];
     for (let i = 0; i < modeCount; i++) {
+      this._activeControllers.push('');
       this._modes.push({});
     }
-
-    this._activeControllers = [
-      // Indices 0-4 indicates the mode ID. Each string at that index indicates
-      // the active controller.
-      // E.g.: playerControl === 1; _activeControllers[1] === 'freeCam';
-      'default', 'default', 'default', 'default',
-    ];
 
     // Contains literally all controllers, both inclusive and mutually
     // exclusive.
@@ -158,8 +158,8 @@ class InputManager {
   // TODO: this method (and several others) were copy-pasted from previous
   //  very quick-and-dirty code that became important. It needs cleanup.
   _kbMouseEventListener(event) {
-      // Input manager is subservient to the modal system. Give up if active,
-      // or if something has requested inputs be disabled.
+    // Input manager is subservient to the modal system. Give up if active,
+    // or if something has requested inputs be disabled.
     // if (this._blockKbMouse || Modal.modalActive) {
     if (this._blockKbMouse || !Modal.allowExternalListeners) {
       return;
@@ -201,9 +201,9 @@ class InputManager {
     switch (type) {
       case 'keypress':
       case 'click':
-      // Don't use built-in presses as they don't fire for all possible keys.
-      // https://developer.mozilla.org/en-US/docs/Web/API/Document/keydown_event
-      // Luckily, manually dealing with keypresses are easy anyway.
+        // Don't use built-in presses as they don't fire for all possible keys.
+        // https://developer.mozilla.org/en-US/docs/Web/API/Document/keydown_event
+        // Luckily, manually dealing with keypresses are easy anyway.
         break;
       case 'mousemove':
         if (!this._mouseDriver.isPointerLocked) {
@@ -242,12 +242,20 @@ class InputManager {
       this.propagateInput({
         key: xData.key,
         value,
-        analogData: { delta: xData.delta, gravDelta: xData.gravDelta, complement: xData.complement },
+        analogData: {
+          delta: xData.delta,
+          gravDelta: xData.gravDelta,
+          complement: xData.complement,
+        },
       });
       this.propagateInput({
         key: yData.key,
         value,
-        analogData: { delta: yData.delta, gravDelta: yData.gravDelta, complement: yData.complement },
+        analogData: {
+          delta: yData.delta,
+          gravDelta: yData.gravDelta,
+          complement: yData.complement,
+        },
       });
     }
     else {
@@ -325,26 +333,6 @@ class InputManager {
     return results;
   }
 
-  getMode(modeId: ModeId) {
-    return this._modes[modeId];
-  }
-
-  getModeApp() {
-    return this._modes[ModeId.appControl];
-  }
-
-  getModePlayer() {
-    return this._modes[ModeId.playerControl];
-  }
-
-  getModeMenu() {
-    return this._modes[ModeId.menuControl];
-  }
-
-  getModeVirtualMenu() {
-    return this._modes[ModeId.virtualMenuControl];
-  }
-
   registerController(controller: ModeController) {
     this._modes[controller.modeId][controller.name] = controller;
     this._allControllers[controller.name] = controller;
@@ -354,18 +342,96 @@ class InputManager {
     // console.log(`Activating controller ${controllerName} (in mode ${ModeId[modeId]})`);
     const controller = this._modes[modeId][controllerName];
     if (!controller) {
-      console.error(`[InputManager] Controller ${ModeId[modeId]}.${controllerName} is not defined (using this._modes[${modeId}][${controllerName}]).`);
+      console.error(
+        `[InputManager] Controller ${ModeId[modeId]}.${controllerName} is`,
+        `not defined (using this._modes[${modeId}][${controllerName}]).`,
+      );
       return;
     }
     this._activeControllers[modeId] = controllerName;
     controller.onActivateController();
+
+    this.buildBindingCache();
   }
 
-  propagateInput({ key, value, analogData } : { key: string, value: number, analogData?: {} }) {
+  propagateInput({
+    key, value, analogData,
+  }: {
+    key: string, value: number, analogData?: {},
+  }) {
     if (this._blockAllInput) {
       return;
     }
 
+    if (!this.enableBindingCache) {
+      return this._propagateInputIgnoringPriority({ key, value, analogData });
+    }
+
+    if (!this.bindingCache) {
+      this.buildBindingCache();
+    }
+
+    const controller = this.bindingCache![key];
+    if (!controller) {
+      // This key is not assigned to anything.
+      return;
+    }
+
+    const actions = controller.controlsByKey[key];
+    if (actions.length === 1) {
+      controller.receiveAction({
+        action: actions[0],
+        key,
+        value,
+        // @ts-ignore
+        analogData,
+      });
+      return;
+    }
+    else {
+      for (let i = 0, len = actions.length; i < len; i++) {
+        // @ts-ignore
+        controller.receiveAction({
+          action: actions[i],
+          key,
+          value,
+          // @ts-ignore
+          analogData,
+        });
+      }
+    }
+  }
+
+  buildBindingCache() {
+    // Dev note: Cache rebuilds generally take 0.5ms to 1ms on my machine.
+    const bindings = {};
+    const controllerNames = this._activeControllers;
+
+    // Start with the lowest priority modes and point their keybindings to
+    // their respective controlling instances. If a higher priority instance
+    // has the same keybinding, replace the lower priority binding with the
+    // higher priority one.
+    for (let i = controllerNames.length - 1; i >= -1; i--) {
+      const name = controllerNames[i];
+      if (!name) {
+        // No controllers currently use this ID.
+        continue;
+      }
+      const controller: ModeController = this._allControllers[name];
+      const controlsByKey = controller.controlsByKey;
+      _.each(controlsByKey, (actions, keyName) => {
+        bindings[keyName] = controller;
+      });
+    }
+    this.bindingCache = bindings;
+  }
+
+  // Used for debugging only.
+  _propagateInputIgnoringPriority({
+    key, value, analogData,
+  }: {
+    key: string, value: number, analogData?: {},
+  }) {
     const active = this._activeControllers;
     for (let i = 0, len = active.length; i < len; i++) {
       const controller: ModeController = this._allControllers[active[i]];
@@ -378,20 +444,25 @@ class InputManager {
         continue;
       }
 
-      // console.log(
-      //   '-> [input] action:', actions[0],
-      //   ` | key: ${key}, value=${value}, analogData:`, analogData,
-      // );
-
       if (actions.length === 1) {
-        // @ts-ignore
-        controller.receiveAction({ action: actions[0], key, value, analogData });
+        controller.receiveAction({
+          action: actions[0],
+          key,
+          value,
+          // @ts-ignore
+          analogData,
+        });
         return;
       }
       else {
         for (let i = 0, len = actions.length; i < len; i++) {
-          // @ts-ignore
-          controller.receiveAction({ action: actions[i], key, value, analogData });
+          controller.receiveAction({
+            action: actions[i],
+            key,
+            value,
+            // @ts-ignore
+            analogData,
+          });
         }
       }
     }
