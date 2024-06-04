@@ -1,5 +1,5 @@
 import { gameRuntime } from '../../../../gameRuntime';
-import { ShipPilot } from '../../../modes/playerControllers/ShipPilot';
+import { HelmControl } from '../../../modes/playerControllers/HelmControl';
 import CockpitLights from '../../CockpitLights/types/CockpitLights';
 
 export default class ExternalLights extends CockpitLights {
@@ -13,8 +13,8 @@ export default class ExternalLights extends CockpitLights {
   }
 
   _setupListeners() {
-    gameRuntime.tracked.shipPilot.getOnce((shipPilot: ShipPilot) => {
-      shipPilot.pulse.cycleExternalLights.getEveryChange(this._handleUserEvent.bind(this));
+    gameRuntime.tracked.helmControl.getOnce((helmControl: HelmControl) => {
+      helmControl.pulse.cycleExternalLights.getEveryChange(this._handleUserEvent.bind(this));
     });
   }
 }

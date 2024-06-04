@@ -270,9 +270,9 @@ export default class LevelScene extends Group {
 
   // Modules may optionally expose an electronic control interface, which other
   // modules or non-module system may send commands to. An example of this is
-  // the shipPilot plugin, which uses the electronic control interface to send
-  // propulsion commands. Note that the ECI works on a key:value system, and
-  // will expose only the last interface that overrides the given key name.
+  // the helmControl plugin, which uses the electronic control interface to
+  // send propulsion commands. Note that the ECI works on a key:value system,
+  // and will expose only the last interface that overrides the given key name.
   // Where system require dynamic switching, a management interface should be
   // such, such as the propulsionManager in the case of multi-engine support.
   getElectronicControlInterface(target: EciEnum) {

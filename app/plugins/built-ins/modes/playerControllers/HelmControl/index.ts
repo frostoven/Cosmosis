@@ -1,14 +1,12 @@
 // Note:
-// shipPilot mode does not do anything to the spaceship, or to space. It
-// tells Navigation (or SpacetimeControl?) that space is being warped, or that
-// bubbles are being entered/exited. It's Nav's (or SpacetimeControl's) job to
-// figure out what that means.
+// helmControl mode does not do anything to the spaceship, or to space. It
+// merely reports high level input state.
 
 import { Camera } from 'three';
 import Core from '../../../Core';
 import CosmosisPlugin from '../../../../types/CosmosisPlugin';
 import ModeController from '../../../InputManager/types/ModeController';
-import { shipPilotControls } from './controls';
+import { helmControls } from './controls';
 import { ModeId } from '../../../InputManager/types/ModeId';
 import { gameRuntime } from '../../../../gameRuntime';
 import { InputManager } from '../../../InputManager';
@@ -48,8 +46,11 @@ type PluginCompletion = PluginCacheTracker & {
   levelScene: LevelScene,
 };
 
-// Pilot control interface.
-class ShipPilot extends ModeController {
+/**
+ * Represents the pilot control interface. Think of this as the bridge ship
+ * control terminal
+ */
+class HelmControl extends ModeController {
   // If true, flight controls will move the player head around. If false,
   // player controls will move the ship around.
   private _headLookActive: boolean = false;
@@ -72,7 +73,7 @@ class ShipPilot extends ModeController {
 
   constructor() {
     const uiInfo = { friendly: 'Ship Pilot Controls', priority: 80 };
-    super('shipPilot', ModeId.flightControl, shipPilotControls, uiInfo);
+    super('helmControl', ModeId.flightControl, helmControls, uiInfo);
 
     this._pluginCache = new PluginCacheTracker(
       [ 'player', 'core', 'inputManager', 'levelScene' ],
@@ -140,7 +141,7 @@ class ShipPilot extends ModeController {
   }
 
   set prettyThrottle(value) {
-    throw '[ShipPilot] actualThrottle is read-only and can only be set by ' +
+    throw '[HelmControl] actualThrottle is read-only and can only be set by ' +
     'internal means. Set throttlePosition instead.';
   }
 
@@ -384,9 +385,9 @@ class ShipPilot extends ModeController {
   // }
 }
 
-const shipPilotPlugin = new CosmosisPlugin('shipPilot', ShipPilot);
+const helmControlPlugin = new CosmosisPlugin('helmControl', HelmControl);
 
 export {
-  ShipPilot,
-  shipPilotPlugin,
+  HelmControl,
+  helmControlPlugin,
 };

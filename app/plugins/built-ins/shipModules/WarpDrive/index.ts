@@ -2,15 +2,15 @@ import CosmosisPlugin from '../../../types/CosmosisPlugin';
 import WarpDrive from './types/WarpDrive';
 import ModuleSpawner from '../types/ModuleSpawner';
 import { gameRuntime } from '../../../gameRuntime';
-import { ShipPilot } from '../../modes/playerControllers/ShipPilot';
+import { HelmControl } from '../../modes/playerControllers/HelmControl';
 import { warpDriveControls } from './controls';
 
 class WarpDriveModule extends ModuleSpawner {
   constructor() {
     super();
 
-    gameRuntime.tracked.shipPilot.getOnce((shipPilot: ShipPilot) => {
-      shipPilot.extendControlSchema(warpDriveControls);
+    gameRuntime.tracked.helmControl.getOnce((helmControl: HelmControl) => {
+      helmControl.extendControlSchema(warpDriveControls);
     });
   }
 

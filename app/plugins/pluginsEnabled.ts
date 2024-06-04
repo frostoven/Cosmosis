@@ -14,7 +14,7 @@ import { mouseDriverPlugin } from './built-ins/MouseDriver';
 import { inputManagerPlugin } from './built-ins/InputManager';
 import { freeCamPlugin } from './built-ins/modes/playerControllers/FreeCam';
 import { generalControlPlugin } from './built-ins/modes/appControllers/GeneralControl';
-import { shipPilotPlugin } from './built-ins/modes/playerControllers/ShipPilot';
+import { helmControlPlugin } from './built-ins/modes/playerControllers/HelmControl';
 import { shipModuleHubPlugin } from './built-ins/ShipModuleHub';
 import { generatorModulePlugin } from './built-ins/shipModules/Generator';
 import { multimeterModulePlugin } from './built-ins/shipModules/Multimeter';
@@ -59,7 +59,7 @@ const builtInPluginsEnabled: PluginEntry[] = [
   { name: 'inputManager', pluginInstance: inputManagerPlugin, dependencies: [ 'core', 'mouseDriver' ] },
   { name: 'generalControl', pluginInstance: generalControlPlugin, dependencies: [ 'inputManager', 'reactBase' ] },
   { name: 'freeCam', pluginInstance: freeCamPlugin, dependencies: [ 'player', 'inputManager' ] },
-  { name: 'shipPilot', pluginInstance: shipPilotPlugin, dependencies: [ 'player', 'inputManager', 'levelScene' ] },
+  { name: 'helmControl', pluginInstance: helmControlPlugin, dependencies: [ 'player', 'inputManager', 'levelScene' ] },
 
   // ------------------------------------------------------------ //
 
@@ -68,15 +68,15 @@ const builtInPluginsEnabled: PluginEntry[] = [
 
   // Engine modules
   { name: 'propulsionManagerModule', pluginInstance: propulsionManagerModulePlugin },
-  { name: 'warpDriveModule', pluginInstance: warpDriveModulePlugin, dependencies: [ 'shipPilot', 'propulsionManagerModule' ] },
+  { name: 'warpDriveModule', pluginInstance: warpDriveModulePlugin, dependencies: [ 'helmControl', 'propulsionManagerModule' ] },
 
   // Power modules
   { name: 'generatorModule', pluginInstance: generatorModulePlugin },
 
   // Low power modules
-  { name: 'visorHudModule', pluginInstance: visorHudModulePlugin, dependencies: [ 'shipPilot', 'nodeOps' ] },
-  { name: 'cockpitLightsModule', pluginInstance: cockpitLightsModulePlugin, dependencies: [ 'shipPilot', 'nodeOps' ] },
-  { name: 'externalLightsModule', pluginInstance: externalLightsModulePlugin, dependencies: [ 'shipPilot', 'nodeOps', 'cockpitLightsModule' ] },
+  { name: 'visorHudModule', pluginInstance: visorHudModulePlugin, dependencies: [ 'helmControl', 'nodeOps' ] },
+  { name: 'cockpitLightsModule', pluginInstance: cockpitLightsModulePlugin, dependencies: [ 'helmControl', 'nodeOps' ] },
+  { name: 'externalLightsModule', pluginInstance: externalLightsModulePlugin, dependencies: [ 'helmControl', 'nodeOps', 'cockpitLightsModule' ] },
   { name: 'multimeterModule', pluginInstance: multimeterModulePlugin },
 
   // Ship module hub

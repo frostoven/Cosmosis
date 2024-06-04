@@ -56,7 +56,7 @@ function getBindConflict({ newKey, action, sectionName }) {
 
 // Sets a key binding. If the binding already exists, it's replaced. Note that
 // uniqueness / replacement exists only within the same modes. For example,
-// controls defined in shipPilot mode do not effect controls set in freeCam
+// controls defined in helmControl mode do not effect controls set in freeCam
 // mode.
 function setBindingAndClose({ newKey, action, sectionName }) {
   controls[sectionName][newKey] = action;
@@ -106,7 +106,7 @@ function showKbConflictModal({ newKey, action, conflict, sectionName }) {
       <div className='terminal-font'>
         |<br/>
         | [{newKey}] is already assigned to another {sectionName} control:<br/>
-        > {conflict}<br/>
+        {'>'} {conflict}<br/>
         |
       </div>
     ),

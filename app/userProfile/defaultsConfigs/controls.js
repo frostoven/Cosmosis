@@ -44,7 +44,7 @@ const config = {
         F10: 'saveChanges',
         Slash: 'search',
       },
-      shipPilot: {
+      helmControl: {
         _description: 'Mode used when user is locked to seat.',
         KeyW: 'thrustInc',
         KeyS: 'thrustDec',

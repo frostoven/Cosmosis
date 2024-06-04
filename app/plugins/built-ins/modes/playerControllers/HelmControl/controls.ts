@@ -23,7 +23,7 @@ const defaultBidirectionalLookMulti = {
   mouseAxisStandard: mouseAxisStandardLookSpeed,
 };
 
-const shipPilotControls: ControlSchema = {
+const helmControls: ControlSchema = {
   //
   // Pulsed
   //
@@ -62,8 +62,8 @@ const shipPilotControls: ControlSchema = {
   _devChangeCamMode:   { actionType: pulse, current: null, default: { F7: keyboardButton, F8: keyboardButton } },
 };
 
-genAutoFriendlyNames(shipPilotControls);
+genAutoFriendlyNames(helmControls);
 
 export {
-  shipPilotControls,
+  helmControls,
 };

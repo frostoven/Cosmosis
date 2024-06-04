@@ -2,15 +2,15 @@ import CosmosisPlugin from '../../../types/CosmosisPlugin';
 import ModuleSpawner from '../types/ModuleSpawner';
 import ExternalLights from './types/ExternalLights';
 import { gameRuntime } from '../../../gameRuntime';
-import { ShipPilot } from '../../modes/playerControllers/ShipPilot';
+import { HelmControl } from '../../modes/playerControllers/HelmControl';
 import { externalLightControls } from './controls';
 
 class ExternalLightsModule extends ModuleSpawner {
   constructor() {
     super();
 
-    gameRuntime.tracked.shipPilot.getOnce((shipPilot: ShipPilot) => {
-      shipPilot.extendControlSchema(externalLightControls);
+    gameRuntime.tracked.helmControl.getOnce((helmControl: HelmControl) => {
+      helmControl.extendControlSchema(externalLightControls);
     });
   }
 
