@@ -25,6 +25,9 @@ const reactMenuControls: ControlSchema = {
   advanced:     { actionType: pulse, current: null, default: { F6: keyboardButton } },
   manageMacros: { actionType: pulse, current: null, default: { F4: keyboardButton } },
   emergencyMenuClose: { actionType: pulse, current: null, default: { KeyQ: keyboardButton } },
+  // Special entries
+  _openMenu:    { actionType: pulse, current: null, default: { /* handled by InputBridge directly */ } },
+  _closeMenu:   { actionType: pulse, current: null, default: { /* handled by InputBridge directly */ } },
 };
 
 genAutoFriendlyNames(reactMenuControls);

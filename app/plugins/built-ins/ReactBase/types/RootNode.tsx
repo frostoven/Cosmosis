@@ -25,10 +25,11 @@ type PluginCompletion = PluginCacheTracker & {
 };
 
 interface Props {
+  inputBridge: InputBridge,
 }
 
 export default class RootNode extends React.Component<Props> {
-  private _input = new InputBridge();
+  private readonly _input: InputBridge;
 
   state = {
     menuVisible: false,
@@ -37,6 +38,7 @@ export default class RootNode extends React.Component<Props> {
 
   constructor(props: Props | Readonly<Props>) {
     super(props);
+    this._input = props.inputBridge;
   }
 
   componentDidMount() {
@@ -48,11 +50,28 @@ export default class RootNode extends React.Component<Props> {
   }
 
   handleAction = (action: string) => {
+    console.log('action:', action);
+    const menuVisible = this.state.menuVisible;
     if (action === 'back') {
-      this.setState({ menuVisible: !this.state.menuVisible });
-      this._input.enableArrowStepping = this.state.menuVisible;
+      menuVisible && this._input.deactivateAndCloseMenu();
+    }
+    else if (action === '_openMenu') {
+      !menuVisible && this.showMenu();
+    }
+    else if (action === '_closeMenu') {
+      this.hideMenu();
     }
   };
+
+  showMenu() {
+    this.setState({ menuVisible: true });
+    this._input.enableArrowStepping = true;
+  }
+
+  hideMenu() {
+    this.setState({ menuVisible: false });
+    this._input.enableArrowStepping = false;
+  }
 
   // render() {
   //   if (!this.state.menuVisible) {

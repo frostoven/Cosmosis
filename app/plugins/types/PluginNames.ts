@@ -16,11 +16,11 @@ type PluginNames =
   'hud3D' | 
   'mouseDriver' | 
   'gamepadConnector' | 
+  'reactBase' | 
   'inputManager' | 
   'generalControl' | 
   'freeCam' | 
   'shipPilot' | 
-  'reactBase' | 
   'electricalHousingModule' | 
   'propulsionManagerModule' | 
   'warpDriveModule' | 

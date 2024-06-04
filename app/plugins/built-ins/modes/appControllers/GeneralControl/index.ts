@@ -4,15 +4,22 @@ import { generalControls } from './controls';
 import { gameRuntime } from '../../../../gameRuntime';
 import { ModeId } from '../../../InputManager/types/ModeId';
 import { MouseDriver } from '../../../MouseDriver';
+import { ReactBase } from '../../../ReactBase';
 
 class GeneralControl extends ModeController {
   private _mouseDriver: MouseDriver;
+  private _reactBase: ReactBase;
 
   constructor() {
     const uiInfo = { friendly: 'General Controls', priority: 5 };
     super('general', ModeId.appControl, generalControls, uiInfo);
 
     this._mouseDriver = gameRuntime.tracked.mouseDriver.cachedValue;
+    this._reactBase = gameRuntime.tracked.reactBase.cachedValue;
+
+    this.pulse.activateGameMenu.getEveryChange(() => {
+      this._reactBase.getInputBridge().activateAndOpenMenu();
+    });
 
     this.pulse.toggleMousePointer.getEveryChange(() => {
       this._mouseDriver.toggle();

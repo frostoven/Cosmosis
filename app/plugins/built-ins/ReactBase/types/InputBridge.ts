@@ -70,8 +70,6 @@ export default class InputBridge {
       );
       this._modeController.step = this.stepArrowStream.bind(this);
 
-      const inputManager: InputManager = this._pluginTracker.inputManager;
-      inputManager.activateController(ModeId.menuControl, 'menuSystem');
       this._setupPulseWatchers();
     });
   }
@@ -87,6 +85,32 @@ export default class InputBridge {
     mc.pulse.advanced.getEveryChange(() => this.onAction.setValue('advanced'));
     mc.pulse.manageMacros.getEveryChange(() => this.onAction.setValue('manageMacros'));
     mc.pulse.emergencyMenuClose.getEveryChange(() => this.onAction.setValue('emergencyMenuClose'));
+    mc.pulse._openMenu.getEveryChange(() => this.onAction.setValue('_openMenu'));
+    mc.pulse._closeMenu.getEveryChange(() => this.onAction.setValue('_closeMenu'));
+  }
+
+  // We receive the back button from general control, so we need to dynamically
+  // make it open, close, or move back as needed.
+  activateAndOpenMenu() {
+    const mc = this._modeController;
+    const inputManager: InputManager = this._pluginTracker.inputManager;
+    if (!inputManager.isControllerActive(ModeId.menuControl)) {
+      inputManager.activateController(ModeId.menuControl, 'menuSystem');
+      mc.pulse._openMenu.setValue({ action: '_openMenu', value: 1 });
+      mc.pulse._openMenu.setValue({ action: '_openMenu', value: 0 });
+    }
+    else {
+      mc.pulse.back.setValue({ action: 'back', value: 1 });
+      mc.pulse.back.setValue({ action: 'back', value: 0 });
+    }
+  }
+
+  deactivateAndCloseMenu() {
+    const mc = this._modeController;
+    const inputManager: InputManager = this._pluginTracker.inputManager;
+    inputManager.deactivateController(ModeId.menuControl, 'menuSystem');
+    mc.pulse._closeMenu.setValue({ action: '_closeMenu', value: 1 });
+    mc.pulse._closeMenu.setValue({ action: '_closeMenu', value: 0 });
   }
 
   // Manages arrow timing.

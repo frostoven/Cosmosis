@@ -10,6 +10,7 @@ const { pulse, continuous } = ActionType;
 const { keyboardButton } = InputType;
 
 const generalControls: ControlSchema = {
+  activateGameMenu:   { actionType: pulse, current: null, default: { Backspace: keyboardButton } },
   toggleMousePointer: { actionType: pulse, current: null, default: { ControlLeft: keyboardButton } },
   toggleFullScreen:   { actionType: pulse, current: null, default: { F11: keyboardButton } },
   showDevConsole:     { actionType: pulse, current: null, default: { F12: keyboardButton } },
