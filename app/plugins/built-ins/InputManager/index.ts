@@ -350,8 +350,25 @@ class InputManager {
     }
     this._activeControllers[modeId] = controllerName;
     controller.onActivateController();
-
     this.buildBindingCache();
+  }
+
+  deactivateController(modeId: ModeId, controllerName: string) {
+    const controller = this._modes[modeId][controllerName];
+    if (!controller) {
+      console.error(
+        `[InputManager] Controller ${ModeId[modeId]}.${controllerName} is`,
+        `not defined (using this._modes[${modeId}][${controllerName}]).`,
+      );
+      return;
+    }
+    this._activeControllers[modeId] = '';
+    controller.onDeactivateController();
+    this.buildBindingCache();
+  }
+
+  isControllerActive(modeId: ModeId) {
+    return !!this._activeControllers[modeId];
   }
 
   propagateInput({

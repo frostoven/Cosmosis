@@ -654,6 +654,10 @@ export default class ModeController {
     // The ModeController base class does not use activation itself.
   }
 
+  onDeactivateController() {
+    // The ModeController base class does not use activation itself.
+  }
+
   step() {
     const { delta } = animationData;
 
