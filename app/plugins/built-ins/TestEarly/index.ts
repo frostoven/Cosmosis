@@ -1,6 +1,6 @@
 import {
   OnDependenciesMetFn,
-  PluginInterface
+  PluginInterface,
 } from '../../interfaces/PluginInterface';
 
 class TestEarly implements PluginInterface {
@@ -18,4 +18,4 @@ const testEarlyPlugin = new TestEarly();
 
 export {
   testEarlyPlugin,
-}
+};
