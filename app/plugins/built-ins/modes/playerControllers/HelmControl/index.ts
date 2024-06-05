@@ -11,7 +11,6 @@ import { ModeId } from '../../../InputManager/types/ModeId';
 import { gameRuntime } from '../../../../gameRuntime';
 import { InputManager } from '../../../InputManager';
 import {
-  applyPolarRotation,
   chaseValue,
   clamp,
 } from '../../../../../local/mathUtils';
@@ -26,15 +25,6 @@ import speedTracker from '../../../../../local/speedTracker';
 import { SpacetimeControl } from '../../../SpacetimeControl';
 
 const debugPositionAndSpeed = true;
-
-// TODO: move me into user profile.
-const MOUSE_SPEED = 0.7;
-const PITCH_DIRECTION = -1;
-
-// Maximum number x-look can be at.
-const headXMax = 2200;
-// Maximum number y-look can be at.
-const headYMax = 1150;
 
 const animationData = Core.animationData;
 const helmView = Core.unifiedView.helm;
@@ -64,9 +54,6 @@ class HelmControl extends ModeController {
 
   // Combines keyboard and analog outputs. Is the final source of truth.
   private _throttlePosition: number = 0;
-  private _pitchPosition: number = 0;
-  private _yawPosition: number = 0;
-  private _rollPosition: number = 0;
 
   // Exists exclusively to make the UI appear nicer.
   private _prettyThrottlePosition: number = 0;
@@ -93,7 +80,7 @@ class HelmControl extends ModeController {
       gameRuntime.tracked.spacetimeControl.getOnce((location: SpacetimeControl) => {
         gameRuntime.tracked.player.getOnce(({ camera }) => {
           // @ts-ignore
-          this.speedTimer = speedTracker.trackCameraSpeed(location._reality, this._pluginCache.camera);
+          this.speedTimer = speedTracker.trackCameraSpeed(location._reality, camera);
         });
       });
     }
@@ -102,8 +89,20 @@ class HelmControl extends ModeController {
   _setupPulseListeners() {
     this.pulse.mouseHeadLook.getEveryChange(() => {
       this._headLookActive = !this._headLookActive;
+      const level: LevelScene = this._pluginCache.levelScene;
+      level.resetCameraSeatPosition();
       this.resetLookState();
-      console.log('head look', this._headLookActive ? 'enabled' : 'disabled');
+
+      if (this._headLookActive) {
+        this._pluginCache.inputManager.activateController(
+          ModeId.buckledPassenger, 'buckledPassenger',
+        );
+      }
+      else {
+        this._pluginCache.inputManager.deactivateController(
+          ModeId.buckledPassenger, 'buckledPassenger',
+        );
+      }
     });
 
     this.pulse.toggleFlightAssist.getEveryChange(() => {
@@ -134,30 +133,10 @@ class HelmControl extends ModeController {
     });
   }
 
-  // --- Getters and setters ----------------------------------------------- //
-
-  get prettyThrottle() {
-    return this._prettyThrottlePosition;
-  }
-
-  set prettyThrottle(value) {
-    throw '[HelmControl] actualThrottle is read-only and can only be set by ' +
-    'internal means. Set throttlePosition instead.';
-  }
-
-  get throttlePosition() {
-    return this._throttlePosition;
-  }
-
-  set throttlePosition(value) {
-    this.absoluteInput.thrustAnalog = clamp(value, -1, 1);
-    this.cumulativeInput.thrustAnalog = 0;
-  }
-
   // ----------------------------------------------------------------------- //
 
   onActivateController() {
-    gameRuntime.tracked.levelScene.getOnce((levelScene) => {
+    gameRuntime.tracked.levelScene.getOnce((levelScene: LevelScene) => {
       levelScene.resetCameraSeatPosition();
     });
 
@@ -183,64 +162,11 @@ class HelmControl extends ModeController {
     // TODO: consider making this next line a user-changeable option, because
     //  whether or not this is useful depends on controller setup.
     this.resetPrincipleAxesInput();
-    this.setNeckPosition(0, 0);
     if (helmView.flightAssist) {
       this.absoluteInput.pitchAnalog = this.cumulativeInput.pitchAnalog = 0;
       this.absoluteInput.yawAnalog = this.cumulativeInput.yawAnalog = 0;
       this.absoluteInput.rollAnalog = this.cumulativeInput.rollAnalog = 0;
     }
-  }
-
-  // Disallows a 360 degree neck, but also prevent the player's head from
-  // getting 'glued' to the ceiling if they look up aggressively.
-  constrainNeck(axis, max, outParent, child1Key, child2Key) {
-    // This function basically looks like the following, but is used for any
-    // axis:
-    // if (x > headYMax) {
-    //   const diff = x - headYMax;
-    //   x = headYMax;
-    //   this.state.lookLeft -= diff;
-    //   this.state.lookRight -= diff;
-    // }
-    if (axis > 0) {
-      if (axis > max) {
-        let diff = axis - max;
-        outParent[child1Key] += -diff;
-        outParent[child2Key] += -diff;
-      }
-    }
-    else {
-      if (axis < -max) {
-        let diff = axis + max;
-        outParent[child1Key] += -diff;
-        outParent[child2Key] += -diff;
-      }
-    }
-  }
-
-  // Sets the neck rotational position. This tries to work the same way a human
-  // neck would, excluding tilting.
-  setNeckPosition(x, y) {
-    if (!this._pluginCache.allPluginsLoaded) {
-      return;
-    }
-
-    this.constrainNeck(x, headXMax, this.absoluteInput, 'lookLeft', 'lookRight');
-    this.constrainNeck(y, headYMax, this.absoluteInput, 'lookUp', 'lookDown');
-
-    // Note: don't use delta here. We don't want mouse speed to be dependent on
-    // framerate.
-    applyPolarRotation(
-      x * MOUSE_SPEED,
-      y * MOUSE_SPEED,
-      this._pluginCache.camera.quaternion,
-    );
-  }
-
-  stepFreeLook() {
-    let x = this.absoluteInput.lookLeft + this.absoluteInput.lookRight;
-    let y = this.absoluteInput.lookUp + this.absoluteInput.lookDown;
-    this.setNeckPosition(x, y);
   }
 
   /**
@@ -296,7 +222,7 @@ class HelmControl extends ModeController {
     helmView.throttlePrettyPosition = -this._prettyThrottlePosition;
   }
 
-  processWarpRotation(delta: number, bigDelta: number) {
+  processWarpRotation(delta: number) {
     // Temp vars we reuse for all rotations.
     let accumulated: number;
     let actualPosition: number;
@@ -313,8 +239,6 @@ class HelmControl extends ModeController {
     );
 
     this._pitchAccumulation = accumulated;
-    this._pitchPosition = actualPosition;
-
     helmView.pitch = -actualPosition;
 
     // -- Yaw ---------------------------------------------------- /
@@ -329,8 +253,6 @@ class HelmControl extends ModeController {
     );
 
     this._yawAccumulation = accumulated;
-    this._yawPosition = actualPosition;
-
     helmView.yaw = -actualPosition;
 
     // -- Roll --------------------------------------------------- /
@@ -345,8 +267,6 @@ class HelmControl extends ModeController {
     );
 
     this._rollAccumulation = accumulated;
-    this._rollPosition = actualPosition;
-
     helmView.roll = -actualPosition;
 
     // -- Flight assist ------------------------------------------ /
@@ -370,7 +290,7 @@ class HelmControl extends ModeController {
     super.step();
     const { delta, bigDelta } = animationData;
     this.processWarpThrottle(delta, bigDelta);
-    this.processWarpRotation(delta, bigDelta);
+    this.processWarpRotation(delta);
   }
 
   // step(delta) {
