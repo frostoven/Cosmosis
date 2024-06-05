@@ -1,4 +1,4 @@
-import { Camera, Euler } from 'three';
+import { Camera } from 'three';
 import CosmosisPlugin from '../../../../types/CosmosisPlugin';
 import ModeController from '../../../InputManager/types/ModeController';
 import { freeCamControls } from './controls';
@@ -12,9 +12,11 @@ import {
 } from '../../../../../local/mathUtils';
 import Speed from '../../../../../local/Speed';
 import Core from '../../../Core';
+import Player from '../../../Player';
 
 const animationData = Core.animationData;
 
+// Directly affects flight movement speed.
 const SPEED_FACTOR = 0.5;
 
 class FreeCam extends ModeController {
@@ -35,10 +37,10 @@ class FreeCam extends ModeController {
   }
 
   _setupWatchers() {
-    gameRuntime.tracked.player.getEveryChange((player) => {
+    gameRuntime.tracked.player.getEveryChange((player: Player) => {
       this._cachedCamera = player.camera;
     });
-    gameRuntime.tracked.inputManager.getEveryChange((inputManager) => {
+    gameRuntime.tracked.inputManager.getEveryChange((inputManager: InputManager) => {
       this._cachedInputManager = inputManager;
     });
   }
@@ -66,7 +68,6 @@ class FreeCam extends ModeController {
     state.lookLeftRight = state.lookUpDown = 0;
   }
 
-  // noinspection JSSuspiciousNameCombination
   step() {
     super.step();
     if (!this._cachedCamera) {
@@ -75,20 +76,23 @@ class FreeCam extends ModeController {
 
     const { delta, bigDelta } = animationData;
 
-    // TODO: Revise this. I'm unsure if modifying mode controller state is
-    //  still the right way to go, the base class is far more mature now and
-    //  HelmControl gets by just fine (so far) treating input states as
-    //  read-only. Might not matter anyway though, FreeCam is only for
-    //  debugging.
-    // Note: While cumulativeInput *must* be delta'd, absoluteInput should
-    // *never* be delta'd.
+    // We always delta cumulativeInput, but never delta absoluteInput.
     this.absoluteInput.lookLeftRight += this.cumulativeInput.lookLeftRight * bigDelta;
     this.absoluteInput.lookUpDown += this.cumulativeInput.lookUpDown * bigDelta;
     this.absoluteInput.rollAnalog += this.cumulativeInput.rollAnalog * bigDelta;
     //
-    const moveLeftRight = clamp(this.absoluteInput.moveLeftRight + this.cumulativeInput.moveLeftRight, -1, 1);
-    const moveUpDown = clamp(this.absoluteInput.moveUpDown + this.cumulativeInput.moveUpDown, -1, 1);
-    const moveForwardBackward = clamp(this.absoluteInput.moveForwardBackward + this.cumulativeInput.moveForwardBackward, -1, 1);
+    const moveLeftRight = clamp(
+      this.absoluteInput.moveLeftRight + this.cumulativeInput.moveLeftRight,
+      -1, 1,
+    );
+    const moveUpDown = clamp(
+      this.absoluteInput.moveUpDown + this.cumulativeInput.moveUpDown,
+      -1, 1,
+    );
+    const moveForwardBackward = clamp(
+      this.absoluteInput.moveForwardBackward + this.cumulativeInput.moveForwardBackward,
+      -1, 1,
+    );
 
     let speedFactor = SPEED_FACTOR;
     this.absoluteInput.halfSpeed && (speedFactor = 0.5);
