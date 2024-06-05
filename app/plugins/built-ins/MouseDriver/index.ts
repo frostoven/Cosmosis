@@ -9,7 +9,16 @@ class MouseDriver extends PointerLockControls {
   private readonly _superLock: Function;
 
   constructor() {
-    super(document.body);
+    let pointerLockTarget: HTMLElement;
+    const canvas = document.getElementById('near-object-canvas');
+    if (canvas) {
+      pointerLockTarget = canvas;
+    }
+    else {
+      console.error('Could not find the near-object-canvas');
+      pointerLockTarget = document.body;
+    }
+    super(pointerLockTarget);
 
     const core = gameRuntime.tracked.core.cachedValue;
     core.onAnimateDone.getEveryChange(this.step.bind(this));

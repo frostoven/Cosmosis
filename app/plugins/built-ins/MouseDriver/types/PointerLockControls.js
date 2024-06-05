@@ -7,6 +7,15 @@
 
 import { Euler, EventDispatcher } from 'three';
 
+// If the attempt to disable mouse acceleration crashes, this is automatically
+// set to false. Linux currently does not support this flag.
+let attemptToDisableMouseAcceleration = true;
+
+if (process.platform === 'linux') {
+  // I cry.
+  attemptToDisableMouseAcceleration = false;
+}
+
 const PointerLockControls = function(domElement) {
   if (domElement === undefined) {
     console.warn(
@@ -78,11 +87,28 @@ const PointerLockControls = function(domElement) {
 
   // Locks the mouse pointer.
   this.lock = function() {
-    this.domElement.requestPointerLock(
-      // TODO: enable when we upgrade to the right version. Disables mouse
-      //  acceleration.
-      // { unadjustedMovement: true }
-    );
+    // This convoluted mess exists to try to disable mouse acceleration. The
+    // means to do so is non-standard, so we need to try methods that work for
+    // all known rendering engines.
+    if (attemptToDisableMouseAcceleration) {
+      // Note: Chrome returns a promise, and we currently use NW.js
+      // exclusively. This is non-standard, but allows for a far better gaming
+      // experience.
+      const promise = this.domElement.requestPointerLock({
+        unadjustedMovement: true,
+      });
+
+      promise.catch(() => {
+        // Pointer lock has failed; platform probably doesn't support the
+        // unadjustedMovement flag.
+        attemptToDisableMouseAcceleration = false;
+        // Retry the lock.
+        this.lock();
+      });
+    }
+    else {
+      this.domElement.requestPointerLock();
+    }
   };
 
   // Unlocks the mouse pointer.
