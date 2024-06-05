@@ -39,14 +39,14 @@
 
 #crosshairs {
     pointer-events: none;
+    display: none;
     position: fixed;
     z-index: 800;
-    right: 0;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    margin: auto;
-    text-align: center;
+    width: 24px;
+    content:url(/potatoLqAssets/icons/cross5.png);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
 #crosshairs > img {

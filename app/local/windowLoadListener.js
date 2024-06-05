@@ -12,7 +12,6 @@ const fs = require('fs');
 
 import userProfile from '../userProfile'
 import packageJson from '../../package.json';
-import { loadAllCrosshairImages } from './crosshairs';
 
 let windowHasLoaded = false;
 let bootReadySignalled = false;
@@ -107,16 +106,6 @@ function windowLoadListener(readyCb=()=>{}) {
   }
   else {
     console.warn('Could not find #loading-text div.');
-  }
-
-  // Crosshairs
-  // TODO: these should be moved to a better place.
-  const crosshairsDiv = document.getElementById('crosshairs');
-  if (crosshairsDiv) {
-    loadAllCrosshairImages(crosshairsDiv);
-  }
-  else {
-    console.error('Could not find #crosshairs div.');
   }
 
   notifyListenersAndStop();

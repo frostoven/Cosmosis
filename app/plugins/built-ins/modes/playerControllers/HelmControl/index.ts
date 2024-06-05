@@ -94,14 +94,10 @@ class HelmControl extends ModeController {
       this.resetLookState();
 
       if (this._headLookActive) {
-        this._pluginCache.inputManager.activateController(
-          ModeId.buckledPassenger, 'buckledPassenger',
-        );
+        this.activateHeadLook();
       }
       else {
-        this._pluginCache.inputManager.deactivateController(
-          ModeId.buckledPassenger, 'buckledPassenger',
-        );
+        this.deactivateHeadLook();
       }
     });
 
@@ -135,12 +131,47 @@ class HelmControl extends ModeController {
 
   // ----------------------------------------------------------------------- //
 
+  activateHeadLook() {
+    this._headLookActive = true;
+    this.hideCrosshairs();
+    this._pluginCache.inputManager.activateController(
+      ModeId.buckledPassenger, 'buckledPassenger',
+    );
+  }
+
+  deactivateHeadLook() {
+    this._headLookActive = false;
+    this.showCrosshairs();
+    this._pluginCache.inputManager.deactivateController(
+      ModeId.buckledPassenger, 'buckledPassenger',
+    );
+  }
+
+  showCrosshairs() {
+    // This needs to evolve to something less crude, but is good enough for now.
+    const crosshairs = document.getElementById('crosshairs');
+    if (crosshairs) {
+      crosshairs.style.display = 'block';
+    }
+  }
+
+  hideCrosshairs() {
+    // This needs to evolve to something less crude, but is good enough for now.
+    const crosshairs = document.getElementById('crosshairs');
+    if (crosshairs) {
+      crosshairs.style.display = 'none';
+    }
+  }
+
+  // ----------------------------------------------------------------------- //
+
   onActivateController() {
     gameRuntime.tracked.levelScene.getOnce((levelScene: LevelScene) => {
       levelScene.resetCameraSeatPosition();
     });
 
     this.resetLookState();
+    this.activateHeadLook();
   }
 
   // Sets stick and pedal input to 0.
