@@ -194,9 +194,9 @@ class HelmControl extends ModeController {
     //  whether or not this is useful depends on controller setup.
     this.resetPrincipleAxesInput();
     if (helmView.flightAssist) {
-      this.absoluteInput.pitchAnalog = this.cumulativeInput.pitchAnalog = 0;
-      this.absoluteInput.yawAnalog = this.cumulativeInput.yawAnalog = 0;
-      this.absoluteInput.rollAnalog = this.cumulativeInput.rollAnalog = 0;
+      this.absoluteInput.pitchAnalog = 0;
+      this.absoluteInput.yawAnalog = 0;
+      this.absoluteInput.rollAnalog = 0;
     }
   }
 
