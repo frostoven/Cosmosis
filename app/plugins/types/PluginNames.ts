@@ -20,6 +20,7 @@ type PluginNames =
   'inputManager' | 
   'generalControl' | 
   'freeCam' | 
+  'buckledPassenger' | 
   'helmControl' | 
   'electricalHousingModule' | 
   'propulsionManagerModule' | 

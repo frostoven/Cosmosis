@@ -30,6 +30,7 @@ import { generatePluginCompletion } from './generatePluginCompletion';
 import { offscreenGalaxyWorkerPlugin } from './built-ins/OffscreenGalaxyWorker';
 import { devGimbalPlugin } from './built-ins/DevGimbal';
 import { reactBasePlugin } from './built-ins/ReactBase';
+import { buckledPassengerPlugin } from './built-ins/modes/playerControllers/BuckledPassenger';
 
 const builtInPluginsEnabled: PluginEntry[] = [
   // General
@@ -59,7 +60,8 @@ const builtInPluginsEnabled: PluginEntry[] = [
   { name: 'inputManager', pluginInstance: inputManagerPlugin, dependencies: [ 'core', 'mouseDriver' ] },
   { name: 'generalControl', pluginInstance: generalControlPlugin, dependencies: [ 'inputManager', 'reactBase' ] },
   { name: 'freeCam', pluginInstance: freeCamPlugin, dependencies: [ 'player', 'inputManager' ] },
-  { name: 'helmControl', pluginInstance: helmControlPlugin, dependencies: [ 'player', 'inputManager', 'levelScene' ] },
+  { name: 'buckledPassenger', pluginInstance: buckledPassengerPlugin, dependencies: [ 'player', 'inputManager' ] },
+  { name: 'helmControl', pluginInstance: helmControlPlugin, dependencies: [ 'player', 'inputManager', 'levelScene' ], optional: [ 'buckledPassenger' ] },
 
   // ------------------------------------------------------------ //
 
