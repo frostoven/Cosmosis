@@ -57,7 +57,7 @@ class FreeCam extends ModeController {
     });
 
     this.pulse._devChangeCamMode.getEveryChange(() => {
-      this._cachedInputManager.activateController(ModeId.flightControl, 'shipPilot');
+      this._cachedInputManager.activateController(ModeId.flightControl, 'helmControl');
     });
   }
 
@@ -77,7 +77,7 @@ class FreeCam extends ModeController {
 
     // TODO: Revise this. I'm unsure if modifying mode controller state is
     //  still the right way to go, the base class is far more mature now and
-    //  ShipPilot gets by just fine (so far) treating input states as
+    //  HelmControl gets by just fine (so far) treating input states as
     //  read-only. Might not matter anyway though, FreeCam is only for
     //  debugging.
     // Note: While cumulativeInput *must* be delta'd, absoluteInput should

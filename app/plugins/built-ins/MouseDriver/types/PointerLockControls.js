@@ -78,7 +78,11 @@ const PointerLockControls = function(domElement) {
 
   // Locks the mouse pointer.
   this.lock = function() {
-    this.domElement.requestPointerLock();
+    this.domElement.requestPointerLock(
+      // TODO: enable when we upgrade to the right version. Disables mouse
+      //  acceleration.
+      // { unadjustedMovement: true }
+    );
   };
 
   // Unlocks the mouse pointer.

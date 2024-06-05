@@ -1,5 +1,5 @@
 import { gameRuntime } from '../../../../gameRuntime';
-import { ShipPilot } from '../../../modes/playerControllers/ShipPilot';
+import { HelmControl } from '../../../modes/playerControllers/HelmControl';
 import { SpacetimeControl } from '../../../SpacetimeControl';
 import { CoordType } from '../../../SpacetimeControl/types/CoordType';
 import PropulsionManager
@@ -49,9 +49,9 @@ export default class WarpDrive extends PropulsionModule {
   }
 
   _setupListeners() {
-    gameRuntime.tracked.shipPilot.getOnce((shipPilot: ShipPilot) => {
+    gameRuntime.tracked.helmControl.getOnce((helmControl: HelmControl) => {
       // Bind controls.
-      shipPilot.pulse.engageWarpDrive.getEveryChange(this.imposeSelfActivationToggle.bind(this));
+      helmControl.pulse.engageWarpDrive.getEveryChange(this.imposeSelfActivationToggle.bind(this));
     });
     gameRuntime.tracked.propulsionManagerModule.getEveryChange((manager: PropulsionManagerModule) => {
       this._cachedPropulsionManager = manager;

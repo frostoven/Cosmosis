@@ -1,19 +1,16 @@
 // Note:
-// shipPilot mode does not do anything to the spaceship, or to space. It
-// tells Navigation (or SpacetimeControl?) that space is being warped, or that
-// bubbles are being entered/exited. It's Nav's (or SpacetimeControl's) job to
-// figure out what that means.
+// helmControl mode does not do anything to the spaceship, or to space. It
+// merely reports high level input state.
 
 import { Camera } from 'three';
 import Core from '../../../Core';
 import CosmosisPlugin from '../../../../types/CosmosisPlugin';
 import ModeController from '../../../InputManager/types/ModeController';
-import { shipPilotControls } from './controls';
+import { helmControls } from './controls';
 import { ModeId } from '../../../InputManager/types/ModeId';
 import { gameRuntime } from '../../../../gameRuntime';
 import { InputManager } from '../../../InputManager';
 import {
-  applyPolarRotation,
   chaseValue,
   clamp,
 } from '../../../../../local/mathUtils';
@@ -29,15 +26,6 @@ import { SpacetimeControl } from '../../../SpacetimeControl';
 
 const debugPositionAndSpeed = true;
 
-// TODO: move me into user profile.
-const MOUSE_SPEED = 0.7;
-const PITCH_DIRECTION = -1;
-
-// Maximum number x-look can be at.
-const headXMax = 2200;
-// Maximum number y-look can be at.
-const headYMax = 1150;
-
 const animationData = Core.animationData;
 const helmView = Core.unifiedView.helm;
 
@@ -48,8 +36,11 @@ type PluginCompletion = PluginCacheTracker & {
   levelScene: LevelScene,
 };
 
-// Pilot control interface.
-class ShipPilot extends ModeController {
+/**
+ * Represents the pilot control interface. Think of this as the bridge ship
+ * control terminal
+ */
+class HelmControl extends ModeController {
   // If true, flight controls will move the player head around. If false,
   // player controls will move the ship around.
   private _headLookActive: boolean = false;
@@ -63,16 +54,13 @@ class ShipPilot extends ModeController {
 
   // Combines keyboard and analog outputs. Is the final source of truth.
   private _throttlePosition: number = 0;
-  private _pitchPosition: number = 0;
-  private _yawPosition: number = 0;
-  private _rollPosition: number = 0;
 
   // Exists exclusively to make the UI appear nicer.
   private _prettyThrottlePosition: number = 0;
 
   constructor() {
     const uiInfo = { friendly: 'Ship Pilot Controls', priority: 80 };
-    super('shipPilot', ModeId.flightControl, shipPilotControls, uiInfo);
+    super('helmControl', ModeId.flightControl, helmControls, uiInfo);
 
     this._pluginCache = new PluginCacheTracker(
       [ 'player', 'core', 'inputManager', 'levelScene' ],
@@ -92,7 +80,7 @@ class ShipPilot extends ModeController {
       gameRuntime.tracked.spacetimeControl.getOnce((location: SpacetimeControl) => {
         gameRuntime.tracked.player.getOnce(({ camera }) => {
           // @ts-ignore
-          this.speedTimer = speedTracker.trackCameraSpeed(location._reality, this._pluginCache.camera);
+          this.speedTimer = speedTracker.trackCameraSpeed(location._reality, camera);
         });
       });
     }
@@ -101,8 +89,20 @@ class ShipPilot extends ModeController {
   _setupPulseListeners() {
     this.pulse.mouseHeadLook.getEveryChange(() => {
       this._headLookActive = !this._headLookActive;
+      const level: LevelScene = this._pluginCache.levelScene;
+      level.resetCameraSeatPosition();
       this.resetLookState();
-      console.log('head look', this._headLookActive ? 'enabled' : 'disabled');
+
+      if (this._headLookActive) {
+        this._pluginCache.inputManager.activateController(
+          ModeId.buckledPassenger, 'buckledPassenger',
+        );
+      }
+      else {
+        this._pluginCache.inputManager.deactivateController(
+          ModeId.buckledPassenger, 'buckledPassenger',
+        );
+      }
     });
 
     this.pulse.toggleFlightAssist.getEveryChange(() => {
@@ -133,30 +133,10 @@ class ShipPilot extends ModeController {
     });
   }
 
-  // --- Getters and setters ----------------------------------------------- //
-
-  get prettyThrottle() {
-    return this._prettyThrottlePosition;
-  }
-
-  set prettyThrottle(value) {
-    throw '[ShipPilot] actualThrottle is read-only and can only be set by ' +
-    'internal means. Set throttlePosition instead.';
-  }
-
-  get throttlePosition() {
-    return this._throttlePosition;
-  }
-
-  set throttlePosition(value) {
-    this.absoluteInput.thrustAnalog = clamp(value, -1, 1);
-    this.cumulativeInput.thrustAnalog = 0;
-  }
-
   // ----------------------------------------------------------------------- //
 
   onActivateController() {
-    gameRuntime.tracked.levelScene.getOnce((levelScene) => {
+    gameRuntime.tracked.levelScene.getOnce((levelScene: LevelScene) => {
       levelScene.resetCameraSeatPosition();
     });
 
@@ -182,64 +162,11 @@ class ShipPilot extends ModeController {
     // TODO: consider making this next line a user-changeable option, because
     //  whether or not this is useful depends on controller setup.
     this.resetPrincipleAxesInput();
-    this.setNeckPosition(0, 0);
     if (helmView.flightAssist) {
       this.absoluteInput.pitchAnalog = this.cumulativeInput.pitchAnalog = 0;
       this.absoluteInput.yawAnalog = this.cumulativeInput.yawAnalog = 0;
       this.absoluteInput.rollAnalog = this.cumulativeInput.rollAnalog = 0;
     }
-  }
-
-  // Disallows a 360 degree neck, but also prevent the player's head from
-  // getting 'glued' to the ceiling if they look up aggressively.
-  constrainNeck(axis, max, outParent, child1Key, child2Key) {
-    // This function basically looks like the following, but is used for any
-    // axis:
-    // if (x > headYMax) {
-    //   const diff = x - headYMax;
-    //   x = headYMax;
-    //   this.state.lookLeft -= diff;
-    //   this.state.lookRight -= diff;
-    // }
-    if (axis > 0) {
-      if (axis > max) {
-        let diff = axis - max;
-        outParent[child1Key] += -diff;
-        outParent[child2Key] += -diff;
-      }
-    }
-    else {
-      if (axis < -max) {
-        let diff = axis + max;
-        outParent[child1Key] += -diff;
-        outParent[child2Key] += -diff;
-      }
-    }
-  }
-
-  // Sets the neck rotational position. This tries to work the same way a human
-  // neck would, excluding tilting.
-  setNeckPosition(x, y) {
-    if (!this._pluginCache.allPluginsLoaded) {
-      return;
-    }
-
-    this.constrainNeck(x, headXMax, this.absoluteInput, 'lookLeft', 'lookRight');
-    this.constrainNeck(y, headYMax, this.absoluteInput, 'lookUp', 'lookDown');
-
-    // Note: don't use delta here. We don't want mouse speed to be dependent on
-    // framerate.
-    applyPolarRotation(
-      x * MOUSE_SPEED,
-      y * MOUSE_SPEED,
-      this._pluginCache.camera.quaternion,
-    );
-  }
-
-  stepFreeLook() {
-    let x = this.absoluteInput.lookLeft + this.absoluteInput.lookRight;
-    let y = this.absoluteInput.lookUp + this.absoluteInput.lookDown;
-    this.setNeckPosition(x, y);
   }
 
   /**
@@ -295,7 +222,7 @@ class ShipPilot extends ModeController {
     helmView.throttlePrettyPosition = -this._prettyThrottlePosition;
   }
 
-  processWarpRotation(delta: number, bigDelta: number) {
+  processWarpRotation(delta: number) {
     // Temp vars we reuse for all rotations.
     let accumulated: number;
     let actualPosition: number;
@@ -312,8 +239,6 @@ class ShipPilot extends ModeController {
     );
 
     this._pitchAccumulation = accumulated;
-    this._pitchPosition = actualPosition;
-
     helmView.pitch = -actualPosition;
 
     // -- Yaw ---------------------------------------------------- /
@@ -328,8 +253,6 @@ class ShipPilot extends ModeController {
     );
 
     this._yawAccumulation = accumulated;
-    this._yawPosition = actualPosition;
-
     helmView.yaw = -actualPosition;
 
     // -- Roll --------------------------------------------------- /
@@ -344,8 +267,6 @@ class ShipPilot extends ModeController {
     );
 
     this._rollAccumulation = accumulated;
-    this._rollPosition = actualPosition;
-
     helmView.roll = -actualPosition;
 
     // -- Flight assist ------------------------------------------ /
@@ -369,7 +290,7 @@ class ShipPilot extends ModeController {
     super.step();
     const { delta, bigDelta } = animationData;
     this.processWarpThrottle(delta, bigDelta);
-    this.processWarpRotation(delta, bigDelta);
+    this.processWarpRotation(delta);
   }
 
   // step(delta) {
@@ -384,9 +305,9 @@ class ShipPilot extends ModeController {
   // }
 }
 
-const shipPilotPlugin = new CosmosisPlugin('shipPilot', ShipPilot);
+const helmControlPlugin = new CosmosisPlugin('helmControl', HelmControl);
 
 export {
-  ShipPilot,
-  shipPilotPlugin,
+  HelmControl,
+  helmControlPlugin,
 };

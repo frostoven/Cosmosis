@@ -39,11 +39,11 @@ conflict. A lower mode number indicates a higher priority.
 
 At the time of writing, these are the control modes in use:
 
-| Mode              | Used by                                                                                      |
-|-------------------|----------------------------------------------------------------------------------------------|
-| 1: App control    | The underlying application. Includes only essential controls.                                |
-| 2: Menu System    | Reserved for exclusive use be the in-game menu.                                              |
-| 3: Flight Control | Used for ship helm control. Also used by the dev free-cam ghost mode to fly around the ship. |
-| 4: Buckled Pilot  | Used to look around the cockpit while strapped to the pilot seat.                            |
-| 5: Virtual Menu   | Not yet in use; planned for in-game ship computer interfaces.                                |
-| 6: Player Control | Not yet in use; planned for ship traversal once first-person walking is implemented.         |
+| Mode                 | Used by                                                                                      |
+|----------------------|----------------------------------------------------------------------------------------------|
+| 1: App control       | The underlying application. Includes only essential controls.                                |
+| 2: Menu System       | Reserved for exclusive use be the in-game menu.                                              |
+| 3: Buckled Passenger | Used to look around the cockpit while strapped to the pilot seat.                            |
+| 4: Flight Control    | Used for ship helm control. Also used by the dev free-cam ghost mode to fly around the ship. |
+| 5: Virtual Menu      | Not yet in use; planned for in-game ship computer interfaces.                                |
+| 6: Player Control    | Not yet in use; planned for ship traversal once first-person walking is implemented.         |

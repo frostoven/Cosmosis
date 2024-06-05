@@ -41,8 +41,8 @@ export default class ControlsOverlay extends React.Component {
       <div className='quick-controls-overlay'>
         - {getKeyBindings({ targetMode: 'allModes', targetAction: 'showKeyBindings', useFriendly: true})}: show all controls.<br/>{/* F1 */}
         - {getKeyBindings({ targetMode: 'allModes', targetAction: 'toggleMousePointer', useFriendly: true})}: show / hide mouse pointer.<br/>{/* F1 */}
-        - {getKeyBindings({ targetMode: 'shipPilot', targetAction: 'engageHyperdrive', useFriendly: true})}: engage hyperdrive.`<br/>{/* J */}
-        - {getKeyBindings({ targetMode: 'shipPilot', targetAction: 'toggleMouseSteering', useFriendly: true})}: lock mouse steering.`<br/>{/* Middle click or Num5 */}
+        - {getKeyBindings({ targetMode: 'helmControl', targetAction: 'engageHyperdrive', useFriendly: true})}: engage hyperdrive.`<br/>{/* J */}
+        - {getKeyBindings({ targetMode: 'helmControl', targetAction: 'toggleMouseSteering', useFriendly: true})}: lock mouse steering.`<br/>{/* Middle click or Num5 */}
         - WASD / mouse: move ship.`<br/> {/* We'll leave this one hardcoded for brevity. */}
         - Right click in-ship menu for quick assign.`
       </div>

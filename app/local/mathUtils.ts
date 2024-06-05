@@ -23,14 +23,28 @@ const zAxis = new Vector3(0, 0, 1);
 
 const _aprEuler = new Euler(0, 0, 0, 'YXZ');
 
-function applyPolarRotation(x, y, observerQuaternion, minPolarAngle = 0, maxPolarAngle = pi) {
+// Applies the specified polar rotation, and then returns the result.
+function applyPolarRotation(
+  x, y, observerQuaternion, minPolarAngle = 0, maxPolarAngle = pi,
+  onClamp: Function | undefined = undefined,
+) {
   const halfPi = pi / 2;
 
   _aprEuler.setFromQuaternion(observerQuaternion);
   _aprEuler.y = x * -0.002;
   _aprEuler.x = y * -0.002;
   _aprEuler.x = max(halfPi - maxPolarAngle, min(halfPi - minPolarAngle, _aprEuler.x));
+
+  if (onClamp) {
+    // console.log('before:', _aprEuler.x, _aprEuler.y);
+    const [ x, y ] = onClamp(_aprEuler.x, _aprEuler.y);
+    _aprEuler.x = x;
+    _aprEuler.y = y;
+    // console.log('after:', _aprEuler.x, _aprEuler.y);
+  }
+
   observerQuaternion.setFromEuler(_aprEuler);
+  // return [ _aprEuler.x, _aprEuler.y ];
 }
 
 function getQuatAxis(quat: Quaternion) {

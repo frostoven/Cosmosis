@@ -23,7 +23,7 @@ const defaultBidirectionalLookMulti = {
   mouseAxisStandard: mouseAxisStandardLookSpeed,
 };
 
-const shipPilotControls: ControlSchema = {
+const helmControls: ControlSchema = {
   //
   // Pulsed
   //
@@ -51,19 +51,14 @@ const shipPilotControls: ControlSchema = {
   yawRight:      { actionType: continuous, sign:  1, analogRemap: 'yawAnalog', current: null, default: { Numpad6: keyboardButton  } },
   yawAnalog:     { actionType: continuous, current: null, default: { spEastWest: mouseAxisThreshold, ax2: gamepadAxisStandard }, isBidirectional: true, multiplier: { ...defaultBidirectionalLookMulti } },
   //
-  lookUp:        { actionType: continuous, sign: -1, current: null, default: { spNorth: mouseAxisStandard, Numpad8: keyboardButton }, allowKeyConflicts: [ 'pitchUp' ] },
-  lookDown:      { actionType: continuous, sign:  1, current: null, default: { spSouth: mouseAxisStandard, Numpad2: keyboardButton }, allowKeyConflicts: [ 'pitchDown' ] },
-  lookLeft:      { actionType: continuous, sign: -1, current: null, default: { spWest: mouseAxisStandard,  Numpad4: keyboardButton }, allowKeyConflicts: [ 'yawLeft' ] },
-  lookRight:     { actionType: continuous, sign:  1, current: null, default: { spEast: mouseAxisStandard,  Numpad6: keyboardButton }, allowKeyConflicts: [ 'yawRight' ] },
-  //
   // Dev controls.
   //
   _debugFullWarpSpeed: { actionType: pulse, current: null, default: { ScrollLock: keyboardButton } },
   _devChangeCamMode:   { actionType: pulse, current: null, default: { F7: keyboardButton, F8: keyboardButton } },
 };
 
-genAutoFriendlyNames(shipPilotControls);
+genAutoFriendlyNames(helmControls);
 
 export {
-  shipPilotControls,
+  helmControls,
 };

@@ -16,7 +16,7 @@ import {
 /*
  * Mechanism:
  * Controllers register themselves. The registration puts them inside a mode.
- * (Note that freeCam and shipPilot are two controllers in a single mode:
+ * (Note that freeCam and helmControl are two controllers in a single mode:
  * playerControl. Menu and app are different modes running at the same time as
  * playerControl).
  * The new controller is placed inside the requested mode. That mode may be

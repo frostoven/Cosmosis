@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { WarpEngineType } from './WarpEngineType';
 import { gameRuntime } from '../../../../gameRuntime';
 import { SpacetimeControl } from '../../../SpacetimeControl';
-import { ShipPilot } from '../../../modes/playerControllers/ShipPilot';
+import { HelmControl } from '../../../modes/playerControllers/HelmControl';
 import Core from '../../../Core';
 import LevelScene from '../../../LevelScene';
 import SpaceScene from '../../../SpaceScene';
@@ -36,7 +36,7 @@ export default class WarpEngineMechanism {
   // huge falloff past 206 because every extra 0.1 eventually scales to 1c
   // faster. 195 is junk, 199 is beginner. 206 is end-game. 209 is something
   // achievable only through insane grind.
-  public maxSpeed: number = 100; //209;
+  public maxSpeed: number = 209; //209;
   // 195=1kc, 199=1.5kc, 202=2kc, 206=3kc, 209=4kc.
   public currentSpeed: number = 0;
   // Throttle. 0-100.
@@ -78,14 +78,14 @@ export default class WarpEngineMechanism {
   public severelyDamaged: boolean = false;
 
   private _cachedSpacetime: SpacetimeControl;
-  private _cachedShipPilot: ShipPilot;
+  private _cachedShipPilot: HelmControl;
   private _cachedLevelScene: LevelScene;
   private _cachedSpaceScene: SpaceScene;
   private _cachedCamera: THREE.PerspectiveCamera;
 
   constructor() {
     this._cachedSpacetime = gameRuntime.tracked.spacetimeControl.cachedValue;
-    this._cachedShipPilot = gameRuntime.tracked.shipPilot.cachedValue;
+    this._cachedShipPilot = gameRuntime.tracked.helmControl.cachedValue;
     this._cachedLevelScene = gameRuntime.tracked.levelScene.cachedValue;
     this._cachedSpaceScene = gameRuntime.tracked.spaceScene.cachedValue;
     this._cachedCamera = gameRuntime.tracked.player.cachedValue.camera;
@@ -96,8 +96,8 @@ export default class WarpEngineMechanism {
     gameRuntime.tracked.spacetimeControl.getEveryChange((location: SpacetimeControl) => {
       this._cachedSpacetime = location;
     });
-    gameRuntime.tracked.shipPilot.getEveryChange((shipPilot: ShipPilot) => {
-      this._cachedShipPilot = shipPilot;
+    gameRuntime.tracked.helmControl.getEveryChange((helmControl: HelmControl) => {
+      this._cachedShipPilot = helmControl;
     });
     gameRuntime.tracked.levelScene.getEveryChange((levelScene: LevelScene) => {
       this._cachedLevelScene = levelScene;

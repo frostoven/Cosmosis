@@ -9,7 +9,7 @@
  * the mouse specifically, depending on how things pan out.
  */
 const DefaultInputSpeeds = {
-  kbLookSpeed: 5,
+  kbLookSpeed: 15,
   kbRotationSpeed: 0.005,
   kbAsSlider: 0.025,
   gamepadButtonLookSpeed: 5,
