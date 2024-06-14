@@ -125,6 +125,7 @@ class HelmControl extends ModeController {
     });
 
     this.pulse._devChangeCamMode.getEveryChange(() => {
+      this.deactivateHeadLook();
       this._pluginCache.inputManager.activateController(ModeId.flightControl, 'freeCam');
     });
   }
