@@ -1,0 +1,7 @@
+class LocalAsteroidBelt {
+  //
+}
+
+export {
+  LocalAsteroidBelt,
+};

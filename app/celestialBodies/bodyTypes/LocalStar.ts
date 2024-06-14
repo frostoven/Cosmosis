@@ -1,0 +1,7 @@
+class LocalStar {
+  //
+}
+
+export {
+  LocalStar,
+};
