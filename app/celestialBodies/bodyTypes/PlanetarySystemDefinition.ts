@@ -36,6 +36,7 @@ class PlanetarySystemDefinition {
   }
 
   addAllToScene() {
+    this.mainStar && this._addBodiesToScene([ this.mainStar ]);
     this._addBodiesToScene(this.planets);
   }
 

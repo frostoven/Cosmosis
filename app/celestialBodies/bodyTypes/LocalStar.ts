@@ -1,4 +1,6 @@
-class LocalStar {
+import { LargeGravitationalSource } from '../LargeGravitationalSource';
+
+class LocalStar extends LargeGravitationalSource {
   //
 }
 
