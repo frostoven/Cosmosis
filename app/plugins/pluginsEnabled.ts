@@ -31,6 +31,7 @@ import { offscreenGalaxyWorkerPlugin } from './built-ins/OffscreenGalaxyWorker';
 import { devGimbalPlugin } from './built-ins/DevGimbal';
 import { reactBasePlugin } from './built-ins/ReactBase';
 import { buckledPassengerPlugin } from './built-ins/modes/playerControllers/BuckledPassenger';
+import { localSpacePlugin } from './built-ins/LocalSpace';
 
 const builtInPluginsEnabled: PluginEntry[] = [
   // General
@@ -44,6 +45,7 @@ const builtInPluginsEnabled: PluginEntry[] = [
   { name: 'navigation', pluginInstance: navigationPlugin, dependencies: [ 'core', 'spacetimeControl' ] },
   { name: 'levelScene', pluginInstance: levelScenePlugin, dependencies: [ 'core', 'nodeOps', 'spacetimeControl', 'player' ], optional: [ 'shipModuleHub' ] },
   { name: 'spaceScene', pluginInstance: spaceScenePlugin, dependencies: [ 'core', 'spacetimeControl' ] },
+  { name: 'localSpace', pluginInstance: localSpacePlugin, dependencies: [ 'core', 'player', 'spacetimeControl' ] },
   { name: 'offscreenGalaxyWorker', pluginInstance: offscreenGalaxyWorkerPlugin, dependencies: [ 'core', 'player', 'spaceScene' ] },
 
   // HUD and control visuals
