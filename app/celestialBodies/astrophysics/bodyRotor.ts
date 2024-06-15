@@ -4,7 +4,7 @@ import { LargeGravitationalSource } from '../LargeGravitationalSource';
 const { PI: pi } = Math;
 
 function stepBodyRotation(
-  body: LargeGravitationalSource, mesh: THREE.Mesh, t: number,
+  body: LargeGravitationalSource, mesh: THREE.Object3D, t: number,
 ) {
   // Rotational angle.
   mesh.rotation.y = (t % body.rotationPeriodS) / body.rotationPeriodS * 2 * pi;

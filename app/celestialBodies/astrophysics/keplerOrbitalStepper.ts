@@ -10,7 +10,7 @@ const G = 6.67430e-11;
 
 // Function to update positions and velocities each frame
 function stepKeplerOrbitalMotion(
-  body: LargeGravitationalSource, mesh: THREE.Mesh, t: number
+  body: LargeGravitationalSource, mesh: THREE.Object3D, t: number
 ) {
   keplerToCartesian(body, t);
   mesh.position.copy(body.positionM);
@@ -27,7 +27,11 @@ function keplerToCartesian(body: LargeGravitationalSource, t: number) {
     meanAnomaly,
     referenceTime,
   } = body.orbitalElements;
-  const parent = body.parent;
+  const parent = body.parentPlanet;
+  if (!semiMajorAxisM) {
+    // Too small to meaningfully compute.
+    return;
+  }
 
   // Mean motion.
   const n = sqrt(

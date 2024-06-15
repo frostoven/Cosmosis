@@ -23,7 +23,7 @@ class LargeGravitationalSource {
   // Textures, maps, etc.
   visuals: BodyVisuals;
   // The physical manifestation.
-  mesh: THREE.Mesh;
+  mesh: THREE.Object3D;
 
   // Mass in kilograms.
   massKg: number;

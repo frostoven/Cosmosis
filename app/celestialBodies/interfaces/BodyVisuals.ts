@@ -2,7 +2,8 @@ import * as THREE from 'three';
 
 interface BodyVisuals {
   getTexture: () => THREE.Texture | null,
-  getMaterial: () => THREE.Material,
+  getSphereMaterial: () => THREE.Material,
+  getDistantMaterial: () => THREE.ShaderMaterial,
   // TODO: Implement an initial bump (or normal) map which evolves into actual
   //  geo.
 }
