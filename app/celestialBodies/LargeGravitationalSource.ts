@@ -51,14 +51,28 @@ class LargeGravitationalSource {
     this.orbitalElements = options.orbitalElements;
     this.visuals = options.visuals;
 
-    this.mesh = new THREE.Mesh(
+    const sphere = new THREE.Mesh(
       new THREE.SphereGeometry(
         this.radiusM,
         LargeGravitationalSource.WIDTH_SEGMENTS,
         LargeGravitationalSource.HEIGHT_SEGMENTS,
       ),
-      this.visuals.getMaterial(),
+      this.visuals.getSphereMaterial(),
     );
+
+    // const planeSize = starSize * unitFactor * 3;
+    const planeSize = this.radiusM * 2;
+    const distantLight = new THREE.Mesh(
+      new THREE.PlaneGeometry(planeSize, planeSize),
+      this.visuals.getDistantMaterial(),
+    );
+
+    const group = new THREE.Group();
+    group.add(sphere);
+    group.add(distantLight);
+
+    this.mesh = group;
+    // this.mesh = distantLight;
   }
 
   step(time: number) {

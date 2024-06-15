@@ -29,6 +29,12 @@ class LocalSpace {
       const spaceScene = this._pluginCache.spaceScene;
       const sol = new Sol(spaceScene);
       sol.activate();
+
+      // TODO: Remove me.
+      // console.log('spacetimeControl:', this._pluginCache.spacetimeControl);
+      this._pluginCache.spacetimeControl.teleportShipToLocalLocation(
+        new THREE.Vector3(0, 0, -135967285000),
+      );
     });
   }
 }

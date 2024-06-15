@@ -30,7 +30,7 @@ class Sol /*extends SceneOverride*/ {
   // loop.
   activate() {
     this.constituents.mainStar = new Sun();
-    this.constituents.planets.push(new Saturn());
+    // this.constituents.planets.push(new Saturn());
     this.constituents.addAllToScene();
     this._ready = true;
   }
