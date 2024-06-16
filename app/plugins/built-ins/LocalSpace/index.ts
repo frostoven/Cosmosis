@@ -33,7 +33,9 @@ class LocalSpace {
       // TODO: Remove me.
       // console.log('spacetimeControl:', this._pluginCache.spacetimeControl);
       this._pluginCache.spacetimeControl.teleportShipToLocalLocation(
-        new THREE.Vector3(0, 0, -135967285000),
+        // new THREE.Vector3(0, 0, -29_798_550_000), // very close
+        new THREE.Vector3(0, 0,   -149_597_870_700), // earth's distance to the sun.
+        // new THREE.Vector3(0, 0, -1_448_400_000_000), // saturn's distance.
       );
     });
   }
