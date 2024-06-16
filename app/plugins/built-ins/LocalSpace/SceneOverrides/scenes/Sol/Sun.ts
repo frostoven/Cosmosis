@@ -12,21 +12,13 @@ class Sun extends LocalStar {
     const nearMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 });
 
     const uniforms = {
-      sunColor: { value: new THREE.Color(0xFFFF00) },
-      // sunLuminosity: { value: 3.828e26 },  // Sun's luminosity in watts
-      // objectSize: { value: 696_340_000 },
-      // cameraPosition: { value: camera.position }
+      objectSize: { value: 696_340_000 },
       scale: { value: -10.0 },
-      //
-      // luminosity: { value: 30000 },
-      // invRadius: { value: 204.0 },
-      // invGlowRadius: { value: 2.0 },
-      // visibility: { value: 100 },
-      //
-      luminosity: { value: 30000 },
-      invRadius: { value: 11.0 },
-      invGlowRadius: { value: 5.0 },
-      visibility: { value: 100 },
+      luminosity: { value: 300000000 },
+      invRadius: { value: 10.0 },
+      invGlowRadius: { value: 8.0 },
+      visibility: { value: 67 },
+      intensity: { value: 100 },
     };
 
     const farMaterial = new THREE.ShaderMaterial({

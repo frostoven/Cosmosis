@@ -10,8 +10,9 @@ const varyingsHeader = `
 
 // language=glsl
 const vertex = `
-  //  attribute vec3 aColor;
   uniform float luminosity;
+  uniform float objectSize;
+  uniform float intensity;
 
   ${varyingsHeader}
 
@@ -58,27 +59,23 @@ const vertex = `
     float brightness = 1.0 / log10(max(1.0, magnitude));
 
     // Bring magnitude into a range of 0.1 to 1 (remap min: 0.107, max: 0.18).
-    brightness = max(0.07, 1.0 - remap(brightness, 0.107, 0.18, 0.0, 1.0));
-
-    // Send brightness to fragment shader.
-    vGlowAmount = brightness;
-
-    // Preserve on resize
-    // localPosition *= (2.0 * tan(HALF_RAD * FOV) * vDistToCamera) * STAR_SIZE;
+    vGlowAmount = max(0.07, 1.0 - remap(brightness, 0.107, 0.18, 0.0, 1.0));
+    
+    // Calculate size based on distance and brightness.
+    float unitSize = (objectSize * 0.00000001);
+    float minSize = (vDistToCamera * 0.000000000075) / unitSize;
+    float unitDistance = length(vDistToCamera * 0.00000000001);
+    float attenuation = intensity / (unitDistance * unitDistance);
+    float size = attenuation / unitSize;
+    // This forces the object
+    localPosition *= max(size, minSize);
 
     // Calculate the correct position and scale for the plane
     vec4 mvPosition = modelViewMatrix * vec4(0.0, 0.0, 0.0, 1.0);
 
-    // Calculate the scale based on the model matrix and luminosity
-    vec2 spriteScale = vec2(100.0, 100.0);
-    //    spriteScale.x = length(vec3(modelMatrix[0].x, modelMatrix[0].y, modelMatrix[0].z));
-    //    spriteScale.y = length(vec3(modelMatrix[1].x, modelMatrix[1].y, modelMatrix[1].z));
-
-    float luminosityScale = sqrt(brightness); // Scale by brightness
-    spriteScale *= luminosityScale;
-
+    // Make the plane look at the camera.
     vec2 center = vec2(0.5);
-    vec2 alignedPosition = (localPosition.xy - (center - vec2(0.5))) * spriteScale;
+    vec2 alignedPosition = localPosition.xy - center;
 
     vec2 rotatedPosition;
     float rotation = 0.0;
@@ -134,7 +131,8 @@ const fragment = `
     float diskScale = length(position) * invRadius;
     // Dev note: divide spectrum by glowSize for easier debugging.
     vec4 spectrum = scale * vec4(vec3(vColor), 1.0);
-    vec4 color4 = spectrum / pow(diskScale, invGlowRadius);
+    vec4 disk = spectrum / pow(diskScale, invGlowRadius);
+    vec4 color4 = disk;
 
     // Desaturate the glow a tad.
     float luminance = dot(glow.rgb, vec3(0.2126, 0.7152, 0.0722));
@@ -148,38 +146,22 @@ const fragment = `
     if (vDistToCamera > 0.0025 && abs(color4.r) > 0.75 && abs(color4.g) > 0.75 && abs(color4.b) > 0.75) {
       color4.a = color4.a >= 0.0 ? 1.0 : -1.0;
     }
-    // else if (abs(color4.r) > 0.95 && abs(color4.g) > 0.95 && abs(color4.b) > 0.95) {
-    //   color4.a = color4.a >= 0.0 ? 1.0 : -1.0;
-    // }
 
-    // This has the potential to be quite pretty, but I'm unsure how to mix
-    // it in without hurting existing colors.
     float reductionMask = (abs(position.x) + abs(position.y)) * 15.0;
     float rays = ((1.0 - abs(position.x * position.y))) / reductionMask;
-    color4 = vec4(vec3(-rays) * vColor, color4.a);
-
-    // // Contrast. Applied to center bit of star.
-    // vec3 color3 = color4.rgb;
-    // float contrast = 2.0;
-    // float midpoint = 0.5;
-    // vec3 sg = sign(color3 - midpoint);
-    // color3 = sg * pow(
-    //   abs(color3 - midpoint) * 2.0,
-    //   vec3(1.0 / contrast)) * 0.5 + midpoint;
-    // color4 = vec4(color3.rgb, color4.a);
+    vec4 reduction = vec4(vec3(-rays) * vColor, color4.a);
 
     // Combine star dot and its glow.
-    gl_FragColor = min(color4, glow);
+    color4 = min(reduction, glow);
 
-    // Fade out stars according to their brightness.
     float fade = clamp(vGlowAmount, 0.0, 1.0) * visibility;
-    gl_FragColor = mix(transparent, gl_FragColor, fade);
+    color4 = mix(transparent, color4, fade);
 
     gl_FragColor = vec4(
-      abs(gl_FragColor.r),
-      abs(gl_FragColor.g),
-      abs(gl_FragColor.b),
-      abs(gl_FragColor.a)
+      abs(color4.r),
+      abs(color4.g),
+      abs(color4.b),
+      abs(color4.a)
     );
   }
 `;
