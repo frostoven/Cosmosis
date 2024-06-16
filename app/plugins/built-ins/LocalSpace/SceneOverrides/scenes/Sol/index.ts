@@ -7,6 +7,11 @@ import { Sun } from './Sun';
 import { Saturn } from './Saturn';
 import PluginCacheTracker from '../../../../../../emitters/PluginCacheTracker';
 import Core from '../../../../Core';
+import { Mercury } from './Mercury';
+import { Venus } from './Venus';
+import { Earth } from './Earth';
+import { EarthLuna } from './EarthLuna';
+import { Mars } from './Mars';
 
 type PluginCompletion = PluginCacheTracker | {
   core: Core,
@@ -30,7 +35,12 @@ class Sol /*extends SceneOverride*/ {
   // loop.
   activate() {
     this.constituents.mainStar = new Sun();
-    // this.constituents.planets.push(new Saturn());
+    this.constituents.planets.push(new Mercury());
+    this.constituents.planets.push(new Venus());
+    const earth = this.constituents.planets.push(new Earth()) - 1;
+    this.constituents.planets.push(new EarthLuna(this.constituents.planets[earth]));
+    this.constituents.planets.push(new Mars());
+    this.constituents.planets.push(new Saturn());
     this.constituents.addAllToScene();
     this._ready = true;
   }
