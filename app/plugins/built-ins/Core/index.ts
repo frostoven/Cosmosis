@@ -54,6 +54,8 @@ let lastGfxRender = 0;
 let triggerGfxRender = false;
 
 export default class Core {
+  static debugFastSolarTime = true;
+
   /**
    * The unified view is meant as a friendly place that all modules may report
    * their significant values. Specifically, this is for *high-level* read-only
@@ -104,7 +106,7 @@ export default class Core {
       // A slightly less accurate version of outputLevel. Exists to smooth out
       // rapid fluctuations to the frame delta. Used by the HUD.
       outputLevelPretty: 0,
-    }
+    },
   };
 
   static animationData: {
@@ -194,6 +196,9 @@ export default class Core {
       requestAnimationFrame(this._renderIfNeeded);
       lastLogicRender = timestamp;
       this._updateCpuDeltas(logicDelta * 0.01);
+      if (Core.debugFastSolarTime) {
+        animationData.j2000Time = (Date.now() * 0.001 - epoch) + timestamp * 100;
+      }
       this._animateLogic();
 
       if (triggerGfxRender) {
