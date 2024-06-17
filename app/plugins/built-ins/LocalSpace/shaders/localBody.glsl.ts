@@ -66,18 +66,29 @@ const vertex = `
     // Bring magnitude into a range of 0.1 to 1 (remap min: 0.107, max: 0.18).
     vGlowAmount = max(0.07, 1.0 - remap(brightness, 0.107, 0.18, 0.0, 1.0));
 
-    // Calculate size based on distance and brightness.
+    // Calculate size based on distance and brightness. The purpose of this
+    // code block to preserve visibility of objects really far away while still
+    // preserving correct scale when close.
     float unitSize = (objectSize * 0.00000001);
+    // This prevents the body from falling below a certain size. minSize is
+    // identical for all bodies regardless of radius, but the fact that we fade
+    // planets while not fading stars creates the illusion of varying sizes.
     float minSize = (vDistToCamera * 0.000000000075) / unitSize;
+    // Allows us to bring our external numbers to single-digit values.
     float unitDistance = length(vDistToCamera * 0.00000000001);
+    // This plane's glow keeps objects visible when far away, and acts as an
+    // atmostphere when close. For this shader to work correctly, glow should
+    // be order of magnitude larger than the body when far yet about the same
+    // size when close. maxSize helps us match same size when close.
+    float maxSize = max(unitSize * 0.45, (unitDistance / unitSize) * 32.0);
     float attenuation = intensity / (unitDistance * unitDistance);
-    float size = attenuation / unitSize;
-    // This forces a minimum pixel size to prevent things going sub-pixel.
-    localPosition *= max(size, minSize);
-    
+    //
+    // Scale the plane match our size.
+    float size = clamp(attenuation / unitSize, minSize, maxSize);
+    localPosition *= size;
+
     // Send to shader for fading out.
     vAttenuation = clamp(attenuation, 0.0, 1.0);
-//    vAttenuation = pow(clamp(attenuation, 0.0, 1.0), intensity * 0.1);
 
     // Calculate the correct position and scale for the plane
     vec4 mvPosition = modelViewMatrix * vec4(0.0, 0.0, 0.0, 1.0);
