@@ -4,14 +4,17 @@ import {
 } from '../../../../../../celestialBodies/bodyTypes/LocalStar';
 import { sunMass } from './defs';
 import { localBody } from '../../../shaders/localBody.glsl';
+import { values } from 'lodash';
 
 const DEG2RAD = THREE.MathUtils.DEG2RAD;
 
 class Sun extends LocalStar {
   constructor() {
-    const nearMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+    const color = new THREE.Color(1.0, 0.87, 0.81);
+    const nearMaterial = new THREE.MeshBasicMaterial({ color });
 
     const uniforms = {
+      color: { value: color },
       objectSize: { value: 696_340_000 },
       scale: { value: -10.0 },
       luminosity: { value: 300000000 },

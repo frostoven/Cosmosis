@@ -9,9 +9,11 @@ const DEG2RAD = THREE.MathUtils.DEG2RAD;
 
 class Earth extends LocalStar {
   constructor() {
-    const nearMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+    const color = new THREE.Color(0.529, 0.808, 0.922);
+    const nearMaterial = new THREE.MeshBasicMaterial({ color });
 
     const uniforms = {
+      color: { value: color },
       objectSize: { value: 6_371_000 },
       scale: { value: -10.0 },
       luminosity: { value: 30000 },

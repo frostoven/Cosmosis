@@ -9,9 +9,11 @@ const DEG2RAD = THREE.MathUtils.DEG2RAD;
 
 class Template extends LocalStar {
   constructor() {
-    const nearMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+    const color = new THREE.Color(1.0, 0.9, 0.8);
+    const nearMaterial = new THREE.MeshBasicMaterial({ color });
 
     const uniforms = {
+      color: { value: color },
       objectSize: { value: 696_340_000 },
       scale: { value: -10.0 },
       luminosity: { value: 30000 },

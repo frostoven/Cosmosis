@@ -13,9 +13,11 @@ const DEG2RAD = THREE.MathUtils.DEG2RAD;
 
 class EarthLuna extends LocalStar {
   constructor(earth: Earth) {
-    const nearMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+    const color = new THREE.Color(1.0, 1.0, 1.0);
+    const nearMaterial = new THREE.MeshBasicMaterial({ color });
 
     const uniforms = {
+      color: { value: color },
       objectSize: { value: 1_737_400 },
       scale: { value: -10.0 },
       luminosity: { value: 30000 },

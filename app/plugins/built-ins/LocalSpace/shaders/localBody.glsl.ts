@@ -4,7 +4,6 @@ import { import_log10 } from '../../../../shaders/shaderMath';
 const varyingsHeader = `
   varying vec2 vUv;
   varying float vDistToCamera;
-  varying vec3 vColor;
   varying float vGlowAmount;
 `;
 
@@ -42,7 +41,6 @@ const vertex = `
 
   void main() {
     vUv = uv;
-    vColor = vec3(1.0, 0.87, 0.81);
 
     // Local space position.
     vec3 localPosition = position;
@@ -100,6 +98,7 @@ const fragment = `
   uniform float invGlowRadius;
   uniform float visibility;
   uniform float luminosity;
+  uniform vec3 color;
 
   #define pi ${Math.PI}
 
@@ -123,14 +122,14 @@ const fragment = `
     // float glowSize = 0.5;
     float glowSize = clamp(vGlowAmount, 0.0, 1.0);
     float halo = 1.0 - distance(vUv, vec2(0.5));
-    vec4 glow = vec4(pow(halo, 4.0)) * vec4(vColor, 1.0) * -glowSize;
+    vec4 glow = vec4(pow(halo, 4.0)) * vec4(color, 1.0) * -glowSize;
     glow = mix(glow, transparent, 0.6);
 
     // Airy disk calculation.
     // https://en.wikipedia.org/wiki/Airy_disk
     float diskScale = length(position) * invRadius;
     // Dev note: divide spectrum by glowSize for easier debugging.
-    vec4 spectrum = scale * vec4(vec3(vColor), 1.0);
+    vec4 spectrum = scale * vec4(vec3(color), 1.0);
     vec4 disk = spectrum / pow(diskScale, invGlowRadius);
     vec4 color4 = disk;
 
@@ -149,7 +148,7 @@ const fragment = `
 
     float reductionMask = (abs(position.x) + abs(position.y)) * 15.0;
     float rays = ((1.0 - abs(position.x * position.y))) / reductionMask;
-    vec4 reduction = vec4(vec3(-rays) * vColor, color4.a);
+    vec4 reduction = vec4(vec3(-rays) * color, color4.a);
 
     // Combine star dot and its glow.
     color4 = min(reduction, glow);
