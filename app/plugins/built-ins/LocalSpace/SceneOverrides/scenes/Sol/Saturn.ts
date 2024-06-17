@@ -5,7 +5,7 @@ import {
 import { earthMass } from './defs';
 import { nearbyPlanet } from '../../../shaders/nearbyPlanet.glsl';
 import { MeshBasicMaterial, ShaderMaterial } from 'three';
-import { localBody } from '../../../shaders/localBody.glsl';
+import { localBody, LocalBodyGlslType } from '../../../shaders/localBody.glsl';
 
 const DEG2RAD = THREE.MathUtils.DEG2RAD;
 const textureLoader = new THREE.TextureLoader();
@@ -29,17 +29,19 @@ function buildMaterial() {
 class Saturn extends LocalPlanet {
   constructor() {
     let nearMaterial: ShaderMaterial | MeshBasicMaterial = new THREE.MeshBasicMaterial({
-      color: 0xffaa55
+      color,
     });
 
     const uniforms = {
+      color: { value: color },
+      bodyType: { value: LocalBodyGlslType.planet },
       objectSize: { value: 58_232_000 },
       scale: { value: -10.0 },
-      luminosity: { value: 30000 },
+      luminosity: { value: 1 },
       invRadius: { value: 10.0 },
       invGlowRadius: { value: 8.0 },
       visibility: { value: 67 },
-      intensity: { value: 60 },
+      intensity: { value: 70 },
     };
 
     const farMaterial = new THREE.ShaderMaterial({

@@ -1,10 +1,17 @@
 import { import_log10 } from '../../../../shaders/shaderMath';
 
+enum LocalBodyGlslType {
+  star,
+  planet,
+  moon,
+}
+
 // language=glsl
 const varyingsHeader = `
   varying vec2 vUv;
   varying float vDistToCamera;
   varying float vGlowAmount;
+  varying float vAttenuation;
 `;
 
 // language=glsl
@@ -58,15 +65,19 @@ const vertex = `
 
     // Bring magnitude into a range of 0.1 to 1 (remap min: 0.107, max: 0.18).
     vGlowAmount = max(0.07, 1.0 - remap(brightness, 0.107, 0.18, 0.0, 1.0));
-    
+
     // Calculate size based on distance and brightness.
     float unitSize = (objectSize * 0.00000001);
     float minSize = (vDistToCamera * 0.000000000075) / unitSize;
     float unitDistance = length(vDistToCamera * 0.00000000001);
     float attenuation = intensity / (unitDistance * unitDistance);
     float size = attenuation / unitSize;
-    // This forces the object
+    // This forces a minimum pixel size to prevent things going sub-pixel.
     localPosition *= max(size, minSize);
+    
+    // Send to shader for fading out.
+    vAttenuation = clamp(attenuation, 0.0, 1.0);
+//    vAttenuation = pow(clamp(attenuation, 0.0, 1.0), intensity * 0.1);
 
     // Calculate the correct position and scale for the plane
     vec4 mvPosition = modelViewMatrix * vec4(0.0, 0.0, 0.0, 1.0);
@@ -99,6 +110,7 @@ const fragment = `
   uniform float visibility;
   uniform float luminosity;
   uniform vec3 color;
+  uniform int bodyType;
 
   #define pi ${Math.PI}
 
@@ -111,6 +123,29 @@ const fragment = `
       discard;
     }
 
+    float attenuation;
+    switch (bodyType) {
+      case ` + LocalBodyGlslType.star + `:
+        // Stars are eternal.
+        attenuation = 1.0;
+        break;
+      case ` + LocalBodyGlslType.moon + `:
+        attenuation = vAttenuation;
+        // Moons cause glitches with their parent planets; hide them sooner.
+        if (attenuation < 0.3) {
+          discard;
+        }
+        break;
+      default:
+        // Planets attenuate normally.
+        attenuation = vAttenuation;
+    }
+    
+    // Prevent sub-pixel flickering.
+    if (attenuation < 0.03) {
+      discard;
+    }
+    
     // Get position relative to center.
     vec2 position = vUv;
     position.x -= 0.5;
@@ -157,10 +192,10 @@ const fragment = `
     color4 = mix(transparent, color4, fade);
 
     gl_FragColor = vec4(
-      abs(color4.r),
-      abs(color4.g),
-      abs(color4.b),
-      abs(color4.a)
+      abs(color4.r) * attenuation,
+      abs(color4.g) * attenuation,
+      abs(color4.b) * attenuation,
+      abs(color4.a) * attenuation
     );
   }
 `;
@@ -170,4 +205,7 @@ const localBody = {
   fragment,
 };
 
-export { localBody }
+export {
+  localBody,
+  LocalBodyGlslType,
+};

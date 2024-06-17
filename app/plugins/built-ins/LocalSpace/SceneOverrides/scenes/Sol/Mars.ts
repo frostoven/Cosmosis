@@ -3,7 +3,7 @@ import {
   LocalStar,
 } from '../../../../../../celestialBodies/bodyTypes/LocalStar';
 import { sunMass, earthMass } from './defs';
-import { localBody } from '../../../shaders/localBody.glsl';
+import { localBody, LocalBodyGlslType } from '../../../shaders/localBody.glsl';
 
 const DEG2RAD = THREE.MathUtils.DEG2RAD;
 
@@ -14,6 +14,7 @@ class Mars extends LocalStar {
 
     const uniforms = {
       color: { value: color },
+      bodyType: { value: LocalBodyGlslType.planet },
       objectSize: { value: 3_000_000 },
       scale: { value: -10.0 },
       luminosity: { value: 30000 },

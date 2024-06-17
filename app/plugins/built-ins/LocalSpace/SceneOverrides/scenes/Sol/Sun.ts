@@ -3,7 +3,7 @@ import {
   LocalStar,
 } from '../../../../../../celestialBodies/bodyTypes/LocalStar';
 import { sunMass } from './defs';
-import { localBody } from '../../../shaders/localBody.glsl';
+import { localBody, LocalBodyGlslType } from '../../../shaders/localBody.glsl';
 import { values } from 'lodash';
 
 const DEG2RAD = THREE.MathUtils.DEG2RAD;
@@ -15,6 +15,7 @@ class Sun extends LocalStar {
 
     const uniforms = {
       color: { value: color },
+      bodyType: { value: LocalBodyGlslType.star },
       objectSize: { value: 696_340_000 },
       scale: { value: -10.0 },
       luminosity: { value: 300000000 },

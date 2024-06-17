@@ -3,17 +3,18 @@ import {
   LocalStar,
 } from '../../../../../../celestialBodies/bodyTypes/LocalStar';
 import { sunMass, earthMass } from './defs';
-import { localBody } from '../../../shaders/localBody.glsl';
+import { localBody, LocalBodyGlslType } from '../../../shaders/localBody.glsl';
 
 const DEG2RAD = THREE.MathUtils.DEG2RAD;
 
 class Venus extends LocalStar {
   constructor() {
-    const color = new THREE.Color(1.0, 0.565, 0.0);
+    const color = new THREE.Color(1.0, 0.565, 0.15);
     const nearMaterial = new THREE.MeshBasicMaterial({ color });
 
     const uniforms = {
       color: { value: color },
+      bodyType: { value: LocalBodyGlslType.planet },
       objectSize: { value: 6_051_800 },
       scale: { value: -10.0 },
       luminosity: { value: 1 },

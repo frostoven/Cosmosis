@@ -3,7 +3,7 @@ import {
   LocalStar,
 } from '../../../../../../celestialBodies/bodyTypes/LocalStar';
 import { sunMass, earthMass } from './defs';
-import { localBody } from '../../../shaders/localBody.glsl';
+import { localBody, LocalBodyGlslType } from '../../../shaders/localBody.glsl';
 import { Earth } from './Earth';
 import {
   PlanetarySystemDefinition
@@ -18,13 +18,14 @@ class EarthLuna extends LocalStar {
 
     const uniforms = {
       color: { value: color },
+      bodyType: { value: LocalBodyGlslType.moon },
       objectSize: { value: 1_737_400 },
       scale: { value: -10.0 },
       luminosity: { value: 30000 },
       invRadius: { value: 11.0 },
       invGlowRadius: { value: 5.0 },
       visibility: { value: 100 },
-      intensity: { value: 30 },
+      intensity: { value: 0.1 },
     };
 
     const farMaterial = new THREE.ShaderMaterial({
