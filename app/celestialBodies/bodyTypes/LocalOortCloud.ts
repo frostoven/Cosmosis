@@ -1,0 +1,7 @@
+class LocalOortCloud {
+  //
+}
+
+export {
+  LocalOortCloud,
+};

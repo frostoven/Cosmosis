@@ -11,4 +11,4 @@ const templatePlugin = new CosmosisPlugin('template', Template);
 export {
   Template,
   templatePlugin,
-}
+};

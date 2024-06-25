@@ -14,8 +14,7 @@ import PluginCacheTracker from '../../../emitters/PluginCacheTracker';
 
 const textureLoader = new THREE.TextureLoader();
 
-function createSphereAheadOfPlayer(name, diameter, color, image: string = '') {
-  const radius = diameter * 0.5;
+function createSphereAheadOfPlayer(name, radius, color, image: string = '') {
   // 256x128 makes it very difficult to see angles, but they do exist. Reduces
   //   FPS 10% for a second on spawn.
   // 512x256 seems perfect, and reduces frames 20% on spawn for a second.
@@ -49,7 +48,7 @@ function createSphereAheadOfPlayer(name, diameter, color, image: string = '') {
       // player. We then move it to the level scene and preserve world
       // position.
       camera.add(sphere);
-      sphere.translateZ(diameter * -2);
+      sphere.translateZ(radius * -4);
       sphere.rotation.x = -2.5581483017135023;
       sphere.rotation.y = 0.7781981609672939;
       sphere.rotation.z = 3.097822463446898;
@@ -71,15 +70,15 @@ export default class Actions extends React.Component<{ rootUtils: CosmDbgRootUti
   };
 
   createEarthSizedOrb = () => {
-    createSphereAheadOfPlayer('12k', 12_742, 0x4b749e, 'Land_ocean_ice_cloud_hires');
+    createSphereAheadOfPlayer('12k', 6_371_000, 0x4b749e, 'Land_ocean_ice_cloud_hires');
   };
 
   createJupiterSizedOrb = () => {
-    createSphereAheadOfPlayer('139k', 139_820, 0xf8be7e);
+    createSphereAheadOfPlayer('139k', 69_911_000, 0xf8be7e);
   };
 
   createSunSizedOrb = () => {
-    createSphereAheadOfPlayer('1.3m', 1_392_680, 0xfff98b, 'sun_euvi_aia304_2012_carrington');
+    createSphereAheadOfPlayer('1.3m', 696_340_000, 0xfff98b, 'sun_euvi_aia304_2012_carrington');
   };
 
   creatMicroMilkyWay = () => {

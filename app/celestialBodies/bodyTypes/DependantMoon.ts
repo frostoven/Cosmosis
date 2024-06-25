@@ -1,0 +1,7 @@
+class DependantMoon {
+  //
+}
+
+export {
+  DependantMoon,
+};

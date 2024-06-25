@@ -3,6 +3,9 @@ import ChangeTracker from 'change-tracker/src';
 import Stats from '../../../../hackedlibs/stats/stats.module';
 import { lerp } from '../../../local/mathUtils';
 
+// J2000.0 epoch. Used for astrophysics.
+const epoch = new Date('2000-01-01T12:00:00Z').getTime() / 1000;
+
 /**
  * The animationData object is sent to all per-frame functions each frame.
  *
@@ -31,6 +34,8 @@ const animationData = {
   // This engine supports running the CPU and GPU at different frame rates.
   // This value is the delta for GFX-related work.
   gpuDelta: 0,
+  // Time difference relative to the J2000.0 epoch. Used for astrophysics.
+  j2000Time: 0,
 };
 
 // TODO: Import package.json. Check if frame throttling is enabled. If yes, set
@@ -49,6 +54,8 @@ let lastGfxRender = 0;
 let triggerGfxRender = false;
 
 export default class Core {
+  static debugFastSolarTime = true;
+
   /**
    * The unified view is meant as a friendly place that all modules may report
    * their significant values. Specifically, this is for *high-level* read-only
@@ -99,27 +106,27 @@ export default class Core {
       // A slightly less accurate version of outputLevel. Exists to smooth out
       // rapid fluctuations to the frame delta. Used by the HUD.
       outputLevelPretty: 0,
-    }
+    },
   };
 
   static animationData: {
     delta: number; bigDelta: number, smoothDelta: number,
-    normalizedDelta: number, gpuDelta: number,
+    normalizedDelta: number, gpuDelta: number, j2000Time: number,
   } = animationData;
 
+  // Do not place game logic in pre-animate. It's meant for setup used by
+  // onAnimate.
   public onPreAnimate: ChangeTracker;
+  // Most game logic should go in here.
   public onAnimate: ChangeTracker;
+  // Stuff that should happen after game logic resolution for this frame.
   public onAnimateDone: ChangeTracker;
   private readonly _stats: any;
   private readonly _rendererHooks: Function[];
 
   constructor() {
-    // Do not place game logic in pre-animate. It's meant for setup used by
-    // onAnimate.
     this.onPreAnimate = new ChangeTracker();
-    // Most game logic should go in here.
     this.onAnimate = new ChangeTracker();
-    // Stuff that should happen after game logic resolution for this frame.
     this.onAnimateDone = new ChangeTracker();
     // Graphical renderers are stored here.
     this._rendererHooks = [];
@@ -135,6 +142,7 @@ export default class Core {
     animationData.bigDelta = delta * 5;
     animationData.normalizedDelta = delta * 120;
     animationData.smoothDelta = lerp(animationData.smoothDelta, delta, 0.5);
+    animationData.j2000Time = Date.now() * 0.001 - epoch;
   }
 
   _updateGfxDeltas(delta: number) {
@@ -188,6 +196,9 @@ export default class Core {
       requestAnimationFrame(this._renderIfNeeded);
       lastLogicRender = timestamp;
       this._updateCpuDeltas(logicDelta * 0.01);
+      if (Core.debugFastSolarTime) {
+        animationData.j2000Time = (Date.now() * 0.001 - epoch) + timestamp * 100;
+      }
       this._animateLogic();
 
       if (triggerGfxRender) {

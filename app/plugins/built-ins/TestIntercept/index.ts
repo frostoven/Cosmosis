@@ -1,6 +1,6 @@
 import {
   OnDependenciesMetFn,
-  PluginInterface
+  PluginInterface,
 } from '../../interfaces/PluginInterface';
 
 class TestIntercept implements PluginInterface {
@@ -12,7 +12,7 @@ class TestIntercept implements PluginInterface {
     console.log('-> running TestIntercept');
     replaceClass({ pluginName: 'TestLate', replaceClassWith: DuckType });
     next();
-  }
+  };
 }
 
 class DuckType implements PluginInterface {
@@ -23,11 +23,11 @@ class DuckType implements PluginInterface {
   onDependenciesMet: OnDependenciesMetFn = ({ next, replaceClass }) => {
     console.log('-> Type TestLate has been replaced with DuckType.');
     next();
-  }
+  };
 }
 
 const testInterceptPlugin = new TestIntercept();
 
 export {
   testInterceptPlugin,
-}
+};

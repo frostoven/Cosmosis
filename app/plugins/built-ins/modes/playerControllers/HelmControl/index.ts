@@ -94,14 +94,10 @@ class HelmControl extends ModeController {
       this.resetLookState();
 
       if (this._headLookActive) {
-        this._pluginCache.inputManager.activateController(
-          ModeId.buckledPassenger, 'buckledPassenger',
-        );
+        this.activateHeadLook();
       }
       else {
-        this._pluginCache.inputManager.deactivateController(
-          ModeId.buckledPassenger, 'buckledPassenger',
-        );
+        this.deactivateHeadLook();
       }
     });
 
@@ -129,8 +125,43 @@ class HelmControl extends ModeController {
     });
 
     this.pulse._devChangeCamMode.getEveryChange(() => {
+      this.deactivateHeadLook();
       this._pluginCache.inputManager.activateController(ModeId.flightControl, 'freeCam');
     });
+  }
+
+  // ----------------------------------------------------------------------- //
+
+  activateHeadLook() {
+    this._headLookActive = true;
+    this.hideCrosshairs();
+    this._pluginCache.inputManager.activateController(
+      ModeId.buckledPassenger, 'buckledPassenger',
+    );
+  }
+
+  deactivateHeadLook() {
+    this._headLookActive = false;
+    this.showCrosshairs();
+    this._pluginCache.inputManager.deactivateController(
+      ModeId.buckledPassenger, 'buckledPassenger',
+    );
+  }
+
+  showCrosshairs() {
+    // This needs to evolve to something less crude, but is good enough for now.
+    const crosshairs = document.getElementById('crosshairs');
+    if (crosshairs) {
+      crosshairs.style.display = 'block';
+    }
+  }
+
+  hideCrosshairs() {
+    // This needs to evolve to something less crude, but is good enough for now.
+    const crosshairs = document.getElementById('crosshairs');
+    if (crosshairs) {
+      crosshairs.style.display = 'none';
+    }
   }
 
   // ----------------------------------------------------------------------- //
@@ -141,6 +172,7 @@ class HelmControl extends ModeController {
     });
 
     this.resetLookState();
+    this.activateHeadLook();
   }
 
   // Sets stick and pedal input to 0.
@@ -163,9 +195,9 @@ class HelmControl extends ModeController {
     //  whether or not this is useful depends on controller setup.
     this.resetPrincipleAxesInput();
     if (helmView.flightAssist) {
-      this.absoluteInput.pitchAnalog = this.cumulativeInput.pitchAnalog = 0;
-      this.absoluteInput.yawAnalog = this.cumulativeInput.yawAnalog = 0;
-      this.absoluteInput.rollAnalog = this.cumulativeInput.rollAnalog = 0;
+      this.absoluteInput.pitchAnalog = 0;
+      this.absoluteInput.yawAnalog = 0;
+      this.absoluteInput.rollAnalog = 0;
     }
   }
 

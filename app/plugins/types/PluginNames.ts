@@ -12,6 +12,7 @@ type PluginNames =
   'navigation' | 
   'levelScene' | 
   'spaceScene' | 
+  'localSpace' | 
   'offscreenGalaxyWorker' | 
   'hud3D' | 
   'mouseDriver' | 

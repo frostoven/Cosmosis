@@ -138,6 +138,11 @@ class SpacetimeControl {
     }
   }
 
+  teleportShipToLocalLocation(positionM: THREE.Vector3) {
+    this._reality.position.set(positionM.x, positionM.y, positionM.z);
+    this._levelBubble.position.set(-positionM.x, -positionM.y, -positionM.z);
+  }
+
   // Move galaxy around the player.
   addVectorPlayerCentric(speed: number, camera: THREE.PerspectiveCamera) {
     // console.log('---> 1 | addPlayerCentric');

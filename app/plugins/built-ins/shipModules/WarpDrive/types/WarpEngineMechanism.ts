@@ -214,7 +214,10 @@ export default class WarpEngineMechanism {
     this._cachedSpacetime.moveForwardPlayerCentric(hyperSpeed, this._cachedLevelScene);
   }
 
-  applyRotation(delta: number, bigDelta: number) {
+  applyRotation(delta: number) {
+    const halfDelta = delta * 0.5;
+    const sevenDelta = delta * 7;
+
     const pitch = clamp(helmView.pitch, -1, 1);
     const yaw = clamp(helmView.yaw, -1, 1);
     const roll = clamp(helmView.roll, -1, 1);
@@ -233,24 +236,24 @@ export default class WarpEngineMechanism {
       rollMax = this.rollMaxSpeed;
     }
 
-      if (pitch || this.pitchBuildup) {
-        this.pitchBuildup = chaseValue(delta * 0.5, this.pitchBuildup, pitch);
-      }
-      if (yaw || this.yawBuildup) {
-        this.yawBuildup = chaseValue(delta * 0.5, this.yawBuildup, yaw);
-      }
-      if (roll || this.rollBuildup) {
-        this.rollBuildup = chaseValue(delta * 0.5, this.rollBuildup, roll);
-      }
+    if (pitch || this.pitchBuildup) {
+      this.pitchBuildup = chaseValue(halfDelta, this.pitchBuildup, pitch);
+    }
+    if (yaw || this.yawBuildup) {
+      this.yawBuildup = chaseValue(halfDelta, this.yawBuildup, yaw);
+    }
+    if (roll || this.rollBuildup) {
+      this.rollBuildup = chaseValue(halfDelta, this.rollBuildup, roll);
+    }
 
     this.pitchBuildup = clamp(this.pitchBuildup, -pitchMax, pitchMax);
     this.yawBuildup = clamp(this.yawBuildup, -yawMax, yawMax);
     this.rollBuildup = clamp(this.rollBuildup, -rollMax, rollMax);
 
     this._cachedSpacetime.rotatePlayerCentric(
-      this.pitchBuildup * this.pitchAcceleration,
-      this.yawBuildup * this.yawAcceleration,
-      this.rollBuildup * this.rollAcceleration,
+      this.pitchBuildup * this.pitchAcceleration * sevenDelta,
+      this.yawBuildup * this.yawAcceleration * sevenDelta,
+      this.rollBuildup * this.rollAcceleration * sevenDelta,
     );
   }
 
@@ -260,10 +263,10 @@ export default class WarpEngineMechanism {
       return;
     }
 
-    const { delta, bigDelta } = animationData;
+    const { delta } = animationData;
 
     this.applyMovement(delta);
-    this.applyRotation(delta, bigDelta);
+    this.applyRotation(delta);
 
     propulsionView.currentSpeedLy = this.currentSpeed;
     propulsionView.outputLevel = this.actualThrottle * 0.01;
