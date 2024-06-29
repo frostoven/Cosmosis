@@ -4,8 +4,16 @@ import { builtInPluginsEnabled } from '../pluginsEnabled';
 import { PluginEntry } from '../interfaces/PluginEntry';
 import { TypeReplacements } from '../interfaces/TypeReplacements';
 import CosmosisPlugin from './CosmosisPlugin';
+import {
+  closeBootWindow,
+  logBootInfo,
+  logBootTitleAndInfo,
+} from '../../local/windowLoadListener';
 
 export default class PluginLoader {
+  // Used for the DOS-like boot window in the bottom left.
+  static bootLogIndex = -1;
+
   public onLoaded: ChangeTracker;
   public onProgress: ChangeTracker;
 
@@ -31,6 +39,10 @@ export default class PluginLoader {
     if (!onLoaded) {
       throw '[PluginLoader] start needs a callback.';
     }
+
+    logBootInfo('Loading ship module drivers:');
+    PluginLoader.bootLogIndex = logBootInfo('* Processing...');
+
     this.onLoaded.getOnce(onLoaded);
     this._doPluginRun(builtInPluginsEnabled, false);
   }
@@ -50,19 +62,28 @@ export default class PluginLoader {
             if (!this._dependenciesLoaded[optionalDependency]) {
               console.warn(`[PluginLoader] Plugin '${plugin.name}' has ` +
                 `optional dependency '${optionalDependency}', but it has ` +
-                `not been satisfied.`
+                `not been satisfied.`,
               );
             }
           });
         });
         console.log('[PluginLoader] All plugins loaded.');
         this.onLoaded.setValue(true);
+        logBootTitleAndInfo('Done', 'All drivers loaded', PluginLoader.bootLogIndex);
+        setTimeout(() => {
+          closeBootWindow();
+        }, 250);
       }
       return;
     }
 
     // -----------------------------------------------------------------------------
-    const { name, dependencies, pluginInstance, timeoutWarn = 3000 } = array[index];
+    const {
+      name,
+      dependencies,
+      pluginInstance,
+      timeoutWarn = 3000,
+    } = array[index];
     // -----------------------------------------------------------------------------
     let dependencyMissing = false;
     let shoved = false;
@@ -84,7 +105,7 @@ export default class PluginLoader {
             console.error(
               '[PluginLoader] Error:', name, 'is could not resolve ' +
               'dependency', dependency, '- either it\'s missing, or you ' +
-              'have a circular dependency.'
+              'have a circular dependency.',
             );
           }
           else if (!shoved) {
@@ -142,15 +163,18 @@ export default class PluginLoader {
           this._pluginOverrides[pluginName] = {
             name: pluginName,
             replaceClassWith,
-          }
-        }
+          };
+        },
       });
     }
     else if (shoved && !disallowShoving) {
       setTimeout(() => this._doPluginRun(array, disallowShoving));
     }
     else {
-      console.error('[PluginLoader] Unhandled plugin', name, '- this is a Cosmosis bug, please report it.');
+      console.error(
+        '[PluginLoader] Unhandled plugin', name, '- this is a Cosmosis bug, ' +
+        'please report it.',
+      );
     }
   }
 }
