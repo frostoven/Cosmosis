@@ -125,7 +125,7 @@ function closeLoadingScreen() {
 }
 
 onReadyToBoot(() => {
-  logBootInfo('Process units ready');
+  logBootInfo('Init hardware sweep');
   loadPlugins(() => {
     // gameState.tracked.player.getOnce(({ camera }) => {
     //   init({ camera });

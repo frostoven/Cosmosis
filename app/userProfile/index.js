@@ -624,7 +624,6 @@ Boot.startTimer = function startTimer(next) {
 Boot.stopTimerAndLogResult = function stopTimerAndLogResult(next) {
   const totalTime = ((Date.now() - startTime) / 1000).toFixed(2);
   console.log(`User profile took ${totalTime} seconds to load.`);
-  logBootInfo(`Profile boot time: ${totalTime}s`);
   next({ error: null, completed: 'stopTimerAndLogResult' });
 };
 
@@ -726,7 +725,7 @@ Boot.determineLastActiveProfile = function determineLastActiveProfile(next) {
     }
 
     activeProfile = json.activeProfile || defaultProfileName;
-    logBootInfo(`Loaded profile: ${activeProfile}`, true);
+    logBootInfo(`Loading configuration: ${activeProfile}`, true);
     next({ error: null, completed: 'determineLastActiveProfile' });
   });
 };
