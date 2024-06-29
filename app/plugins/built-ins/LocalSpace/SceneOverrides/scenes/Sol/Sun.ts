@@ -10,7 +10,7 @@ const DEG2RAD = THREE.MathUtils.DEG2RAD;
 class Sun extends LocalStar {
   constructor() {
     const color = new THREE.Color(1.0, 0.87, 0.81);
-    const nearMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
+    const nearMaterial = new THREE.MeshBasicMaterial({ color });
 
     const uniforms = {
       color: { value: color },
@@ -38,6 +38,7 @@ class Sun extends LocalStar {
       side: THREE.DoubleSide,
       blending: THREE.AdditiveBlending,
       transparent: true,
+      depthTest: false,
     });
 
     super({

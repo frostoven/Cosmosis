@@ -32,6 +32,7 @@ class Mercury extends LocalStar {
       side: THREE.DoubleSide,
       blending: THREE.AdditiveBlending,
       transparent: true,
+      depthTest: false,
     });
 
     super({

@@ -32,6 +32,7 @@ class Venus extends LocalStar {
       side: THREE.DoubleSide,
       blending: THREE.AdditiveBlending,
       transparent: true,
+      depthTest: false,
     });
 
     // @ts-ignore

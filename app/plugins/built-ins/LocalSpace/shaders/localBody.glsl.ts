@@ -1,6 +1,7 @@
 import { import_log10 } from '../../../../shaders/shaderMath';
 
 enum LocalBodyGlslType {
+  nothing,
   star,
   planet,
   moon,
@@ -98,7 +99,7 @@ const vertex = `
     // TODO: Try find a mechanism that doesn't require different constants for
     //  planets and stars. The requirement is that local stars should not
     //  become invisible within the local space scene, but planets may.
-    if (bodyType == ` + LocalBodyGlslType.star + `) {
+    if (bodyType == ${LocalBodyGlslType.star}) {
       float minSize = max(
         STAR_SIZE * unitDistance * 0.1,
         pow((unitDistance) / unitSize, distanceExponent) * STAR_SIZE
@@ -120,14 +121,21 @@ const vertex = `
     }
 
     localPosition *= size * STAR_SIZE;
-
     vDistantGlow = 0.0;
     
     // Send to shader to fade out.
     vAttenuation = clamp(attenuation, 0.0, 1.0);
+    
+    // --------------------------------------------------------------------- //
+    // Ensure the plane is always rendered in front of the star.
+    // Direction from the plane to the camera.
+    vec3 direction = normalize(cameraPosition - localPosition);
+    // Calculate the new position for the atmosphere plane vertex
+    vec3 newPosition = localPosition + direction * objectSize * 0.1;
     // --------------------------------------------------------------------- //
 
-    vec4 mvPosition = modelViewMatrix * vec4(localPosition, 1.0);
+    // vec4 mvPosition = modelViewMatrix * vec4(localPosition, 1.0);
+    vec4 mvPosition = modelViewMatrix * vec4(newPosition, 1.0);
     gl_Position = projectionMatrix * mvPosition;
     #include <logdepthbuf_vertex>
   }
