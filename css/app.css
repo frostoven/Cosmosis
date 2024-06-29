@@ -105,6 +105,7 @@ html, body {
 }
 
 #boot-log {
+    user-select: none;
     font-family: IBM_VGA_8x16, monospace;
     font-size: 12pt;
     font-weight: 100;
@@ -118,6 +119,9 @@ html, body {
     border-radius: 2px;
     overflow: hidden;
     padding: 8px;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    cursor: url(/potatoLqAssets/icons/dos_cursor_error.png) 4 8, auto;
 }
 
 /* Blinks at the speed computers usually blink BIOS cursors. */

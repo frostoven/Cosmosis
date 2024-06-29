@@ -1,14 +1,21 @@
 /**
  * Used for functions that run independently of the bundled application, such
- * as code that waits for the first-tim bundle to finish building (allows us to
- * give the user meaningful updates even if the project hasn't been built yet).
+ * as code that waits for the first-time bundle build to finish. This allows us
+ * to give a user (who didn't read the manual) meaningful updates even if the
+ * project hasn't been built yet.
+ *
+ * Note that this file should not be migrated to TypeScript as NW.js does not
+ * natively support TS, and this file is never bundled.
  */
 
 // Automatically reload the application if code changes occur.
+
 if (process.env && process.env.NODE_ENV !== 'production') {
   // This flag allows us to disable HMR when we don't want reloads during
   // debugging.
   window.hmrDisabled = false;
+
+  const bootLog = [];
 
   const fs = require('fs');
   const crypto = require('crypto');
@@ -55,6 +62,52 @@ if (process.env && process.env.NODE_ENV !== 'production') {
     }
   }
 
+  /**
+   * Note: Only call this function if it's clear that the game bundle has not
+   * yet been loaded. #boot-log is usually managed by windowLoadListener, but
+   * windowLoadListener is part of the bundle, while this file is not. In
+   * essence, this function is a work-around for first-time build delays.
+   * @param {string} message
+   * @param {boolean} [appendToLast]
+   * @private
+   */
+  function _logToUi(message, appendToLast = false) {
+    let blinkySeparator = '<br>';
+    if (!appendToLast || !bootLog.length) {
+      bootLog.push(message);
+    }
+    else {
+      bootLog[bootLog.length - 1] += message;
+      blinkySeparator = '';
+    }
+
+    const bootLogDiv = document.getElementById('boot-log');
+    if (bootLogDiv) {
+      bootLogDiv.innerHTML =
+        bootLog.slice(-7).join('<br>') +
+        blinkySeparator +
+        '<div class="blinky" style="display: inline">_</div>';
+      bootLogDiv.scrollIntoView({ block: 'center', inline: 'center' });
+    }
+    else {
+      console.error('Could not interact with #boot-log');
+    }
+  }
+
+  // Exists for first-time builds only.
+  function _logFilesMissing() {
+    fs.readFile('./package.json', (error, data) => {
+      error && (data = '{ "version": "information missing" }');
+      const version = 'v' + JSON.parse(data).version;
+      _logToUi(`System boot ${version}`);
+      _logToUi('BOOT FAILURE');
+      _logToUi('One or more files missing.');
+      _logToUi('Has the system been built?');
+      _logToUi('Waiting for bundle');
+      _logToUi('...', true);
+    });
+  }
+
   let oneOrMoreFilesMissing = false;
   (function buildWatcher() {
     try {
@@ -68,14 +121,26 @@ if (process.env && process.env.NODE_ENV !== 'production') {
 
       if (oneOrMoreFilesMissing) {
         // First-time build. Reload the app.
-        window.location = window.location;
+        _logToUi('WE HAVE A UNIVERSE');
+        setTimeout(() => {
+          window.location = window.location;
+        }, 500);
       }
     }
     catch (error) {
       console.warn('Could not read source files. Build currently in progress?');
+      if (!oneOrMoreFilesMissing) {
+        setTimeout(() => {
+          _logFilesMissing();
+        }, 750);
+      }
       oneOrMoreFilesMissing = true;
       // Keep checking until the files magically appear.
-      setTimeout(buildWatcher, 1000);
+      setTimeout(() => {
+        // The \u200B character allows CSS to break full-stops.
+        _logToUi('\u200B.\u200B', true);
+        buildWatcher();
+      }, 1000);
     }
   })();
 }
