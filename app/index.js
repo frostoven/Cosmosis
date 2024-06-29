@@ -1,4 +1,5 @@
 import './polyfills';
+import './earlyProfileLoad';
 import './modal';
 import './local/PerfTest';
 import './debugger';
