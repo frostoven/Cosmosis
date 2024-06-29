@@ -14,6 +14,7 @@ const fs = require('fs');
 import userProfile from '../userProfile';
 import packageJson from '../../package.json';
 
+let disableCategoryGrouping = false;
 let windowHasLoaded = false;
 let bootReadySignalled = false;
 const onDocReadyCallbacks = new CbQueue();
@@ -117,7 +118,7 @@ function renderBootMessages() {
   const bootDiv = document.getElementById('boot-log');
   if (bootDiv) {
     bootDiv.innerHTML =
-      bootMessageQueue.slice(-24).join('<br/>') +
+      bootMessageQueue.slice(-21).join('<br/>') +
       '<br/>' +
       '<div class="blinky">_</div>';
     bootDiv.scrollIntoView({ block: 'center', inline: 'center' });
@@ -127,6 +128,10 @@ function renderBootMessages() {
 function bootLogger({ text = '', isError = false, reuseIndex }) {
   if (!text) {
     return;
+  }
+
+  if (disableCategoryGrouping) {
+    reuseIndex = -1;
   }
 
   if (isError) {
