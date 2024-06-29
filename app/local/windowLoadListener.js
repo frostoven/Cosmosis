@@ -8,9 +8,10 @@
  */
 
 import CbQueue from './CbQueue';
+
 const fs = require('fs');
 
-import userProfile from '../userProfile'
+import userProfile from '../userProfile';
 import packageJson from '../../package.json';
 
 let windowHasLoaded = false;
@@ -30,7 +31,7 @@ const bootMessageQueue = [];
  */
 if (!process) {
   console.warn(
-    'Process object not available; polyfilling. Note that this is currently untested.'
+    'Process object not available; polyfilling. Note that this is currently untested.',
   );
   process = {
     nextTick: (cb) => setTimeout(cb, 0),
@@ -80,7 +81,8 @@ function notifyListenersAndStop() {
   onBootReadyCallbacks.notifyAll();
 }
 
-function windowLoadListener(readyCb=()=>{}) {
+function windowLoadListener(readyCb = () => {
+}) {
   windowHasLoaded = true;
   onDocReadyCallbacks.notifyAll();
   renderBootMessages();
@@ -111,51 +113,95 @@ function windowLoadListener(readyCb=()=>{}) {
   notifyListenersAndStop();
 }
 
-function renderBootMessages () {
+function renderBootMessages() {
   const bootDiv = document.getElementById('boot-log');
   if (bootDiv) {
     bootDiv.innerHTML =
-      bootMessageQueue.slice(-7).join('<br/>') +
+      bootMessageQueue.slice(-24).join('<br/>') +
       '<br/>' +
       '<div class="blinky">_</div>';
     bootDiv.scrollIntoView({ block: 'center', inline: 'center' });
   }
 }
 
-function bootLogger({ text='', isError=false }) {
+function bootLogger({ text = '', isError = false, reuseIndex }) {
   if (!text) {
     return;
   }
 
-  // TODO: make errors push as red instead.
   if (isError) {
-    bootMessageQueue.push(`<i>${text}</i>`);
+    text = `<div style="color: red; display: inline">${text}</div>`;
+  }
+
+  if (reuseIndex > -1) {
+    bootMessageQueue[reuseIndex] = text;
   }
   else {
     bootMessageQueue.push(text);
   }
+
   renderBootMessages();
 }
 
-export function logBootInfo(text, includeConsoleLog=false) {
-  bootLogger({ text });
+/**
+ * Logs a message and returns its index.
+ * @param {string} text
+ * @param {boolean} [includeConsoleLog]
+ * @param {number} [reuseIndex] - The index of the message to replace. -1 means
+ *  "add a new message." Default is -1.
+ * @return {number}
+ */
+export function logBootInfo(text, includeConsoleLog = false, reuseIndex = -1) {
+  bootLogger({ text, reuseIndex });
   if (includeConsoleLog) {
     console.log(text);
   }
+  return bootMessageQueue.length - 1;
 }
 
-export function logBootError(text, includeConsoleError=false) {
-  bootLogger({ text, isError: true });
+/**
+ * Logs a message and returns its index.
+ * @param title
+ * @param {string} text
+ * @param {number} [reuseIndex] - The index of the message to replace. -1 means
+ *  "add a new message." Default is -1.
+ * @return {number}
+ */
+export function logBootTitleAndInfo(
+  title, text, reuseIndex = -1,
+) {
+  bootLogger({
+    text: `* [<div style="display: inline; color: greenyellow">${title}]</div> ${text}`,
+    reuseIndex,
+  });
+  return bootMessageQueue.length - 1;
+}
+
+/**
+ * Logs an error and returns its index.
+ * @param {string} text
+ * @param {boolean} [includeConsoleLog]
+ * @param {number} [reuseIndex] - The index of the message to replace. -1 means
+ *  "add a new message." Default is -1.
+ * @return {number}
+ */
+export function logBootError(text, includeConsoleError = false, reuseIndex = -1) {
+  bootLogger({ text, isError: true, reuseIndex });
   if (includeConsoleError) {
     console.error(text);
+  }
+  return bootMessageQueue.length - 1;
+}
+
+export function closeBootWindow() {
+  const bootLog = document.getElementById('boot-log');
+  if (bootLog) {
+    bootLog.classList.add('splash-fade-out');
+    setTimeout(() => {
+      // Needed to prevent the boot log from invisibly interfering with stuff.
+      bootLog.style.display = 'none';
+    }, 750);
   }
 }
 
 window.onload = windowLoadListener;
-
-export default {
-  onReadyToBoot,
-  onDocumentReady,
-  logBootInfo,
-  logBootError,
-}
