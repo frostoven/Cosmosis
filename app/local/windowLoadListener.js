@@ -259,7 +259,11 @@ export function logBootError(text, includeConsoleError = false, reuseIndex = -1)
   return bootMessageQueue.length - 1;
 }
 
-export function closeBootWindow() {
+// If forceClose is true, the window will close even if the user appears busy.
+export function closeBootWindow(forceClose = false) {
+  if (!forceClose && (disableCategoryGrouping || showFakeLegalNotice)) {
+    return;
+  }
   shipConsoleVisible = false;
   const shipConsole = document.getElementById('ship-console');
   if (shipConsole) {
@@ -285,13 +289,17 @@ export function showBootWindow() {
   }
 }
 
-export function toggleBootWindow() {
+export function toggleBootWindow(forceClose = false) {
+  if (!forceClose && (disableCategoryGrouping || showFakeLegalNotice)) {
+    return;
+  }
+
   shipConsoleVisible = !shipConsoleVisible;
   if (shipConsoleVisible) {
     showBootWindow();
   }
   else {
-    closeBootWindow();
+    closeBootWindow(forceClose);
   }
 }
 

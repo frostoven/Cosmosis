@@ -21,7 +21,7 @@ class GeneralControl extends ModeController {
     this._reactBase = gameRuntime.tracked.reactBase.cachedValue;
 
     this.pulse.openShipConsole.getEveryChange(() => {
-      toggleBootWindow();
+      toggleBootWindow(true);
     });
 
     this.pulse.activateGameMenu.getEveryChange(() => {
