@@ -64,8 +64,8 @@ if (process.env && process.env.NODE_ENV !== 'production') {
 
   /**
    * Note: Only call this function if it's clear that the game bundle has not
-   * yet been loaded. #boot-log is usually managed by windowLoadListener, but
-   * windowLoadListener is part of the bundle, while this file is not. In
+   * yet been loaded. The boot log is usually managed by windowLoadListener,
+   * but windowLoadListener is part of the bundle, while this file is not. In
    * essence, this function is a work-around for first-time build delays.
    * @param {string} message
    * @param {boolean} [appendToLast]
@@ -81,7 +81,7 @@ if (process.env && process.env.NODE_ENV !== 'production') {
       blinkySeparator = '';
     }
 
-    const bootLogDiv = document.getElementById('boot-log');
+    const bootLogDiv = document.getElementById('ship-console');
     if (bootLogDiv) {
       bootLogDiv.innerHTML =
         bootLog.join('<br>') +
@@ -90,7 +90,7 @@ if (process.env && process.env.NODE_ENV !== 'production') {
       bootLogDiv.scrollIntoView({ block: 'center', inline: 'center' });
     }
     else {
-      console.error('Could not interact with #boot-log');
+      console.error('Could not interact with #ship-console');
     }
   }
 

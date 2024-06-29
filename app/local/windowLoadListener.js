@@ -14,7 +14,9 @@ const fs = require('fs');
 import userProfile from '../userProfile';
 import packageJson from '../../package.json';
 
-let bootWindowVisible = true;
+const MAX_TERM_LINES = 20;
+
+let shipConsoleVisible = true;
 let disableCategoryGrouping = false;
 let windowHasLoaded = false;
 let bootReadySignalled = false;
@@ -89,6 +91,17 @@ function windowLoadListener(readyCb = () => {
   onDocReadyCallbacks.notifyAll();
   renderBootMessages();
 
+  const groupToggleButton = document.getElementById('group-toggle');
+  if (groupToggleButton) {
+    groupToggleButton.onclick = () => {
+      disableCategoryGrouping = !disableCategoryGrouping;
+      renderBootMessages();
+    };
+  }
+  else {
+    console.error('Could not configure ship console grouping button.');
+  }
+
   // Start profile init.
   userProfile.init(() => {
     notifyListenersAndStop();
@@ -116,13 +129,33 @@ function windowLoadListener(readyCb = () => {
 }
 
 function renderBootMessages() {
-  const bootDiv = document.getElementById('boot-log');
-  if (bootDiv) {
-    bootDiv.innerHTML =
-      bootMessageQueue.slice(-21).join('<br/>') +
-      '<br/>' +
-      '<div class="blinky">_</div>';
-    bootDiv.scrollIntoView({ block: 'center', inline: 'center' });
+  const consoleDiv = document.getElementById('system-output');
+  const groupToggleButton = document.getElementById('group-toggle');
+
+  if (consoleDiv) {
+    let messages;
+    if (disableCategoryGrouping) {
+      messages = bootMessageQueue.slice(-MAX_TERM_LINES).flat();
+    }
+    else {
+      messages = bootMessageQueue
+        .slice(-MAX_TERM_LINES).map((divs) => divs[divs.length - 1]);
+    }
+
+    messages = messages.slice(-MAX_TERM_LINES).join('<br>');
+
+    const elements = [
+      messages,
+      '<br>',
+      '<div class="blinky">_</div>',
+    ];
+    consoleDiv.innerHTML = elements.join('');
+    consoleDiv.scrollIntoView({ block: 'center', inline: 'center' });
+  }
+
+  if (groupToggleButton) {
+    const groupIcon = disableCategoryGrouping ? '◇' : '◈';
+    groupToggleButton.textContent = `Group Similar ${groupIcon}`;
   }
 }
 
@@ -131,19 +164,20 @@ function bootLogger({ text = '', isError = false, reuseIndex }) {
     return;
   }
 
-  if (disableCategoryGrouping) {
-    reuseIndex = -1;
-  }
-
   if (isError) {
     text = `<div style="color: red; display: inline">${text}</div>`;
   }
 
   if (reuseIndex > -1) {
-    bootMessageQueue[reuseIndex] = text;
+    if (bootMessageQueue[reuseIndex]) {
+      bootMessageQueue[reuseIndex].push([ text ]);
+    }
+    else {
+      bootMessageQueue[reuseIndex] = [ text ];
+    }
   }
   else {
-    bootMessageQueue.push(text);
+    bootMessageQueue.push([ text ]);
   }
 
   renderBootMessages();
@@ -177,7 +211,7 @@ export function logBootTitleAndInfo(
   title, text, reuseIndex = -1,
 ) {
   bootLogger({
-    text: `* [<div style="display: inline; color: greenyellow">${title}]</div> ${text}`,
+    text: `◆ [<div style="display: inline; color: greenyellow">${title}</div>] ${text}`,
     reuseIndex,
   });
   return bootMessageQueue.length - 1;
@@ -200,34 +234,34 @@ export function logBootError(text, includeConsoleError = false, reuseIndex = -1)
 }
 
 export function closeBootWindow() {
-  bootWindowVisible = false;
-  const bootLog = document.getElementById('boot-log');
-  if (bootLog) {
-    bootLog.classList.remove('fadeInRight');
-    bootLog.classList.add('fadeOutLeft');
+  shipConsoleVisible = false;
+  const shipConsole = document.getElementById('ship-console');
+  if (shipConsole) {
+    shipConsole.classList.remove('fadeInRight');
+    shipConsole.classList.add('fadeOutLeft');
     setTimeout(() => {
       // We need to double-check bootWindowVisible as the user may override it.
-      if (!bootWindowVisible) {
+      if (!shipConsoleVisible) {
         // Needed to prevent the boot log from invisibly interfering with stuff.
-        bootLog.style.display = 'none';
+        shipConsole.style.display = 'none';
       }
     }, 750);
   }
 }
 
 export function showBootWindow() {
-  bootWindowVisible = true;
-  const bootLog = document.getElementById('boot-log');
-  if (bootLog) {
-    bootLog.classList.remove('fadeOutLeft');
-    bootLog.classList.add('fadeInRight');
-    bootLog.style.display = 'block';
+  shipConsoleVisible = true;
+  const shipConsole = document.getElementById('ship-console');
+  if (shipConsole) {
+    shipConsole.classList.remove('fadeOutLeft');
+    shipConsole.classList.add('fadeInRight');
+    shipConsole.style.display = 'block';
   }
 }
 
 export function toggleBootWindow() {
-  bootWindowVisible = !bootWindowVisible;
-  if (bootWindowVisible) {
+  shipConsoleVisible = !shipConsoleVisible;
+  if (shipConsoleVisible) {
     showBootWindow();
   }
   else {

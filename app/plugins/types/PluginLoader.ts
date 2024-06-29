@@ -41,7 +41,7 @@ export default class PluginLoader {
     }
 
     logBootInfo('Loading ship module drivers:');
-    PluginLoader.bootLogIndex = logBootInfo('* Processing...');
+    PluginLoader.bootLogIndex = logBootInfo('◆ Processing...');
 
     this.onLoaded.getOnce(onLoaded);
     this._doPluginRun(builtInPluginsEnabled, false);
