@@ -84,7 +84,7 @@ if (process.env && process.env.NODE_ENV !== 'production') {
     const bootLogDiv = document.getElementById('boot-log');
     if (bootLogDiv) {
       bootLogDiv.innerHTML =
-        bootLog.slice(-7).join('<br>') +
+        bootLog.join('<br>') +
         blinkySeparator +
         '<div class="blinky" style="display: inline">_</div>';
       bootLogDiv.scrollIntoView({ block: 'center', inline: 'center' });
@@ -114,6 +114,14 @@ if (process.env && process.env.NODE_ENV !== 'production') {
       _logToUi('BOOT FAILURE');
       _logToUi('One or more files missing.');
       _logToUi('Has the system been built?');
+      _logToUi(' ');
+      _logToUi(
+        'Please be advised that, by decree of The EarthGov Corporation ' +
+        'dated September 11, 2381, operating any spacecraft without ' +
+        'official government-approved firmware is illegal. Violations are ' +
+        'punishable by up to 40 years in a prison labor camp.',
+      );
+      _logToUi(' ');
       _logToUi('Waiting for bundle');
       _logToUi('...', true);
     });
