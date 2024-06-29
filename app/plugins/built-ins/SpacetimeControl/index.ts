@@ -32,17 +32,15 @@ class SpacetimeControl {
   private _adder: AdderSignature;
 
   constructor() {
-    this._setupWatchers();
     this._coordMode = CoordType.playerCentric;
     this._reality.add(this._levelBubble);
 
-    this._adder = () => {
-    };
+    this._adder = () => {};
     this._movementFunctions = [];
     this._setupAdders();
-  }
 
-  _setupWatchers() {
+    // @ts-ignore - Useful for debugging.
+    window.teleportShipToLocalLocation = this.teleportShipToLocalLocation.bind(this);
   }
 
   // Within the context of this class, adders are functions that move the
@@ -59,6 +57,14 @@ class SpacetimeControl {
       }
     });
     console.log('--> _movementFunctions:', this._movementFunctions);
+  }
+
+  getLocalPosition() {
+    return this._reality.position;
+  }
+
+  getLocalSpaceContainer() {
+    return this._reality;
   }
 
   get coordMode() {
