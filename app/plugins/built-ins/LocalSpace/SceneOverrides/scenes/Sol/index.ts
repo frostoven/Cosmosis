@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import {
   PlanetarySystemDefinition,
-} from '../../../../../../celestialBodies/bodyTypes/PlanetarySystemDefinition';
+} from '../../../../../../celestialBodies/PlanetarySystemDefinition';
 import { SceneOverride } from '../../SceneOverride';
 import { Sun } from './Sun';
 import { Saturn } from './Saturn';
@@ -12,9 +12,11 @@ import { Venus } from './Venus';
 import { Earth } from './Earth';
 import { EarthLuna } from './EarthLuna';
 import { Mars } from './Mars';
+import { SpacetimeControl } from '../../../../SpacetimeControl';
 
 type PluginCompletion = PluginCacheTracker | {
   core: Core,
+  spacetimeControl: SpacetimeControl,
 };
 
 class Sol /*extends SceneOverride*/ {
@@ -24,7 +26,7 @@ class Sol /*extends SceneOverride*/ {
 
   constructor(parentScene: THREE.Scene) {
     this.constituents = new PlanetarySystemDefinition(parentScene);
-    this._pluginCache = new PluginCacheTracker([ 'core' ]);
+    this._pluginCache = new PluginCacheTracker([ 'core', 'spacetimeControl' ]);
 
     this._pluginCache.onAllPluginsLoaded.getOnce(() => {
       this._pluginCache.core.onAnimate.getEveryChange(this.step);
@@ -46,12 +48,13 @@ class Sol /*extends SceneOverride*/ {
   }
 
   step = () => {
-    if (!this._ready) {
+    const spacetimeControl = this._pluginCache.spacetimeControl;
+    if (!spacetimeControl || !this._ready) {
       return;
     }
 
     const { j2000Time } = Core.animationData;
-    this.constituents.step(j2000Time);
+    this.constituents.step(j2000Time, spacetimeControl.getLocalPosition());
   };
 }
 

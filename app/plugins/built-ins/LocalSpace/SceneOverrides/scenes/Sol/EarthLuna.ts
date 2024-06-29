@@ -7,7 +7,7 @@ import { localBody, LocalBodyGlslType } from '../../../shaders/localBody.glsl';
 import { Earth } from './Earth';
 import {
   PlanetarySystemDefinition
-} from '../../../../../../celestialBodies/bodyTypes/PlanetarySystemDefinition';
+} from '../../../../../../celestialBodies/PlanetarySystemDefinition';
 
 const DEG2RAD = THREE.MathUtils.DEG2RAD;
 
