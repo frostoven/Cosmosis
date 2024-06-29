@@ -94,7 +94,7 @@ function trackCameraSpeed(warpBubble, camera) {
       rz = camRt.z.toFixed(4);
     }
 
-    statusDiv.innerText =
+    statusDiv.textContent =
       formatComma(dist) + ' m/s ' +
       '[' + formatComma(dist * 3.6) + 'km/h' + '] ' +
       '<' + formatComma(dist / lightSpeed) + 'C>\n' +
