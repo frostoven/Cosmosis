@@ -109,19 +109,28 @@ html, body {
     font-family: IBM_VGA_8x16, monospace;
     font-size: 12pt;
     font-weight: 100;
+    line-height: 1;
     background-color: #000000e6;
     position: fixed;
-    bottom: 16px;
+    bottom: 92px;
     left: 16px;
-    width: 322px;
-    height: 167px;
+    /* We write the width and height in points so that we can match our
+       DOS-like monospace fonts more closely. */
+    width: calc(12pt * 20); /* should be 320px exactly */
+    height: calc(12pt * 24); /* should be 384px exactly */
     z-index: 1000;
     border-radius: 2px;
     overflow: hidden;
     padding: 8px;
+    white-space: pre-wrap;
     word-break: break-word;
     overflow-wrap: anywhere;
     cursor: url(/potatoLqAssets/icons/dos_cursor_error.png) 4 8, auto;
+}
+
+#boot-log > div {
+    font-family: IBM_VGA_8x16, monospace;
+  cursor: url(/potatoLqAssets/icons/dos_cursor_error.png) 4 8, auto;
 }
 
 /* Blinks at the speed computers usually blink BIOS cursors. */
