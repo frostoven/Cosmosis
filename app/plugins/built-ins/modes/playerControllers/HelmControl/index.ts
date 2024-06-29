@@ -80,7 +80,10 @@ class HelmControl extends ModeController {
       gameRuntime.tracked.spacetimeControl.getOnce((location: SpacetimeControl) => {
         gameRuntime.tracked.player.getOnce(({ camera }) => {
           // @ts-ignore
-          this.speedTimer = speedTracker.trackCameraSpeed(location._reality, camera);
+          this.speedTimer = speedTracker.trackCameraSpeed(
+            location.getLocalSpaceContainer(),
+            camera,
+          );
         });
       });
     }
