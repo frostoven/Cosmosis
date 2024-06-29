@@ -35,9 +35,6 @@
   white-space: pre-wrap;
   word-break: break-word;
   overflow-wrap: anywhere;
-}
-
-#ship-console, #ship-console > div, #ship-console > div > div {
   cursor: url(/potatoLqAssets/icons/dos_cursor_error.png) 4 8, auto;
 }
 
