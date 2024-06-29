@@ -9,7 +9,11 @@ import { loadPlugins } from './plugins';
 // import powerOnSelfTest from './test';
 import api from './local/api';
 import packageJson from '../package.json';
-import { onDocumentReady, onReadyToBoot, logBootInfo } from './local/windowLoadListener';
+import {
+  onDocumentReady,
+  onReadyToBoot,
+  logBootInfo,
+} from './local/windowLoadListener';
 
 // Game modules.
 // import './local/toast';
@@ -49,10 +53,15 @@ console.log(
   '██║░░██╗██║░░██║░╚═══██╗██║╚██╔╝██║██║░░██║░╚═══██╗██║░╚═══██╗\n' +
   '╚█████╔╝╚█████╔╝██████╔╝██║░╚═╝░██║╚█████╔╝██████╔╝██║██████╔╝\n' +
   ' ╚════╝  ╚════╝ ╚═════╝ ╚═╝     ╚═╝ ╚════╝ ╚═════╝ ╚═╝╚═════╝ ' +
-  '\n\n'
+  '\n\n',
 );
 
 console.log(`%c► Build ${packageJson.version}`, 'font-weight: bold;');
+logBootInfo(`╔════════════════════════════════════╗`);
+logBootInfo(`║ MicroECI Universal Spacecraft BIOS ║`);
+logBootInfo(`╟────────────────────────────────────╢`);
+logBootInfo(`║  Copyright (c) EarthGov Corp 2378  ║`);
+logBootInfo(`╚════════════════════════════════════╝`);
 logBootInfo(`System boot v${packageJson.version}`); // ▓
 const heapSize = (
   (v8.getHeapStatistics().heap_size_limit / (1024 * 1024 * 1024)).toFixed(2)
@@ -112,15 +121,12 @@ function init() {
 function closeLoadingScreen() {
   const loaders = document.getElementsByClassName('loading-indicator');
   if (loaders) {
-    for(let i = 0, len = loaders.length; i < len; i++){
+    for (let i = 0, len = loaders.length; i < len; i++) {
       loaders[i].classList.add('splash-fade-out');
     }
   }
 
-  const bootLog = document.getElementById('boot-log');
-  if (bootLog) {
-    bootLog.classList.add('splash-fade-out');
-  }
+  // closeBootWindow();
 }
 
 onReadyToBoot(() => {
