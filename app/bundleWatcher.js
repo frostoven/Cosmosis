@@ -97,8 +97,19 @@ if (process.env && process.env.NODE_ENV !== 'production') {
   // Exists for first-time builds only.
   function _logFilesMissing() {
     fs.readFile('./package.json', (error, data) => {
-      error && (data = '{ "version": "information missing" }');
-      const version = 'v' + JSON.parse(data).version;
+      error && (data = '{ "version": "? information missing" }');
+      let version;
+      try {
+        version = 'v' + JSON.parse(data).version;
+      }
+      catch (_) {
+        // This can only be reached if the package.json file is corrupted while
+        // the game is already running and then reloads. NW.js cannot cold-boot
+        // from a corrupted package.json, and will crash instead.
+        version = 'PACKAGE JSON CORRUPTED';
+        _logToUi('!! Please reinstall the game !!');
+      }
+
       _logToUi(`System boot ${version}`);
       _logToUi('BOOT FAILURE');
       _logToUi('One or more files missing.');
