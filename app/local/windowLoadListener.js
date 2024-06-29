@@ -14,6 +14,7 @@ const fs = require('fs');
 import userProfile from '../userProfile';
 import packageJson from '../../package.json';
 
+let bootWindowVisible = true;
 let disableCategoryGrouping = false;
 let windowHasLoaded = false;
 let bootReadySignalled = false;
@@ -199,13 +200,38 @@ export function logBootError(text, includeConsoleError = false, reuseIndex = -1)
 }
 
 export function closeBootWindow() {
+  bootWindowVisible = false;
   const bootLog = document.getElementById('boot-log');
   if (bootLog) {
-    bootLog.classList.add('splash-fade-out');
+    bootLog.classList.remove('fadeInRight');
+    bootLog.classList.add('fadeOutLeft');
     setTimeout(() => {
-      // Needed to prevent the boot log from invisibly interfering with stuff.
-      bootLog.style.display = 'none';
+      // We need to double-check bootWindowVisible as the user may override it.
+      if (!bootWindowVisible) {
+        // Needed to prevent the boot log from invisibly interfering with stuff.
+        bootLog.style.display = 'none';
+      }
     }, 750);
+  }
+}
+
+export function showBootWindow() {
+  bootWindowVisible = true;
+  const bootLog = document.getElementById('boot-log');
+  if (bootLog) {
+    bootLog.classList.remove('fadeOutLeft');
+    bootLog.classList.add('fadeInRight');
+    bootLog.style.display = 'block';
+  }
+}
+
+export function toggleBootWindow() {
+  bootWindowVisible = !bootWindowVisible;
+  if (bootWindowVisible) {
+    showBootWindow();
+  }
+  else {
+    closeBootWindow();
   }
 }
 
