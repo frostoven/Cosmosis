@@ -16,12 +16,12 @@ class Venus extends LocalStar {
       color: { value: color },
       bodyType: { value: LocalBodyGlslType.planet },
       objectSize: { value: 6_051_800 },
-      scale: { value: -10.0 },
-      luminosity: { value: 1 },
-      invRadius: { value: 10.0 },
-      invGlowRadius: { value: 8.0 },
-      visibility: { value: 67 },
       intensity: { value: 60 },
+      luminosity: { value: 1 },
+      scale: { value: -28 },
+      invRadius: { value: 31 },
+      invGlowRadius: { value: 4 },
+      visibility: { value: 174 },
     };
 
     const farMaterial = new THREE.ShaderMaterial({
@@ -35,7 +35,7 @@ class Venus extends LocalStar {
     });
 
     // @ts-ignore
-    // window.planet = { uniforms };
+    window.planet = { uniforms };
 
     super({
       name: 'Venus',
@@ -55,7 +55,7 @@ class Venus extends LocalStar {
       visuals: {
         getTexture: () => null,
         getSphereMaterial: () => nearMaterial,
-        getDistantMaterial: () => farMaterial,
+        getGlowMaterial: () => farMaterial,
       },
     });
   }

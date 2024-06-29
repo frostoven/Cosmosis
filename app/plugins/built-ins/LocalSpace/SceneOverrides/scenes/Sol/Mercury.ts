@@ -16,12 +16,12 @@ class Mercury extends LocalStar {
       color: { value: color },
       bodyType: { value: LocalBodyGlslType.planet },
       objectSize: { value: 2_439_700 },
-      scale: { value: -10.0 },
-      luminosity: { value: 30000 },
-      invRadius: { value: 10.0 },
-      invGlowRadius: { value: 8.0 },
-      visibility: { value: 67 },
       intensity: { value: 10 },
+      luminosity: { value: 1 },
+      scale: { value: -1000 },
+      invRadius: { value: 42 },
+      invGlowRadius: { value: 5 },
+      visibility: { value: 100 },
     };
 
     const farMaterial = new THREE.ShaderMaterial({
@@ -52,7 +52,7 @@ class Mercury extends LocalStar {
       visuals: {
         getTexture: () => null,
         getSphereMaterial: () => nearMaterial,
-        getDistantMaterial: () => farMaterial,
+        getGlowMaterial: () => farMaterial,
       },
     });
   }

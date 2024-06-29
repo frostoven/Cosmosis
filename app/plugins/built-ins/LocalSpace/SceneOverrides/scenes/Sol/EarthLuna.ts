@@ -2,7 +2,6 @@ import * as THREE from 'three';
 import {
   LocalStar,
 } from '../../../../../../celestialBodies/bodyTypes/LocalStar';
-import { sunMass, earthMass } from './defs';
 import { localBody, LocalBodyGlslType } from '../../../shaders/localBody.glsl';
 import { Earth } from './Earth';
 import {
@@ -20,12 +19,12 @@ class EarthLuna extends LocalStar {
       color: { value: color },
       bodyType: { value: LocalBodyGlslType.moon },
       objectSize: { value: 1_737_400 },
-      scale: { value: -10.0 },
-      luminosity: { value: 30000 },
-      invRadius: { value: 11.0 },
-      invGlowRadius: { value: 5.0 },
-      visibility: { value: 100 },
       intensity: { value: 0.1 },
+      luminosity: { value: 1 },
+      scale: { value: -1000 },
+      invRadius: { value: 42 },
+      invGlowRadius: { value: 5 },
+      visibility: { value: 100 },
     };
 
     const farMaterial = new THREE.ShaderMaterial({
@@ -60,7 +59,7 @@ class EarthLuna extends LocalStar {
       visuals: {
         getTexture: () => null,
         getSphereMaterial: () => nearMaterial,
-        getDistantMaterial: () => farMaterial,
+        getGlowMaterial: () => farMaterial,
       },
     });
   }

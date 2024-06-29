@@ -16,12 +16,12 @@ class Mars extends LocalStar {
       color: { value: color },
       bodyType: { value: LocalBodyGlslType.planet },
       objectSize: { value: 3_000_000 },
-      scale: { value: -10.0 },
-      luminosity: { value: 30000 },
-      invRadius: { value: 11.0 },
-      invGlowRadius: { value: 5.0 },
-      visibility: { value: 100 },
       intensity: { value: 50 },
+      luminosity: { value: 1 },
+      scale: { value: -1000 },
+      invRadius: { value: 42 },
+      invGlowRadius: { value: 5 },
+      visibility: { value: 100 },
     };
 
     const farMaterial = new THREE.ShaderMaterial({
@@ -55,7 +55,7 @@ class Mars extends LocalStar {
       visuals: {
         getTexture: () => null,
         getSphereMaterial: () => nearMaterial,
-        getDistantMaterial: () => farMaterial,
+        getGlowMaterial: () => farMaterial,
       },
     });
   }
