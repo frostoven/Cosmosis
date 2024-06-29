@@ -10,6 +10,7 @@ const { pulse, continuous } = ActionType;
 const { keyboardButton } = InputType;
 
 const generalControls: ControlSchema = {
+  openShipConsole:    { actionType: pulse, current: null, default: { Backquote: keyboardButton } },
   activateGameMenu:   { actionType: pulse, current: null, default: { Backspace: keyboardButton } },
   toggleMousePointer: { actionType: pulse, current: null, default: { ControlLeft: keyboardButton } },
   toggleFullScreen:   { actionType: pulse, current: null, default: { F11: keyboardButton } },

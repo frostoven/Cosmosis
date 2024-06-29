@@ -5,6 +5,9 @@ import { gameRuntime } from '../../../../gameRuntime';
 import { ModeId } from '../../../InputManager/types/ModeId';
 import { MouseDriver } from '../../../MouseDriver';
 import { ReactBase } from '../../../ReactBase';
+import {
+  toggleBootWindow,
+} from '../../../../../local/windowLoadListener';
 
 class GeneralControl extends ModeController {
   private _mouseDriver: MouseDriver;
@@ -16,6 +19,10 @@ class GeneralControl extends ModeController {
 
     this._mouseDriver = gameRuntime.tracked.mouseDriver.cachedValue;
     this._reactBase = gameRuntime.tracked.reactBase.cachedValue;
+
+    this.pulse.openShipConsole.getEveryChange(() => {
+      toggleBootWindow();
+    });
 
     this.pulse.activateGameMenu.getEveryChange(() => {
       this._reactBase.getInputBridge().activateAndOpenMenu();
