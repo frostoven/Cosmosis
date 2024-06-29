@@ -1,16 +1,8 @@
 /**
- * Used for functions that need to run very early (such as boot-debugging
- * tools).
+ * Used for functions that run independently of the bundled application, such
+ * as code that waits for the first-tim bundle to finish building (allows us to
+ * give the user meaningful updates even if the project hasn't been built yet).
  */
-
-import userProfile from './userProfile';
-
-// Automatically show dev tools window if user has enabled it.
-userProfile.cacheChangeEvent.getOnce(({ userOptions }) => {
-  if (userOptions.debug.autoOpenDevTools) {
-    nw.Window.get().showDevTools();
-  }
-});
 
 // Automatically reload the application if code changes occur.
 if (process.env && process.env.NODE_ENV !== 'production') {
@@ -63,11 +55,27 @@ if (process.env && process.env.NODE_ENV !== 'production') {
     }
   }
 
-  const files = Object.keys(hashRecords);
-  for (let i = 0, len = files.length; i < len; i++) {
-    const name = files[i];
-    const fileHash = hash(fs.readFileSync(name));
-    console.log(name, fileHash);
-    fs.watch(name, (event) => reload(event, name, fileHash));
-  }
+  let oneOrMoreFilesMissing = false;
+  (function buildWatcher() {
+    try {
+      const files = Object.keys(hashRecords);
+      for (let i = 0, len = files.length; i < len; i++) {
+        const name = files[i];
+        const fileHash = hash(fs.readFileSync(name));
+        console.log(name, fileHash);
+        fs.watch(name, (event) => reload(event, name, fileHash));
+      }
+
+      if (oneOrMoreFilesMissing) {
+        // First-time build. Reload the app.
+        window.location = window.location;
+      }
+    }
+    catch (error) {
+      console.warn('Could not read source files. Build currently in progress?');
+      oneOrMoreFilesMissing = true;
+      // Keep checking until the files magically appear.
+      setTimeout(buildWatcher, 1000);
+    }
+  })();
 }
