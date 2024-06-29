@@ -2,6 +2,8 @@ import CosmosisPlugin from '../../types/CosmosisPlugin';
 import ChangeTracker from 'change-tracker/src';
 import Stats from '../../../../hackedlibs/stats/stats.module';
 import { lerp } from '../../../local/mathUtils';
+import { logBootTitleAndInfo } from '../../../local/windowLoadListener';
+import PluginLoader from '../../types/PluginLoader';
 
 // J2000.0 epoch. Used for astrophysics.
 const epoch = new Date('2000-01-01T12:00:00Z').getTime() / 1000;
@@ -125,6 +127,7 @@ export default class Core {
   private readonly _rendererHooks: Function[];
 
   constructor() {
+    logBootTitleAndInfo('Driver', 'Motherboard HWE', PluginLoader.bootLogIndex);
     this.onPreAnimate = new ChangeTracker();
     this.onAnimate = new ChangeTracker();
     this.onAnimateDone = new ChangeTracker();

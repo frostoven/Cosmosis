@@ -31,6 +31,8 @@ import {
   EciRegistrationSignature,
 } from '../shipModules/types/EciRegistrationSignature';
 import Player from '../Player';
+import { logBootTitleAndInfo } from '../../../local/windowLoadListener';
+import PluginLoader from '../../types/PluginLoader';
 
 const BLOOM_SCENE = 1;
 const bloomLayer = new Layers();
@@ -68,6 +70,7 @@ export default class LevelScene extends Group {
 
   constructor() {
     super();
+    logBootTitleAndInfo('Driver', 'Particle Sensor', PluginLoader.bootLogIndex);
     this._cachedCamera = new PerspectiveCamera();
     this._cachedSpacetime = gameRuntime.tracked.spacetimeControl.cachedValue;
     this._cachedSpacetime.enterReality(this);

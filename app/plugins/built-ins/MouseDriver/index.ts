@@ -1,6 +1,8 @@
 import CosmosisPlugin from '../../types/CosmosisPlugin';
 import { PointerLockControls } from './types/PointerLockControls';
 import { gameRuntime } from '../../gameRuntime';
+import { logBootTitleAndInfo } from '../../../local/windowLoadListener';
+import PluginLoader from '../../types/PluginLoader';
 
 // Note: this relates to how the mouse works with the game window. It has
 // nothing to do with mounting rodents, though we may or may not have such
@@ -9,6 +11,7 @@ class MouseDriver extends PointerLockControls {
   private readonly _superLock: Function;
 
   constructor() {
+    logBootTitleAndInfo('Driver', 'Enhanced Precision Driver', PluginLoader.bootLogIndex);
     let pointerLockTarget: HTMLElement;
     const canvas = document.getElementById('near-object-canvas');
     if (canvas) {

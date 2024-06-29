@@ -12,6 +12,8 @@ import {
   MouseButtonName,
   scrollDeltaToEnum,
 } from '../../../configs/types/MouseButtonName';
+import { logBootTitleAndInfo } from '../../../local/windowLoadListener';
+import PluginLoader from '../../types/PluginLoader';
 
 /*
  * Mechanism:
@@ -100,6 +102,7 @@ class InputManager {
   };
 
   constructor() {
+    logBootTitleAndInfo('Driver', 'Input Wiring', PluginLoader.bootLogIndex);
     this._blockAllInput = false;
     this._blockKbMouse = false;
 

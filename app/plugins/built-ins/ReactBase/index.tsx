@@ -1,10 +1,14 @@
 import React from 'react';
 import * as ReactDOM from 'react-dom';
 import CosmosisPlugin from '../../types/CosmosisPlugin';
-import { onDocumentReady } from '../../../local/windowLoadListener';
+import {
+  logBootTitleAndInfo,
+  onDocumentReady,
+} from '../../../local/windowLoadListener';
 import ChangeTracker from 'change-tracker/src';
 import RootNode from './types/RootNode';
 import InputBridge from './types/InputBridge';
+import PluginLoader from '../../types/PluginLoader';
 
 class ReactBase {
   private _input = new InputBridge();
@@ -13,6 +17,7 @@ class ReactBase {
   private _rootNode = null;
 
   constructor() {
+    logBootTitleAndInfo('Driver', 'Human Interface Generics', PluginLoader.bootLogIndex);
     onDocumentReady(this.setupReact.bind(this));
   }
 

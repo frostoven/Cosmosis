@@ -6,6 +6,8 @@ import { Camera } from 'three';
 import SpaceScene from '../SpaceScene';
 import { Sol } from './SceneOverrides/scenes/Sol';
 import { SpacetimeControl } from '../SpacetimeControl';
+import { logBootTitleAndInfo } from '../../../local/windowLoadListener';
+import PluginLoader from '../../types/PluginLoader';
 
 type PluginCompletion = PluginCacheTracker | {
   player: Player,
@@ -18,6 +20,7 @@ class LocalSpace {
   private _pluginCache: PluginCompletion;
 
   constructor() {
+    logBootTitleAndInfo('Driver', 'Astrometrics Interface', PluginLoader.bootLogIndex);
     this._pluginCache = new PluginCacheTracker(
       [ 'player', 'spacetimeControl', 'spaceScene' ],
       { player: { camera: 'camera' } },

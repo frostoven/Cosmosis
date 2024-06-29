@@ -2,6 +2,8 @@ import { Object3D, Scene } from 'three';
 import CosmosisPlugin from '../../../types/CosmosisPlugin';
 import HudPage from './types/HudPage';
 import { gameRuntime } from '../../../gameRuntime';
+import { logBootTitleAndInfo } from '../../../../local/windowLoadListener';
+import PluginLoader from '../../../types/PluginLoader';
 
 class Hud3D {
   private readonly _trackedParents: { [key: string]: { childPage: HudPage } };
@@ -10,6 +12,7 @@ class Hud3D {
   private _activeHudScene: null | Scene;
 
   constructor(pageId: string, hudBuilder: HudPage) {
+    logBootTitleAndInfo('Driver', 'Visor System', PluginLoader.bootLogIndex);
     this._trackedParents = {
       // Example structure:
       // parentUuid: { childPage: new HudPage() },

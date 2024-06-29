@@ -3,12 +3,15 @@ import { gameRuntime } from '../../gameRuntime';
 import { InputManager } from '../InputManager';
 import Modal from '../../../modal/Modal';
 import GamepadDriver from '../../../GamepadDriver';
+import { logBootTitleAndInfo } from '../../../local/windowLoadListener';
+import PluginLoader from '../../types/PluginLoader';
 
 class GamepadConnector {
   private _driver!: GamepadDriver;
   private _cachedInputManager: InputManager;
 
   constructor() {
+    logBootTitleAndInfo('Driver', 'Enhanced Analog Control', PluginLoader.bootLogIndex);
     this._cachedInputManager = gameRuntime.tracked.inputManager.cachedValue;
     this._setupWatchers();
   }

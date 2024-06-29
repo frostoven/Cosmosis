@@ -2,6 +2,8 @@ import ChangeTracker from 'change-tracker/src';
 import CosmosisPlugin from '../../types/CosmosisPlugin';
 import { LocalBodies } from './interfaces/LocalBodies';
 import { LocalStars } from './interfaces/LocalStars';
+import { logBootTitleAndInfo } from '../../../local/windowLoadListener';
+import PluginLoader from '../../types/PluginLoader';
 
 // Not to be confused with the ship navigation module. This plugin offers
 // points of interest, solar system locations, and proxies universe data.
@@ -9,6 +11,7 @@ class Navigation {
   public onNearbyStarDetected: ChangeTracker;
 
   constructor() {
+    logBootTitleAndInfo('Driver', 'Navigation', PluginLoader.bootLogIndex);
     this.onNearbyStarDetected = new ChangeTracker();
   }
 

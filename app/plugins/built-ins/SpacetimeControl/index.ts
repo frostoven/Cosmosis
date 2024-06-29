@@ -3,6 +3,8 @@ import * as THREE from 'three';
 import CosmosisPlugin from '../../types/CosmosisPlugin';
 import { CoordType } from './types/CoordType';
 import { capitaliseFirst } from '../../../local/utils';
+import { logBootTitleAndInfo } from '../../../local/windowLoadListener';
+import PluginLoader from '../../types/PluginLoader';
 
 type AdderSignature = (direction: THREE.Vector3, speed: number) => void;
 
@@ -32,6 +34,7 @@ class SpacetimeControl {
   private _adder: AdderSignature;
 
   constructor() {
+    logBootTitleAndInfo('Driver', 'Warp Processor', PluginLoader.bootLogIndex);
     this._coordMode = CoordType.playerCentric;
     this._reality.add(this._levelBubble);
 
