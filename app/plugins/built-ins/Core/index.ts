@@ -56,7 +56,7 @@ let lastGfxRender = 0;
 let triggerGfxRender = false;
 
 export default class Core {
-  static debugFastSolarTime = true;
+  static debugFastSolarTime = false;
 
   /**
    * The unified view is meant as a friendly place that all modules may report

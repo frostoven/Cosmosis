@@ -27,10 +27,6 @@
   bottom: 0;
 }
 
-#group-toggle {
-  position: absolute;
-}
-
 #system-output, #system-output > div, .console-button-narrow {
   font-family: IBM_VGA_8x16, monospace;
   font-size: 12pt;
@@ -46,14 +42,24 @@
 }
 
 .console-button-narrow {
-  width: calc(12pt * 10);
+  width: calc(12pt * 8);
   color: #fff;
   background-color: #555;
-  right: 8px;
-  bottom: 20px;
   padding: 8px;
   text-align: center;
   box-shadow: 8px 8px 0 0 #2c2c2c;
+}
+
+#notice-toggle {
+  position: absolute;
+  left: calc(12pt - 4px);
+  bottom: 10px;
+}
+
+#group-toggle {
+  position: absolute;
+  right: calc(12pt - 4px);
+  bottom: 10px;
 }
 
 /* Blinks at the speed computers usually blink BIOS cursors. */

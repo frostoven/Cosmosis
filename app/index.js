@@ -57,11 +57,6 @@ console.log(
 );
 
 console.log(`%c► Build ${packageJson.version}`, 'font-weight: bold;');
-logBootInfo(`╔════════════════════════════════════╗`);
-logBootInfo(`║ MicroECI Universal Spacecraft BIOS ║`);
-logBootInfo(`╟────────────────────────────────────╢`);
-logBootInfo(`║  Copyright (c) EarthGov Corp 2378  ║`);
-logBootInfo(`╚════════════════════════════════════╝`);
 logBootInfo(`System boot v${packageJson.version}`); // ▓
 const heapSize = (
   (v8.getHeapStatistics().heap_size_limit / (1024 * 1024 * 1024)).toFixed(2)

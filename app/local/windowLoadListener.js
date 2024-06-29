@@ -16,7 +16,16 @@ import packageJson from '../../package.json';
 
 const MAX_TERM_LINES = 20;
 
+const FIRMWARE_HEADER = [
+  [ '╔════════════════════════════════════╗' ],
+  [ '║ MicroECI Universal Spacecraft BIOS ║' ],
+  [ '╟────────────────────────────────────╢' ],
+  [ '║  Copyright (c) EarthGov Corp 2378  ║' ],
+  [ '╚════════════════════════════════════╝' ],
+];
+
 let shipConsoleVisible = true;
+let showFakeLegalNotice = false;
 let disableCategoryGrouping = false;
 let windowHasLoaded = false;
 let bootReadySignalled = false;
@@ -28,7 +37,7 @@ const eventsNeededToContinue = 2;
 // The amount of times notifyListenersAndStop has been called.
 let eventCount = 0;
 // Messages sent to #boot-logger before the DOM was ready.
-const bootMessageQueue = [];
+const bootMessageQueue = [ ...FIRMWARE_HEADER ];
 
 /**
  * Polyfill for running nw.js code in the browser.
@@ -92,14 +101,19 @@ function windowLoadListener(readyCb = () => {
   renderBootMessages();
 
   const groupToggleButton = document.getElementById('group-toggle');
-  if (groupToggleButton) {
+  const noticeToggleButton = document.getElementById('notice-toggle');
+  if (groupToggleButton && noticeToggleButton) {
     groupToggleButton.onclick = () => {
       disableCategoryGrouping = !disableCategoryGrouping;
       renderBootMessages();
     };
+    noticeToggleButton.onclick = () => {
+      showFakeLegalNotice = !showFakeLegalNotice;
+      renderBootMessages();
+    };
   }
   else {
-    console.error('Could not configure ship console grouping button.');
+    console.error('Could not configure ship console buttons.');
   }
 
   // Start profile init.
@@ -132,6 +146,23 @@ function renderBootMessages() {
   const consoleDiv = document.getElementById('system-output');
   const groupToggleButton = document.getElementById('group-toggle');
 
+  if (groupToggleButton) {
+    const groupIcon = disableCategoryGrouping ? '◇' : '◈';
+    groupToggleButton.textContent = `Group ${groupIcon}`;
+  }
+
+  if (showFakeLegalNotice) {
+    consoleDiv.innerHTML = [
+      ...FIRMWARE_HEADER,
+      'Please be advised that, by decree of The EarthGov Corporation ' +
+      'dated September 11, 2381, operating any spacecraft without ' +
+      'official government-approved firmware is illegal.<br><br>' +
+      'Violations are ' +
+      'punishable by up to 40 years in a prison labor camp.',
+    ].join('<br>');
+    return;
+  }
+
   if (consoleDiv) {
     let messages;
     if (disableCategoryGrouping) {
@@ -151,11 +182,6 @@ function renderBootMessages() {
     ];
     consoleDiv.innerHTML = elements.join('');
     consoleDiv.scrollIntoView({ block: 'center', inline: 'center' });
-  }
-
-  if (groupToggleButton) {
-    const groupIcon = disableCategoryGrouping ? '◇' : '◈';
-    groupToggleButton.textContent = `Group Similar ${groupIcon}`;
   }
 }
 
