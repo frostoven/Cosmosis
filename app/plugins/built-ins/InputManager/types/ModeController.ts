@@ -429,6 +429,11 @@ export default class ModeController {
       //  for analog remaps.
       // @ts-ignore - See previous comment.
       this.cumulativeInput[control.analogRemap] = value * control.multiplier.keyboardButton * control.sign;
+
+      // TODO: We currently have a bug where if you press two opposing buttons
+      //  that are analog remapped at the same time, the one will erase the
+      //  other. For example, if you press 'up' and 'down' at the same time,
+      //  the last one to pressed will erase the other. Invetigate me.
     }
     else {
       // Under normal circumstances this value is always either 0 or 1.

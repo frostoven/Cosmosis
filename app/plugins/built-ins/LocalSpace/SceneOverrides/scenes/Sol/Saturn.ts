@@ -3,7 +3,6 @@ import {
   LocalPlanet,
 } from '../../../../../../celestialBodies/bodyTypes/LocalPlanet';
 import { earthMass } from './defs';
-import { nearbyPlanet } from '../../../shaders/nearbyPlanet.glsl';
 import { MeshBasicMaterial, ShaderMaterial } from 'three';
 import { localBody, LocalBodyGlslType } from '../../../shaders/localBody.glsl';
 
@@ -17,8 +16,8 @@ function buildMaterial() {
       planetLuminosity: { value: 10.0 },
       planetTexture: { value: [] },
     },
-    vertexShader: nearbyPlanet.vertex,
-    fragmentShader: nearbyPlanet.fragment,
+    vertexShader: localBody.vertex,
+    fragmentShader: localBody.fragment,
     side: THREE.FrontSide,
     blending: THREE.AdditiveBlending,
     transparent: true,

@@ -3,13 +3,15 @@
   user-select: none;
   bottom: 92px;
   left: 16px;
-  background-color: #000000e6;
+  /*background-color: #000000e6;*/
+  background-color: rgba(33, 33, 37, 0.5);
+  backdrop-filter: blur(17px);
   /* We write the width and height in points so that we can match our
      DOS-like monospace fonts more closely. */
   width: calc(12pt * 20); /* should be 320px exactly */
   height: calc(12pt * 24); /* should be 384px exactly */
   padding: 0 8px 0 8px;
-  border-radius: 4px;
+  border-radius: 8px;
   z-index: 1000;
   overflow: hidden;
 }
@@ -27,7 +29,7 @@
   bottom: 0;
 }
 
-#system-output, #system-output > div, .console-button-narrow {
+#ship-console, #system-output, #system-output > div, .console-button-narrow {
   font-family: IBM_VGA_8x16, monospace;
   font-size: 12pt;
   font-weight: 100;

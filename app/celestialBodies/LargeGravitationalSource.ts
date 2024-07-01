@@ -105,7 +105,6 @@ class LargeGravitationalSource {
     this.squareMDistanceFromCamera = viewerPosition.distanceToSquared(this.positionM);
     this.isNearby = this.nearDistance > this.squareMDistanceFromCamera;
     this.bodyGlow.lookAt(0, 0, 0);
-
   }
 
   step(time: number, viewerPosition: THREE.Vector3) {

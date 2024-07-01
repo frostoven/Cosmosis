@@ -70,7 +70,7 @@ export default class PluginLoader {
         console.log('[PluginLoader] All plugins loaded.');
         this.onLoaded.setValue(true);
         logBootTitleAndInfo('Done', 'All drivers loaded', PluginLoader.bootLogIndex);
-        logBootTitleAndInfo('MicroECI Spacecraft OS booted!', '');
+        logBootTitleAndInfo('MicroECI OS booted!', '');
         logBootInfo('Handing control over to the helm');
         logBootInfo('Welcome, Commander.');
         setTimeout(() => {
