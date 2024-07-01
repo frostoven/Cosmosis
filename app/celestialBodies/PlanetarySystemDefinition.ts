@@ -27,9 +27,9 @@ class PlanetarySystemDefinition {
   comets: LocalComet[] = [];
   oortCloud: LocalOortCloud | null = null;
   private _allBodies: LargeGravitationalSource[] = [];
-  private _parentScene: THREE.Scene;
+  private _parentScene: THREE.Scene | THREE.Group;
 
-  constructor(parentScene: THREE.Scene) {
+  constructor(parentScene: THREE.Scene | THREE.Group) {
     this._parentScene = parentScene;
     // TODO: Add all bodies to _allBodies.
     // GravitySource.stepAll

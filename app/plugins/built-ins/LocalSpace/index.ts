@@ -29,18 +29,13 @@ class LocalSpace {
       // TODO: Create an octree to determine if our current position in space
       //  has a custom scene associated with it. For initial testing, we're
       //  hard-coding Sol.
-      const spaceScene = this._pluginCache.spaceScene;
-      const sol = new Sol(spaceScene);
+      const sol = new Sol(this._pluginCache.spaceScene);
       sol.activate();
 
-      // TODO: Remove me.
-      // console.log('spacetimeControl:', this._pluginCache.spacetimeControl);
-      this._pluginCache.spacetimeControl.teleportShipToLocalLocation(
-        new THREE.Vector3(0, 0, -29_798_550_000), // very close
-        // new THREE.Vector3(0, 0,   -107_620_000_700), // venus's distance to the sun.
-        // new THREE.Vector3(0, 0,   -149_597_870_700), // earth's distance to the sun.
-        // new THREE.Vector3(0, 0, -1_448_400_000_000), // saturn's distance.
-      );
+      // TODO: Remove me. Here for testing purposes only.
+      setTimeout(() => {
+        this._pluginCache.spacetimeControl.rotatePlayerCentric(-0.2, 3.14, 3.14 * 0.75);
+      }, 2000);
     });
   }
 }

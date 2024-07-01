@@ -135,21 +135,21 @@ class SpacetimeControl {
     this._levelBubble.position.addScaledVector(_tmpDirection, -speed);
   }
 
-  rotatePlayerCentric(pitch: number, yaw: number, roll: number) {
+  rotatePlayerCentric(pitchX: number, yawY: number, rollZ: number) {
     // The level bubble should only ever contain 1 or 0 children (we can make
     // it size agnostic, but doing so is semantically meaningless and thus a
     // waste of CPU).
     const level = this._levelBubble.children[0];
     if (level) {
-      level.rotateX(pitch);
-      level.rotateY(yaw);
-      level.rotateZ(roll);
+      level.rotateX(pitchX);
+      level.rotateY(yawY);
+      level.rotateZ(rollZ);
     }
   }
 
-  teleportShipToLocalLocation(positionM: THREE.Vector3) {
-    this._reality.position.set(positionM.x, positionM.y, positionM.z);
-    this._levelBubble.position.set(-positionM.x, -positionM.y, -positionM.z);
+  teleportShipToLocalLocation(worldPositionM: THREE.Vector3) {
+    this._reality.position.set(-worldPositionM.x, -worldPositionM.y, -worldPositionM.z);
+    this._levelBubble.position.set(worldPositionM.x, worldPositionM.y, worldPositionM.z);
   }
 
   // Move galaxy around the player.

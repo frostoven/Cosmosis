@@ -2,8 +2,9 @@ import * as THREE from 'three';
 import {
   LocalStar,
 } from '../../../../../../celestialBodies/bodyTypes/LocalStar';
-import { sunMass, earthMass } from './defs';
+import { earthMass } from './defs';
 import { localBody, LocalBodyGlslType } from '../../../shaders/localBody.glsl';
+import { gameRuntime } from '../../../../../gameRuntime';
 
 const DEG2RAD = THREE.MathUtils.DEG2RAD;
 
@@ -59,6 +60,26 @@ class Earth extends LocalStar {
         getGlowMaterial: () => farMaterial,
       },
     });
+
+    // TODO: Remove me. Here for testing purposes only.
+    setTimeout(() => {
+      const v3 = new THREE.Vector3();
+      this.sphereMesh.getWorldPosition(v3);
+      v3.x -= 100_000_000;
+      console.log(v3);
+      gameRuntime.tracked.spacetimeControl.cachedValue.teleportShipToLocalLocation(
+        v3,
+        // new THREE.Vector3(0, 0, -2_500_000_000), // toasty
+        // new THREE.Vector3(0, 0, -29_798_550_000), // very close
+        // new THREE.Vector3(41_000_480_000, -99_306_919_000, -4_480_215_000), // audience before venus
+        // new THREE.Vector3(-30_571_314_000, 149_289_075_000, -96_640_330), // nature planet
+        // new THREE.Vector3(-32_349_676_000, 528_630_200, 148_201_550_000), // nature planet ROTATED
+        // new THREE.Vector3(0, 0,   -107_620_000_700), // venus's distance to the sun.
+        // new THREE.Vector3(0, 0,   -149_597_870_700), // earth's distance to the sun.
+        // new THREE.Vector3(0, 0,   -4_377_110_000), // the glitch zone.
+        // new THREE.Vector3(0, 0, -1_448_400_000_000), // saturn's distance.
+      );
+    }, 2500);
   }
 }
 
