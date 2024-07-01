@@ -1,10 +1,10 @@
 import * as THREE from 'three';
-import { LocalStar } from './LocalStar';
-import { LocalPlanet } from './LocalPlanet';
-import { LocalAsteroidBelt } from './LocalAsteroidBelt';
-import { LocalComet } from './LocalComet';
-import { LocalOortCloud } from './LocalOortCloud';
-import { LargeGravitationalSource } from '../LargeGravitationalSource';
+import { LocalStar } from './bodyTypes/LocalStar';
+import { LocalPlanet } from './bodyTypes/LocalPlanet';
+import { LocalAsteroidBelt } from './bodyTypes/LocalAsteroidBelt';
+import { LocalComet } from './bodyTypes/LocalComet';
+import { LocalOortCloud } from './bodyTypes/LocalOortCloud';
+import { LargeGravitationalSource } from './LargeGravitationalSource';
 
 /**
  * Describes everything needed to produce a planetary system, whether by hand
@@ -27,17 +27,17 @@ class PlanetarySystemDefinition {
   comets: LocalComet[] = [];
   oortCloud: LocalOortCloud | null = null;
   private _allBodies: LargeGravitationalSource[] = [];
-  private _parentScene: THREE.Scene;
+  private _parentScene: THREE.Scene | THREE.Group;
 
-  constructor(parentScene: THREE.Scene) {
+  constructor(parentScene: THREE.Scene | THREE.Group) {
     this._parentScene = parentScene;
     // TODO: Add all bodies to _allBodies.
     // GravitySource.stepAll
   }
 
   addAllToScene() {
-    this.mainStar && this._addBodiesToScene([ this.mainStar ]);
     this._addBodiesToScene(this.planets);
+    this.mainStar && this._addBodiesToScene([ this.mainStar ]);
   }
 
   ejectAllFromScene() {
@@ -46,20 +46,25 @@ class PlanetarySystemDefinition {
 
   _addBodiesToScene(bodies: LargeGravitationalSource[]) {
     for (let i = 0, len = bodies.length; i < len; i++) {
-      this._parentScene.add(bodies[i].mesh);
-      console.log('adding:', bodies[i].mesh);
+      this._parentScene.add(bodies[i].container);
+      console.log('adding:', bodies[i].container);
     }
   }
 
-  stepLargeBodyOrbits(time: number, bodies: LargeGravitationalSource[]) {
+  stepLargeBodyOrbits(
+    time: number,
+    bodies: LargeGravitationalSource[],
+    viewerPosition: THREE.Vector3,
+  ) {
+    this.mainStar?.step(time, viewerPosition);
     for (let i = 0, len = bodies.length; i < len; i++) {
-      this.planets[i].step(time);
+      this.planets[i].step(time, viewerPosition);
       // console.log(this.planets[i].positionM);
     }
   }
 
-  step(time: number) {
-    this.stepLargeBodyOrbits(time, this.planets);
+  step(time: number, viewerPosition: THREE.Vector3) {
+    this.stepLargeBodyOrbits(time, this.planets, viewerPosition);
   }
 }
 

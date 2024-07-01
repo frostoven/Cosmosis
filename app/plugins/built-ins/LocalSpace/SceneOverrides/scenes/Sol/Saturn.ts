@@ -3,7 +3,6 @@ import {
   LocalPlanet,
 } from '../../../../../../celestialBodies/bodyTypes/LocalPlanet';
 import { earthMass } from './defs';
-import { nearbyPlanet } from '../../../shaders/nearbyPlanet.glsl';
 import { MeshBasicMaterial, ShaderMaterial } from 'three';
 import { localBody, LocalBodyGlslType } from '../../../shaders/localBody.glsl';
 
@@ -17,8 +16,8 @@ function buildMaterial() {
       planetLuminosity: { value: 10.0 },
       planetTexture: { value: [] },
     },
-    vertexShader: nearbyPlanet.vertex,
-    fragmentShader: nearbyPlanet.fragment,
+    vertexShader: localBody.vertex,
+    fragmentShader: localBody.fragment,
     side: THREE.FrontSide,
     blending: THREE.AdditiveBlending,
     transparent: true,
@@ -28,20 +27,20 @@ function buildMaterial() {
 // https://nssdc.gsfc.nasa.gov/planetary/factsheet/saturnfact.html
 class Saturn extends LocalPlanet {
   constructor() {
-    let nearMaterial: ShaderMaterial | MeshBasicMaterial = new THREE.MeshBasicMaterial({
-      color,
-    });
+    // const color = new THREE.Color(1.0, 0.667, 0.333);
+    const color = new THREE.Color(1.0, 0.0, 0.9);
+    let nearMaterial: ShaderMaterial | MeshBasicMaterial = new THREE.MeshBasicMaterial({ color, });
 
     const uniforms = {
       color: { value: color },
       bodyType: { value: LocalBodyGlslType.planet },
-      objectSize: { value: 58_232_000 },
-      scale: { value: -10.0 },
-      luminosity: { value: 1 },
-      invRadius: { value: 10.0 },
-      invGlowRadius: { value: 8.0 },
-      visibility: { value: 67 },
+      objectSize: { value: 58_232_000 * 100 },
       intensity: { value: 70 },
+      luminosity: { value: 1 },
+      scale: { value: -1000 },
+      invRadius: { value: 42 },
+      invGlowRadius: { value: 5 },
+      visibility: { value: 200 },
     };
 
     const farMaterial = new THREE.ShaderMaterial({
@@ -76,7 +75,7 @@ class Saturn extends LocalPlanet {
       visuals: {
         getTexture: () => null,
         getSphereMaterial: () => nearMaterial,
-        getDistantMaterial: () => farMaterial,
+        getGlowMaterial: () => farMaterial,
       },
     });
   }

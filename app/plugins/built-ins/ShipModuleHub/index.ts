@@ -7,9 +7,12 @@ import ShipModule from '../shipModules/types/ShipModule';
 import {
   EciRegistrationSignature
 } from '../shipModules/types/EciRegistrationSignature';
+import { logBootTitleAndInfo } from '../../../local/windowLoadListener';
+import PluginLoader from '../../types/PluginLoader';
 
 class ShipModuleHub {
   constructor() {
+    logBootTitleAndInfo('Driver', 'Ship Module Hub', PluginLoader.bootLogIndex);
   }
 
   plug(device: ShipModule) {

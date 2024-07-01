@@ -1,0 +1,94 @@
+#ship-console {
+  position: fixed;
+  user-select: none;
+  bottom: 92px;
+  left: 16px;
+  /*background-color: #000000e6;*/
+  background-color: rgba(33, 33, 37, 0.5);
+  backdrop-filter: blur(17px);
+  /* We write the width and height in points so that we can match our
+     DOS-like monospace fonts more closely. */
+  width: calc(12pt * 20); /* should be 320px exactly */
+  height: calc(12pt * 24); /* should be 384px exactly */
+  padding: 0 8px 0 8px;
+  border-radius: 8px;
+  z-index: 1000;
+  overflow: hidden;
+}
+
+#ship-console-bounds {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+}
+
+#system-output {
+  position: absolute;
+  padding-top: 4px;
+  top: 0;
+  bottom: 0;
+}
+
+#ship-console, #system-output, #system-output > div, .console-button-narrow {
+  font-family: IBM_VGA_8x16, monospace;
+  font-size: 12pt;
+  font-weight: 100;
+  line-height: 1;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  cursor: url(/potatoLqAssets/icons/dos_cursor_error.png) 4 8, auto;
+}
+
+.console-button-narrow {
+  width: calc(12pt * 8);
+  color: #fff;
+  background-color: #555;
+  padding: 8px;
+  text-align: center;
+  box-shadow: 8px 8px 0 0 #2c2c2c;
+}
+
+#notice-toggle {
+  position: absolute;
+  left: calc(12pt - 4px);
+  bottom: 10px;
+}
+
+#group-toggle {
+  position: absolute;
+  right: calc(12pt - 4px);
+  bottom: 10px;
+}
+
+/* Blinks at the speed computers usually blink BIOS cursors. */
+.blinky {
+  animation: blinky 0.229651s infinite !important;
+}
+
+@keyframes blinky {
+  0% {
+    opacity: 0;
+  }
+  14.286% {
+    opacity: 0;
+  }
+  28.571% {
+    opacity: 1;
+  }
+  42.857% {
+    opacity: 1;
+  }
+  57.143% {
+    opacity: 1;
+  }
+  71.429% {
+    opacity: 1;
+  }
+  85.715% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}

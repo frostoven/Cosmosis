@@ -118,6 +118,7 @@ build/offscreenSkybox.js
 build/offscreenSkybox.js.map
 build/offscreenGalaxy.js
 build/offscreenGalaxy.js.map
+pnpm-lock.yaml
 
 # The final product is excluded to prevent this repo blowing up into
 # terrabytes. Offer as separate download, and leave the rest to runtime

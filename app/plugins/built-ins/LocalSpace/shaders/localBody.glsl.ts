@@ -1,6 +1,7 @@
 import { import_log10 } from '../../../../shaders/shaderMath';
 
 enum LocalBodyGlslType {
+  nothing,
   star,
   planet,
   moon,
@@ -12,6 +13,7 @@ const varyingsHeader = `
   varying float vDistToCamera;
   varying float vGlowAmount;
   varying float vAttenuation;
+  varying float vDistantGlow;
 `;
 
 // language=glsl
@@ -19,6 +21,12 @@ const vertex = `
   uniform float luminosity;
   uniform float objectSize;
   uniform float intensity;
+  uniform int bodyType;
+  
+  uniform float debugValue1;
+  uniform float debugValue2;
+  uniform float debugValue3;
+  uniform float debugValue4;
 
   ${varyingsHeader}
 
@@ -26,8 +34,7 @@ const vertex = `
 
   #define PI ${Math.PI}
   #define HALF_RAD ${(Math.PI / 180) * 0.5}
-  #define STAR_SIZE 1000.0
-  #define FOV 90.0
+  #define STAR_SIZE 4.0
 
   // Used by logdepthbuf_pars_vertex below.
   bool isPerspectiveMatrix(mat4 unused) {
@@ -51,7 +58,7 @@ const vertex = `
 
     // Local space position.
     vec3 localPosition = position;
-
+    
     // Get position relative to camera.
     vec4 modelViewPosition = modelViewMatrix * vec4(localPosition, 1.0);
     vDistToCamera = length(modelViewPosition.xyz);
@@ -65,48 +72,71 @@ const vertex = `
 
     // Bring magnitude into a range of 0.1 to 1 (remap min: 0.107, max: 0.18).
     vGlowAmount = max(0.07, 1.0 - remap(brightness, 0.107, 0.18, 0.0, 1.0));
-
+    
+    // --------------------------------------------------------------------- //
     // Calculate size based on distance and brightness. The purpose of this
     // code block to preserve visibility of objects really far away while still
     // preserving correct scale when close.
     float unitSize = (objectSize * 0.00000001);
+    float unitDistance = vDistToCamera * 0.00000000001;
     // This prevents the body from falling below a certain size. minSize is
     // identical for all bodies regardless of radius, but the fact that we fade
     // planets while not fading stars creates the illusion of varying sizes.
-    float minSize = (vDistToCamera * 0.000000000075) / unitSize;
-    // Allows us to bring our external numbers to single-digit values.
-    float unitDistance = length(vDistToCamera * 0.00000000001);
+    
+    float distanceScale = 0.1;
+    float distanceExponent = 0.4;
+    float planetScale = 0.5;
+    
+    // --------------------------------------------------------------------- //
     // This plane's glow keeps objects visible when far away, and acts as an
     // atmostphere when close. For this shader to work correctly, glow should
-    // be order of magnitude larger than the body when far yet about the same
-    // size when close. maxSize helps us match same size when close.
-    float maxSize = max(unitSize * 0.45, (unitDistance / unitSize) * 32.0);
-    float attenuation = intensity / (unitDistance * unitDistance);
-    //
-    // Scale the plane match our size.
-    float size = clamp(attenuation / unitSize, minSize, maxSize);
-    localPosition *= size;
+    // be orders of magnitude larger than the body when far yet about the same
+    // size when close. maxSize helps us match same size when close. Stars are
+    // more complex than planets, so have additional steps to ensure smoother
+    // transitions.
+    float size;
+    float attenuation;
+    // TODO: Try find a mechanism that doesn't require different constants for
+    //  planets and stars. The requirement is that local stars should not
+    //  become invisible within the local space scene, but planets may.
+    if (bodyType == ${LocalBodyGlslType.star}) {
+      float minSize = max(
+        STAR_SIZE * unitDistance * 0.1,
+        pow((unitDistance) / unitSize, distanceExponent) * STAR_SIZE
+      );
+      float maxSize = pow((unitDistance * distanceScale / unitSize), distanceExponent) * STAR_SIZE * 8.0;
+      attenuation = (intensity / (unitDistance * unitDistance)) / unitSize;
+    
+      size = (minSize + maxSize) * 0.5;
+    }
+    else {
+      float minSize = max(
+        STAR_SIZE * unitDistance * 0.1,
+        pow((unitDistance) / unitSize, distanceExponent) * STAR_SIZE
+      );
+      float maxSize = pow((unitDistance * distanceScale / unitSize), distanceExponent) * STAR_SIZE * 0.5;
+      attenuation = (intensity / (unitDistance * unitDistance)) / unitSize;
+      
+      size = (pow(minSize, 1.75) * 0.25 + min(maxSize, attenuation)) * 2.0;
+    }
 
-    // Send to shader for fading out.
+    localPosition *= size * STAR_SIZE;
+    vDistantGlow = 0.0;
+    
+    // Send to shader to fade out.
     vAttenuation = clamp(attenuation, 0.0, 1.0);
+    
+    // --------------------------------------------------------------------- //
+    // Ensure the plane is always rendered in front of the star.
+    // Direction from the plane to the camera.
+    vec3 direction = normalize(cameraPosition - localPosition);
+    // Calculate the new position for the atmosphere plane vertex
+    vec3 newPosition = localPosition + direction * objectSize * 0.1;
+    // --------------------------------------------------------------------- //
 
-    // Calculate the correct position and scale for the plane
-    vec4 mvPosition = modelViewMatrix * vec4(0.0, 0.0, 0.0, 1.0);
-
-    // Make the plane look at the camera.
-    vec2 center = vec2(0.5);
-    vec2 alignedPosition = localPosition.xy - center;
-
-    vec2 rotatedPosition;
-    float rotation = 0.0;
-
-    rotatedPosition.x = cos(rotation) * alignedPosition.x - sin(rotation) * alignedPosition.y;
-    rotatedPosition.y = sin(rotation) * alignedPosition.x + cos(rotation) * alignedPosition.y;
-
-    mvPosition.xy += rotatedPosition;
-
+    // vec4 mvPosition = modelViewMatrix * vec4(localPosition, 1.0);
+    vec4 mvPosition = modelViewMatrix * vec4(newPosition, 1.0);
     gl_Position = projectionMatrix * mvPosition;
-
     #include <logdepthbuf_vertex>
   }
 `;
@@ -133,11 +163,15 @@ const fragment = `
     if (vDistToCamera == 0.0) {
       discard;
     }
+    
+    float effectiveVisibility = visibility;
 
     float attenuation;
     switch (bodyType) {
       case ` + LocalBodyGlslType.star + `:
-        // Stars are eternal.
+        // Start ramping up the visibility factor to simulate dust glow.
+        effectiveVisibility += min(vDistantGlow * 1200.0, 200.0);
+        // Do not actually fade the star out.
         attenuation = 1.0;
         break;
       case ` + LocalBodyGlslType.moon + `:
@@ -148,12 +182,12 @@ const fragment = `
         }
         break;
       default:
-        // Planets attenuate normally.
-        attenuation = vAttenuation;
+      case ` + LocalBodyGlslType.planet + `:
+        attenuation = pow(vAttenuation, 32.0);
     }
     
     // Prevent sub-pixel flickering.
-    if (attenuation < 0.03) {
+    if (attenuation < 0.015) {
       discard;
     }
     
@@ -166,7 +200,7 @@ const fragment = `
 
     // 0 to 1, where 0 is 0% plane diameter and 1 is 100% plane diameter.
     // float glowSize = 0.5;
-    float glowSize = clamp(vGlowAmount, 0.0, 1.0);
+    float glowSize = clamp(vGlowAmount * attenuation, 0.0, 1.0);
     float halo = 1.0 - distance(vUv, vec2(0.5));
     vec4 glow = vec4(pow(halo, 4.0)) * vec4(color, 1.0) * -glowSize;
     glow = mix(glow, transparent, 0.6);
@@ -199,7 +233,7 @@ const fragment = `
     // Combine star dot and its glow.
     color4 = min(reduction, glow);
 
-    float fade = clamp(vGlowAmount, 0.0, 1.0) * visibility;
+    float fade = clamp(vGlowAmount, 0.0, 1.0) * effectiveVisibility;
     color4 = mix(transparent, color4, fade);
 
     gl_FragColor = vec4(

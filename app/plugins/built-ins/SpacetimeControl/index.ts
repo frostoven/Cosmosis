@@ -3,6 +3,8 @@ import * as THREE from 'three';
 import CosmosisPlugin from '../../types/CosmosisPlugin';
 import { CoordType } from './types/CoordType';
 import { capitaliseFirst } from '../../../local/utils';
+import { logBootTitleAndInfo } from '../../../local/windowLoadListener';
+import PluginLoader from '../../types/PluginLoader';
 
 type AdderSignature = (direction: THREE.Vector3, speed: number) => void;
 
@@ -32,17 +34,16 @@ class SpacetimeControl {
   private _adder: AdderSignature;
 
   constructor() {
-    this._setupWatchers();
+    logBootTitleAndInfo('Driver', 'Warp Processor', PluginLoader.bootLogIndex);
     this._coordMode = CoordType.playerCentric;
     this._reality.add(this._levelBubble);
 
-    this._adder = () => {
-    };
+    this._adder = () => {};
     this._movementFunctions = [];
     this._setupAdders();
-  }
 
-  _setupWatchers() {
+    // @ts-ignore - Useful for debugging.
+    window.teleportShipToLocalLocation = this.teleportShipToLocalLocation.bind(this);
   }
 
   // Within the context of this class, adders are functions that move the
@@ -59,6 +60,14 @@ class SpacetimeControl {
       }
     });
     console.log('--> _movementFunctions:', this._movementFunctions);
+  }
+
+  getLocalPosition() {
+    return this._reality.position;
+  }
+
+  getLocalSpaceContainer() {
+    return this._reality;
   }
 
   get coordMode() {
@@ -126,21 +135,21 @@ class SpacetimeControl {
     this._levelBubble.position.addScaledVector(_tmpDirection, -speed);
   }
 
-  rotatePlayerCentric(pitch: number, yaw: number, roll: number) {
+  rotatePlayerCentric(pitchX: number, yawY: number, rollZ: number) {
     // The level bubble should only ever contain 1 or 0 children (we can make
     // it size agnostic, but doing so is semantically meaningless and thus a
     // waste of CPU).
     const level = this._levelBubble.children[0];
     if (level) {
-      level.rotateX(pitch);
-      level.rotateY(yaw);
-      level.rotateZ(roll);
+      level.rotateX(pitchX);
+      level.rotateY(yawY);
+      level.rotateZ(rollZ);
     }
   }
 
-  teleportShipToLocalLocation(positionM: THREE.Vector3) {
-    this._reality.position.set(positionM.x, positionM.y, positionM.z);
-    this._levelBubble.position.set(-positionM.x, -positionM.y, -positionM.z);
+  teleportShipToLocalLocation(worldPositionM: THREE.Vector3) {
+    this._reality.position.set(-worldPositionM.x, -worldPositionM.y, -worldPositionM.z);
+    this._levelBubble.position.set(worldPositionM.x, worldPositionM.y, worldPositionM.z);
   }
 
   // Move galaxy around the player.

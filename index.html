@@ -27,6 +27,7 @@
       };
       // nw.Window.get().showDevTools();
     </script>
+    <script type="text/javascript" src="app/bundleWatcher.js"></script>
     <script type="text/javascript" src="build/game.js"></script>
 
     <!--    <link rel="stylesheet" href="node_modules/semantic-ui-css/semantic.min.css" />-->
@@ -35,6 +36,7 @@
     <link rel="stylesheet" href="/css/semantic.supervillain.css">
     <link rel="stylesheet" href="/css/fonts.css">
     <link rel="stylesheet" href="/css/app.css">
+    <link rel="stylesheet" href="/css/shipConsole.css">
     <link rel="stylesheet" href="/css/uiPlaceholders.css">
     <link rel="stylesheet" href="/css/splash-animations.css">
     <link rel="stylesheet" href="/css/checkboxes.css">
@@ -67,7 +69,13 @@
     <div id="snackbar">toast area</div>
     <img id="crosshairs" alt="">
     <div id="speed-tracker"></div>
-    <div id="boot-log"></div>
+    <div id="ship-console">
+      <div id="ship-console-bounds">
+        <div id="system-output"></div>
+        <div id="notice-toggle" class="console-button-narrow">Notice</div>
+        <div id="group-toggle" class="console-button-narrow">[Auto]</div>
+      </div>
+    </div>
     <canvas id="galaxy-canvas"></canvas>
     <canvas id="far-object-canvas"></canvas>
     <canvas id="near-object-canvas"></canvas>

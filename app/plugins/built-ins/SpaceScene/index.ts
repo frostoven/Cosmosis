@@ -13,6 +13,8 @@ import userProfile from '../../../userProfile';
 import * as THREE from 'three';
 import { cubeToSphere } from '../../../local/mathUtils';
 import { SpacetimeControl } from '../SpacetimeControl';
+import { logBootTitleAndInfo } from '../../../local/windowLoadListener';
+import PluginLoader from '../../types/PluginLoader';
 
 export default class SpaceScene extends Scene {
   public skybox: Mesh<BoxGeometry, MeshBasicMaterial[]> | null = null;
@@ -22,6 +24,7 @@ export default class SpaceScene extends Scene {
 
   constructor() {
     super();
+    logBootTitleAndInfo('Driver', 'Gravitron Sensor', PluginLoader.bootLogIndex);
     this._cachedCamera = new PerspectiveCamera();
     this._cachedSpacetime = gameRuntime.tracked.spacetimeControl.cachedValue;
     this._cachedSpacetime.enterReality(this);

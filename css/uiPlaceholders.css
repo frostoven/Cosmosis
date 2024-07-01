@@ -8,20 +8,6 @@
  * hidden by default.
  */
 
-#player-mode {
-    color: white;
-    width: 176px;
-    height: 18px;
-    position: fixed;
-    top: 0;
-    right: 0;
-    z-index: 800;
-    text-align: right;
-    pointer-events: none;
-    padding: 5px;
-    text-shadow: 1px 1px 1px black;
-}
-
 #speed-tracker {
     display: none;
     position: fixed;
@@ -35,6 +21,7 @@
     margin: 3px;
     color: white;
     text-shadow: 0 0 8px black;
+    white-space: pre-wrap;
 }
 
 #crosshairs {

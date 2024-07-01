@@ -1,6 +1,8 @@
 import { AmbientLight, PerspectiveCamera } from 'three';
 import userProfile from '../../../userProfile';
 import CosmosisPlugin from '../../types/CosmosisPlugin';
+import { logBootTitleAndInfo } from '../../../local/windowLoadListener';
+import PluginLoader from '../../types/PluginLoader';
 
 // 1 micrometer to 100 billion light years in one scene, with 1 unit = 1 meter?
 // preposterous!  and yet...
@@ -13,6 +15,7 @@ export default class Player {
   // public coordsType: CoordType;
 
   constructor() {
+    logBootTitleAndInfo('Driver', 'Pilot Interface', PluginLoader.bootLogIndex);
     const { display } = userProfile.getCurrentConfig({
       identifier: 'userOptions',
     });

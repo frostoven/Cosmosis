@@ -4,7 +4,6 @@ import {
 } from '../../../../../../celestialBodies/bodyTypes/LocalStar';
 import { sunMass } from './defs';
 import { localBody, LocalBodyGlslType } from '../../../shaders/localBody.glsl';
-import { values } from 'lodash';
 
 const DEG2RAD = THREE.MathUtils.DEG2RAD;
 
@@ -17,12 +16,18 @@ class Sun extends LocalStar {
       color: { value: color },
       bodyType: { value: LocalBodyGlslType.star },
       objectSize: { value: 696_340_000 },
+      intensity: { value: 100 },
+      luminosity: { value: 300_000_000 },
       scale: { value: -10.0 },
-      luminosity: { value: 300000000 },
       invRadius: { value: 10.0 },
       invGlowRadius: { value: 8.0 },
       visibility: { value: 67 },
-      intensity: { value: 100 },
+      // camRotation: { value: new THREE.Vector3() },
+
+      debugValue1:  { value: 0.1 },
+      debugValue2:  { value: 0.4 },
+      debugValue3:  { value: -0.5 },
+      debugValue4:  { value: 1.0 },
     };
 
     const farMaterial = new THREE.ShaderMaterial({
@@ -33,10 +38,8 @@ class Sun extends LocalStar {
       side: THREE.DoubleSide,
       blending: THREE.AdditiveBlending,
       transparent: true,
+      depthTest: false,
     });
-
-    // @ts-ignore
-    window.Sun = { uniforms };
 
     super({
       name: 'Sun',
@@ -59,9 +62,15 @@ class Sun extends LocalStar {
       visuals: {
         getTexture: () => null,
         getSphereMaterial: () => nearMaterial,
-        getDistantMaterial: () => farMaterial,
+        getGlowMaterial: () => farMaterial,
       },
     });
+
+
+    // @ts-ignore
+    window.sun = { uniforms };
+    // @ts-ignore
+    window.sunBody = this;
   }
 }
 

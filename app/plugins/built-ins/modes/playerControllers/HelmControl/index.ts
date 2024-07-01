@@ -23,6 +23,11 @@ import {
 } from '../../../shipModules/PropulsionManager/types/PropulsionManagerECI';
 import speedTracker from '../../../../../local/speedTracker';
 import { SpacetimeControl } from '../../../SpacetimeControl';
+import {
+  logBootInfo,
+  logBootTitleAndInfo,
+} from '../../../../../local/windowLoadListener';
+import PluginLoader from '../../../../types/PluginLoader';
 
 const debugPositionAndSpeed = true;
 
@@ -59,6 +64,7 @@ class HelmControl extends ModeController {
   private _prettyThrottlePosition: number = 0;
 
   constructor() {
+    logBootTitleAndInfo('Driver', 'Helm Control', PluginLoader.bootLogIndex);
     const uiInfo = { friendly: 'Ship Pilot Controls', priority: 80 };
     super('helmControl', ModeId.flightControl, helmControls, uiInfo);
 
@@ -80,7 +86,10 @@ class HelmControl extends ModeController {
       gameRuntime.tracked.spacetimeControl.getOnce((location: SpacetimeControl) => {
         gameRuntime.tracked.player.getOnce(({ camera }) => {
           // @ts-ignore
-          this.speedTimer = speedTracker.trackCameraSpeed(location._reality, camera);
+          this.speedTimer = speedTracker.trackCameraSpeed(
+            location.getLocalSpaceContainer(),
+            camera,
+          );
         });
       });
     }
