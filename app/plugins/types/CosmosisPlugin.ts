@@ -4,12 +4,28 @@ import {
   OnDependenciesMetFn,
   PluginInterface,
 } from '../interfaces/PluginInterface';
+import { DependencyStructure } from './PluginHelpers';
 
 export default class CosmosisPlugin extends ChangeTracker implements PluginInterface {
   public TrackedClass: any;
+  public knownDependencies: DependencyStructure | null = null;
   private readonly _onDependenciesMet: OnDependenciesMetFn | undefined;
 
-  constructor(trackedName: string, TrackedClass: any, overrides?: PluginInterface) {
+  /**
+   * @param trackedName - The name of the plugin. It should be a camelCase
+   *  version of the tracked class name.
+   * @param TrackedClass - The class that acts as your plugin entry-point.
+   * @param [knownDependencies] - Dependencies you know you'll need. This is
+   *  optional for now to test the waters, but will likely become required in
+   *  future as it offers auto-complete and allows runtime dependency checks.
+   * @param [overrides] - TODO: Check if this is still useful.
+   */
+  constructor(
+    trackedName: string,
+    TrackedClass: any,
+    knownDependencies?: DependencyStructure | null,
+    overrides?: PluginInterface | null,
+  ) {
     super();
     if (trackedName === 'template') {
       throw '[CosmosisPlugin] Fatal error: you may not call your plugin ' +
@@ -19,7 +35,7 @@ export default class CosmosisPlugin extends ChangeTracker implements PluginInter
       throw '[CosmosisPlugin] Please remove "Plugin" from end end of your ' +
       `plugin name (${trackedName}) as adding it is likely an accident. If ` +
       'you disagree, please raise an issue and we\'ll consider changing ' +
-      'this rule.'
+      'this rule.';
     }
     if (trackedName) {
       /** @type ChangeTracker */
@@ -31,6 +47,10 @@ export default class CosmosisPlugin extends ChangeTracker implements PluginInter
 
     if (TrackedClass) {
       this.TrackedClass = TrackedClass;
+    }
+
+    if (knownDependencies) {
+      this.knownDependencies = knownDependencies;
     }
 
     const onDependenciesMet = overrides?.onDependenciesMet;
