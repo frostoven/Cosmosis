@@ -1,13 +1,11 @@
 import {
   Layers,
   Group,
-  PerspectiveCamera,
-  Scene,
-  WebGLRenderer,
+  WebGLRenderer, Camera,
 } from 'three';
 import CosmosisPlugin from '../../types/CosmosisPlugin';
 import { gameRuntime } from '../../gameRuntime';
-import { CoreType } from '../Core';
+import Core, { CoreType } from '../Core';
 import userProfile from '../../../userProfile';
 import SpaceshipLoader from './types/SpaceshipLoader';
 import { GLTFInterface } from '../../interfaces/GLTFInterface';
@@ -33,6 +31,8 @@ import {
 import Player from '../Player';
 import { logBootTitleAndInfo } from '../../../local/windowLoadListener';
 import PluginLoader from '../../types/PluginLoader';
+import { NodeOps } from '../NodeOps';
+import PluginCacheTracker from '../../../emitters/PluginCacheTracker';
 
 const BLOOM_SCENE = 1;
 const bloomLayer = new Layers();
@@ -54,16 +54,36 @@ bloomLayer.set(BLOOM_SCENE);
 //  ship while the player's original ship is now just a prop in the hangar,
 //  which they may later interact with to reenter.
 
+// -- ✀ Plugin boilerplate ----------------------------------------------------
+
+const pluginDependencies = {
+  core: Core,
+  nodeOps: NodeOps,
+  spacetimeControl: SpacetimeControl,
+  player: Player,
+};
+const shallowTracking = { player: { camera: 'camera' } };
+const pluginList = Object.keys(pluginDependencies);
+type Dependencies = typeof pluginDependencies & {
+  camera: Camera, // declare shallow-tracked aliases
+};
+
+// -- ✀ -----------------------------------------------------------------------
+
+
 export default class LevelScene extends Group {
+  private _pluginCache = new PluginCacheTracker<Dependencies>(
+    pluginList, shallowTracking,
+  ).pluginCache;
+
   moduleHub: ShipModuleHub | undefined;
 
   // @ts-ignore
   private _renderer: WebGLRenderer;
-  private _cachedSpacetime: SpacetimeControl;
-  private _cachedCamera: PerspectiveCamera;
   private _vehicle: GLTFInterface;
   private _vehicleInventory: { [moduleHookName: string]: Array<any> };
   private _eciRegistrations: Map<EciEnum, EciRegistrationObject[]> = new Map();
+  private _ready = false;
 
   public onVehicleEntered: ChangeTracker;
   private _electricalHousing: ElectricalHousing | null;
@@ -71,9 +91,10 @@ export default class LevelScene extends Group {
   constructor() {
     super();
     logBootTitleAndInfo('Driver', 'Particle Sensor', PluginLoader.bootLogIndex);
-    this._cachedCamera = new PerspectiveCamera();
-    this._cachedSpacetime = gameRuntime.tracked.spacetimeControl.cachedValue;
-    this._cachedSpacetime.enterReality(this);
+    this._pluginCache.tracker.onAllPluginsLoaded.getOnce(() => {
+      this._pluginCache.spacetimeControl.enterReality(this);
+      this._ready = true;
+    });
     // this.fog = new FogExp2(0xDFE9F3, 0.0000005);
 
     // @ts-ignore
@@ -82,7 +103,6 @@ export default class LevelScene extends Group {
     this._electricalHousing = null;
     this.loadAndEnterLastVehicle();
 
-    this._setupWatchers();
     this._configureRenderer();
 
     gameRuntime.tracked.core.getOnce((core: CoreType) => {
@@ -101,15 +121,6 @@ export default class LevelScene extends Group {
 
     window.addEventListener('resize', this.onWindowResize.bind(this));
     this.onWindowResize();
-  }
-
-  _setupWatchers() {
-    gameRuntime.tracked.player.getEveryChange((player: Player) => {
-      this._cachedCamera = player.camera;
-    });
-    gameRuntime.tracked.spacetimeControl.getEveryChange((location: SpacetimeControl) => {
-      this._cachedSpacetime = location;
-    });
   }
 
   _configureRenderer() {
@@ -151,8 +162,9 @@ export default class LevelScene extends Group {
     this._renderer.domElement.style.width = '100%';
     this._renderer.domElement.style.height = '100%';
     // TODO: move this to player module.
-    this._cachedCamera.aspect = screenWidth / screenHeight;
-    this._cachedCamera.updateProjectionMatrix();
+    const camera = this._pluginCache.player.camera;
+    camera.aspect = screenWidth / screenHeight;
+    camera.updateProjectionMatrix();
   }
 
   // Load last vehicle the player was piloting previous sessions, and enter it.
@@ -178,7 +190,7 @@ export default class LevelScene extends Group {
   }
 
   enterVehicle({ gltf, inventory }: { gltf: GLTFInterface, inventory: {} }) {
-    this._cachedSpacetime.setLevel(this.id);
+    this._pluginCache.spacetimeControl.setLevel(this.id);
     this._vehicle = gltf;
     this._vehicleInventory = inventory;
     // console.log('-> gltf:', gltf);
@@ -190,10 +202,10 @@ export default class LevelScene extends Group {
     // this._cachedLocation.universeRotationM.quaternion.copy(scene.quaternion);
 
     this.add(scene);
-    scene.add(this._cachedCamera);
+    scene.add(this._pluginCache.player.camera);
     // Blender direction is 90 degrees off from what three.js considers to be
     // 'straight-ahead'.
-    this._cachedCamera.rotateX(-Math.PI / 2);
+    this._pluginCache.player.camera.rotateX(-Math.PI / 2);
     this.onVehicleEntered.setValue(gltf);
     this.resetCameraSeatPosition();
     this.bootShip();
@@ -214,7 +226,7 @@ export default class LevelScene extends Group {
 
   bootShip() {
     // TODO: formalise the hardcoded ship modules here into a proper system.
-    gameRuntime.tracked.shipModuleHub.getOnce((hub: ShipModuleHub) => {
+    gameRuntime.tracked.shipModuleHub?.getOnce((hub: ShipModuleHub) => {
       this.moduleHub = hub;
       const inventory = this._vehicleInventory;
 
@@ -305,11 +317,16 @@ export default class LevelScene extends Group {
   }
 
   render = () => {
-    this._renderer.render(this, this._cachedCamera);
-  }
+    if (!this._ready) {
+      return;
+    }
+    this._renderer.render(this, this._pluginCache.camera);
+  };
 }
 
-const levelScenePlugin = new CosmosisPlugin('levelScene', LevelScene);
+const levelScenePlugin = new CosmosisPlugin(
+  'levelScene', LevelScene, pluginDependencies,
+);
 
 export {
   levelScenePlugin,

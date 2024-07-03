@@ -2,6 +2,16 @@ import _ from 'lodash';
 import { gameRuntime } from '../plugins/gameRuntime';
 import ChangeTracker from 'change-tracker/src';
 
+// Represents individual plugin instances. We use any here as modders can use
+// pretty much anything as a plugin, and does not actually hurt type-assistance
+// in the manner it's implemented.
+type PluginBase = { new(): any };
+
+// Represents a collection of instantiated plugin dependencies.
+type PluginInstances<T extends { [key: string]: PluginBase }> = {
+  [K in keyof T]: InstanceType<T[K]>;
+};
+
 /**
  * Caches plugin changes. Please avoid tracking changes this way if they change
  * each frame.
@@ -28,10 +38,8 @@ import ChangeTracker from 'change-tracker/src';
  *
  * pluginTracker.cachedCamera  <-- gameRuntime.tracked.levelScene.cached;
  */
-export default class PluginCacheTracker {
-  // Note: this is not laziness - we really do have literally any type
-  // dynamically assignable at runtime to this class.
-  [key: string]: any;
+export default class PluginCacheTracker<T extends { [key: string]: any }> {
+  public pluginCache: PluginInstances<T> & { tracker: PluginCacheTracker<T> };
 
   public readonly onAllPluginsLoaded: ChangeTracker;
   private pluginsLoaded: number;
@@ -43,23 +51,28 @@ export default class PluginCacheTracker {
     this.pluginsLoaded = 0;
     this.pluginCount = pluginsToTrack.length;
     this.onAllPluginsLoaded = new ChangeTracker();
+    this.pluginCache = {
+      tracker: this,
+    } as unknown as T & { tracker: PluginCacheTracker<T> };
 
     this._function = {};
     this._shallowTracking = shallowTracking;
 
+    const pluginCache = this.pluginCache as any;
     for (let i = 0, len = pluginsToTrack.length; i < len; i++) {
       const name = pluginsToTrack[i];
-      this[name] = gameRuntime.tracked[name];
+      pluginCache[name] = gameRuntime.tracked[name];
 
-      this._function[name] = (cached) => {
+      this._function[name as string] = (cached: PluginInstances<T>[keyof T]) => {
         // This gets called on every change.
-        this[name] = cached;
+        pluginCache[name as keyof PluginInstances<T>] = cached;
 
         const shallowKeyVars = this._shallowTracking?.[name];
         if (shallowKeyVars) {
           _.each(shallowKeyVars, (wantedName, actualName) => {
             // Example: this._cachedCamera = player.camera;
-            this[wantedName] = cached[actualName];
+            this.pluginCache[wantedName as keyof PluginInstances<T>] =
+              cached[actualName];
           });
         }
       };
