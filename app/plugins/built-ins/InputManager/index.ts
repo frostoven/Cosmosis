@@ -1,12 +1,15 @@
+// Apologies for this file and its related classes being a little messy, they
+// were hastily ported from JS which, unlike TS, didn't complain about a lot of
+// important stuff. It needs a good amount of cleanup.
+
 import _ from 'lodash';
 import CosmosisPlugin from '../../types/CosmosisPlugin';
 import Modal from '../../../modal/Modal';
 import { ModeId } from './types/ModeId';
 import { MouseDriver } from '../MouseDriver';
-import { gameRuntime } from '../../gameRuntime';
 import { AnalogSource } from './types/AnalogSource';
 import ModeController from './types/ModeController';
-import { CoreType } from '../Core';
+import Core from '../Core';
 import { InputSchemeEntry } from './interfaces/InputSchemeEntry';
 import {
   MouseButtonName,
@@ -14,6 +17,18 @@ import {
 } from '../../../configs/types/MouseButtonName';
 import { logBootTitleAndInfo } from '../../../local/windowLoadListener';
 import PluginLoader from '../../types/PluginLoader';
+import PluginCacheTracker from '../../../emitters/PluginCacheTracker';
+
+// -- ✀ Plugin boilerplate ----------------------------------------------------
+
+const pluginDependencies = {
+  core: Core,
+  mouseDriver: MouseDriver,
+};
+const pluginList = Object.keys(pluginDependencies);
+type Dependencies = typeof pluginDependencies;
+
+// -- ✀ -----------------------------------------------------------------------
 
 /*
  * Mechanism:
@@ -32,6 +47,8 @@ import PluginLoader from '../../types/PluginLoader';
 // Mode: a logical group of controllers.
 // Controller: something capable of responding to key input.
 class InputManager {
+  private _pluginCache = new PluginCacheTracker<Dependencies>(pluginList).pluginCache;
+
   // Can be used to test key processing latency. At time the of wiring, takes
   // less than 0.1ms (0.0001 seconds) under medium load, and immeasurably small
   // (reported as 0ms) under low load, to reach the end of receiveAsKbButton.
@@ -61,10 +78,7 @@ class InputManager {
   private readonly _modes: Array<{ [key: string]: ModeController }>;
   private readonly _activeControllers: Array<string>;
   private readonly _allControllers: {};
-  private _mouseDriver: MouseDriver;
   public allowBubbling: boolean;
-
-  private _cachedCore: CoreType;
 
   private readonly _heldButtons: { [key: string]: boolean };
   private _prevMouseX: number;
@@ -103,6 +117,7 @@ class InputManager {
 
   constructor() {
     logBootTitleAndInfo('Driver', 'Input Wiring', PluginLoader.bootLogIndex);
+    this.allowBubbling = false;
     this._blockAllInput = false;
     this._blockKbMouse = false;
 
@@ -120,29 +135,14 @@ class InputManager {
     // exclusive.
     this._allControllers = {};
 
-    this._mouseDriver = gameRuntime.tracked.mouseDriver.cachedValue;
-    this.allowBubbling = false;
-
     this._heldButtons = {};
     this._prevMouseX = 0;
     this._prevMouseY = 0;
     this._prevControllerX = 0;
     this._prevControllerY = 0;
 
-    this._cachedCore = gameRuntime.tracked.core.cachedValue;
-    this._cachedCore.onAnimate.getEveryChange(this.stepActiveControllers.bind(this));
-
-    this._setupWatchers();
+    this._pluginCache.core.onAnimate.getEveryChange(this.stepActiveControllers.bind(this));
     this._setupInputListeners();
-  }
-
-  _setupWatchers() {
-    gameRuntime.tracked.core.getEveryChange((core) => {
-      this._cachedCore = core;
-    });
-    gameRuntime.tracked.mouseDriver.getEveryChange((mouseDriver) => {
-      this._mouseDriver = mouseDriver;
-    });
   }
 
   _setupInputListeners() {
@@ -209,7 +209,7 @@ class InputManager {
         // Luckily, manually dealing with keypresses are easy anyway.
         break;
       case 'mousemove':
-        if (!this._mouseDriver.isPointerLocked) {
+        if (!this._pluginCache.mouseDriver.isPointerLocked) {
           // Ignore mouse if pointer is being used by menu or HUD.
           return;
         }
