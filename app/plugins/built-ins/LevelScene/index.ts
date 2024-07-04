@@ -5,7 +5,7 @@ import {
 } from 'three';
 import CosmosisPlugin from '../../types/CosmosisPlugin';
 import { gameRuntime } from '../../gameRuntime';
-import Core, { CoreType } from '../Core';
+import Core from '../Core';
 import userProfile from '../../../userProfile';
 import SpaceshipLoader from './types/SpaceshipLoader';
 import { GLTFInterface } from '../../interfaces/GLTFInterface';
@@ -105,9 +105,7 @@ export default class LevelScene extends Group {
 
     this._configureRenderer();
 
-    gameRuntime.tracked.core.getOnce((core: CoreType) => {
-      core.appendRenderHook(this.render);
-    });
+    this._pluginCache.core.appendRenderHook(this.render);
 
     // --------------------------------------------------------------------- //
     // const geometry = new BoxGeometry(1, 1, 1);
@@ -176,7 +174,10 @@ export default class LevelScene extends Group {
     if (typeof ship === 'undefined') {
       ship = 'DS69F';
       // ship = 'minimal scene';
-      console.error(`Could get read ship info from configs. Defaulting to ${ship}.`);
+      console.log(
+        `%cCould get read ship info from configs. Defaulting to ${ship}.`,
+        'color: #8080ff',
+      );
       // TODO: if this happens, we should actually offer a save rollback
       //  option, and/or go to ship selector.
     }
@@ -302,11 +303,10 @@ export default class LevelScene extends Group {
   }
 
   resetCameraSeatPosition() {
-    gameRuntime.tracked.player.getOnce((player) => {
-      this.onVehicleEntered.getOnce((vehicle) => {
-        player.camera.position.copy(vehicle.cameras[0].position);
-        player.camera.rotation.copy(vehicle.cameras[0].rotation);
-      });
+    const camera = this._pluginCache.camera;
+    this.onVehicleEntered.getOnce((vehicle) => {
+      camera.position.copy(vehicle.cameras[0].position);
+      camera.rotation.copy(vehicle.cameras[0].rotation);
     });
   }
 
