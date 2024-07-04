@@ -140,9 +140,16 @@ export default class PluginCacheTracker<T extends { [key: string]: any }> {
         const shallowKeyVars = this._shallowTracking?.[name];
         if (shallowKeyVars) {
           _.each(shallowKeyVars, (wantedName, actualName) => {
+            const value = cached[actualName];
+            if (value !== Object(value)) {
+              console.error(
+                'Shallow tracking does not support primitives, please only ' +
+                'use objects. Your value will soon be stale.',
+                'Culprit:', actualName, '===', value,
+              );
+            }
             // Example: this._cachedCamera = player.camera;
-            this.pluginCache[wantedName as keyof PluginInstances<T>] =
-              cached[actualName];
+            this.pluginCache[wantedName as keyof PluginInstances<T>] = value;
           });
         }
       };
