@@ -1,5 +1,5 @@
 // @formatter:off
-// ^ This files become much harder to read when formatted.
+// ^ This file become much harder to read when formatted.
 
 import { PluginEntry } from './interfaces/PluginEntry';
 import { metadataPlugin } from './built-ins/Metadata';
@@ -38,11 +38,11 @@ const builtInPluginsEnabled: PluginEntry[] = [
   { name: 'metadata', pluginInstance: metadataPlugin },
   { name: 'core', pluginInstance: corePlugin },
   { name: 'nodeOps', pluginInstance: nodeOpsPlugin },
-  { name: 'player', pluginInstance: playerPlugin, dependencies: [ 'core' ] },
+  { name: 'player', pluginInstance: playerPlugin },
 
   // Universe
-  { name: 'spacetimeControl', pluginInstance: spacetimeControl, dependencies: [] },
-  { name: 'navigation', pluginInstance: navigationPlugin, dependencies: [ 'core', 'spacetimeControl' ] },
+  { name: 'spacetimeControl', pluginInstance: spacetimeControl },
+  { name: 'navigation', pluginInstance: navigationPlugin },
   { name: 'levelScene', pluginInstance: levelScenePlugin, dependencies: [ 'core', 'nodeOps', 'spacetimeControl', 'player' ], optional: [ 'shipModuleHub' ] },
   // { name: 'spaceScene', pluginInstance: spaceScenePlugin, dependencies: [ 'core', 'spacetimeControl' ] },
   // { name: 'localSpace', pluginInstance: localSpacePlugin, dependencies: [ 'core', 'player', 'spacetimeControl' ] },
@@ -52,7 +52,7 @@ const builtInPluginsEnabled: PluginEntry[] = [
   // { name: 'hud3D', pluginInstance: hud3DPlugin, dependencies: [ 'nodeOps', 'spaceScene', 'player' ] },
   //
   // // Input
-  // { name: 'mouseDriver', pluginInstance: mouseDriverPlugin, dependencies: [ 'core' ] },
+  { name: 'mouseDriver', pluginInstance: mouseDriverPlugin, dependencies: [ 'core' ] },
   // { name: 'inputManager', pluginInstance: inputManagerPlugin, dependencies: [ 'core', 'mouseDriver' ] },
   // { name: 'gamepadConnector', pluginInstance: gamepadConnectorPlugin, dependencies: [ 'core', 'inputManager' ] },
   //
