@@ -47,19 +47,19 @@ const builtInPluginsEnabled: PluginEntry[] = [
   { name: 'spaceScene', pluginInstance: spaceScenePlugin, dependencies: [ 'core', 'spacetimeControl' ] },
   // { name: 'localSpace', pluginInstance: localSpacePlugin, dependencies: [ 'core', 'player', 'spacetimeControl' ] },
   { name: 'offscreenGalaxyWorker', pluginInstance: offscreenGalaxyWorkerPlugin, dependencies: [ 'core', 'player', 'spaceScene' ] },
-  //
-  // // HUD and control visuals
-  // { name: 'hud3D', pluginInstance: hud3DPlugin, dependencies: [ 'nodeOps', 'spaceScene', 'player' ] },
-  //
-  // // Input
+
+  // HUD and control visuals
+  { name: 'hud3D', pluginInstance: hud3DPlugin, dependencies: [ 'nodeOps', 'levelScene', 'player' ] },
+
+  // Input
   { name: 'mouseDriver', pluginInstance: mouseDriverPlugin, dependencies: [ 'core' ] },
   { name: 'inputManager', pluginInstance: inputManagerPlugin, dependencies: [ 'core', 'mouseDriver' ] },
   // { name: 'gamepadConnector', pluginInstance: gamepadConnectorPlugin, dependencies: [ 'core', 'inputManager' ] },
-  //
-  // // React UI
+
+  // React UI
   { name: 'reactBase', pluginInstance: reactBasePlugin, dependencies: [ 'core', 'inputManager' ] },
-  //
-  // // Modes
+
+  // Modes
   { name: 'generalControl', pluginInstance: generalControlPlugin, dependencies: [ 'inputManager', 'reactBase' ] },
   // { name: 'freeCam', pluginInstance: freeCamPlugin, dependencies: [ 'player', 'inputManager' ] },
   { name: 'buckledPassenger', pluginInstance: buckledPassengerPlugin, dependencies: [ 'player', 'inputManager' ] },
@@ -78,7 +78,7 @@ const builtInPluginsEnabled: PluginEntry[] = [
   { name: 'generatorModule', pluginInstance: generatorModulePlugin },
 
   // Low power modules
-  // { name: 'visorHudModule', pluginInstance: visorHudModulePlugin, dependencies: [ 'helmControl', 'nodeOps' ] },
+  { name: 'visorHudModule', pluginInstance: visorHudModulePlugin, dependencies: [ 'player', 'hud3D','nodeOps' ] },
   { name: 'cockpitLightsModule', pluginInstance: cockpitLightsModulePlugin, dependencies: [ 'helmControl', 'nodeOps' ] },
   { name: 'externalLightsModule', pluginInstance: externalLightsModulePlugin, dependencies: [ 'helmControl', 'nodeOps', 'cockpitLightsModule' ] },
   { name: 'multimeterModule', pluginInstance: multimeterModulePlugin },
@@ -88,8 +88,8 @@ const builtInPluginsEnabled: PluginEntry[] = [
   // all ship modules.
   { name: 'shipModuleHub', pluginInstance: shipModuleHubPlugin, dependencies: [ '*' ] },
 
-  // // ------------------------------------------------------------ //
-  //
+  // ------------------------------------------------------------ //
+
   // // Dev plugins
   // { name: 'devGimbalPlugin', pluginInstance: devGimbalPlugin, dependencies: [ 'core', 'player' ] },
 ];
