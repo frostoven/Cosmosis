@@ -14,12 +14,17 @@ const ARROW_REPEAT_MS = 50;
 
 let singletonInstance: InputBridge;
 
-type PluginCompletion = PluginCacheTracker & {
-  core: Core, inputManager: InputManager,
-};
 
-interface Props {
-}
+// -- ✀ Plugin boilerplate ----------------------------------------------------
+
+const pluginDependencies = {
+  core: Core,
+  inputManager: InputManager,
+};
+const pluginList = Object.keys(pluginDependencies);
+type Dependencies = typeof pluginDependencies;
+
+// -- ✀ -----------------------------------------------------------------------
 
 export default class InputBridge {
   public enableArrowStepping = false;
@@ -27,8 +32,8 @@ export default class InputBridge {
   // public onBack = new ChangeTracker();
   // public onArrow = new ChangeTracker();
 
-  private _pluginTracker!: PluginCacheTracker | PluginCompletion;
-  private _modeController!: ModeController;
+  private _pluginCache = new PluginCacheTracker<Dependencies>(pluginList).pluginCache;
+  private readonly _modeController!: ModeController;
 
   private _repeatDelta: number = 0;
   private _arrowCountdown = ARROW_DELAY;
@@ -61,17 +66,13 @@ export default class InputBridge {
       singletonInstance = this;
     }
 
-    this._pluginTracker = new PluginCacheTracker([ 'core', 'inputManager' ]);
+    const uiInfo = { friendly: 'Menu Controls', priority: 1 };
+    this._modeController = new ModeController(
+      'menuSystem', ModeId.menuControl, reactMenuControls, uiInfo,
+    );
+    this._modeController.step = this.stepArrowStream.bind(this);
 
-    this._pluginTracker.onAllPluginsLoaded.getOnce(() => {
-      const uiInfo = { friendly: 'Menu Controls', priority: 1 };
-      this._modeController = new ModeController(
-        'menuSystem', ModeId.menuControl, reactMenuControls, uiInfo,
-      );
-      this._modeController.step = this.stepArrowStream.bind(this);
-
-      this._setupPulseWatchers();
-    });
+    this._setupPulseWatchers();
   }
 
   _setupPulseWatchers() {
@@ -93,7 +94,7 @@ export default class InputBridge {
   // make it open, close, or move back as needed.
   activateAndOpenMenu() {
     const mc = this._modeController;
-    const inputManager: InputManager = this._pluginTracker.inputManager;
+    const inputManager: InputManager = this._pluginCache.inputManager;
     if (!inputManager.isControllerActive(ModeId.menuControl)) {
       inputManager.activateController(ModeId.menuControl, 'menuSystem');
       mc.pulse._openMenu.setValue({ action: '_openMenu', value: 1 });
@@ -107,7 +108,7 @@ export default class InputBridge {
 
   deactivateAndCloseMenu() {
     const mc = this._modeController;
-    const inputManager: InputManager = this._pluginTracker.inputManager;
+    const inputManager: InputManager = this._pluginCache.inputManager;
     inputManager.deactivateController(ModeId.menuControl, 'menuSystem');
     mc.pulse._closeMenu.setValue({ action: '_closeMenu', value: 1 });
     mc.pulse._closeMenu.setValue({ action: '_closeMenu', value: 0 });
