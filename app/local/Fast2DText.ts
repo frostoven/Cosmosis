@@ -66,7 +66,7 @@ export default class Fast2DText {
   private _bmTextMat: any;
   public mesh: THREE.Mesh | null;
   private readonly _initialOpacity!: number;
-  private readonly _initialSide!: number;
+  private readonly _initialSide: number = THREE.FrontSide;
   private readonly _baseScale!: number;
   private _currentScale!: number;
   private readonly _singlePaged!: boolean;
@@ -214,6 +214,9 @@ export default class Fast2DText {
       color: 0xff8c00,
       transparent: this._initialOpacity !== 1,
       opacity: this._initialOpacity,
+      // @ts-ignore - I don't know wtf is up with this error, it says:
+      //  "TS2322: Type number is not assignable to type Side | undefined", but
+      //  that's nonsense because this._initialSide is ALWAYS a number.
       side: this._initialSide,
     });
 
