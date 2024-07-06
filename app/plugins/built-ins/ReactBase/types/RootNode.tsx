@@ -1,7 +1,4 @@
 import React from 'react';
-import PluginCacheTracker from '../../../../emitters/PluginCacheTracker';
-import Core from '../../Core';
-import { InputManager } from '../../InputManager';
 import { FadeInDown } from '../../../../reactExtra/animations/FadeInDown';
 import InputBridge from './InputBridge';
 import MenuHorizontal from '../menuTypes/MenuHorizontal';
@@ -18,10 +15,6 @@ const rootNodeStyle: React.CSSProperties = {
   right: 0,
   backgroundColor: 'rgba(0, 0, 0, 0.30)',
   zIndex: 25,
-};
-
-type PluginCompletion = PluginCacheTracker & {
-  core: Core, inputManager: InputManager,
 };
 
 interface Props {

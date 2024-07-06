@@ -45,7 +45,7 @@ const builtInPluginsEnabled: PluginEntry[] = [
   { name: 'navigation', pluginInstance: navigationPlugin },
   { name: 'levelScene', pluginInstance: levelScenePlugin, dependencies: [ 'core', 'nodeOps', 'spacetimeControl', 'player' ], optional: [ 'shipModuleHub' ] },
   { name: 'spaceScene', pluginInstance: spaceScenePlugin, dependencies: [ 'core', 'spacetimeControl' ] },
-  // { name: 'localSpace', pluginInstance: localSpacePlugin, dependencies: [ 'core', 'player', 'spacetimeControl' ] },
+  { name: 'localSpace', pluginInstance: localSpacePlugin, dependencies: [ 'core', 'player', 'spacetimeControl', 'spaceScene' ] },
   { name: 'offscreenGalaxyWorker', pluginInstance: offscreenGalaxyWorkerPlugin, dependencies: [ 'core', 'player', 'spaceScene' ] },
 
   // HUD and control visuals
@@ -83,9 +83,8 @@ const builtInPluginsEnabled: PluginEntry[] = [
   { name: 'externalLightsModule', pluginInstance: externalLightsModulePlugin, dependencies: [ 'helmControl', 'nodeOps', 'cockpitLightsModule' ] },
   { name: 'multimeterModule', pluginInstance: multimeterModulePlugin },
 
-  // Ship module hub
-  // Always place this last. The module hub should have programmatic access to
-  // all ship modules.
+  // Trailing plugins - these need to have access to all modules due to the
+  // dynamic nature of their subcomponents.
   { name: 'shipModuleHub', pluginInstance: shipModuleHubPlugin, dependencies: [ '*' ] },
 
   // ------------------------------------------------------------ //
