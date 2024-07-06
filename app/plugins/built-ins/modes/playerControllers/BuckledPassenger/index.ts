@@ -2,13 +2,12 @@
 // helmControl mode does not do anything to the spaceship, or to space. It
 // merely reports high level input state.
 
-import { Camera } from 'three';
+import * as THREE from 'three';
 import Core from '../../../Core';
 import CosmosisPlugin from '../../../../types/CosmosisPlugin';
 import ModeController from '../../../InputManager/types/ModeController';
 import { buckledPassengerControls } from './controls';
 import { ModeId } from '../../../InputManager/types/ModeId';
-import { gameRuntime } from '../../../../gameRuntime';
 import { InputManager } from '../../../InputManager';
 import {
   applyPolarRotation,
@@ -28,17 +27,27 @@ const maxHeadYAngle = pi * 0.4;
 
 const animationData = Core.animationData;
 
-type PluginCompletion = PluginCacheTracker & {
+// -- ✀ Plugin boilerplate ----------------------------------------------------
+
+const pluginDependencies = {
   player: Player,
-  camera: Camera,
   inputManager: InputManager,
 };
+const shallowTracking = { player: { camera: 'camera' } };
+const pluginList = Object.keys(pluginDependencies);
+type Dependencies = typeof pluginDependencies & {
+  camera: THREE.Camera, // declare shallow-tracked aliases
+};
+
+// -- ✀ -----------------------------------------------------------------------
 
 /**
  * Used to look around you while in a chair.
  */
 class BuckledPassenger extends ModeController {
-  private _pluginCache: PluginCacheTracker | PluginCompletion;
+  private _pluginCache = new PluginCacheTracker<Dependencies>(
+    pluginList, shallowTracking,
+  ).pluginCache;
 
   // The pointer lock API give us units in pixels. The delta'd result is stored
   // here. Due to how we restrict movement, only the Y axis is needed.
@@ -51,14 +60,6 @@ class BuckledPassenger extends ModeController {
   constructor() {
     const uiInfo = { friendly: 'Buckled Controls', priority: 80 };
     super('buckledPassenger', ModeId.buckledPassenger, buckledPassengerControls, uiInfo);
-
-    this._pluginCache = new PluginCacheTracker(
-      [ 'player' ],
-      { player: { camera: 'camera' } },
-    );
-
-    // This controller activates itself by default:
-    this._pluginCache.inputManager = gameRuntime.tracked.inputManager.cachedValue;
   }
 
   // ----------------------------------------------------------------------- //
@@ -96,10 +97,6 @@ class BuckledPassenger extends ModeController {
   // Sets the neck rotational position. This tries to work the same way a human
   // neck would, excluding tilting.
   setNeckPosition(x: number, y: number) {
-    if (!this._pluginCache.allPluginsLoaded) {
-      return;
-    }
-
     // Note: don't use delta here. We don't want mouse speed to be dependent on
     // framerate.
     applyPolarRotation(

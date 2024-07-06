@@ -62,8 +62,8 @@ const builtInPluginsEnabled: PluginEntry[] = [
   // // Modes
   { name: 'generalControl', pluginInstance: generalControlPlugin, dependencies: [ 'inputManager', 'reactBase' ] },
   // { name: 'freeCam', pluginInstance: freeCamPlugin, dependencies: [ 'player', 'inputManager' ] },
-  // { name: 'buckledPassenger', pluginInstance: buckledPassengerPlugin, dependencies: [ 'player', 'inputManager' ] },
-  // { name: 'helmControl', pluginInstance: helmControlPlugin, dependencies: [ 'player', 'inputManager', 'levelScene' ], optional: [ 'buckledPassenger' ] },
+  { name: 'buckledPassenger', pluginInstance: buckledPassengerPlugin, dependencies: [ 'player', 'inputManager' ] },
+  { name: 'helmControl', pluginInstance: helmControlPlugin, dependencies: [ 'player', 'inputManager', 'levelScene' ], optional: [ 'buckledPassenger' ] },
   //
   // // ------------------------------------------------------------ //
   //
