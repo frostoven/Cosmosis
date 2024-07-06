@@ -34,12 +34,20 @@ const csmToThree = [
   5, 4, 2, 3, 1, 0,
 ];
 
-type PluginCompletion = PluginCacheTracker & {
-  player: Player, core: Core, spaceScene: SpaceScene,
+// -- ✀ Plugin boilerplate ----------------------------------------------------
+
+const pluginDependencies = {
+  core: Core,
+  player: Player,
+  spaceScene: SpaceScene,
 };
+const pluginList = Object.keys(pluginDependencies);
+type Dependencies = typeof pluginDependencies;
+
+// -- ✀ -----------------------------------------------------------------------
 
 class OffscreenGalaxyWorker extends Worker {
-  private _pluginTracker!: PluginCacheTracker | PluginCompletion;
+  private _pluginCache = new PluginCacheTracker<Dependencies>(pluginList).pluginCache;
   // private transferablePosition!: Float64Array;
   private bridge: WebWorkerRuntimeBridge;
   private skyboxTextures: THREE.CanvasTexture[] | null[] = [ null, null, null, null, null, null ];
@@ -57,21 +65,20 @@ class OffscreenGalaxyWorker extends Worker {
 
     // this.transferablePosition = new Float64Array(SBA_LENGTH);
 
-    this._pluginTracker = new PluginCacheTracker([ 'core', 'player', 'spaceScene' ]);
-    this._pluginTracker.onAllPluginsLoaded.getOnce(() => {
-      this._pluginTracker.core.onAnimate.getEveryChange(this.step.bind(this));
+    this._pluginCache.core.onAnimate.getEveryChange(this.step.bind(this));
 
-      if (USE_WEB_WORKER) {
-        this.requestSkybox();
+    if (USE_WEB_WORKER) {
+      this.requestSkybox();
+    }
+    else {
+      const scene: SpaceScene = this._pluginCache.spaceScene;
+      if (scene.skybox) {
+        scene.skybox.visible = false;
       }
-      else {
-        const scene: SpaceScene = this._pluginTracker.spaceScene;
-        if (scene.skybox) {
-          scene.skybox.visible = false;
-        }
-      }
-      this._init();
-    });
+    }
+
+    this._init();
+
     // setInterval(() => {
     //   this.requestSkybox();
     // }, 1000);
@@ -88,7 +95,7 @@ class OffscreenGalaxyWorker extends Worker {
       return this.sendCanvasOffscreen();
     }
 
-    // const scene: SpaceScene = this._pluginTracker.spaceScene;
+    // const scene: SpaceScene = this._pluginCache.spaceScene;
 
     // Note: the rest of this function is for debugging and previewing
     // purposes. I doubt we'll move away from the skybox model for any normal
@@ -101,7 +108,7 @@ class OffscreenGalaxyWorker extends Worker {
     const renderer: THREE.WebGLRenderer = new THREE.WebGLRenderer({
       canvas: this.canvas,
       alpha: true,
-      powerPreference: "high-performance",
+      powerPreference: 'high-performance',
       // antialias: false,
       stencil: false,
       depth: false,
@@ -193,47 +200,47 @@ class OffscreenGalaxyWorker extends Worker {
       options: { [key: string]: any },
       buffer: ArrayBuffer | ImageBitmap
     } = data;
-      // Skybox requesting data.
-      if (rpc === API_BRIDGE_REQUEST) {
-        this.bridge.auto(options, (error, { serialData, bufferData }) => {
-          if (bufferData) {
-            this.postMessage({
-              endpoint: replyTo,
-              buffer: bufferData.buffer,
-              serialData,
-            }, [bufferData.buffer]);
-          }
-          else {
-            this.postMessage({
-              endpoint: replyTo,
-              serialData,
-            });
-          }
-        });
-      }
-      // Skybox sending data.
-      else if (rpc === SEND_SKYBOX) {
-        // const start = performance.now();
-        const side = options.side;
-        const triggerBuild = options.triggerBuild;
-        const texture = new THREE.CanvasTexture(buffer as ImageBitmap);
-        texture.image = buffer;
-        // @ts-ignore
-        this.skyboxTextures[csmToThree[side]] = texture;
-        // Try to keep this under 1ms. The only real lag should come from
-        // offscreen GPU use. This averages 0.09-0.5ms on my laptop, depending
-        // on how busy the machine already is.
-        // console.log(`[OffscreenGalaxyWorker] side cost the main thread ${(performance.now() - start)}ms.`);
-
-        if (triggerBuild) {
-          this.buildSkybox();
+    // Skybox requesting data.
+    if (rpc === API_BRIDGE_REQUEST) {
+      this.bridge.auto(options, (error, { serialData, bufferData }) => {
+        if (bufferData) {
+          this.postMessage({
+            endpoint: replyTo,
+            buffer: bufferData.buffer,
+            serialData,
+          }, [ bufferData.buffer ]);
         }
+        else {
+          this.postMessage({
+            endpoint: replyTo,
+            serialData,
+          });
+        }
+      });
+    }
+    // Skybox sending data.
+    else if (rpc === SEND_SKYBOX) {
+      // const start = performance.now();
+      const side = options.side;
+      const triggerBuild = options.triggerBuild;
+      const texture = new THREE.CanvasTexture(buffer as ImageBitmap);
+      texture.image = buffer;
+      // @ts-ignore
+      this.skyboxTextures[csmToThree[side]] = texture;
+      // Try to keep this under 1ms. The only real lag should come from
+      // offscreen GPU use. This averages 0.09-0.5ms on my laptop, depending
+      // on how busy the machine already is.
+      // console.log(`[OffscreenGalaxyWorker] side cost the main thread ${(performance.now() - start)}ms.`);
+
+      if (triggerBuild) {
+        this.buildSkybox();
       }
-      else {
-        console.warn(
-          '[OffscreenGalaxyWorker] Posted message not understood:', message,
-        );
-      }
+    }
+    else {
+      console.warn(
+        '[OffscreenGalaxyWorker] Posted message not understood:', message,
+      );
+    }
     // }
   }
 
@@ -270,14 +277,14 @@ class OffscreenGalaxyWorker extends Worker {
   }
 
   buildSkybox() {
-    const scene: SpaceScene = this._pluginTracker.spaceScene;
+    const scene: SpaceScene = this._pluginCache.spaceScene;
     const start = performance.now();
     scene.setSkyboxSides(this.skyboxTextures as THREE.CanvasTexture[]);
     console.log(`[buildSkybox] applying sides cost the main thread ${(performance.now() - start)}ms.`);
   }
 
   step() {
-    const cam: THREE.PerspectiveCamera = this._pluginTracker.player.camera;
+    const cam: THREE.PerspectiveCamera = this._pluginCache.player.camera;
     if (USE_WEB_WORKER) {
       if (!cam) {
         return;
@@ -300,4 +307,4 @@ const offscreenGalaxyWorkerPlugin = new CosmosisPlugin('offscreenGalaxyWorker', 
 export {
   OffscreenGalaxyWorker,
   offscreenGalaxyWorkerPlugin,
-}
+};

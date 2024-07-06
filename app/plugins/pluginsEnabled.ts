@@ -46,7 +46,7 @@ const builtInPluginsEnabled: PluginEntry[] = [
   { name: 'levelScene', pluginInstance: levelScenePlugin, dependencies: [ 'core', 'nodeOps', 'spacetimeControl', 'player' ], optional: [ 'shipModuleHub' ] },
   { name: 'spaceScene', pluginInstance: spaceScenePlugin, dependencies: [ 'core', 'spacetimeControl' ] },
   // { name: 'localSpace', pluginInstance: localSpacePlugin, dependencies: [ 'core', 'player', 'spacetimeControl' ] },
-  // { name: 'offscreenGalaxyWorker', pluginInstance: offscreenGalaxyWorkerPlugin, dependencies: [ 'core', 'player', 'spaceScene' ] },
+  { name: 'offscreenGalaxyWorker', pluginInstance: offscreenGalaxyWorkerPlugin, dependencies: [ 'core', 'player', 'spaceScene' ] },
   //
   // // HUD and control visuals
   // { name: 'hud3D', pluginInstance: hud3DPlugin, dependencies: [ 'nodeOps', 'spaceScene', 'player' ] },
