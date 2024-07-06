@@ -1,8 +1,9 @@
 // Note:
 // helmControl mode does not do anything to the spaceship, or to space. It
-// merely reports high level input state.
+// aggregates digital and analog input states into single values and reports
+// those to the ship's unified view.
 
-import { Camera } from 'three';
+import * as THREE from 'three';
 import Core from '../../../Core';
 import CosmosisPlugin from '../../../../types/CosmosisPlugin';
 import ModeController from '../../../InputManager/types/ModeController';
@@ -24,7 +25,6 @@ import {
 import speedTracker from '../../../../../local/speedTracker';
 import { SpacetimeControl } from '../../../SpacetimeControl';
 import {
-  logBootInfo,
   logBootTitleAndInfo,
 } from '../../../../../local/windowLoadListener';
 import PluginLoader from '../../../../types/PluginLoader';
@@ -34,12 +34,20 @@ const debugPositionAndSpeed = true;
 const animationData = Core.animationData;
 const helmView = Core.unifiedView.helm;
 
-type PluginCompletion = PluginCacheTracker & {
+// -- ✀ Plugin boilerplate ----------------------------------------------------
+
+const pluginDependencies = {
   player: Player,
-  camera: Camera,
   inputManager: InputManager,
   levelScene: LevelScene,
 };
+const shallowTracking = { player: { camera: 'camera' } };
+const pluginList = Object.keys(pluginDependencies);
+type Dependencies = typeof pluginDependencies & {
+  camera: THREE.Camera, // declare shallow-tracked aliases
+};
+
+// -- ✀ -----------------------------------------------------------------------
 
 /**
  * Represents the pilot control interface. Think of this as the bridge ship
@@ -49,7 +57,9 @@ class HelmControl extends ModeController {
   // If true, flight controls will move the player head around. If false,
   // player controls will move the ship around.
   private _headLookActive: boolean = false;
-  private _pluginCache: PluginCacheTracker | PluginCompletion;
+  private _pluginCache = new PluginCacheTracker<Dependencies>(
+    pluginList, shallowTracking,
+  ).pluginCache;
 
   // Important for input devices such as keyboards. Not used by analog devices.
   private _throttleAccumulation: number = 0;
@@ -67,11 +77,6 @@ class HelmControl extends ModeController {
     logBootTitleAndInfo('Driver', 'Helm Control', PluginLoader.bootLogIndex);
     const uiInfo = { friendly: 'Ship Pilot Controls', priority: 80 };
     super('helmControl', ModeId.flightControl, helmControls, uiInfo);
-
-    this._pluginCache = new PluginCacheTracker(
-      [ 'player', 'core', 'inputManager', 'levelScene' ],
-      { player: { camera: 'camera' } },
-    );
 
     // This controller activates itself by default:
     this._pluginCache.inputManager.activateController(ModeId.flightControl, this.name);
@@ -333,20 +338,11 @@ class HelmControl extends ModeController {
     this.processWarpThrottle(delta, bigDelta);
     this.processWarpRotation(delta);
   }
-
-  // step(delta) {
-  //   if (!this.state.mouseHeadLook) {
-  //     this.resetNeckAxesInput();
-  //     this.stepAim(delta);
-  //   }
-  //   else {
-  //     this.resetPrincipleAxesInput();
-  //     this.stepFreeLook();
-  //   }
-  // }
 }
 
-const helmControlPlugin = new CosmosisPlugin('helmControl', HelmControl);
+const helmControlPlugin = new CosmosisPlugin(
+  'helmControl', HelmControl, pluginDependencies,
+);
 
 export {
   HelmControl,

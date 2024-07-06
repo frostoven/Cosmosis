@@ -19,7 +19,9 @@ export default class Player {
     const { display } = userProfile.getCurrentConfig({
       identifier: 'userOptions',
     });
-    this.camera = new PerspectiveCamera(display.fieldOfView, window.innerWidth / window.innerHeight, NEAR, FAR);
+    this.camera = new PerspectiveCamera(
+      display.fieldOfView, window.innerWidth / window.innerHeight, NEAR, FAR,
+    );
     this.camera.name = 'primaryCamera';
     // this.worldCoords = new Vector3();
     // this.coordsType = CoordType.galaxyCentric;
@@ -41,6 +43,23 @@ export default class Player {
     //   // this.camera.position.set(-0.0038711067754775286, 0, 0.26675403118133545);
     //   this.camera.position.copy(window.debug.sol);
     // }, 20);
+
+    window.addEventListener('resize', this.onWindowResize.bind(this));
+    this.onWindowResize();
+  }
+
+  onWindowResize() {
+    const { graphics } = userProfile.getCurrentConfig({
+      identifier: 'userOptions',
+    });
+
+    let screenWidth = window.innerWidth;
+    let screenHeight = window.innerHeight;
+
+    const scale = graphics.resolutionScale;
+    // TODO: move this to player module.
+    this.camera.aspect = screenWidth / screenHeight;
+    this.camera.updateProjectionMatrix();
   }
 }
 
@@ -48,4 +67,4 @@ const playerPlugin = new CosmosisPlugin('player', Player);
 
 export {
   playerPlugin,
-}
+};

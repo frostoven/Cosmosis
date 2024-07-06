@@ -3,21 +3,39 @@ import PluginCacheTracker from '../../../../../emitters/PluginCacheTracker';
 import HudItem from '../../../ui/Hud3D/types/HudItem';
 import { HudAlign } from '../../../ui/Hud3D/types/HudAlign';
 import HudPage from '../../../ui/Hud3D/types/HudPage';
-import { gameRuntime } from '../../../../gameRuntime';
 import { Hud3D } from '../../../ui/Hud3D';
 import Core from '../../../Core';
 import ChangeTracker from 'change-tracker/src';
+import Player from '../../../Player';
+import * as THREE from 'three';
 
 const helmView = Core.unifiedView.helm;
 const propulsionView = Core.unifiedView.propulsion;
 
+// -- ✀ Plugin boilerplate ----------------------------------------------------
+
+const pluginDependencies = {
+  core: Core,
+  player: Player,
+  hud3D: Hud3D,
+};
+const shallowTracking = { player: { camera: 'camera' } };
+const pluginList = Object.keys(pluginDependencies);
+type Dependencies = typeof pluginDependencies & {
+  camera: THREE.Camera, // declare shallow-tracked aliases
+};
+
+// -- ✀ -----------------------------------------------------------------------
+
 export default class VisorHud extends ShipModule {
+  private _pluginCache = new PluginCacheTracker<Dependencies>(
+    pluginList, shallowTracking,
+  ).pluginCache;
+
   readonly friendlyName: string;
   _powerSource: any;
 
-  private _pluginCache: PluginCacheTracker;
-  // @ts-ignore - item will be set before use.
-  private _throttle: HudItem;
+  private _throttle!: HudItem;
   private _speedIndicator!: HudItem;
   private _uiLoaded: boolean;
 
@@ -30,14 +48,7 @@ export default class VisorHud extends ShipModule {
     this._uiLoaded = false;
     this._powerSource = null;
 
-    this._pluginCache = new PluginCacheTracker(
-      [ 'player' ],
-      { player: { camera: 'camera' } },
-    );
-
-    this._pluginCache.onAllPluginsLoaded.getOnce(() => {
-      this._setupUi();
-    });
+    this._setupUi();
   }
 
   _setupUi() {
@@ -58,17 +69,15 @@ export default class VisorHud extends ShipModule {
     });
 
     const page = new HudPage('visorHud', [ this._throttle, this._speedIndicator ]);
-    gameRuntime.tracked.hud3D.getOnce((hud3d: Hud3D) => {
-      hud3d.setScreenPage(page, this._pluginCache.camera);
+    this._pluginCache.hud3D.setScreenPage(page, this._pluginCache.camera);
 
-      ChangeTracker.waitForAll([
-        this._throttle.onMeshLoaded,
-        this._speedIndicator.onMeshLoaded,
-      ]).getOnce(() => {
-        this._uiLoaded = true;
-        // this._throttle._debugDetachFromFace();
-        // this._speedIndicator._debugDetachFromFace();
-      });
+    ChangeTracker.waitForAll([
+      this._throttle.onMeshLoaded,
+      this._speedIndicator.onMeshLoaded,
+    ]).getOnce(() => {
+      this._uiLoaded = true;
+      // this._throttle._debugDetachFromFace();
+      // this._speedIndicator._debugDetachFromFace();
     });
   }
 

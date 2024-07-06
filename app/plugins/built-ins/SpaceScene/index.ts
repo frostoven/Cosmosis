@@ -2,37 +2,47 @@ import {
   BoxGeometry,
   MeshBasicMaterial,
   Mesh,
-  PerspectiveCamera,
   Scene,
   WebGLRenderer,
 } from 'three';
 import CosmosisPlugin from '../../types/CosmosisPlugin';
-import { gameRuntime } from '../../gameRuntime';
-import { CoreType } from '../Core';
+import Core from '../Core';
 import userProfile from '../../../userProfile';
 import * as THREE from 'three';
 import { cubeToSphere } from '../../../local/mathUtils';
 import { SpacetimeControl } from '../SpacetimeControl';
 import { logBootTitleAndInfo } from '../../../local/windowLoadListener';
 import PluginLoader from '../../types/PluginLoader';
+import Player from '../Player';
+import PluginCacheTracker from '../../../emitters/PluginCacheTracker';
+
+// -- ✀ Plugin boilerplate ----------------------------------------------------
+
+const pluginDependencies = {
+  core: Core,
+  player: Player,
+  spacetimeControl: SpacetimeControl,
+};
+const shallowTracking = { player: { camera: 'camera' } };
+const pluginList = Object.keys(pluginDependencies);
+type Dependencies = typeof pluginDependencies & {
+  camera: THREE.Camera, // declare shallow-tracked aliases
+};
+
+// -- ✀ -----------------------------------------------------------------------
 
 export default class SpaceScene extends Scene {
+  private _pluginCache = new PluginCacheTracker<Dependencies>(
+    pluginList, shallowTracking,
+  ).pluginCache;
+
   public skybox: Mesh<BoxGeometry, MeshBasicMaterial[]> | null = null;
   private _renderer: WebGLRenderer;
-  private _cachedSpacetime: SpacetimeControl;
-  private _cachedCamera: PerspectiveCamera;
 
   constructor() {
     super();
     logBootTitleAndInfo('Driver', 'Gravitron Sensor', PluginLoader.bootLogIndex);
-    this._cachedCamera = new PerspectiveCamera();
-    this._cachedSpacetime = gameRuntime.tracked.spacetimeControl.cachedValue;
-    this._cachedSpacetime.enterReality(this);
-    this._setupWatchers();
-
-    const { display, graphics } = userProfile.getCurrentConfig({
-      identifier: 'userOptions',
-    });
+    this._pluginCache.spacetimeControl.enterReality(this);
 
     const farObjectCanvas = document.getElementById('far-object-canvas');
     const renderer = new WebGLRenderer({
@@ -57,9 +67,7 @@ export default class SpaceScene extends Scene {
 
     this._renderer = renderer;
 
-    gameRuntime.tracked.core.getOnce((core: CoreType) => {
-      core.appendRenderHook(this.render);
-    });
+    this._pluginCache.core.appendRenderHook(this.render);
 
     // --------------------------------------------------------------------- //
     // const geometry = new BoxGeometry(1, 1, 1);
@@ -71,15 +79,6 @@ export default class SpaceScene extends Scene {
 
     window.addEventListener('resize', this.onWindowResize.bind(this));
     this.onWindowResize();
-  }
-
-  _setupWatchers() {
-    gameRuntime.tracked.player.getEveryChange((player) => {
-      this._cachedCamera = player.camera;
-    });
-    gameRuntime.tracked.spacetimeControl.getEveryChange((location: SpacetimeControl) => {
-      this._cachedSpacetime = location;
-    });
   }
 
   onWindowResize() {
@@ -94,9 +93,6 @@ export default class SpaceScene extends Scene {
     this._renderer.setSize(screenWidth * scale, screenHeight * scale);
     this._renderer.domElement.style.width = '100%';
     this._renderer.domElement.style.height = '100%';
-    // TODO: move this to player module.
-    this._cachedCamera.aspect = screenWidth / screenHeight;
-    this._cachedCamera.updateProjectionMatrix();
   }
 
   setSkyboxSides(newTextures: THREE.CanvasTexture[]) {
@@ -148,7 +144,7 @@ export default class SpaceScene extends Scene {
   }
 
   render = () => {
-    this._renderer.render(this, this._cachedCamera);
+    this._renderer.render(this, this._pluginCache.camera);
   };
 }
 

@@ -15,18 +15,24 @@ import { Mars } from './Mars';
 import { SpacetimeControl } from '../../../../SpacetimeControl';
 import { eclipticAngle } from './defs';
 
-type PluginCompletion = PluginCacheTracker | {
+// -- ✀ Plugin boilerplate ----------------------------------------------------
+
+const pluginDependencies = {
   core: Core,
   spacetimeControl: SpacetimeControl,
 };
+const pluginList = Object.keys(pluginDependencies);
+type Dependencies = typeof pluginDependencies;
+
+// -- ✀ -----------------------------------------------------------------------
+
 
 class Sol /*extends SceneOverride*/ {
+  private _pluginCache = new PluginCacheTracker<Dependencies>(pluginList).pluginCache;
   constituents: PlanetarySystemDefinition;
-  private _pluginCache: PluginCompletion;
   private _ready = false;
 
   constructor(parentScene: THREE.Scene | THREE.Group) {
-    this._pluginCache = new PluginCacheTracker([ 'core', 'spacetimeControl' ]);
 
     const planetaryEclipticPlane = new THREE.Group();
     parentScene.add(planetaryEclipticPlane);
@@ -42,9 +48,7 @@ class Sol /*extends SceneOverride*/ {
 
     this.constituents = new PlanetarySystemDefinition(planetaryEclipticPlane);
 
-    this._pluginCache.onAllPluginsLoaded.getOnce(() => {
-      this._pluginCache.core.onAnimate.getEveryChange(this.step);
-    });
+    this._pluginCache.core.onAnimate.getEveryChange(this.step);
   }
 
   // Inits the system, adds everything the parent scene, and starts the render
