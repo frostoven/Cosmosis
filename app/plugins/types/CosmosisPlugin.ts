@@ -16,8 +16,7 @@ export default class CosmosisPlugin extends ChangeTracker implements PluginInter
    *  version of the tracked class name.
    * @param TrackedClass - The class that acts as your plugin entry-point.
    * @param [knownDependencies] - Dependencies you know you'll need. This is
-   *  optional for now to test the waters, but will likely become required in
-   *  future as it offers auto-complete and allows runtime dependency checks.
+   *  optional for plugins taking a more low-level approach.
    * @param [overrides] - TODO: Check if this is still useful.
    */
   constructor(

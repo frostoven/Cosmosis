@@ -64,30 +64,30 @@ const builtInPluginsEnabled: PluginEntry[] = [
   // { name: 'freeCam', pluginInstance: freeCamPlugin, dependencies: [ 'player', 'inputManager' ] },
   { name: 'buckledPassenger', pluginInstance: buckledPassengerPlugin, dependencies: [ 'player', 'inputManager' ] },
   { name: 'helmControl', pluginInstance: helmControlPlugin, dependencies: [ 'player', 'inputManager', 'levelScene' ], optional: [ 'buckledPassenger' ] },
-  //
-  // // ------------------------------------------------------------ //
-  //
-  // // Ship modules
-  // { name: 'electricalHousingModule', pluginInstance: electricalHousingModulePlugin },
-  //
-  // // Engine modules
-  // { name: 'propulsionManagerModule', pluginInstance: propulsionManagerModulePlugin },
-  // { name: 'warpDriveModule', pluginInstance: warpDriveModulePlugin, dependencies: [ 'helmControl', 'propulsionManagerModule' ] },
-  //
-  // // Power modules
-  // { name: 'generatorModule', pluginInstance: generatorModulePlugin },
-  //
-  // // Low power modules
+
+  // ------------------------------------------------------------ //
+
+  // Ship modules
+  { name: 'electricalHousingModule', pluginInstance: electricalHousingModulePlugin },
+
+  // Engine modules
+  { name: 'propulsionManagerModule', pluginInstance: propulsionManagerModulePlugin },
+  { name: 'warpDriveModule', pluginInstance: warpDriveModulePlugin, dependencies: [ 'helmControl', 'propulsionManagerModule' ] },
+
+  // Power modules
+  { name: 'generatorModule', pluginInstance: generatorModulePlugin },
+
+  // Low power modules
   // { name: 'visorHudModule', pluginInstance: visorHudModulePlugin, dependencies: [ 'helmControl', 'nodeOps' ] },
-  // { name: 'cockpitLightsModule', pluginInstance: cockpitLightsModulePlugin, dependencies: [ 'helmControl', 'nodeOps' ] },
-  // { name: 'externalLightsModule', pluginInstance: externalLightsModulePlugin, dependencies: [ 'helmControl', 'nodeOps', 'cockpitLightsModule' ] },
-  // { name: 'multimeterModule', pluginInstance: multimeterModulePlugin },
-  //
-  // // Ship module hub
-  // // Always place this last. The module hub should have programmatic access to
-  // // all ship modules.
-  // { name: 'shipModuleHub', pluginInstance: shipModuleHubPlugin, dependencies: [ '*' ] },
-  //
+  { name: 'cockpitLightsModule', pluginInstance: cockpitLightsModulePlugin, dependencies: [ 'helmControl', 'nodeOps' ] },
+  { name: 'externalLightsModule', pluginInstance: externalLightsModulePlugin, dependencies: [ 'helmControl', 'nodeOps', 'cockpitLightsModule' ] },
+  { name: 'multimeterModule', pluginInstance: multimeterModulePlugin },
+
+  // Ship module hub
+  // Always place this last. The module hub should have programmatic access to
+  // all ship modules.
+  { name: 'shipModuleHub', pluginInstance: shipModuleHubPlugin, dependencies: [ '*' ] },
+
   // // ------------------------------------------------------------ //
   //
   // // Dev plugins
