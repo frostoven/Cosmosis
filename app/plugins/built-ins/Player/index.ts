@@ -41,6 +41,23 @@ export default class Player {
     //   // this.camera.position.set(-0.0038711067754775286, 0, 0.26675403118133545);
     //   this.camera.position.copy(window.debug.sol);
     // }, 20);
+
+    window.addEventListener('resize', this.onWindowResize.bind(this));
+    this.onWindowResize();
+  }
+
+  onWindowResize() {
+    const { graphics } = userProfile.getCurrentConfig({
+      identifier: 'userOptions',
+    });
+
+    let screenWidth = window.innerWidth;
+    let screenHeight = window.innerHeight;
+
+    const scale = graphics.resolutionScale;
+    // TODO: move this to player module.
+    this.camera.aspect = screenWidth / screenHeight;
+    this.camera.updateProjectionMatrix();
   }
 }
 
