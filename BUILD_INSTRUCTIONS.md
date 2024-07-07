@@ -1,70 +1,92 @@
 ## Compatibility
-This game has been tested on Windows 10 build 1903 and Ubuntu Linux 18.04.
-Other operating systems should work with minimal effort because this project
-uses a standard nw.js / webpack setup.
+
+This game has been tested on Windows 10 build 1903, and Ubuntu Linux versions
+18.04 and 20.04. Other operating systems should work with minimal effort
+because this project uses a standard NW.js / webpack setup.
 
 If you encounter problems with unofficial operating systems and would like to
 contribute a fix, feel free to raise a PR.
 
 ## The lazy way
-Head over to the [releases page](https://github.com/frostoven/Cosmosis/releases)
+
+Head over to
+[the releases page](https://github.com/frostoven/Cosmosis/releases)
 and download a pre-built copy. Done.
 
 ## By way of developer madness
+
 Please ensure you have the following installed:
-* git (tested with all install options default).
-* npm (tested with 6.14, but any version should do).
-* nodejs (tested with 12.18, but any version higher than 6 should do).
+
+* Git
+* NPM
+* Node.js
+
+**Important notes regarding Node.js and NPM:**
+
+* The build process currently only supports Node.js 16 and below. This is
+  because webpack 4 uses an older version of SSL which
+  [causes a fatal exception](https://stackoverflow.com/questions/69394632/webpack-build-failing-with-err-ossl-evp-unsupported)
+  in Node.js. We'll fix this when time permits, but our current webpack setup
+  isn't compatible with webpack 5, so it'll take some migration effort. Please
+  use a tool such as NVM to downgrade your Cosmosis build environment for now.
+* Alternatives to NPM such as PNPM and Yarn won't treat you very well. They've
+  [taken a stance](https://github.com/pnpm/pnpm/issues/2891)
+  on breaking compatibility with NPM which causes the NW.js installation to
+  fail. This will be investigated at some point but is not a priority.
 
 ## Building the project
-_Note: this project currently only has a dev webpack config. Feel free to raise
-a PR with a prod webpack config._
 
 Once you've cloned the project
 (`git clone https://github.com/frostoven/Cosmosis.git`)
 you'll want to make sure all dependencies are installed:
+
 ```bash
 npm install
 ```
-_Note: you may use `npm install --ignore-scripts` instead, which improves
-security in some contexts. Doing so however breaks the nw package, which you'll
-need to manually correct._
 
 If this is the very first time running the application, prepare the initial
 bundle:
+
 ```bash
 npm run prepare-dev
 ```
 
 You can now start the application:
+
 ```bash
 npm start
 ```
+
 If all works as it should, you should see the game window pop up, refresh, and
 find yourself in a spaceship.
 
-Unit tests may be performed by pressing F12 and runing `powerOnSelfTest()`.
+Unit tests may be performed by pressing F12 and running `powerOnSelfTest()`.
 
 ## NPM scripts
+
 The below table details all NPM scripts currently available.
 
-| NPM Command        | Description                                 |
-| --------------------- | ------------------------------------------------------ |
-| `npm start`           | Starts the developer build tool (Webpack) and runs the game (nw) in parallel. The game will reload as the the dev tool regenerates code (a reload always happens at least once after boot when running `npm start`).
-| `npm run start`       | Alias of `npm start`.
-| `npm run game`        | Launches the game without any background dev tools.
-| `npm run prepare-dev` | Builds the game's source code and then exits. Built source is stored in `./build`.
-| `npm run dev`         | Launches the dev tool without the game.
+| NPM Command           | Description                                                                                                                                                                                                          |
+|-----------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `npm start`           | Starts the developer build tool (Webpack) and runs the game (nw) in parallel. The game will reload as the the dev tool regenerates code (a reload always happens at least once after boot when running `npm start`). |
+| `npm run start`       | Alias of `npm start`.                                                                                                                                                                                                |
+| `npm run game`        | Launches the game without any background dev tools.                                                                                                                                                                  |
+| `npm run prepare-dev` | Builds the game's source code and then exits. Built source is stored in `./build`.                                                                                                                                   |
+| `npm run dev`         | Launches the dev tool without the game.                                                                                                                                                                              |
 
 ## Hot module reloading
+
 HMR is enabled by default, though it currently causes a full application
 reload. To disable HMR, press F12 to open the dev terminal and run:
+
 ```javascript
 hmrDisabled = true;
 ```
+
 This will disable HMR until you restart the application.
 
 ## Production assets
+
 Production assets are not be included with the source code. This is to keep it
 as small as possible (git gets slow with large binary files, and GitHub has
 horribly low file size limits).
@@ -79,8 +101,8 @@ Note that some parts of the application (such as the planet loaders) do not yet
 use the prod assets, so you will still see the low quality versions. This will
 be fixed once development on planetary systems start.
 
-
 ## Creating a distributable game folder
+
 Instructions below were written for Windows, but the same instructions will
 work with Linux if you substitute obvious parts where appropriate. For example,
 you may substitute `C:\\` with `/tmp`, `win32` with `linux`, `nw.exe` with
@@ -88,11 +110,13 @@ you may substitute `C:\\` with `/tmp`, `win32` with `linux`, `nw.exe` with
 scripts are maintained for both.
 
 ##### Requirements
+
 Before starting, ensure you have all build requirements satisfied. This
 includes a bash terminal with git available, and modern versions of node.js and
 npm installed. See 'Development' above for more details.
 
 ##### Building the application
+
 * Create a directory to work in, for example `C:\COSMOSIS_BUILDS` and open it.
 * Open a bash terminal, and navigate to the builds directory you created above.
 * Do a git clone of the repo, example `git clone https://github.com/frostoven/Cosmosis.git`
@@ -113,15 +137,19 @@ npm installed. See 'Development' above for more details.
 * Still in the bash terminal, you may now build the project by running the
   build script. It requires passing the NW.js download folder as its only argument.<br>
   Example:
+
 ```bash
 ./Cosmosis/build_utils/create_windows_distributable.sh nwjs-sdk-v0.55.0-win-x64/nwjs-sdk-v0.55.0-win-x64
 ```
+
 The build script will copy the NW.js and Cosmosis folders into a new folder
 named `Cosmosis-win-x64`. It will then install the needed build tools, build
 the game, and perform cleanup.
 
 ##### Tests
+
 Once all the above is complete, please run tests to ensure correct functioning:
+
 * Run `Cosmosis.exe`. Press F12 and make sure there are no errors in the
   developer console.
 * Still in the dev console, run: `powerOnSelfTest()`. This runs unit tests

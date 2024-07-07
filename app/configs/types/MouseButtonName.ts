@@ -17,16 +17,11 @@ for (let i = 3; i < 32; i++) {
   baseMousePairs[i] = `spMouse${i + 1}`;
 }
 
-function createMouseEnum(obj: object) {
-  enum Enum{}
+enum MouseButtonName {}
 
-  for (let [prop, val] of Object.entries(obj)) {
-    Enum[prop] = val;
-  }
-  return Enum;
+for (let [ prop, val ] of Object.entries(baseMousePairs)) {
+  MouseButtonName[prop] = val;
 }
-
-const MouseButtonName = createMouseEnum(baseMousePairs);
 
 enum ScrollName {
   // Negative delta.
@@ -70,4 +65,4 @@ export {
   ScrollName,
   scrollDeltaToEnum,
   scrollTouchpadDeltaToEnum,
-}
+};

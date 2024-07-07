@@ -29,6 +29,7 @@ class GeneralControl extends ModeController {
     });
 
     this.pulse.toggleMousePointer.getEveryChange(() => {
+      // @ts-ignore - This is inherited from PointerLockControls.
       this._mouseDriver.toggle();
     });
 

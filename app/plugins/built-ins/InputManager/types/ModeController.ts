@@ -254,7 +254,7 @@ export default class ModeController {
     this.controlSchema[actionName] = {
       // Note that this can possibly be undefined, but that's ok because
       // { ...undefined } is just {}.
-      ...this.controlSchema[actionName],
+      ...this.controlSchema[actionName] as object,
       ...control,
     };
     // console.log(`this.controlSchema[${actionName}] = { ...`, control, '}');

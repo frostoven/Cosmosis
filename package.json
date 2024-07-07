@@ -18,7 +18,8 @@
     "prepare-dev": "webpack --mode development",
     "dev": "webpack --mode development --watch",
     "game": "nw",
-    "start": "npm-run-all --parallel dev game"
+    "start": "npm-run-all --parallel dev game",
+    "test": "tsc --noEmit"
   },
   "repository": {
     "type": "git",

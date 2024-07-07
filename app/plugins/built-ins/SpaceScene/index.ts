@@ -1,14 +1,7 @@
-import {
-  BoxGeometry,
-  MeshBasicMaterial,
-  Mesh,
-  Scene,
-  WebGLRenderer,
-} from 'three';
+import * as THREE from 'three';
 import CosmosisPlugin from '../../types/CosmosisPlugin';
 import Core from '../Core';
 import userProfile from '../../../userProfile';
-import * as THREE from 'three';
 import { cubeToSphere } from '../../../local/mathUtils';
 import { SpacetimeControl } from '../SpacetimeControl';
 import { logBootTitleAndInfo } from '../../../local/windowLoadListener';
@@ -26,18 +19,18 @@ const pluginDependencies = {
 const shallowTracking = { player: { camera: 'camera' } };
 const pluginList = Object.keys(pluginDependencies);
 type Dependencies = typeof pluginDependencies & {
-  camera: THREE.Camera, // declare shallow-tracked aliases
+  camera: THREE.PerspectiveCamera, // declare shallow-tracked aliases
 };
 
 // -- ✀ -----------------------------------------------------------------------
 
-export default class SpaceScene extends Scene {
+export default class SpaceScene extends THREE.Scene {
   private _pluginCache = new PluginCacheTracker<Dependencies>(
     pluginList, shallowTracking,
   ).pluginCache;
 
-  public skybox: Mesh<BoxGeometry, MeshBasicMaterial[]> | null = null;
-  private _renderer: WebGLRenderer;
+  public skybox: THREE.Mesh<THREE.BoxGeometry, THREE.MeshBasicMaterial[]> | null = null;
+  private _renderer: THREE.WebGLRenderer;
 
   constructor() {
     super();
@@ -45,7 +38,7 @@ export default class SpaceScene extends Scene {
     this._pluginCache.spacetimeControl.enterReality(this);
 
     const farObjectCanvas = document.getElementById('far-object-canvas');
-    const renderer = new WebGLRenderer({
+    const renderer = new THREE.WebGLRenderer({
       logarithmicDepthBuffer: true,
       alpha: true,
       // @ts-ignore
@@ -126,7 +119,6 @@ export default class SpaceScene extends Scene {
       console.log('[SpaceScene] skybox:', this.skybox);
     }
     else {
-
       // A Three material can be an array of materials. In this case, it's an
       // array, so 'materials' is not a typo.
       const oldMaterials = this.skybox.material;

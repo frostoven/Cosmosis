@@ -44,7 +44,9 @@ class MouseDriver extends PointerLockControls {
 
     // Because our base class uses an incompatible methodology, we need to
     // duck-punch our overrides in, 90's style.
+    // @ts-ignore - Comes from PointerLockControls.
     this._superLock = this.lock;
+    // @ts-ignore - Comes from PointerLockControls.
     this.lock = this._lockOverride;
 
     // TODO: auto-lock if the window has focus, else skip.

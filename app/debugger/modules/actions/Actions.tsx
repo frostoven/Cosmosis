@@ -11,6 +11,8 @@ import { gameRuntime } from '../../../plugins/gameRuntime';
 import finder from '../../../local/AssetFinder';
 import MilkyWayGen from '../../../universeFactory/MilkyWayGen';
 import PluginCacheTracker from '../../../emitters/PluginCacheTracker';
+import Player from '../../../plugins/built-ins/Player';
+import LevelScene from '../../../plugins/built-ins/LevelScene';
 
 const textureLoader = new THREE.TextureLoader();
 
@@ -36,7 +38,7 @@ function createSphereAheadOfPlayer(name, radius, color, image: string = '') {
               sphere.material = new THREE.MeshBasicMaterial({ map: texture });
             });
           }
-        }
+        },
       });
     });
   }
@@ -57,7 +59,9 @@ function createSphereAheadOfPlayer(name, radius, color, image: string = '') {
   });
 }
 
-export default class Actions extends React.Component<{ rootUtils: CosmDbgRootUtils }> {
+export default class Actions extends React.Component<{
+  rootUtils: CosmDbgRootUtils
+}> {
   static propTypes = { rootUtils: PropTypes.any };
 
   openProfileDir = () => {
@@ -85,8 +89,14 @@ export default class Actions extends React.Component<{ rootUtils: CosmDbgRootUti
     const start = performance.now();
     const galaxy = new MilkyWayGen().createGalaxy(true);
     console.log(`[Actions] Milky Way took ${performance.now() - start}ms to create.`);
-    const cache = new PluginCacheTracker([ 'player', 'levelScene' ]);
-    cache.onAllPluginsLoaded.getOnce(() => {
+    const dependencies = {
+      player: Player,
+      levelScene: LevelScene,
+    };
+    const cache = new PluginCacheTracker<typeof dependencies>(
+      [ 'player', 'levelScene' ]
+    ).pluginCache;
+    cache.tracker.onAllPluginsLoaded.getOnce(() => {
       cache.player.camera.add(galaxy);
       galaxy.translateZ(-200);
       cache.levelScene.attach(galaxy);
@@ -102,34 +112,40 @@ export default class Actions extends React.Component<{ rootUtils: CosmDbgRootUti
 
           <Form.Field>
             <label>Opens the user profile directory</label>
-            <Button fluid onClick={this.openProfileDir}>Open profile directory</Button>
+            <Button fluid onClick={this.openProfileDir}>Open profile
+              directory</Button>
           </Form.Field>
 
           <Form.Field>
             <label>Soft reload (same thing HMR does)</label>
-            <Button fluid onClick={this.reloadApplication}>Reload application</Button>
+            <Button fluid onClick={this.reloadApplication}>Reload
+              application</Button>
           </Form.Field>
 
           <h3>Game objects</h3>
 
           <Form.Field>
             <label>Creates a sphere 12,742 km in diameter</label>
-            <Button fluid onClick={this.createEarthSizedOrb}>Spawn Earth-sized orb</Button>
+            <Button fluid onClick={this.createEarthSizedOrb}>Spawn Earth-sized
+              orb</Button>
           </Form.Field>
 
           <Form.Field>
             <label>Creates a sphere 139,820 km in diameter</label>
-            <Button fluid onClick={this.createJupiterSizedOrb}>Spawn Jupiter-sized orb</Button>
+            <Button fluid onClick={this.createJupiterSizedOrb}>Spawn
+              Jupiter-sized orb</Button>
           </Form.Field>
 
           <Form.Field>
             <label>Creates a sphere 1.3927 million km in diameter</label>
-            <Button fluid onClick={this.createSunSizedOrb}>Spawn Sun-sized orb</Button>
+            <Button fluid onClick={this.createSunSizedOrb}>Spawn Sun-sized
+              orb</Button>
           </Form.Field>
 
           <Form.Field>
             <label>Creates floating Milky Way prop (takes time)</label>
-            <Button fluid onClick={this.creatMicroMilkyWay}>Spawn micro Milky Way</Button>
+            <Button fluid onClick={this.creatMicroMilkyWay}>Spawn micro Milky
+              Way</Button>
           </Form.Field>
         </Form>
       </div>

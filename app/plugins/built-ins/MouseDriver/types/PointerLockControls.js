@@ -16,6 +16,9 @@ if (process.platform === 'linux') {
   attemptToDisableMouseAcceleration = false;
 }
 
+/**
+ * @type Class
+ */
 const PointerLockControls = function(domElement) {
   if (domElement === undefined) {
     console.warn(

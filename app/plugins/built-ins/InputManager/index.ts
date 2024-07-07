@@ -209,6 +209,7 @@ class InputManager {
         // Luckily, manually dealing with keypresses are easy anyway.
         break;
       case 'mousemove':
+        // @ts-ignore - Unsure why this isn't visible, it is defined.
         if (!this._pluginCache.mouseDriver.isPointerLocked) {
           // Ignore mouse if pointer is being used by menu or HUD.
           return;
