@@ -4,22 +4,30 @@
     "target": "es2019",
     "noImplicitAny": false,
     "moduleResolution": "node",
-    "outDir": "lib",
     "esModuleInterop": true,
-    "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "allowJs": true,
     "checkJs": false,
     "inlineSourceMap": true,
     "incremental": true,
-    "jsx": "react"
+    "jsx": "react",
+    "skipLibCheck": true,
+    "declaration": false,
+    "noEmit": true
   },
   "rules": {
-    "semicolon": [ true, "always" ]
+    "semicolon": [
+      true,
+      "always"
+    ]
   },
-  "include": ["app/**/*"],
+  "exclude": [
+    "./node_modules/**/*"
+  ],
+  "include": [
+    "app/**/*"
+  ],
   "files": [
-    "typings/index.d.ts",
     "node_modules/@types/nw.gui/index.d.ts"
   ]
 }
