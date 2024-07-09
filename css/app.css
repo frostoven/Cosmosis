@@ -20,6 +20,16 @@ html, body {
     cursor: url(/potatoLqAssets/icons/cursor1_sharp_32.png) 3 3, auto;
 }
 
+a {
+    color: #ffd07f;
+    font-weight: bold;
+}
+
+a:hover {
+    color: #d4ffa0;
+    font-weight: bold;
+}
+
 #galaxy-canvas, #far-object-canvas, #near-object-canvas {
     position: fixed;
     top: 0;
