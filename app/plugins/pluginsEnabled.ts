@@ -32,6 +32,7 @@ import { devGimbalPlugin } from './built-ins/DevGimbal';
 import { reactBasePlugin } from './built-ins/ReactBase';
 import { buckledPassengerPlugin } from './built-ins/modes/playerControllers/BuckledPassenger';
 import { localSpacePlugin } from './built-ins/LocalSpace';
+import { postBootChecksPlugin } from './built-ins/PostBootChecks/PostBootChecks';
 
 const builtInPluginsEnabled: PluginEntry[] = [
   // General
@@ -90,7 +91,8 @@ const builtInPluginsEnabled: PluginEntry[] = [
   // ------------------------------------------------------------ //
 
   // // Dev plugins
-  { name: 'devGimbalPlugin', pluginInstance: devGimbalPlugin, dependencies: [ 'core', 'player' ] },
+  { name: 'devGimbal', pluginInstance: devGimbalPlugin, dependencies: [ 'core', 'player' ] },
+  { name: 'postBootChecks', pluginInstance: postBootChecksPlugin, dependencies: [ '*' ] },
 ];
 
 generatePluginCompletion(builtInPluginsEnabled, 'PluginNames');

@@ -32,7 +32,8 @@ type PluginNames =
   'externalLightsModule' | 
   'multimeterModule' | 
   'shipModuleHub' | 
-  'devGimbalPlugin';
+  'devGimbal' | 
+  'postBootChecks';
 
 export {
   PluginNames,
