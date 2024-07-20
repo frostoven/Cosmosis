@@ -8,17 +8,25 @@ import { ReactBase } from '../../../ReactBase';
 import {
   toggleBootWindow,
 } from '../../../../../local/windowLoadListener';
+import PluginCacheTracker from '../../../../../emitters/PluginCacheTracker';
+
+// -- ✀ Plugin boilerplate ----------------------------------------------------
+
+const pluginDependencies = {
+  mouseDriver: MouseDriver,
+  reactBase: ReactBase,
+};
+const pluginList = Object.keys(pluginDependencies);
+type Dependencies = typeof pluginDependencies;
+
+// -- ✀ -----------------------------------------------------------------------
 
 class GeneralControl extends ModeController {
-  private _mouseDriver: MouseDriver;
-  private _reactBase: ReactBase;
+  private _pluginCache = new PluginCacheTracker<Dependencies>(pluginList).pluginCache;
 
   constructor() {
     const uiInfo = { friendly: 'General Controls', priority: 5 };
     super('general', ModeId.appControl, generalControls, uiInfo);
-
-    this._mouseDriver = gameRuntime.tracked.mouseDriver.cachedValue;
-    this._reactBase = gameRuntime.tracked.reactBase.cachedValue;
 
     this.pulse.openShipConsole.getEveryChange(() => {
       toggleBootWindow(true);
@@ -30,7 +38,7 @@ class GeneralControl extends ModeController {
 
     this.pulse.toggleMousePointer.getEveryChange(() => {
       // @ts-ignore - This is inherited from PointerLockControls.
-      this._mouseDriver.toggle();
+      this._pluginCache.mouseDriver.toggle();
     });
 
     this.pulse._devReloadGame.getEveryChange(() => {
@@ -51,12 +59,6 @@ class GeneralControl extends ModeController {
     // This controller activates itself by default:
     gameRuntime.tracked.inputManager.cachedValue.activateController(ModeId.appControl, this.name);
   }
-
-  _setupWatchers() {
-    gameRuntime.tracked.mouseDriver.getEveryChange((mouseDriver) => {
-      this._mouseDriver = mouseDriver;
-    });
-  }
 }
 
 const generalControlPlugin = new CosmosisPlugin('generalControl', GeneralControl);
@@ -64,4 +66,4 @@ const generalControlPlugin = new CosmosisPlugin('generalControl', GeneralControl
 export {
   GeneralControl,
   generalControlPlugin,
-}
+};
