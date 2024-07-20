@@ -1,11 +1,26 @@
 import React from 'react';
 import { FadeInDown } from '../../../../reactExtra/animations/FadeInDown';
-import InputBridge from './InputBridge';
-import MenuHorizontal from '../menuTypes/MenuHorizontal';
-import MenuVertical from '../menuTypes/MenuVertical';
-import MenuGrid from '../menuTypes/MenuGrid';
-import MenuControlSetup from '../menuTypes/MenuControlSetup';
-import { reactMenuControls } from './controls';
+import { InputManager } from '../../InputManager';
+import PluginCacheTracker from '../../../../emitters/PluginCacheTracker';
+import {
+  RegisterMenuSignature,
+  RegisteredMenu,
+} from '../types/compositionSignatures';
+// import MenuHorizontal from '../menuTypes/MenuHorizontal';
+// import MenuVertical from '../menuTypes/MenuVertical';
+// import MenuGrid from '../menuTypes/MenuGrid';
+// import MenuControlSetup from '../menuTypes/MenuControlSetup';
+// import { reactMenuControls } from './controls';
+
+// -- ✀ Plugin boilerplate ----------------------------------------------------
+
+const pluginDependencies = {
+  inputManager: InputManager,
+};
+const pluginList = Object.keys(pluginDependencies);
+type Dependencies = typeof pluginDependencies;
+
+// -- ✀ -----------------------------------------------------------------------
 
 const rootNodeStyle: React.CSSProperties = {
   position: 'fixed',
@@ -18,11 +33,14 @@ const rootNodeStyle: React.CSSProperties = {
 };
 
 interface Props {
-  inputBridge: InputBridge,
+  // inputBridge: InputBridge,
 }
 
 export default class RootNode extends React.Component<Props> {
-  private readonly _input: InputBridge;
+  private _pluginCache = new PluginCacheTracker<Dependencies>(pluginList).pluginCache;
+
+  private registeredMenus: { [name: string]: RegisteredMenu } = {};
+  private activeMenuName: string = '';
 
   state = {
     menuVisible: false,
@@ -31,68 +49,125 @@ export default class RootNode extends React.Component<Props> {
 
   constructor(props: Props | Readonly<Props>) {
     super(props);
-    this._input = props.inputBridge;
   }
 
-  componentDidMount() {
-    this._input.onAction.getEveryChange(this.handleAction);
+  getActiveMenu() {
+    return this.registeredMenus[this.activeMenuName];
   }
 
-  componentWillUnmount() {
-    this._input.onAction.removeGetEveryChangeListener(this.handleAction);
+  setActiveMenu(name: string) {
+    this.activeMenuName = name;
+    return this.registeredMenus[name];
   }
 
-  handleAction = (action: string) => {
-    console.log('action:', action);
-    const menuVisible = this.state.menuVisible;
-    if (action === 'back') {
-      menuVisible && this._input.deactivateAndCloseMenu();
+  registerMenu(options: RegisterMenuSignature) {
+    const name = options.getInputBridge().name;
+    if (this.registeredMenus[name]) {
+      console.error(`[registeredMenu Menu '${name} already registered.']`);
+      return;
     }
-    else if (action === '_openMenu') {
-      !menuVisible && this.showMenu();
-    }
-    else if (action === '_closeMenu') {
-      this.hideMenu();
-    }
-  };
 
-  showMenu() {
-    this.setState({ menuVisible: true });
-    this._input.enableArrowStepping = true;
+    this.registeredMenus[name] = {
+      ...options,
+      isVisible: false,
+    };
+
+    this._pluginCache.inputManager.registerController(
+      options.getInputBridge().modeController,
+    );
   }
 
-  hideMenu() {
-    this.setState({ menuVisible: false });
-    this._input.enableArrowStepping = false;
+  openMenu(name: string) {
+    if (!name) {
+      console.error('openMenu requires a name.');
+      return;
+    }
+
+    if (!this.registeredMenus[name]) {
+      console.error(`Cannot open menu "${name}" - menu has not been registered.`);
+      return;
+    }
+
+    this._autoCloseActiveMenu({ replacement: name });
+
+    this.activeMenuName = name;
+    const menu = this.setActiveMenu(name);
+    const input = menu.getInputBridge();
+    menu.isVisible = true;
+    this._pluginCache.inputManager.activateController(
+      input.modeId,
+      name,
+    );
+
+    this.forceUpdate();
   }
 
-  // render() {
-  //   if (!this.state.menuVisible) {
-  //     return null;
-  //   }
-  //
-  //   const menuOptions = {
-  //     type: 'MenuVertical',
-  //     default: 1,
-  //     entries: [
-  //       { name: 'Item 1', onSelect: (e) => console.log('selected 1:', e) },
-  //       { name: 'Item 2', onSelect: (e) => console.log('selected 2:', e) },
-  //       { name: 'Item 3', onSelect: (e) => console.log('selected 3:', e) },
-  //     ],
-  //     alwaysShowDescriptionBox: true,
-  //   };
-  //
-  //   return (
-  //     <FadeInDown style={rootNodeStyle}>
-  //       <MenuVertical
-  //         options={menuOptions}
-  //       >
-  //         Test
-  //       </MenuVertical>
-  //     </FadeInDown>
-  //   );
-  // }
+  closeMenu(name: string) {
+    if (!name) {
+      console.error('closeMenu requires a name.');
+      return;
+    }
 
+    if (!this.registeredMenus[name]) {
+      console.error(`Cannot close menu "${name}" - menu has not been registered.`);
+      return;
+    }
+
+    const menu = this.registeredMenus[name];
+    menu.isVisible = false;
+    const input = menu.getInputBridge();
+
+    this.setActiveMenu(name);
+    this._pluginCache.inputManager.deactivateController(
+      input.modeId,
+      name,
+    );
+    // TODO: get active modes. if one has been replaced, remove it from the render queue.
+
+    this.forceUpdate();
+  }
+
+  toggleMenu(name: string) {
+    if (!name) {
+      console.error('toggleMenu requires a name.');
+      return;
+    }
+
+    if (!this.registeredMenus[name]) {
+      console.error(`Cannot toggle menu "${name}" - menu has not been registered.`);
+      return;
+    }
+
+    const menu = this.registeredMenus[name];
+    if (menu.isVisible) {
+      this.closeMenu(name);
+    }
+    else {
+      this.openMenu(name);
+    }
+  }
+
+  getRegisteredMenuNames() {
+    return Object.keys(this.registeredMenus);
+  }
+
+  /**
+   * @param replacement - The name of the menu replacing this one.
+   */
+  _autoCloseActiveMenu({ replacement }: { replacement: string }) {
+    const menu = this.getActiveMenu();
+    if (!menu) {
+      return;
+    }
+
+    // We explicitly check for false because default behaviour is true but
+    // default value is undefined.
+    const autoClose = menu.autoClose !== false;
+    const activeMenuName = menu.getInputBridge().name;
+    if (menu.isVisible && autoClose && activeMenuName !== replacement) {
+      this.closeMenu(activeMenuName);
+    }
+  }
 
   // render() {
   //   if (!this.state.menuVisible) {
@@ -149,7 +224,11 @@ export default class RootNode extends React.Component<Props> {
   // }
 
   render() {
-    if (!this.state.menuVisible) {
+    // const visibleMenus: RegisteredMenu[] = [];
+    const allMenus = Object.values(this.registeredMenus);
+    const visibleMenus = allMenus.filter(menu => menu.isVisible);
+
+    if (!visibleMenus.length) {
       return null;
     }
 
@@ -188,12 +267,17 @@ export default class RootNode extends React.Component<Props> {
 
     return (
       <FadeInDown style={rootNodeStyle}>
-        <MenuControlSetup
-          // @ts-ignore - still being developed.
-          options={menuOptions}
-        >
-          Test
-        </MenuControlSetup>
+        {visibleMenus.map((value) => {
+          const MenuComponent = value.getComponent();
+          const inputBridge = value.getInputBridge();
+          return (
+            <MenuComponent
+              key={inputBridge.name}
+              options={menuOptions}
+              pluginOptions={value}
+            />
+          );
+        })}
       </FadeInDown>
     );
   }

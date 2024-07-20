@@ -1,143 +1,91 @@
-import _ from 'lodash';
 import ModeController from '../../InputManager/types/ModeController';
 import { ModeId } from '../../InputManager/types/ModeId';
-import { reactMenuControls } from './controls';
-import PluginCacheTracker from '../../../../emitters/PluginCacheTracker';
 import Core from '../../Core';
-import { InputManager } from '../../InputManager';
 import ChangeTracker from 'change-tracker/src';
+import { ControlSchema } from '../../InputManager/interfaces/ControlSchema';
 
 const animationData = Core.animationData;
 
-const ARROW_DELAY = 500;
-const ARROW_REPEAT_MS = 50;
-
-let singletonInstance: InputBridge;
-
-
-// -- ✀ Plugin boilerplate ----------------------------------------------------
-
-const pluginDependencies = {
-  core: Core,
-  inputManager: InputManager,
-};
-const pluginList = Object.keys(pluginDependencies);
-type Dependencies = typeof pluginDependencies;
-
-// -- ✀ -----------------------------------------------------------------------
+const ARROW_DELAY_S = 3.5;
+const ARROW_REPEAT_S = 0.5;
 
 export default class InputBridge {
-  public enableArrowStepping = false;
+  public readonly name: string;
+  public readonly modeId: ModeId;
+
+  private readonly _enableArrowStepping: boolean = false;
   public onAction = new ChangeTracker();
-  // public onBack = new ChangeTracker();
-  // public onArrow = new ChangeTracker();
 
-  private _pluginCache = new PluginCacheTracker<Dependencies>(pluginList).pluginCache;
-  private readonly _modeController!: ModeController;
+  public readonly modeController!: ModeController;
 
-  private _repeatDelta: number = 0;
-  private _arrowCountdown = ARROW_DELAY;
-  private readonly _repeatArrow = _.throttle(() => {
-    if (this._arrowCountdown === ARROW_DELAY) {
-      this.tickArrow();
-    }
-    this._arrowCountdown -= ARROW_REPEAT_MS * this._repeatDelta;
-    if (this._arrowCountdown < 0) {
-      this.tickArrow();
-    }
-  }, ARROW_REPEAT_MS, {
-    // @ts-ignore - Unsure if the error is correct, this popped up after
-    // installing the types package. Maybe needs investigation.
-    maxDelay: ARROW_REPEAT_MS,
-    leading: true,
-    trailing: false,
-  });
+  private _arrowCountdown = ARROW_DELAY_S;
 
   state = {
     menuVisible: false,
     lastAction: 'none',
   };
 
-  constructor() {
-    if (singletonInstance) {
-      return singletonInstance;
-    }
-    else {
-      singletonInstance = this;
-    }
+  constructor(
+    menuName: string,
+    modeId: ModeId,
+    controlSchema: ControlSchema,
+    automaticArrowStepping = false,
+  ) {
+    this.name = menuName;
+    this.modeId = modeId;
+    this._enableArrowStepping = automaticArrowStepping;
 
     const uiInfo = { friendly: 'Menu Controls', priority: 1 };
-    this._modeController = new ModeController(
-      'menuSystem', ModeId.menuControl, reactMenuControls, uiInfo,
+    this.modeController = new ModeController(
+      menuName, modeId, controlSchema, uiInfo,
     );
-    this._modeController.step = this.stepArrowStream.bind(this);
-
-    this._setupPulseWatchers();
+    this.modeController.step = this.stepArrowStream.bind(this);
   }
 
-  _setupPulseWatchers() {
-    const mc = this._modeController;
-    mc.pulse.back.getEveryChange(() => this.onAction.setValue('back'));
-    mc.pulse.select.getEveryChange(() => this.onAction.setValue('select'));
-    mc.pulse.saveChanges.getEveryChange(() => this.onAction.setValue('saveChanges'));
-    mc.pulse.delete.getEveryChange(() => this.onAction.setValue('delete'));
-    mc.pulse.resetBinding.getEveryChange(() => this.onAction.setValue('resetBinding'));
-    mc.pulse.search.getEveryChange(() => this.onAction.setValue('search'));
-    mc.pulse.advanced.getEveryChange(() => this.onAction.setValue('advanced'));
-    mc.pulse.manageMacros.getEveryChange(() => this.onAction.setValue('manageMacros'));
-    mc.pulse.emergencyMenuClose.getEveryChange(() => this.onAction.setValue('emergencyMenuClose'));
-    mc.pulse._openMenu.getEveryChange(() => this.onAction.setValue('_openMenu'));
-    mc.pulse._closeMenu.getEveryChange(() => this.onAction.setValue('_closeMenu'));
-  }
-
-  // We receive the back button from general control, so we need to dynamically
-  // make it open, close, or move back as needed.
-  activateAndOpenMenu() {
-    const mc = this._modeController;
-    const inputManager: InputManager = this._pluginCache.inputManager;
-    if (!inputManager.isControllerActive(ModeId.menuControl)) {
-      inputManager.activateController(ModeId.menuControl, 'menuSystem');
-      mc.pulse._openMenu.setValue({ action: '_openMenu', value: 1 });
-      mc.pulse._openMenu.setValue({ action: '_openMenu', value: 0 });
+  /**
+   * You may find your menu class doing a lot of this:
+   * ```javascript
+   * const mc = inputBridge.modeController;
+   * // Notice the reuse of 'myActionName':
+   * mc.pulse.myActionName.getEveryChange(() =>
+   *   this.onAction.setValue('myActionName'),
+   * );
+   * ```
+   * This function repeats the above for every specified pulse control name.
+   * @param actionNames
+   */
+  autoConfigurePulseKeys(actionNames: string[]) {
+    const mc = this.modeController;
+    for (let i = 0, len = actionNames.length; i < len; i++) {
+      const actionName = actionNames[i];
+      mc.pulse[actionName].getEveryChange(() => {
+        console.log('-> [InputBridge] actionName:', actionName);
+        this.onAction.setValue(actionName);
+      });
     }
-    else {
-      mc.pulse.back.setValue({ action: 'back', value: 1 });
-      mc.pulse.back.setValue({ action: 'back', value: 0 });
-    }
-  }
-
-  deactivateAndCloseMenu() {
-    const mc = this._modeController;
-    const inputManager: InputManager = this._pluginCache.inputManager;
-    inputManager.deactivateController(ModeId.menuControl, 'menuSystem');
-    mc.pulse._closeMenu.setValue({ action: '_closeMenu', value: 1 });
-    mc.pulse._closeMenu.setValue({ action: '_closeMenu', value: 0 });
   }
 
   // Manages arrow timing.
   stepArrowStream() {
-    const { normalizedDelta } = animationData;
-
     // Disable all key repeat processing while menu is closed.
-    if (!this.enableArrowStepping) {
+    if (!this._enableArrowStepping) {
       return;
     }
 
-    const mc = this._modeController;
+    const mc = this.modeController;
     let { up, down, left, right } = mc.absoluteInput;
 
     if (up || down || left || right) {
-      this._repeatDelta = normalizedDelta;
       this._repeatArrow();
     }
     else {
-      this._arrowCountdown = ARROW_DELAY;
+      this._arrowCountdown = ARROW_DELAY_S;
     }
   }
 
   // Handles arrow logic.
   tickArrow() {
-    const mc = this._modeController;
+    const mc = this.modeController;
     let { up, down, left, right } = mc.absoluteInput;
 
     // Disallow confusion.
@@ -161,4 +109,19 @@ export default class InputBridge {
       this.onAction.setValue('right');
     }
   }
+
+  _repeatArrow = () => {
+    if (this._arrowCountdown === ARROW_DELAY_S) {
+      // Always tick immediately after the user presses a key. The delays are
+      // for repeating only; we don't want a delay the moment they user presses
+      // the key.
+      this.tickArrow();
+    }
+
+    this._arrowCountdown -= animationData.delta;
+    if (this._arrowCountdown <= 0) {
+      this.tickArrow();
+      this._arrowCountdown = ARROW_REPEAT_S;
+    }
+  };
 }
