@@ -32,8 +32,8 @@ class GeneralControl extends ModeController {
       toggleBootWindow(true);
     });
 
-    this.pulse.activateGameMenu.getEveryChange(() => {
-      this._reactBase.getInputBridge().activateAndOpenMenu();
+    this.pulse.openOrCloseGameMenu.getEveryChange(() => {
+      this._pluginCache.reactBase.toggleMenu('controlsMenu');
     });
 
     this.pulse.toggleMousePointer.getEveryChange(() => {
