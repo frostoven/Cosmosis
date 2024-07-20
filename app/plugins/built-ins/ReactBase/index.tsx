@@ -5,7 +5,7 @@ import {
   logBootTitleAndInfo,
   onDocumentReady,
 } from '../../../local/windowLoadListener';
-import RootNode from './types/RootNode';
+import RootNode from './RootNode';
 import PluginLoader from '../../types/PluginLoader';
 import { RegisterMenuSignature } from './types/compositionSignatures';
 

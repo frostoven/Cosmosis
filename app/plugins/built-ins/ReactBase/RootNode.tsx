@@ -1,11 +1,11 @@
 import React from 'react';
-import { FadeInDown } from '../../../../reactExtra/animations/FadeInDown';
-import { InputManager } from '../../InputManager';
-import PluginCacheTracker from '../../../../emitters/PluginCacheTracker';
+import { FadeInDown } from '../../../reactExtra/animations/FadeInDown';
+import { InputManager } from '../InputManager';
+import PluginCacheTracker from '../../../emitters/PluginCacheTracker';
 import {
   RegisterMenuSignature,
   RegisteredMenu,
-} from '../types/compositionSignatures';
+} from './types/compositionSignatures';
 // import MenuHorizontal from '../menuTypes/MenuHorizontal';
 // import MenuVertical from '../menuTypes/MenuVertical';
 // import MenuGrid from '../menuTypes/MenuGrid';
