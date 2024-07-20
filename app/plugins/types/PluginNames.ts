@@ -19,6 +19,8 @@ type PluginNames =
   'inputManager' | 
   'gamepadConnector' | 
   'reactBase' | 
+  'gameMenu' | 
+  'navMenu' | 
   'generalControl' | 
   'freeCam' | 
   'buckledPassenger' | 

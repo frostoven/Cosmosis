@@ -33,6 +33,8 @@ import { reactBasePlugin } from './built-ins/ReactBase';
 import { buckledPassengerPlugin } from './built-ins/modes/playerControllers/BuckledPassenger';
 import { localSpacePlugin } from './built-ins/LocalSpace';
 import { postBootChecksPlugin } from './built-ins/PostBootChecks/PostBootChecks';
+import { gameMenuPlugin } from './built-ins/modes/menuControllers/GameMenu';
+import { navMenuPlugin } from './built-ins/modes/menuControllers/Navigation';
 
 const builtInPluginsEnabled: PluginEntry[] = [
   // General
@@ -59,6 +61,8 @@ const builtInPluginsEnabled: PluginEntry[] = [
 
   // React UI
   { name: 'reactBase', pluginInstance: reactBasePlugin, dependencies: [ 'core', 'inputManager' ] },
+  { name: 'gameMenu', pluginInstance: gameMenuPlugin, dependencies: [ 'reactBase' ] },
+  { name: 'navMenu', pluginInstance: navMenuPlugin, dependencies: [ 'reactBase' ] },
 
   // Modes
   { name: 'generalControl', pluginInstance: generalControlPlugin, dependencies: [ 'inputManager', 'reactBase' ] },
