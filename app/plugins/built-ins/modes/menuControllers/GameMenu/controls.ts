@@ -1,15 +1,15 @@
 // @formatter:off
 // ^ Control-binding files become unreadable when formatted.
 
-import { ActionType } from '../../InputManager/types/ActionType';
-import { ControlSchema } from '../../InputManager/interfaces/ControlSchema';
-import { InputType } from '../../../../configs/types/InputTypes';
-import { genAutoFriendlyNames } from '../../InputManager/utils';
+import { ActionType } from '../../../InputManager/types/ActionType';
+import { ControlSchema } from '../../../InputManager/interfaces/ControlSchema';
+import { InputType } from '../../../../../configs/types/InputTypes';
+import { genAutoFriendlyNames } from '../../../InputManager/utils';
 
 const { pulse, continuous } = ActionType;
-const { keyboardButton, gamepadButton, mouseButton } = InputType;
+const { keyboardButton } = InputType;
 
-const reactMenuControls: ControlSchema = {
+const gameMenuControls: ControlSchema = {
   // Keys that may be held
   up:           { actionType: continuous, current: null, default: { ArrowUp: keyboardButton } },
   down:         { actionType: continuous, current: null, default: { ArrowDown: keyboardButton } },
@@ -25,13 +25,10 @@ const reactMenuControls: ControlSchema = {
   advanced:     { actionType: pulse, current: null, default: { F6: keyboardButton } },
   manageMacros: { actionType: pulse, current: null, default: { F4: keyboardButton } },
   emergencyMenuClose: { actionType: pulse, current: null, default: { KeyQ: keyboardButton } },
-  // Special entries
-  _openMenu:    { actionType: pulse, current: null, default: { /* handled by InputBridge directly */ } },
-  _closeMenu:   { actionType: pulse, current: null, default: { /* handled by InputBridge directly */ } },
 };
 
-genAutoFriendlyNames(reactMenuControls);
+genAutoFriendlyNames(gameMenuControls);
 
 export {
-  reactMenuControls,
+  gameMenuControls,
 };

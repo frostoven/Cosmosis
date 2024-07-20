@@ -1,17 +1,21 @@
 import _ from 'lodash';
 import React from 'react';
-import InputBridge from '../types/InputBridge';
-import KosmButton from '../../../../reactExtra/components/KosmButton';
+import KosmButton from '../../../../../../reactExtra/components/KosmButton';
 import { Icon } from 'semantic-ui-react';
-import { InputManager } from '../../InputManager';
+import { InputManager } from '../../../../InputManager';
 import {
   InputSchemeEntry,
-} from '../../InputManager/interfaces/InputSchemeEntry';
-import { InputType } from '../../../../configs/types/InputTypes';
-import { camelToTitleCase } from '../../../../local/utils';
-import { keyTypeIcons } from '../../../../configs/ui';
-import { ScrollName } from '../../../../configs/types/MouseButtonName';
-import { ActionType } from '../../InputManager/types/ActionType';
+} from '../../../../InputManager/interfaces/InputSchemeEntry';
+import { InputType } from '../../../../../../configs/types/InputTypes';
+import { camelToTitleCase } from '../../../../../../local/utils';
+import { keyTypeIcons } from '../../../../../../configs/ui';
+import { ScrollName } from '../../../../../../configs/types/MouseButtonName';
+import { ActionType } from '../../../../InputManager/types/ActionType';
+import {
+  RegisteredMenu,
+} from '../../../../ReactBase/types/compositionSignatures';
+
+const MENU_NAME = 'controlsMenu';
 
 const menuEntriesStyle: React.CSSProperties = {
   overflow: 'auto',
@@ -121,7 +125,8 @@ function keyCodeToJsx(keyCode: string | JSX.Element, type: InputType, includeIco
         icon = null;
         break;
       case 'spScrollUp':
-        keyCode = <><Icon name={icons[ScrollName.spScrollUp]}/> MouseScrollUp</>;
+        keyCode = <><Icon
+          name={icons[ScrollName.spScrollUp]}/> MouseScrollUp</>;
         icon = null;
         break;
       case 'spScrollDown':
@@ -141,6 +146,12 @@ function keyCodeToJsx(keyCode: string | JSX.Element, type: InputType, includeIco
 // Returns all keys associated with the specified action.
 function getKeysByAction(schemaName: string, action: string) {
   const actions = InputManager.allKeyLookups[schemaName];
+  if (!actions) {
+    console.warn(
+      `[getKeysByAction] InputManager.allKeyLookups["${schemaName}"] does not exist.`,
+    );
+    return [];
+  }
   return actions[action] || [];
 }
 
@@ -165,11 +176,12 @@ function StatusbarButton({ children, onClick }) {
         fontWeight: 'bold',
         // TODO: include this within the project.
         fontFamily: 'DejaVu Sans Mono, monospace',
-        paddingRight: 24 }}
+        paddingRight: 24,
+      }}
     >
       {children}
     </div>
-  )
+  );
 }
 
 type Entry = {
@@ -180,6 +192,8 @@ type Entry = {
 };
 
 interface MenuControlSetupProps {
+  // Options used to make the plugin a menu-based mode controller.
+  pluginOptions: RegisteredMenu,
   // Settings used to build the menu.
   options: {
     // Menu entry index that is active when the menu opens. Defaults to 0.
@@ -198,7 +212,6 @@ interface MenuControlSetupProps {
 }
 
 export default class MenuControlSetup extends React.Component<MenuControlSetupProps> {
-  private _input = new InputBridge();
   private _processedBindingCache: InputSchemeEntry[] | null = null;
   private _processedBindingCount: number = 0;
   // If true, scrolling further right is not allowed.
@@ -233,9 +246,13 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
     // (horizontal).
     scrollingVertically: true,
   };
+
   componentDidMount() {
     this._processedBindingCache = null;
-    this._input.onAction.getEveryChange(this.handleAction);
+    console.log('==> this.props.pluginOptions:', this.props.pluginOptions);
+    const input = this.props.pluginOptions.getInputBridge();
+    console.log('==> componentDidMount | input:', input);
+    input.onAction.getEveryChange(this.handleAction);
     const defaultIndex = this.props.options.defaultIndex;
     if (typeof defaultIndex === 'number') {
       this.setState({ selected: defaultIndex });
@@ -243,7 +260,9 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
   }
 
   componentWillUnmount() {
-    this._input.onAction.removeGetEveryChangeListener(this.handleAction);
+    const input = this.props.pluginOptions.getInputBridge();
+    console.log('componentDidMount | input:', input);
+    input.onAction.removeGetEveryChangeListener(this.handleAction);
   }
 
   handleAction = (action: string) => {
@@ -417,7 +436,7 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
           entry.modeController.deleteBinding(actionName, key);
           this.setState({ subSelection: 0, forceRerender: Math.random() });
         }
-      }
+      },
     );
   };
 
@@ -437,8 +456,8 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
       newControls.push(
         <li key={`resetBinding-${key}-${type}`} style={{ padding: 4 }}>
           {keyCodeToJsx(key, type)}&nbsp;&nbsp;({friendlyType})
-        </li>
-      )
+        </li>,
+      );
     });
     console.log({ defaultSet });
 
@@ -452,7 +471,7 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
           <br/>
           All other bindings will be lost. Proceed?
         </div>
-      )
+      ),
     }, (resetKey: boolean) => {
       if (resetKey) {
         entry.modeController.resetActionBindings(actionName);
@@ -519,7 +538,7 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
       majorSection.push(
         <div key={`MenuControlSetup-${i}`}>
           <h4 style={{ paddingTop: 16 }}>
-            <Icon name='crosshairs'/>&nbsp;
+            <Icon name="crosshairs"/>&nbsp;
             {entry.friendly}
           </h4>
           {_.map(schema, (control, actionName) => {
@@ -540,7 +559,7 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
                   <div style={{ display: 'inline-block' }}>
                     {fieldText}
                   </div>
-                  <div style={{ display: 'inline-block', color: '#a8ffa0', }}>
+                  <div style={{ display: 'inline-block', color: '#a8ffa0' }}>
                     &nbsp;{specialText}
                   </div>
                 </>
@@ -565,7 +584,12 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
                     isActive={isActive}
                     wide
                     autoScroll
-                    style={{ minWidth: 240, textAlign: 'left', marginTop: 2, marginBottom: 2 }}
+                    style={{
+                      minWidth: 240,
+                      textAlign: 'left',
+                      marginTop: 2,
+                      marginBottom: 2,
+                    }}
                     onClick={() => {
                       this.setState({
                         selected: currentVerticalIndex,
@@ -616,7 +640,12 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
                         isActive={active}
                         autoScroll
                         halfWide={true}
-                        style={{ minWidth: 200, textAlign: 'left', marginTop: 2, marginBottom: 2 }}
+                        style={{
+                          minWidth: 200,
+                          textAlign: 'left',
+                          marginTop: 2,
+                          marginBottom: 2,
+                        }}
                         onClick={() => {
                           this.setState({
                             selected: currentVerticalIndex,
@@ -627,7 +656,7 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
                       >
                         {keyCodeToJsx(keyCode, type)}
                       </KosmButton>
-                    )
+                    );
                   })}
 
                   {/* The '+' button right of the bindings. */}
@@ -642,14 +671,19 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
                     })()}
                     autoScroll
                     halfWide={true}
-                    style={{ minWidth: 200, padding: 11, marginTop: 2, height: 39 }}
+                    style={{
+                      minWidth: 200,
+                      padding: 11,
+                      marginTop: 2,
+                      height: 39,
+                    }}
                     onClick={() => {
                       this.setState({
-                        selected: currentVerticalIndex,
-                        subSelection: entryControlCount,
-                        scrollingVertically: false,
-                      },
-                      this.addNewBinding);
+                          selected: currentVerticalIndex,
+                          subSelection: entryControlCount,
+                          scrollingVertically: false,
+                        },
+                        this.addNewBinding);
                     }}
                   >
                     <Icon name="plus"/>
@@ -715,33 +749,36 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
 
           <div style={{ paddingLeft: 8, display: 'inline-block' }}/>
 
-          <StatusbarButton onClick={() => {}}>
-            {getJsxByAction('menuSystem', 'search', false)}
+          <StatusbarButton onClick={() => {
+          }}>
+            {getJsxByAction(MENU_NAME, 'search', false)}
             &nbsp;Search
           </StatusbarButton>
 
-          <StatusbarButton onClick={() => {}}>
-            {getJsxByAction('menuSystem', 'emergencyMenuClose', false)}
+          <StatusbarButton onClick={() => {
+          }}>
+            {getJsxByAction(MENU_NAME, 'emergencyMenuClose', false)}
             &nbsp;Emergency Menu Close
           </StatusbarButton>
 
           <StatusbarButton onClick={this.showAdvancedOptions}>
-            {getJsxByAction('menuSystem', 'advanced', false)}
+            {getJsxByAction(MENU_NAME, 'advanced', false)}
             &nbsp;Advanced Options
           </StatusbarButton>
 
           <StatusbarButton onClick={this.removeExistBinding}>
-            {getJsxByAction('menuSystem', 'delete', false)}
+            {getJsxByAction(MENU_NAME, 'delete', false)}
             &nbsp;Remove Binding
           </StatusbarButton>
 
           <StatusbarButton onClick={this.resetBinding}>
-            {getJsxByAction('menuSystem', 'resetBinding', false)}
+            {getJsxByAction(MENU_NAME, 'resetBinding', false)}
             &nbsp;Reset Binding
           </StatusbarButton>
 
-          <StatusbarButton onClick={() => {}}>
-            {getJsxByAction('menuSystem', 'saveChanges', false)}
+          <StatusbarButton onClick={() => {
+          }}>
+            {getJsxByAction(MENU_NAME, 'saveChanges', false)}
             &nbsp;Save Changes
           </StatusbarButton>
         </div>
@@ -752,4 +789,4 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
 
 export {
   MenuControlSetupProps,
-}
+};
