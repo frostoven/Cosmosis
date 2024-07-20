@@ -26,10 +26,6 @@ const animationData = {
   // We multiply by 5 a lot in this game, so we have a premultiplied
   // convenience var for it here.
   bigDelta: 0,
-  // For situations where we want numbers to remain intuitive instead of
-  // varying wildly (i.e. close to non-delta'd) if we forgot to apply delta
-  // during initial design. Value is 1 at 120Hz, 2 at 60Hz, and 4 at 30Hz.
-  normalizedDelta: 0,
   // Interpolates between the previous and next frame. Can ease jitter in
   // visually-critical sections, but hurts accuracy during sudden frame drops.
   smoothDelta: 1,
@@ -113,7 +109,7 @@ export default class Core {
 
   static animationData: {
     delta: number; bigDelta: number, smoothDelta: number,
-    normalizedDelta: number, gpuDelta: number, j2000Time: number,
+    gpuDelta: number, j2000Time: number,
   } = animationData;
 
   // Do not place game logic in pre-animate. It's meant for setup used by
@@ -143,7 +139,6 @@ export default class Core {
   _updateCpuDeltas(delta: number) {
     animationData.delta = delta;
     animationData.bigDelta = delta * 5;
-    animationData.normalizedDelta = delta * 120;
     animationData.smoothDelta = lerp(animationData.smoothDelta, delta, 0.5);
     animationData.j2000Time = Date.now() * 0.001 - epoch;
   }

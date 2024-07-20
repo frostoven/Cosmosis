@@ -59,7 +59,6 @@ class SpacetimeControl {
         }
       }
     });
-    console.log('--> _movementFunctions:', this._movementFunctions);
   }
 
   getLocalPosition() {
