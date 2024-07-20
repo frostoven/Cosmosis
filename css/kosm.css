@@ -102,7 +102,8 @@
 
 /* Modal background. */
 .ui.modal.transition.visible.active.kosm-modal {
-    background: #333333 !important;
+    background-color: rgb(25 28 27);
+    border-radius: 8px;
 }
 
 .kosm-half-wide {
@@ -183,6 +184,11 @@
 .kosm-modal {
     z-index: 9999;
     white-space: pre-line;
+}
+
+.kosm-modal .header {
+    background: url("/css/debuggerImages/background-2.png") -12px center !important;
+    border-radius: 8px 8px 0 0 !important;
 }
 
 .kosm-statusbar, .kosm-statusbar-sub {

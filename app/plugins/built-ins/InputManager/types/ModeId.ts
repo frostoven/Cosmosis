@@ -10,7 +10,7 @@ enum ModeId {
   // don't work with game logic.
   appControl = 1,
   // The in-game menu that is launched when Escape is pressed.
-  menuControl = 2,
+  primaryGameMenu = 2,
   // Used for restricted movement such as looking around while in the pilot
   // seat.
   buckledPassenger = 3,

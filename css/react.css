@@ -139,7 +139,7 @@ border: none !important;
 
 .ui.modal > .content {
     /* TODO: this background kinda kills the button gradients. Find a fix. */
-    background: #6c6c6cc9 !important;
+    background: rgba(33, 33, 37) !important;
 }
 
 .floating-footer {

@@ -24,7 +24,6 @@ class Hud3D {
   // player's visor, though it's only been tested with the player's visor. We
   // can probably implement some mesh codes that request things by page name.
   setScreenPage(page: HudPage, targetParent: THREE.Object3D) {
-    console.log('targetParent:', targetParent);
     gameRuntime.tracked.levelScene.getOnce(() => {
       const trackedParent = this._trackedParents[targetParent.uuid];
 
