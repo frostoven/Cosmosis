@@ -1,6 +1,7 @@
 import React from 'react';
 import InputBridge from '../types/InputBridge';
 import KosmButton from '../../../../reactExtra/components/KosmButton';
+import { RegisteredMenu } from '../types/compositionSignatures';
 
 const menuEntriesStyle: React.CSSProperties = {
   float: 'left',
@@ -41,6 +42,8 @@ type Entry = {
 };
 
 interface MenuBasicProps {
+  // Options used to make the plugin a menu-based mode controller.
+  pluginOptions: RegisteredMenu,
   // Settings used to build the menu.
   options: {
     // Menu entry index that is active when the menu opens. Defaults to 0.
@@ -62,7 +65,6 @@ interface MenuBasicProps {
 }
 
 export default class MenuBasic extends React.Component<MenuBasicProps> {
-  private _input = new InputBridge();
   public static defaultProps = {
     style: {},
     actionsNext: [ 'down' ],
@@ -75,7 +77,8 @@ export default class MenuBasic extends React.Component<MenuBasicProps> {
   };
 
   componentDidMount() {
-    this._input.onAction.getEveryChange(this.handleAction);
+    const input = this.props.pluginOptions.getInputBridge();
+    input.onAction.getEveryChange(this.handleAction);
     const defaultIndex = this.props.options.defaultIndex;
     if (this.state.selected === null && typeof defaultIndex === 'number') {
       this.setState({ selected: defaultIndex });
@@ -83,7 +86,8 @@ export default class MenuBasic extends React.Component<MenuBasicProps> {
   }
 
   componentWillUnmount() {
-    this._input.onAction.removeGetEveryChangeListener(this.handleAction);
+    const input = this.props.pluginOptions.getInputBridge();
+    input.onAction.removeGetEveryChangeListener(this.handleAction);
   }
 
   handleAction = (action: string) => {

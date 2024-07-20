@@ -1,6 +1,6 @@
 import React from 'react';
-import InputBridge from '../types/InputBridge';
 import KosmButton from '../../../../reactExtra/components/KosmButton';
+import { RegisteredMenu } from '../types/compositionSignatures';
 
 const menuEntriesStyle: React.CSSProperties = {
   float: 'left',
@@ -18,6 +18,8 @@ const centerBothStyle: React.CSSProperties = {
 type Entry = string[];
 
 interface MenuGridProps {
+  // Options used to make the plugin a menu-based mode controller.
+  pluginOptions: RegisteredMenu,
   // Settings used to build the menu.
   options: {
     // Menu entry index that is active when the menu opens. Defaults to [0, 0].
@@ -34,7 +36,6 @@ interface State {
 }
 
 export default class MenuGrid extends React.Component<MenuGridProps, State> {
-  private _input = new InputBridge();
   public static defaultProps = {
     style: {},
   };
@@ -44,16 +45,17 @@ export default class MenuGrid extends React.Component<MenuGridProps, State> {
   };
 
   componentDidMount() {
-    this._input.onAction.getEveryChange(this.handleAction);
+    const input = this.props.pluginOptions.getInputBridge();
+    input.onAction.getEveryChange(this.handleAction);
     const defaultIndex = this.props.options.defaultIndex;
-    console.log('--->', this.props.options);
     if (defaultIndex) {
       this.setState({ selected: defaultIndex });
     }
   }
 
   componentWillUnmount() {
-    this._input.onAction.removeGetEveryChangeListener(this.handleAction);
+    const input = this.props.pluginOptions.getInputBridge();
+    input.onAction.removeGetEveryChangeListener(this.handleAction);
   }
 
   handleAction = (action: string) => {
@@ -263,7 +265,6 @@ export default class MenuGrid extends React.Component<MenuGridProps, State> {
     }
 
     const name = entries[row][column];
-    console.log('selected', name);
   };
 
   render() {
