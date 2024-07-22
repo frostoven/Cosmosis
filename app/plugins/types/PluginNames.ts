@@ -8,6 +8,7 @@ type PluginNames =
   'core' | 
   'nodeOps' | 
   'player' | 
+  'html3dRenderer' | 
   'spacetimeControl' | 
   'navigation' | 
   'levelScene' | 

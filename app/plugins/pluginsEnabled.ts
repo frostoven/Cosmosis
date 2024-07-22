@@ -35,6 +35,7 @@ import { localSpacePlugin } from './built-ins/LocalSpace';
 import { postBootChecksPlugin } from './built-ins/PostBootChecks/PostBootChecks';
 import { gameMenuPlugin } from './built-ins/modes/menuControllers/GameMenu';
 import { navMenuPlugin } from './built-ins/modes/menuControllers/Navigation';
+import { html3dRendererPlugin } from './built-ins/Html3dRenderer';
 
 const builtInPluginsEnabled: PluginEntry[] = [
   // General
@@ -42,6 +43,9 @@ const builtInPluginsEnabled: PluginEntry[] = [
   { name: 'core', pluginInstance: corePlugin },
   { name: 'nodeOps', pluginInstance: nodeOpsPlugin },
   { name: 'player', pluginInstance: playerPlugin },
+
+  // Special renderers
+  { name: 'html3dRenderer', pluginInstance: html3dRendererPlugin, dependencies: [ 'core', 'player' ] },
 
   // Universe
   { name: 'spacetimeControl', pluginInstance: spacetimeControl },
