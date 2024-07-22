@@ -44,9 +44,6 @@ const builtInPluginsEnabled: PluginEntry[] = [
   { name: 'nodeOps', pluginInstance: nodeOpsPlugin },
   { name: 'player', pluginInstance: playerPlugin },
 
-  // Special renderers
-  { name: 'html3dRenderer', pluginInstance: html3dRendererPlugin, dependencies: [ 'core', 'player' ] },
-
   // Universe
   { name: 'spacetimeControl', pluginInstance: spacetimeControl },
   { name: 'navigation', pluginInstance: navigationPlugin },
@@ -54,6 +51,9 @@ const builtInPluginsEnabled: PluginEntry[] = [
   { name: 'spaceScene', pluginInstance: spaceScenePlugin, dependencies: [ 'core', 'spacetimeControl' ] },
   { name: 'localSpace', pluginInstance: localSpacePlugin, dependencies: [ 'core', 'player', 'spacetimeControl', 'spaceScene' ] },
   { name: 'offscreenGalaxyWorker', pluginInstance: offscreenGalaxyWorkerPlugin, dependencies: [ 'core', 'player', 'spaceScene' ] },
+
+  // Special renderers
+  { name: 'html3dRenderer', pluginInstance: html3dRendererPlugin, dependencies: [ 'core', 'player', 'levelScene' ] },
 
   // HUD and control visuals
   { name: 'hud3D', pluginInstance: hud3DPlugin, dependencies: [ 'nodeOps', 'levelScene', 'player' ] },

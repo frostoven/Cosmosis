@@ -47,10 +47,9 @@ class NavigationConsole extends React.Component {
 
     this.navDiv = element;
     this.navCss3dObject = new CSS3DObject(element);
-    this.navCss3dObject.position.set(-500, -100, 250);
+    this.navCss3dObject.position.set(-500, -300, -250);
     this.navCss3dObject.rotateY(Math.PI * 0.5);
     this.navCss3dObject.rotateX(Math.PI * -0.125);
-    this.navCss3dObject.rotateZ(Math.PI);
 
     this._pluginCache.html3dRenderer.add(this.navCss3dObject);
   };

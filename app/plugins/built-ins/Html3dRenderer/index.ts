@@ -4,12 +4,14 @@ import Core from '../Core';
 import Player from '../Player';
 import PluginCacheTracker from '../../../emitters/PluginCacheTracker';
 import CosmosisPlugin from '../../types/CosmosisPlugin';
+import LevelScene from '../LevelScene';
 
 // -- ✀ Plugin boilerplate ----------------------------------------------------
 
 const pluginDependencies = {
   core: Core,
   player: Player,
+  levelScene: LevelScene,
 };
 const shallowTracking = { player: { camera: 'camera' } };
 const pluginList = Object.keys(pluginDependencies);
@@ -31,6 +33,7 @@ class Html3dRenderer {
   constructor() {
     this._renderer.setSize(window.innerWidth, window.innerHeight);
     window.addEventListener('resize', this.onWindowResize);
+    this._pluginCache.levelScene.add(this._scene);
 
     const css3dRenderSpace = document.getElementById('css3d-render-space');
     if (!css3dRenderSpace) {
