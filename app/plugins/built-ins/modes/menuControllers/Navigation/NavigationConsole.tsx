@@ -1,18 +1,17 @@
 import * as THREE from 'three';
 import React from 'react';
-import {
-  CSS3DObject,
-  CSS3DRenderer,
-} from 'three/examples/jsm/renderers/CSS3DRenderer';
+import { CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer';
 import Core from '../../../Core';
 import Player from '../../../Player';
 import PluginCacheTracker from '../../../../../emitters/PluginCacheTracker';
+import { Html3dRenderer } from '../../../Html3dRenderer';
 
 // -- ✀ Plugin boilerplate ----------------------------------------------------
 
 const pluginDependencies = {
   core: Core,
   player: Player,
+  html3dRenderer: Html3dRenderer,
 };
 const shallowTracking = { player: { camera: 'camera' } };
 const pluginList = Object.keys(pluginDependencies);
@@ -29,7 +28,13 @@ class NavigationConsole extends React.Component {
   ).pluginCache;
 
   navDiv: HTMLDivElement | null = null;
-  navCss3dDiv: CSS3DObject | null = null;
+  navCss3dObject: CSS3DObject | null = null;
+
+  componentWillUnmount() {
+    if (this.navCss3dObject) {
+      this._pluginCache.html3dRenderer.remove(this.navCss3dObject);
+    }
+  }
 
   handleDivCreation = (element: HTMLDivElement | null) => {
     if (!element) {
@@ -41,25 +46,13 @@ class NavigationConsole extends React.Component {
     }
 
     this.navDiv = element;
-    this.navCss3dDiv = new CSS3DObject(element);
-    this.navCss3dDiv.position.set(-500, -100, 250);
-    this.navCss3dDiv.rotateY(Math.PI * 0.5);
-    this.navCss3dDiv.rotateX(Math.PI * -0.125);
-    this.navCss3dDiv.rotateZ(Math.PI);
+    this.navCss3dObject = new CSS3DObject(element);
+    this.navCss3dObject.position.set(-500, -100, 250);
+    this.navCss3dObject.rotateY(Math.PI * 0.5);
+    this.navCss3dObject.rotateX(Math.PI * -0.125);
+    this.navCss3dObject.rotateZ(Math.PI);
 
-    const css3dRenderSpace = document.getElementById('css3d-render-space');
-    if (css3dRenderSpace) {
-      const scene = new THREE.Scene();
-      scene.add(this.navCss3dDiv);
-
-      const renderer = new CSS3DRenderer();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      css3dRenderSpace.appendChild(renderer.domElement);
-
-      this._pluginCache.core.appendRenderHook(() => {
-        renderer.render(scene, this._pluginCache.camera);
-      });
-    }
+    this._pluginCache.html3dRenderer.add(this.navCss3dObject);
   };
 
   render() {

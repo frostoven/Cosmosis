@@ -58,7 +58,6 @@ class Html3dRenderer {
       return;
     }
 
-    console.log('rendering');
     this._renderer.render(this._scene, this._pluginCache.camera);
 
     if (!this._scene.children.length) {
