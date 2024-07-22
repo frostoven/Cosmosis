@@ -62,7 +62,7 @@ const builtInPluginsEnabled: PluginEntry[] = [
   // React UI
   { name: 'reactBase', pluginInstance: reactBasePlugin, dependencies: [ 'core', 'inputManager' ] },
   { name: 'gameMenu', pluginInstance: gameMenuPlugin, dependencies: [ 'reactBase' ] },
-  { name: 'navMenu', pluginInstance: navMenuPlugin, dependencies: [ 'reactBase' ] },
+  { name: 'navMenu', pluginInstance: navMenuPlugin, dependencies: [ 'reactBase', 'player' ] },
 
   // Modes
   { name: 'generalControl', pluginInstance: generalControlPlugin, dependencies: [ 'inputManager', 'reactBase' ] },

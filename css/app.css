@@ -56,6 +56,11 @@ a:hover {
     z-index: 12;
 }
 
+#css3d-render-space {
+    position: fixed;
+    z-index: 13;
+}
+
 /* Snackbar - a toast implementation.*/
 #snackbar {
     visibility: hidden; /* Hidden by default. Visible on click */
