@@ -30,6 +30,7 @@ class Html3dRenderer {
 
   constructor() {
     this._renderer.setSize(window.innerWidth, window.innerHeight);
+    window.addEventListener('resize', this.onWindowResize);
 
     const css3dRenderSpace = document.getElementById('css3d-render-space');
     if (!css3dRenderSpace) {
@@ -52,6 +53,10 @@ class Html3dRenderer {
   remove(object: THREE.Object3D) {
     this._scene.remove(object);
   }
+
+  onWindowResize = () => {
+    this._renderer.setSize(window.innerWidth, window.innerHeight);
+  };
 
   step = () => {
     if (this._paused) {
