@@ -32,8 +32,14 @@ const noiseForegroundStyle: React.CSSProperties = {
 
 const noiseBackgroundStyle: React.CSSProperties = {
   ...noiseStyle,
+  overflow: 'hidden',
+};
+
+const noiseBackgroundImage: React.CSSProperties = {
+  ...noiseStyle,
   backgroundColor: 'rgba(33, 33, 37, 0.5)',
   background: 'url(/prodHqAssets/noise/static_interference_blurred.png)',
+  height: '200%',
   backdropFilter: 'blur(17px)',
 };
 
@@ -91,9 +97,15 @@ class NavigationConsole extends React.Component<Props> {
   render() {
     return (
       <div ref={this.handleDivCreation} style={navConsoleStyle}>
-        <div className="crt-open slide-down-forever-320p" style={noiseBackgroundStyle}/>
+        <div style={noiseBackgroundStyle}>
+          <div className="crt-interference" style={noiseBackgroundImage}/>
+        </div>
+
         <div className="crt-open" style={noiseForegroundStyle}/>
-        <NavTabs className="crt-open" pluginOptions={this.props.pluginOptions}/>
+
+        <NavTabs
+          className="crt-open" pluginOptions={this.props.pluginOptions}
+        />
       </div>
     );
   }

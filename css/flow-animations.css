@@ -1,5 +1,19 @@
-.slide-down-forever-320p {
-  animation: slide-down-forever-320p 40s linear infinite;
+.crt-interference {
+  animation: crt-interference 40s linear infinite forwards;
+}
+
+@keyframes crt-interference {
+  from {
+    transform: translateY(-50%);
+  }
+  to {
+    transform: translateY(0%);
+  }
+}
+
+
+.crt-open {
+  animation: crt-open 0.075s linear forwards;
 }
 
 @keyframes crt-open {
