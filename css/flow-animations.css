@@ -1,0 +1,12 @@
+.slide-down-forever-320p {
+  animation: slide-down-forever-320p 40s linear infinite;
+}
+
+@keyframes slide-down-forever-320p {
+  from {
+    background-position-y: 0;
+  }
+  to{
+    background-position-y: 320px;
+  }
+}

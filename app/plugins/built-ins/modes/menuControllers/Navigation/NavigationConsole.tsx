@@ -6,6 +6,34 @@ import Player from '../../../Player';
 import PluginCacheTracker from '../../../../../emitters/PluginCacheTracker';
 import { Html3dRenderer } from '../../../Html3dRenderer';
 
+const navConsoleStyle: React.CSSProperties = {
+  width: 640,
+  height: 320,
+  position: 'relative',
+  // backgroundColor: 'pink',
+  backgroundColor: '#ffbe0003',
+};
+
+const noiseStyle: React.CSSProperties = {
+  position: 'absolute',
+  left: 0,
+  right: 0,
+  top: 0,
+  bottom: 0,
+};
+
+const noiseForegroundStyle: React.CSSProperties = {
+  ...noiseStyle,
+  background: 'url(/prodHqAssets/noise/static.png)',
+};
+
+const noiseBackgroundStyle: React.CSSProperties = {
+  ...noiseStyle,
+  backgroundColor: 'rgba(33, 33, 37, 0.5)',
+  background: 'url(/prodHqAssets/noise/static_interference_blurred.png)',
+  backdropFilter: 'blur(17px)',
+};
+
 // -- ✀ Plugin boilerplate ----------------------------------------------------
 
 const pluginDependencies = {
@@ -20,7 +48,6 @@ type Dependencies = typeof pluginDependencies & {
 };
 
 // -- ✀ -----------------------------------------------------------------------
-
 
 class NavigationConsole extends React.Component {
   private _pluginCache = new PluginCacheTracker<Dependencies>(
@@ -56,12 +83,11 @@ class NavigationConsole extends React.Component {
 
   render() {
     return (
-      <div ref={this.handleDivCreation}>
-        <h1 style={{
-          fontSize: 48,
-          backgroundColor: 'pink',
-          padding: 120,
-        }}>
+      <div ref={this.handleDivCreation} style={navConsoleStyle}>
+        <div style={noiseBackgroundStyle} className="slide-down-forever-320p"/>
+        <div style={noiseForegroundStyle}/>
+
+        <h1 style={{ fontSize: 48 }}>
           -- Nav console --
         </h1>
       </div>
