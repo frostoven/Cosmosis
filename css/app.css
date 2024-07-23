@@ -58,7 +58,8 @@ a:hover {
 
 #css3d-render-space {
     position: fixed;
-    z-index: 13;
+    z-index: 26;
+    pointer-events: none;
 }
 
 /* Snackbar - a toast implementation.*/

@@ -8,13 +8,13 @@ type PluginNames =
   'core' | 
   'nodeOps' | 
   'player' | 
-  'html3dRenderer' | 
   'spacetimeControl' | 
   'navigation' | 
   'levelScene' | 
   'spaceScene' | 
   'localSpace' | 
   'offscreenGalaxyWorker' | 
+  'html3dRenderer' | 
   'hud3D' | 
   'mouseDriver' | 
   'inputManager' | 

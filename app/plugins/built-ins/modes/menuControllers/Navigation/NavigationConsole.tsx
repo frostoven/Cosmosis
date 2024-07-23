@@ -5,12 +5,12 @@ import Core from '../../../Core';
 import Player from '../../../Player';
 import PluginCacheTracker from '../../../../../emitters/PluginCacheTracker';
 import { Html3dRenderer } from '../../../Html3dRenderer';
+import { NavTabs } from './components/NavTabs';
 
 const navConsoleStyle: React.CSSProperties = {
   width: 640,
   height: 320,
   position: 'relative',
-  // backgroundColor: 'pink',
   backgroundColor: '#ffbe0003',
 };
 
@@ -86,10 +86,7 @@ class NavigationConsole extends React.Component {
       <div ref={this.handleDivCreation} style={navConsoleStyle}>
         <div style={noiseBackgroundStyle} className="slide-down-forever-320p"/>
         <div style={noiseForegroundStyle}/>
-
-        <h1 style={{ fontSize: 48 }}>
-          -- Nav console --
-        </h1>
+        <NavTabs/>
       </div>
     );
   }
