@@ -1,5 +1,11 @@
 import React from 'react';
 import { Button, Icon, Menu, Tab, TabPane } from 'semantic-ui-react';
+import { SolarSystemNav } from './SolarSystemNav';
+import { LocalClusterNav } from './LocalClusterNav';
+import { NavSettings } from './NavSettings';
+import {
+  RegisteredMenu,
+} from '../../../../ReactBase/types/compositionSignatures';
 
 const rightAlignedTab: React.CSSProperties = {
   marginLeft: 'auto',
@@ -10,15 +16,31 @@ const simpleButtonStyle: React.CSSProperties = {
   boxShadow: 'none',
 };
 
-class NavTabs extends React.Component {
+interface Props {
+  pluginOptions: RegisteredMenu,
+}
+
+interface State {
+  tabIndex: number,
+}
+
+class NavTabs extends React.Component<Props, State> {
   static panes = [
     {
-      menuItem: 'Tab 1',
-      render: () => <TabPane attached={false}>Tab 1 Content</TabPane>,
+      menuItem: 'Solar System',
+      render: () => (
+        <TabPane attached={false}>
+          <SolarSystemNav/>
+        </TabPane>
+      ),
     },
     {
-      menuItem: 'Tab 2',
-      render: () => <TabPane attached={false}>Tab 2 Content</TabPane>,
+      menuItem: 'Local Cluster',
+      render: () => (
+        <TabPane attached={false}>
+          <LocalClusterNav/>
+        </TabPane>
+      ),
     },
     {
       menuItem: (
@@ -28,18 +50,52 @@ class NavTabs extends React.Component {
           </Button>
         </Menu.Item>
       ),
-      render: () => <Tab.Pane>Tab 4 Content</Tab.Pane>,
+      render: () => (
+        <Tab.Pane>
+          <NavSettings/>
+        </Tab.Pane>
+      ),
     },
   ];
 
-  constructor(props: {} | Readonly<{}>) {
+  state = {
+    tabIndex: 0,
+  };
+
+  constructor(props: Props | Readonly<Props>) {
     super(props);
   }
+
+  componentDidMount() {
+    const input = this.props.pluginOptions.getInputBridge();
+    input.onAction.getEveryChange(this.handleAction);
+  }
+
+  componentWillUnmount() {
+    const input = this.props.pluginOptions.getInputBridge();
+    input.onAction.removeGetEveryChangeListener(this.handleAction);
+  }
+
+  handleAction = (actionName: string) => {
+    let tabIndex = this.state.tabIndex;
+    if (actionName === 'left') {
+      --tabIndex < 0 && (tabIndex = NavTabs.panes.length - 1);
+      this.setState({ tabIndex });
+    }
+    else if (actionName === 'right') {
+      ++tabIndex >= NavTabs.panes.length && (tabIndex = 0);
+      this.setState({ tabIndex });
+    }
+  };
 
   render() {
     return (
       <div>
-        <Tab menu={{ secondary: true, pointing: true }} panes={NavTabs.panes}/>
+        <Tab
+          menu={{ secondary: true, pointing: true }}
+          panes={NavTabs.panes}
+          activeIndex={this.state.tabIndex}
+        />
       </div>
     );
   }

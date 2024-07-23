@@ -6,6 +6,9 @@ import Player from '../../../Player';
 import PluginCacheTracker from '../../../../../emitters/PluginCacheTracker';
 import { Html3dRenderer } from '../../../Html3dRenderer';
 import { NavTabs } from './components/NavTabs';
+import {
+  RegisteredMenu
+} from '../../../ReactBase/types/compositionSignatures';
 
 const navConsoleStyle: React.CSSProperties = {
   width: 640,
@@ -49,7 +52,11 @@ type Dependencies = typeof pluginDependencies & {
 
 // -- ✀ -----------------------------------------------------------------------
 
-class NavigationConsole extends React.Component {
+interface Props {
+  pluginOptions: RegisteredMenu,
+}
+
+class NavigationConsole extends React.Component<Props> {
   private _pluginCache = new PluginCacheTracker<Dependencies>(
     pluginList, shallowTracking,
   ).pluginCache;
@@ -86,7 +93,7 @@ class NavigationConsole extends React.Component {
       <div ref={this.handleDivCreation} style={navConsoleStyle}>
         <div style={noiseBackgroundStyle} className="slide-down-forever-320p"/>
         <div style={noiseForegroundStyle}/>
-        <NavTabs/>
+        <NavTabs pluginOptions={this.props.pluginOptions}/>
       </div>
     );
   }
