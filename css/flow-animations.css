@@ -2,11 +2,21 @@
   animation: slide-down-forever-320p 40s linear infinite;
 }
 
-@keyframes slide-down-forever-320p {
-  from {
-    background-position-y: 0;
+@keyframes crt-open {
+  0% {
+    box-shadow: 0 0 0 15px rgb(236, 232, 236);
+    filter: brightness(1000%);
+    transform: scaleY(0);
   }
-  to{
-    background-position-y: 320px;
+  10% {
+    filter: brightness(200%);
+    box-shadow: none;
+  }
+  50% {
+    filter: brightness(200%);
+  }
+  100% {
+    filter: brightness(100%);
+    transform: scaleY(1);
   }
 }

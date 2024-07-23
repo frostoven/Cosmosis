@@ -7,7 +7,7 @@ import PluginCacheTracker from '../../../../../emitters/PluginCacheTracker';
 import { Html3dRenderer } from '../../../Html3dRenderer';
 import { NavTabs } from './components/NavTabs';
 import {
-  RegisteredMenu
+  RegisteredMenu,
 } from '../../../ReactBase/types/compositionSignatures';
 
 const navConsoleStyle: React.CSSProperties = {
@@ -91,9 +91,9 @@ class NavigationConsole extends React.Component<Props> {
   render() {
     return (
       <div ref={this.handleDivCreation} style={navConsoleStyle}>
-        <div style={noiseBackgroundStyle} className="slide-down-forever-320p"/>
-        <div style={noiseForegroundStyle}/>
-        <NavTabs pluginOptions={this.props.pluginOptions}/>
+        <div className="crt-open slide-down-forever-320p" style={noiseBackgroundStyle}/>
+        <div className="crt-open" style={noiseForegroundStyle}/>
+        <NavTabs className="crt-open" pluginOptions={this.props.pluginOptions}/>
       </div>
     );
   }

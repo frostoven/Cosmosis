@@ -17,6 +17,7 @@ const simpleButtonStyle: React.CSSProperties = {
 };
 
 interface Props {
+  className: string,
   pluginOptions: RegisteredMenu,
 }
 
@@ -90,7 +91,7 @@ class NavTabs extends React.Component<Props, State> {
 
   render() {
     return (
-      <div>
+      <div className={this.props.className}>
         <Tab
           menu={{ secondary: true, pointing: true }}
           panes={NavTabs.panes}
