@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Icon, Menu, Tab, TabPane } from 'semantic-ui-react';
+import { Button, Icon, Menu, Tab, TabPane, TabProps } from 'semantic-ui-react';
 import { SolarSystemNav } from './SolarSystemNav';
 import { LocalClusterNav } from './LocalClusterNav';
 import { NavSettings } from './NavSettings';
@@ -89,6 +89,10 @@ class NavTabs extends React.Component<Props, State> {
     }
   };
 
+  handleTabClick = (_: any, { activeIndex }: TabProps) => {
+    this.setState({ tabIndex: activeIndex as number });
+  };
+
   render() {
     return (
       <div className={this.props.className}>
@@ -96,6 +100,7 @@ class NavTabs extends React.Component<Props, State> {
           menu={{ secondary: true, pointing: true }}
           panes={NavTabs.panes}
           activeIndex={this.state.tabIndex}
+          onTabChange={this.handleTabClick}
         />
       </div>
     );
