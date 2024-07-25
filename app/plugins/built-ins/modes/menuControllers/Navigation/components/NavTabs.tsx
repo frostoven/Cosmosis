@@ -7,6 +7,18 @@ import {
   RegisteredMenu,
 } from '../../../../ReactBase/types/compositionSignatures';
 
+const paneStyle: React.CSSProperties = {
+  backgroundColor: 'transparent',
+  padding: '0 16px 0 16px',
+  border: 'none',
+  boxShadow: 'none',
+};
+
+const nestedPane: React.CSSProperties = {
+  ...paneStyle,
+  padding: '0 17px 0 17px',
+};
+
 const rightAlignedTab: React.CSSProperties = {
   marginLeft: 'auto',
 };
@@ -30,7 +42,7 @@ class NavTabs extends React.Component<Props, State> {
     {
       menuItem: 'Solar System',
       render: () => (
-        <TabPane attached={false}>
+        <TabPane attached={false} style={paneStyle}>
           <SolarSystemNav/>
         </TabPane>
       ),
@@ -38,7 +50,7 @@ class NavTabs extends React.Component<Props, State> {
     {
       menuItem: 'Local Cluster',
       render: () => (
-        <TabPane attached={false}>
+        <TabPane attached={false} style={paneStyle}>
           <LocalClusterNav/>
         </TabPane>
       ),
@@ -52,7 +64,7 @@ class NavTabs extends React.Component<Props, State> {
         </Menu.Item>
       ),
       render: () => (
-        <Tab.Pane>
+        <Tab.Pane style={nestedPane}>
           <NavSettings/>
         </Tab.Pane>
       ),
