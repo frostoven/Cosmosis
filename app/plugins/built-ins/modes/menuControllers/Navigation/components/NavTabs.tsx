@@ -7,11 +7,21 @@ import {
   RegisteredMenu,
 } from '../../../../ReactBase/types/compositionSignatures';
 
+const containerStyle: React.CSSProperties = {
+  height: '100%',
+};
+
+const tabContainerStyle: React.CSSProperties = {
+  height: '72%',
+};
+
 const paneStyle: React.CSSProperties = {
   backgroundColor: 'transparent',
   padding: '0 16px 0 16px',
   border: 'none',
   boxShadow: 'none',
+  height: '100%',
+  overflow: 'auto',
 };
 
 const nestedPane: React.CSSProperties = {
@@ -26,6 +36,17 @@ const rightAlignedTab: React.CSSProperties = {
 const simpleButtonStyle: React.CSSProperties = {
   border: 'none',
   boxShadow: 'none',
+};
+
+const statusStyle: React.CSSProperties = {
+  position: 'absolute',
+  bottom: 0,
+  left: 0,
+  right: 0,
+  height: 24,
+  padding: 2,
+  backgroundColor: '#53504d3d',
+  borderTop: 'thin solid',
 };
 
 interface Props {
@@ -107,13 +128,19 @@ class NavTabs extends React.Component<Props, State> {
 
   render() {
     return (
-      <div className={this.props.className}>
+      <div className={this.props.className}
+           style={containerStyle}>
         <Tab
           menu={{ secondary: true, pointing: true }}
           panes={NavTabs.panes}
           activeIndex={this.state.tabIndex}
           onTabChange={this.handleTabClick}
+          style={tabContainerStyle}
         />
+
+        <div style={statusStyle}>
+          Controls shown here
+        </div>
       </div>
     );
   }
