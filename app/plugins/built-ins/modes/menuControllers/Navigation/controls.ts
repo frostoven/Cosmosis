@@ -10,10 +10,10 @@ const { continuous } = ActionType;
 const { keyboardButton } = InputType;
 
 const navMenuControls: ControlSchema = {
-  up:           { actionType: continuous, current: null, default: { ArrowUp: keyboardButton } },
-  down:         { actionType: continuous, current: null, default: { ArrowDown: keyboardButton } },
-  left:         { actionType: continuous, current: null, default: { ArrowLeft: keyboardButton } },
-  right:        { actionType: continuous, current: null, default: { ArrowRight: keyboardButton } },
+  up:           { actionType: continuous, current: null, default: { ArrowUp: keyboardButton, KeyW: keyboardButton } },
+  down:         { actionType: continuous, current: null, default: { ArrowDown: keyboardButton, KeyS: keyboardButton } },
+  left:         { actionType: continuous, current: null, default: { ArrowLeft: keyboardButton, KeyQ: keyboardButton } },
+  right:        { actionType: continuous, current: null, default: { ArrowRight: keyboardButton, KeyE: keyboardButton } },
 };
 
 genAutoFriendlyNames(navMenuControls);
