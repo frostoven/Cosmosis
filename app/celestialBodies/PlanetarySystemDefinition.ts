@@ -35,6 +35,39 @@ class PlanetarySystemDefinition {
     // GravitySource.stepAll
   }
 
+  /** Stores the main star, but does not add it to the scene. */
+  createMainStar(Star: new () => LocalStar) {
+    this.mainStar && console.warn('Replacing main star.');
+    this.mainStar = new Star();
+  }
+
+  /** Stores a planet, but does not add it to the scene. */
+  createPlanet(
+    Planet: new () => LocalPlanet,
+    moons?: [ new (parent: LocalPlanet) => LocalPlanet ],
+  ) {
+    const planet = new Planet();
+    if (moons) {
+      for (let i = 0, len = moons.length; i < len; i++) {
+        const Moon = moons[i];
+        this.planets.push(new Moon(planet));
+      }
+    }
+  }
+
+  // noinspection JSUnusedGlobalSymbols - Exists to act as documentation.
+  /**
+   * A moon cannot exist without a planet. Please include your moon when adding
+   * its parent planet via storePlanet() instead.
+   * @deprecated
+   */
+  storeMoon(_: any) {
+    console.error(
+      'A moon cannot exist without a planet. Please include your moon when ' +
+      'adding its parent planet via storePlanet() instead.',
+    );
+  }
+
   addAllToScene() {
     this._addBodiesToScene(this.planets);
     this.mainStar && this._addBodiesToScene([ this.mainStar ]);

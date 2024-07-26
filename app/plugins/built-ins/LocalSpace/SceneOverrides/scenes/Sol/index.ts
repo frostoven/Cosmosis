@@ -26,11 +26,12 @@ type Dependencies = typeof pluginDependencies;
 
 // -- ✀ -----------------------------------------------------------------------
 
-
 class Sol /*extends SceneOverride*/ {
   private _pluginCache = new PluginCacheTracker<Dependencies>(pluginList).pluginCache;
-  constituents: PlanetarySystemDefinition;
   private _ready = false;
+
+  // You should prefer using store functions instead of using this directly.
+  constituents: PlanetarySystemDefinition;
 
   constructor(parentScene: THREE.Scene | THREE.Group) {
 
@@ -51,16 +52,18 @@ class Sol /*extends SceneOverride*/ {
     this._pluginCache.core.onAnimate.getEveryChange(this.step);
   }
 
-  // Inits the system, adds everything the parent scene, and starts the render
-  // loop.
+  /**
+   * Inits the system, adds everything the parent scene, and starts the render
+   * loop.
+   */
   activate() {
-    this.constituents.mainStar = new Sun();
-    this.constituents.planets.push(new Mercury());
-    this.constituents.planets.push(new Venus());
-    const earth = this.constituents.planets.push(new Earth()) - 1;
-    this.constituents.planets.push(new EarthLuna(this.constituents.planets[earth]));
-    this.constituents.planets.push(new Mars());
-    this.constituents.planets.push(new Saturn());
+    this.constituents.createMainStar(Sun);
+    this.constituents.createPlanet(Mercury);
+    this.constituents.createPlanet(Venus);
+    this.constituents.createPlanet(Earth, [ EarthLuna ]);
+    this.constituents.createPlanet(Mars);
+    this.constituents.createPlanet(Saturn);
+
     this.constituents.addAllToScene();
     this._ready = true;
   }
