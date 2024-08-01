@@ -1,0 +1,36 @@
+.crt-interference {
+  animation: crt-interference 40s linear infinite forwards;
+}
+
+@keyframes crt-interference {
+  from {
+    transform: translateY(-50%);
+  }
+  to {
+    transform: translateY(0%);
+  }
+}
+
+
+.crt-open {
+  animation: crt-open 0.075s linear forwards;
+}
+
+@keyframes crt-open {
+  0% {
+    box-shadow: 0 0 0 15px rgb(236, 232, 236);
+    filter: brightness(1000%);
+    transform: scaleY(0);
+  }
+  10% {
+    filter: brightness(200%);
+    box-shadow: none;
+  }
+  50% {
+    filter: brightness(200%);
+  }
+  100% {
+    filter: brightness(100%);
+    transform: scaleY(1);
+  }
+}

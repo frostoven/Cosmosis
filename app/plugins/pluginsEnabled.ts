@@ -35,6 +35,7 @@ import { localSpacePlugin } from './built-ins/LocalSpace';
 import { postBootChecksPlugin } from './built-ins/PostBootChecks/PostBootChecks';
 import { gameMenuPlugin } from './built-ins/modes/menuControllers/GameMenu';
 import { navMenuPlugin } from './built-ins/modes/menuControllers/Navigation';
+import { html3dRendererPlugin } from './built-ins/Html3dRenderer';
 
 const builtInPluginsEnabled: PluginEntry[] = [
   // General
@@ -48,8 +49,11 @@ const builtInPluginsEnabled: PluginEntry[] = [
   { name: 'navigation', pluginInstance: navigationPlugin },
   { name: 'levelScene', pluginInstance: levelScenePlugin, dependencies: [ 'core', 'nodeOps', 'spacetimeControl', 'player' ], optional: [ 'shipModuleHub' ] },
   { name: 'spaceScene', pluginInstance: spaceScenePlugin, dependencies: [ 'core', 'spacetimeControl' ] },
-  { name: 'localSpace', pluginInstance: localSpacePlugin, dependencies: [ 'core', 'player', 'spacetimeControl', 'spaceScene' ] },
-  { name: 'offscreenGalaxyWorker', pluginInstance: offscreenGalaxyWorkerPlugin, dependencies: [ 'core', 'player', 'spaceScene' ] },
+  { name: 'localSpace', pluginInstance: localSpacePlugin, dependencies: [ 'core', 'player', 'spacetimeControl', 'spaceScene', 'navigation' ] },
+  // { name: 'offscreenGalaxyWorker', pluginInstance: offscreenGalaxyWorkerPlugin, dependencies: [ 'core', 'player', 'spaceScene' ] },
+
+  // Special renderers
+  { name: 'html3dRenderer', pluginInstance: html3dRendererPlugin, dependencies: [ 'core', 'player', 'levelScene' ] },
 
   // HUD and control visuals
   { name: 'hud3D', pluginInstance: hud3DPlugin, dependencies: [ 'nodeOps', 'levelScene', 'player' ] },
@@ -62,13 +66,13 @@ const builtInPluginsEnabled: PluginEntry[] = [
   // React UI
   { name: 'reactBase', pluginInstance: reactBasePlugin, dependencies: [ 'core', 'inputManager' ] },
   { name: 'gameMenu', pluginInstance: gameMenuPlugin, dependencies: [ 'reactBase' ] },
-  { name: 'navMenu', pluginInstance: navMenuPlugin, dependencies: [ 'reactBase' ] },
+  { name: 'navMenu', pluginInstance: navMenuPlugin, dependencies: [ 'reactBase', 'player' ] },
 
   // Modes
   { name: 'generalControl', pluginInstance: generalControlPlugin, dependencies: [ 'inputManager', 'reactBase' ] },
   { name: 'freeCam', pluginInstance: freeCamPlugin, dependencies: [ 'player', 'inputManager' ] },
   { name: 'buckledPassenger', pluginInstance: buckledPassengerPlugin, dependencies: [ 'player', 'inputManager' ] },
-  { name: 'helmControl', pluginInstance: helmControlPlugin, dependencies: [ 'player', 'inputManager', 'levelScene' ], optional: [ 'buckledPassenger', 'freeCam' ] },
+  { name: 'helmControl', pluginInstance: helmControlPlugin, dependencies: [ 'player', 'inputManager', 'levelScene' ], optional: [ 'buckledPassenger', 'freeCam', 'reactBase' ] },
 
   // ------------------------------------------------------------ //
 

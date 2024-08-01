@@ -1,14 +1,14 @@
 import * as THREE from 'three';
 import {
-  LocalStar,
-} from '../../../../../../celestialBodies/bodyTypes/LocalStar';
+  LocalPlanet,
+} from '../../../../../../celestialBodies/bodyTypes/LocalPlanet';
 import { earthMass } from './defs';
 import { localBody, LocalBodyGlslType } from '../../../shaders/localBody.glsl';
 import { gameRuntime } from '../../../../../gameRuntime';
 
 const DEG2RAD = THREE.MathUtils.DEG2RAD;
 
-class Earth extends LocalStar {
+class Earth extends LocalPlanet {
   constructor() {
     const color = new THREE.Color(0.529, 0.808, 0.922);
     const nearMaterial = new THREE.MeshBasicMaterial({ color });

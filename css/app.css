@@ -17,7 +17,7 @@ html, body {
 
 * {
     font-family: Helvetica, Arial, sans-serif;
-    cursor: url(/potatoLqAssets/icons/cursor1_sharp_32.png) 3 3, auto;
+    cursor: url(/potatoLqAssets/icons/cursor1_sharp_32.png) 3 3, auto !important;
 }
 
 a {
@@ -54,6 +54,12 @@ a:hover {
 
 #near-object-canvas {
     z-index: 12;
+}
+
+#css3d-render-space {
+    position: fixed;
+    z-index: 26;
+    pointer-events: none;
 }
 
 /* Snackbar - a toast implementation.*/

@@ -14,6 +14,7 @@ type PluginNames =
   'spaceScene' | 
   'localSpace' | 
   'offscreenGalaxyWorker' | 
+  'html3dRenderer' | 
   'hud3D' | 
   'mouseDriver' | 
   'inputManager' | 

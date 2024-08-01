@@ -12,7 +12,7 @@ const NEAR_FACTOR = 10;
 /**
  * Includes local stars, planets, and moons.
  */
-class LargeGravitationalSource {
+abstract class LargeGravitationalSource {
   // Stop increasing sphere detail beyond a certain size.
   static WIDTH_SEGMENTS = 512;
   // Stop increasing sphere detail beyond a certain size.

@@ -11,13 +11,13 @@ enum ModeId {
   appControl = 1,
   // The in-game menu that is launched when Escape is pressed.
   primaryGameMenu = 2,
+  // Small in-game menus that activate when interacting with in-game tech.
+  virtualMenuControl = 3,
   // Used for restricted movement such as looking around while in the pilot
   // seat.
-  buckledPassenger = 3,
+  buckledPassenger = 4,
   // Includes ship helm control and free-flying as a ghost.
-  flightControl = 4,
-  // Tiny in-game menus that activate when interacting with in-game tech.
-  virtualMenuControl = 5,
+  flightControl = 5,
   // Intended for walking around ships.
   playerControl,
 }

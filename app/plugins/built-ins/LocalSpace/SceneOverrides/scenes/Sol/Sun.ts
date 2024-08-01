@@ -1,13 +1,13 @@
 import * as THREE from 'three';
 import {
-  LocalStar,
-} from '../../../../../../celestialBodies/bodyTypes/LocalStar';
+  LocalPlanet,
+} from '../../../../../../celestialBodies/bodyTypes/LocalPlanet';
 import { sunMass } from './defs';
 import { localBody, LocalBodyGlslType } from '../../../shaders/localBody.glsl';
 
 const DEG2RAD = THREE.MathUtils.DEG2RAD;
 
-class Sun extends LocalStar {
+class Sun extends LocalPlanet {
   constructor() {
     const color = new THREE.Color(1.0, 0.87, 0.81);
     const nearMaterial = new THREE.MeshBasicMaterial({ color });
@@ -24,10 +24,10 @@ class Sun extends LocalStar {
       visibility: { value: 67 },
       // camRotation: { value: new THREE.Vector3() },
 
-      debugValue1:  { value: 0.1 },
-      debugValue2:  { value: 0.4 },
-      debugValue3:  { value: -0.5 },
-      debugValue4:  { value: 1.0 },
+      debugValue1: { value: 0.1 },
+      debugValue2: { value: 0.4 },
+      debugValue3: { value: -0.5 },
+      debugValue4: { value: 1.0 },
     };
 
     const farMaterial = new THREE.ShaderMaterial({

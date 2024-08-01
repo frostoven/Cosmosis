@@ -14,23 +14,26 @@ import { EarthLuna } from './EarthLuna';
 import { Mars } from './Mars';
 import { SpacetimeControl } from '../../../../SpacetimeControl';
 import { eclipticAngle } from './defs';
+import { Navigation } from '../../../../Navigation';
 
 // -- ✀ Plugin boilerplate ----------------------------------------------------
 
 const pluginDependencies = {
   core: Core,
   spacetimeControl: SpacetimeControl,
+  navigation: Navigation,
 };
 const pluginList = Object.keys(pluginDependencies);
 type Dependencies = typeof pluginDependencies;
 
 // -- ✀ -----------------------------------------------------------------------
 
-
 class Sol /*extends SceneOverride*/ {
   private _pluginCache = new PluginCacheTracker<Dependencies>(pluginList).pluginCache;
-  constituents: PlanetarySystemDefinition;
   private _ready = false;
+
+  // You should prefer using store functions instead of using this directly.
+  constituents: PlanetarySystemDefinition;
 
   constructor(parentScene: THREE.Scene | THREE.Group) {
 
@@ -43,25 +46,25 @@ class Sol /*extends SceneOverride*/ {
       // relative Three.js galactic rotation.
       1.5, -1.5 - eclipticAngle, 0,
     ));
-    // @ts-ignore
-    window.planetaryEclipticPlane = planetaryEclipticPlane;
 
-    this.constituents = new PlanetarySystemDefinition(planetaryEclipticPlane);
-
+    this.constituents = new PlanetarySystemDefinition('Sol', planetaryEclipticPlane);
     this._pluginCache.core.onAnimate.getEveryChange(this.step);
   }
 
-  // Inits the system, adds everything the parent scene, and starts the render
-  // loop.
+  /**
+   * Inits the system, adds everything the parent scene, and starts the render
+   * loop.
+   */
   activate() {
-    this.constituents.mainStar = new Sun();
-    this.constituents.planets.push(new Mercury());
-    this.constituents.planets.push(new Venus());
-    const earth = this.constituents.planets.push(new Earth()) - 1;
-    this.constituents.planets.push(new EarthLuna(this.constituents.planets[earth]));
-    this.constituents.planets.push(new Mars());
-    this.constituents.planets.push(new Saturn());
-    this.constituents.addAllToScene();
+    this.constituents.createMainStar(Sun);
+    this.constituents.createPlanet(Mercury);
+    this.constituents.createPlanet(Venus);
+    this.constituents.createPlanet(Earth, [ EarthLuna ]);
+    this.constituents.createPlanet(Mars);
+    this.constituents.createPlanet(Saturn);
+
+    this.constituents.activateSystem();
+    this._pluginCache.navigation.setLocalSystem(this.constituents);
     this._ready = true;
   }
 

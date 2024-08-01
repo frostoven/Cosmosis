@@ -15,6 +15,7 @@ import {
 } from '../../../../../local/mathUtils';
 import PluginCacheTracker from '../../../../../emitters/PluginCacheTracker';
 import Player from '../../../Player';
+import { ReactBase } from '../../../ReactBase';
 
 // TODO: move me into user profile.
 const MOUSE_SPEED = 0.7;
@@ -32,6 +33,7 @@ const animationData = Core.animationData;
 const pluginDependencies = {
   player: Player,
   inputManager: InputManager,
+  reactBase: ReactBase,
 };
 const shallowTracking = { player: { camera: 'camera' } };
 const pluginList = Object.keys(pluginDependencies);
@@ -56,6 +58,8 @@ class BuckledPassenger extends ModeController {
   //  Our calculated current head polar angle.
   private _currentHeadXAngle = 0;
   private _currentHeadYAngle = 0;
+
+  private _navMenuOpen = false;
 
   constructor() {
     const uiInfo = { friendly: 'Buckled Controls', priority: 80 };
@@ -111,6 +115,22 @@ class BuckledPassenger extends ModeController {
         return [ py, px ];
       },
     );
+
+    // Activate the navigation menu if we're looking bottom left.
+    const tx = this._currentHeadXAngle;
+    const ty = this._currentHeadYAngle;
+    if (tx > 1.1 && tx < 1.75 && ty < -0.2 && ty > -0.65) {
+      if (!this._navMenuOpen) {
+        // console.log('Opening nav menu.');
+        this._navMenuOpen = true;
+        this._pluginCache.reactBase.openMenu('navMenu');
+      }
+    }
+    else if (this._navMenuOpen) {
+      // console.log('Closing nav menu.');
+      this._navMenuOpen = false;
+      this._pluginCache.reactBase.closeMenu('navMenu');
+    }
   }
 
   stepFreeLook(delta: number, bigDelta: number) {

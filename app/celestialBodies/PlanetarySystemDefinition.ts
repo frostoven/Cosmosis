@@ -16,6 +16,10 @@ import { LargeGravitationalSource } from './LargeGravitationalSource';
  * this class would have been named SolarSystemDefinition.
  */
 class PlanetarySystemDefinition {
+  // The name of this system. Example: Sol.
+  name: string = 'Unknown System';
+
+  allBodies: LargeGravitationalSource[] = [];
   // The primary star in this system. While not technically realistic to think
   // of a star is the "center" (the center is generally the center of gravity
   // rather than a single body), it helps with scene management.
@@ -23,32 +27,77 @@ class PlanetarySystemDefinition {
   // Used for circumbinary and other systems.
   siblingStars: LocalStar[] = [];
   planets: LocalPlanet[] = [];
+  moons: LocalPlanet[] = [];
   asteroidBelts: LocalAsteroidBelt[] = [];
   comets: LocalComet[] = [];
   oortCloud: LocalOortCloud | null = null;
   private _allBodies: LargeGravitationalSource[] = [];
   private _parentScene: THREE.Scene | THREE.Group;
 
-  constructor(parentScene: THREE.Scene | THREE.Group) {
+  constructor(name: string, parentScene: THREE.Scene | THREE.Group) {
+    name && (this.name = name);
     this._parentScene = parentScene;
     // TODO: Add all bodies to _allBodies.
     // GravitySource.stepAll
   }
 
-  addAllToScene() {
-    this._addBodiesToScene(this.planets);
-    this.mainStar && this._addBodiesToScene([ this.mainStar ]);
+  /** Stores the main star, but does not add it to the scene. */
+  createMainStar(Star: new () => LocalStar) {
+    this.mainStar && console.warn('Replacing main star.');
+    this.mainStar = new Star();
+    this.allBodies.unshift(this.mainStar);
   }
 
-  ejectAllFromScene() {
-    // TODO: Release all resources.
+  /** Stores a planet, but does not add it to the scene. */
+  createPlanet(
+    Planet: new () => LocalPlanet,
+    moons?: [ new (parent: LocalPlanet) => LocalPlanet ],
+  ) {
+    const planet = new Planet();
+    this.planets.push(planet);
+    this.allBodies.push(planet);
+    if (moons) {
+      for (let i = 0, len = moons.length; i < len; i++) {
+        const Moon = moons[i];
+        const moon = new Moon(planet);
+        this.moons.push(moon);
+        this.allBodies.push(moon);
+      }
+    }
+  }
+
+  // noinspection JSUnusedGlobalSymbols - Exists to act as documentation.
+  /**
+   * A moon cannot exist without a planet. Please include your moon when adding
+   * its parent planet via storePlanet() instead.
+   * @deprecated
+   */
+  storeMoon(_: any) {
+    console.error(
+      'A moon cannot exist without a planet. Please include your moon when ' +
+      'adding its parent planet via storePlanet() instead.',
+    );
   }
 
   _addBodiesToScene(bodies: LargeGravitationalSource[]) {
     for (let i = 0, len = bodies.length; i < len; i++) {
       this._parentScene.add(bodies[i].container);
-      console.log('adding:', bodies[i].container);
+      // console.log('adding:', bodies[i].container);
     }
+  }
+
+  /**
+   * Add all planets to the scene, and inform navigation of our available
+   * systems.
+   */
+  activateSystem() {
+    this.mainStar && this._addBodiesToScene([ this.mainStar ]);
+    this._addBodiesToScene(this.planets);
+    this._addBodiesToScene(this.moons);
+  }
+
+  ejectAllFromScene() {
+    // TODO: Release all resources.
   }
 
   stepLargeBodyOrbits(
@@ -56,15 +105,16 @@ class PlanetarySystemDefinition {
     bodies: LargeGravitationalSource[],
     viewerPosition: THREE.Vector3,
   ) {
-    this.mainStar?.step(time, viewerPosition);
     for (let i = 0, len = bodies.length; i < len; i++) {
-      this.planets[i].step(time, viewerPosition);
-      // console.log(this.planets[i].positionM);
+      bodies[i].step(time, viewerPosition);
     }
   }
 
   step(time: number, viewerPosition: THREE.Vector3) {
-    this.stepLargeBodyOrbits(time, this.planets, viewerPosition);
+    const bodies = this.allBodies;
+    for (let i = 0, len = bodies.length; i < len; i++) {
+      bodies[i].step(time, viewerPosition);
+    }
   }
 }
 
