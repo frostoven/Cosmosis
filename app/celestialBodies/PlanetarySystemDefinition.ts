@@ -18,6 +18,8 @@ import { LargeGravitationalSource } from './LargeGravitationalSource';
 class PlanetarySystemDefinition {
   // The name of this system. Example: Sol.
   name: string = 'Unknown System';
+
+  allBodies: LargeGravitationalSource[] = [];
   // The primary star in this system. While not technically realistic to think
   // of a star is the "center" (the center is generally the center of gravity
   // rather than a single body), it helps with scene management.
@@ -25,6 +27,7 @@ class PlanetarySystemDefinition {
   // Used for circumbinary and other systems.
   siblingStars: LocalStar[] = [];
   planets: LocalPlanet[] = [];
+  moons: LocalPlanet[] = [];
   asteroidBelts: LocalAsteroidBelt[] = [];
   comets: LocalComet[] = [];
   oortCloud: LocalOortCloud | null = null;
@@ -42,6 +45,7 @@ class PlanetarySystemDefinition {
   createMainStar(Star: new () => LocalStar) {
     this.mainStar && console.warn('Replacing main star.');
     this.mainStar = new Star();
+    this.allBodies.unshift(this.mainStar);
   }
 
   /** Stores a planet, but does not add it to the scene. */
@@ -50,10 +54,14 @@ class PlanetarySystemDefinition {
     moons?: [ new (parent: LocalPlanet) => LocalPlanet ],
   ) {
     const planet = new Planet();
+    this.planets.push(planet);
+    this.allBodies.push(planet);
     if (moons) {
       for (let i = 0, len = moons.length; i < len; i++) {
         const Moon = moons[i];
-        this.planets.push(new Moon(planet));
+        const moon = new Moon(planet);
+        this.moons.push(moon);
+        this.allBodies.push(moon);
       }
     }
   }
@@ -71,20 +79,25 @@ class PlanetarySystemDefinition {
     );
   }
 
-  addAllToScene() {
-    this._addBodiesToScene(this.planets);
+  _addBodiesToScene(bodies: LargeGravitationalSource[]) {
+    for (let i = 0, len = bodies.length; i < len; i++) {
+      this._parentScene.add(bodies[i].container);
+      // console.log('adding:', bodies[i].container);
+    }
+  }
+
+  /**
+   * Add all planets to the scene, and inform navigation of our available
+   * systems.
+   */
+  activateSystem() {
     this.mainStar && this._addBodiesToScene([ this.mainStar ]);
+    this._addBodiesToScene(this.planets);
+    this._addBodiesToScene(this.moons);
   }
 
   ejectAllFromScene() {
     // TODO: Release all resources.
-  }
-
-  _addBodiesToScene(bodies: LargeGravitationalSource[]) {
-    for (let i = 0, len = bodies.length; i < len; i++) {
-      this._parentScene.add(bodies[i].container);
-      console.log('adding:', bodies[i].container);
-    }
   }
 
   stepLargeBodyOrbits(
@@ -92,15 +105,16 @@ class PlanetarySystemDefinition {
     bodies: LargeGravitationalSource[],
     viewerPosition: THREE.Vector3,
   ) {
-    this.mainStar?.step(time, viewerPosition);
     for (let i = 0, len = bodies.length; i < len; i++) {
-      this.planets[i].step(time, viewerPosition);
-      // console.log(this.planets[i].positionM);
+      bodies[i].step(time, viewerPosition);
     }
   }
 
   step(time: number, viewerPosition: THREE.Vector3) {
-    this.stepLargeBodyOrbits(time, this.planets, viewerPosition);
+    const bodies = this.allBodies;
+    for (let i = 0, len = bodies.length; i < len; i++) {
+      bodies[i].step(time, viewerPosition);
+    }
   }
 }
 
