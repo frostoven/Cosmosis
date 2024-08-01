@@ -1,7 +1,0 @@
-class DependantMoon {
-  //
-}
-
-export {
-  DependantMoon,
-};
