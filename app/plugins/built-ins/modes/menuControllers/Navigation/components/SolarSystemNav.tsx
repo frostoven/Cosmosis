@@ -132,7 +132,12 @@ class SolarSystemNav extends React.Component<Props, State> {
       const body = bodies[i];
       let style = selectedBody === i ? selectedBodyStyle : unSelectedBodyStyle;
       jsx.push(
-        <BodyListItem key={body.name} body={body} style={style}>
+        <BodyListItem
+          key={body.name}
+          body={body}
+          initialFrameSkip={i}
+          style={style}
+        >
           {body.name}
         </BodyListItem>,
       );
