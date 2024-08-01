@@ -1,13 +1,13 @@
 import * as THREE from 'three';
 import {
-  LocalPlanet,
-} from '../../../../../../celestialBodies/bodyTypes/LocalPlanet';
+  Planet,
+} from '../../../../../../celestialBodies/bodyTypes/Planet';
 import { sunMass, earthMass } from './defs';
 import { localBody, LocalBodyGlslType } from '../../../shaders/localBody.glsl';
 
 const DEG2RAD = THREE.MathUtils.DEG2RAD;
 
-class Venus extends LocalPlanet {
+class Venus extends Planet {
   constructor() {
     const color = new THREE.Color(1.0, 0.565, 0.15);
     const nearMaterial = new THREE.MeshBasicMaterial({ color });

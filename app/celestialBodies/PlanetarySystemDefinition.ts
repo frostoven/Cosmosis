@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Star } from './bodyTypes/Star';
-import { LocalPlanet } from './bodyTypes/LocalPlanet';
+import { Planet } from './bodyTypes/Planet';
 import { LocalAsteroidBelt } from './bodyTypes/LocalAsteroidBelt';
 import { LocalComet } from './bodyTypes/LocalComet';
 import { LocalOortCloud } from './bodyTypes/LocalOortCloud';
@@ -26,8 +26,8 @@ class PlanetarySystemDefinition {
   mainStar: Star | null = null;
   // Used for circumbinary and other systems.
   siblingStars: Star[] = [];
-  planets: LocalPlanet[] = [];
-  moons: LocalPlanet[] = [];
+  planets: Planet[] = [];
+  moons: Planet[] = [];
   asteroidBelts: LocalAsteroidBelt[] = [];
   comets: LocalComet[] = [];
   oortCloud: LocalOortCloud | null = null;
@@ -50,8 +50,8 @@ class PlanetarySystemDefinition {
 
   /** Stores a planet, but does not add it to the scene. */
   createPlanet(
-    Planet: new () => LocalPlanet,
-    moons?: [ new (parent: LocalPlanet) => LocalPlanet ],
+    Planet: new () => Planet,
+    moons?: [ new (parent: Planet) => Planet ],
   ) {
     const planet = new Planet();
     this.planets.push(planet);
