@@ -55,9 +55,49 @@ const pluginList = Object.keys(pluginDependencies);
 
 // -- ✀ -----------------------------------------------------------------------+
 
-class SolarSystemNav extends React.Component {
+interface Props {
+  pluginOptions: RegisteredMenu;
+}
+
+interface State {
+  selectedBody: number;
+}
+
+class SolarSystemNav extends React.Component<Props, State> {
   private _pluginCache = new PluginCacheTracker<Dependencies>(pluginList).pluginCache;
   private _bodyCache: LargeGravitationalSource[] = [];
+
+  componentDidMount() {
+    const input = this.props.pluginOptions.getInputBridge();
+    input.onAction.getEveryChange(this.handleAction);
+  }
+
+  nextOrOverflow = (current: number, maxPlusOne: number, direction = 1) => {
+    current += direction;
+    maxPlusOne -= 1;
+    if (current > maxPlusOne) {
+      return 0;
+    }
+    if (current < 0) {
+      return maxPlusOne;
+    }
+    return current;
+  };
+
+  handleAction = (action: string) => {
+    const bodies = this._bodyCache;
+    const { selectedBody } = this.state;
+    switch (action) {
+      case 'up':
+        return this.setState({
+          selectedBody: this.nextOrOverflow(selectedBody, bodies.length, -1),
+        });
+      case 'down':
+        return this.setState({
+          selectedBody: this.nextOrOverflow(selectedBody, bodies.length),
+        });
+    }
+  };
 
   state = {
     selectedBody: 0,

@@ -59,12 +59,12 @@ interface State {
 }
 
 class NavTabs extends React.Component<Props, State> {
-  static panes = [
+  panes = [
     {
       menuItem: 'Solar System',
       render: () => (
         <TabPane attached={false} style={paneStyle}>
-          <SolarSystemNav/>
+          <SolarSystemNav pluginOptions={this.props.pluginOptions}/>
         </TabPane>
       ),
     },
@@ -113,11 +113,11 @@ class NavTabs extends React.Component<Props, State> {
   handleAction = (actionName: string) => {
     let tabIndex = this.state.tabIndex;
     if (actionName === 'left') {
-      --tabIndex < 0 && (tabIndex = NavTabs.panes.length - 1);
+      --tabIndex < 0 && (tabIndex = this.panes.length - 1);
       this.setState({ tabIndex });
     }
     else if (actionName === 'right') {
-      ++tabIndex >= NavTabs.panes.length && (tabIndex = 0);
+      ++tabIndex >= this.panes.length && (tabIndex = 0);
       this.setState({ tabIndex });
     }
   };
@@ -132,7 +132,7 @@ class NavTabs extends React.Component<Props, State> {
            style={containerStyle}>
         <Tab
           menu={{ secondary: true, pointing: true }}
-          panes={NavTabs.panes}
+          panes={this.panes}
           activeIndex={this.state.tabIndex}
           onTabChange={this.handleTabClick}
           style={tabContainerStyle}

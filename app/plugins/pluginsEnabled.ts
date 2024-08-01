@@ -49,8 +49,8 @@ const builtInPluginsEnabled: PluginEntry[] = [
   { name: 'navigation', pluginInstance: navigationPlugin },
   { name: 'levelScene', pluginInstance: levelScenePlugin, dependencies: [ 'core', 'nodeOps', 'spacetimeControl', 'player' ], optional: [ 'shipModuleHub' ] },
   { name: 'spaceScene', pluginInstance: spaceScenePlugin, dependencies: [ 'core', 'spacetimeControl' ] },
-  { name: 'localSpace', pluginInstance: localSpacePlugin, dependencies: [ 'core', 'player', 'spacetimeControl', 'spaceScene' ] },
-  { name: 'offscreenGalaxyWorker', pluginInstance: offscreenGalaxyWorkerPlugin, dependencies: [ 'core', 'player', 'spaceScene' ] },
+  { name: 'localSpace', pluginInstance: localSpacePlugin, dependencies: [ 'core', 'player', 'spacetimeControl', 'spaceScene', 'navigation' ] },
+  // { name: 'offscreenGalaxyWorker', pluginInstance: offscreenGalaxyWorkerPlugin, dependencies: [ 'core', 'player', 'spaceScene' ] },
 
   // Special renderers
   { name: 'html3dRenderer', pluginInstance: html3dRendererPlugin, dependencies: [ 'core', 'player', 'levelScene' ] },
