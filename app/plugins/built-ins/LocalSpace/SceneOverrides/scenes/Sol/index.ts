@@ -47,8 +47,7 @@ class Sol /*extends SceneOverride*/ {
     // @ts-ignore
     window.planetaryEclipticPlane = planetaryEclipticPlane;
 
-    this.constituents = new PlanetarySystemDefinition(planetaryEclipticPlane);
-
+    this.constituents = new PlanetarySystemDefinition('Sol', planetaryEclipticPlane);
     this._pluginCache.core.onAnimate.getEveryChange(this.step);
   }
 

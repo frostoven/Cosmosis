@@ -16,6 +16,8 @@ import { LargeGravitationalSource } from './LargeGravitationalSource';
  * this class would have been named SolarSystemDefinition.
  */
 class PlanetarySystemDefinition {
+  // The name of this system. Example: Sol.
+  name: string = 'Unknown System';
   // The primary star in this system. While not technically realistic to think
   // of a star is the "center" (the center is generally the center of gravity
   // rather than a single body), it helps with scene management.
@@ -29,7 +31,8 @@ class PlanetarySystemDefinition {
   private _allBodies: LargeGravitationalSource[] = [];
   private _parentScene: THREE.Scene | THREE.Group;
 
-  constructor(parentScene: THREE.Scene | THREE.Group) {
+  constructor(name: string, parentScene: THREE.Scene | THREE.Group) {
+    name && (this.name = name);
     this._parentScene = parentScene;
     // TODO: Add all bodies to _allBodies.
     // GravitySource.stepAll
