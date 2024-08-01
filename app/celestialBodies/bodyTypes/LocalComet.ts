@@ -1,7 +1,0 @@
-class LocalComet {
-  //
-}
-
-export {
-  LocalComet,
-};

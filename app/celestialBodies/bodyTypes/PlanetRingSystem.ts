@@ -1,10 +1,10 @@
 /**
  * Includes rings such as those around Saturn.
  */
-class DependantRingSystem {
+class PlanetRingSystem {
   //
 }
 
 export {
-  DependantRingSystem,
+  PlanetRingSystem,
 }

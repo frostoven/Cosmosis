@@ -1,0 +1,7 @@
+class Comet {
+  //
+}
+
+export {
+  Comet,
+};

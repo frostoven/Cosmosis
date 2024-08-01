@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 import { Star } from './bodyTypes/Star';
 import { Planet } from './bodyTypes/Planet';
-import { LocalAsteroidBelt } from './bodyTypes/LocalAsteroidBelt';
-import { LocalComet } from './bodyTypes/LocalComet';
-import { LocalOortCloud } from './bodyTypes/LocalOortCloud';
+import { AsteroidBelt } from './bodyTypes/AsteroidBelt';
+import { Comet } from './bodyTypes/Comet';
+import { OortCloud } from './bodyTypes/OortCloud';
 import { LargeGravitationalSource } from './LargeGravitationalSource';
 
 /**
@@ -28,9 +28,9 @@ class PlanetarySystemDefinition {
   siblingStars: Star[] = [];
   planets: Planet[] = [];
   moons: Planet[] = [];
-  asteroidBelts: LocalAsteroidBelt[] = [];
-  comets: LocalComet[] = [];
-  oortCloud: LocalOortCloud | null = null;
+  asteroidBelts: AsteroidBelt[] = [];
+  comets: Comet[] = [];
+  oortCloud: OortCloud | null = null;
   private _allBodies: LargeGravitationalSource[] = [];
   private _parentScene: THREE.Scene | THREE.Group;
 

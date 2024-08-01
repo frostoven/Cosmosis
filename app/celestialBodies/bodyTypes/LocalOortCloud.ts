@@ -1,7 +1,0 @@
-class LocalOortCloud {
-  //
-}
-
-export {
-  LocalOortCloud,
-};

@@ -1,7 +1,0 @@
-class DependantAsteroid {
-  //
-}
-
-export {
-  DependantAsteroid,
-};

@@ -1,0 +1,7 @@
+class Asteroid {
+  //
+}
+
+export {
+  Asteroid,
+};
