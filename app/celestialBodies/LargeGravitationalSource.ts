@@ -9,6 +9,10 @@ import { BodyVisuals } from './interfaces/BodyVisuals';
 const DIST_UPDATE_FREQ = 2;
 const NEAR_FACTOR = 10;
 
+/** Grants us a bit of autocomplete while still allowing easy modding. */
+type KnownGravitationalBodyTypes =
+  'LargeGravitationalSource' | 'Star' | 'Planet' | 'Moon' | string;
+
 /**
  * Includes local stars, planets, and moons.
  */
@@ -17,6 +21,8 @@ abstract class LargeGravitationalSource {
   static WIDTH_SEGMENTS = 512;
   // Stop increasing sphere detail beyond a certain size.
   static HEIGHT_SEGMENTS = 256;
+
+  type: KnownGravitationalBodyTypes = 'LargeGravitationalSource';
 
   // Name as displayed by the UI.
   name: string;
@@ -129,4 +135,5 @@ abstract class LargeGravitationalSource {
 
 export {
   LargeGravitationalSource,
+  KnownGravitationalBodyTypes,
 };

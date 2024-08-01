@@ -1,4 +1,7 @@
-import { LargeGravitationalSource } from '../LargeGravitationalSource';
+import {
+  KnownGravitationalBodyTypes,
+  LargeGravitationalSource,
+} from '../LargeGravitationalSource';
 
 /**
  * This represents a nearby star, usually within the current planetary system.
@@ -6,7 +9,7 @@ import { LargeGravitationalSource } from '../LargeGravitationalSource';
  * For very distant stars, see the OffscreenGalaxyWorker plugin.
  */
 class Star extends LargeGravitationalSource {
-  type = 'Star';
+  type: KnownGravitationalBodyTypes = 'Star';
 }
 
 export {
