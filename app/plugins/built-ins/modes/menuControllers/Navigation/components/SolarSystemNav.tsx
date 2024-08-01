@@ -1,5 +1,6 @@
+import * as THREE from 'three';
 import React from 'react';
-import { Grid, GridColumn, GridRow } from 'semantic-ui-react';
+import { Button, Grid, GridColumn, GridRow } from 'semantic-ui-react';
 import { Navigation } from '../../../../Navigation';
 import PluginCacheTracker from '../../../../../../emitters/PluginCacheTracker';
 import {
@@ -9,7 +10,8 @@ import {
   LargeGravitationalSource,
 } from '../../../../../../celestialBodies/LargeGravitationalSource';
 
-const { ceil } = Math;
+const RAD2DEG = THREE.MathUtils.RAD2DEG;
+const { abs, ceil, round } = Math;
 
 const containerStyle: React.CSSProperties = {
   height: '95%',
@@ -65,6 +67,7 @@ interface State {
 
 class SolarSystemNav extends React.Component<Props, State> {
   private _pluginCache = new PluginCacheTracker<Dependencies>(pluginList).pluginCache;
+  // noinspection JSMismatchedCollectionQueryUpdate - IDE bug?
   private _bodyCache: LargeGravitationalSource[] = [];
 
   componentDidMount() {
@@ -129,15 +132,17 @@ class SolarSystemNav extends React.Component<Props, State> {
     const bodies = this._bodyCache;
     const { selectedBody } = this.state;
     const body = bodies[selectedBody];
+    let dayLength = round(body.rotationPeriodS * 0.0011574) * 0.01;
+    let dayLengthPlural = dayLength === 1 ? 'day' : 'days';
     return (
       <div>
         <h3>{body.name}</h3>
         <div>Mass: {body.massKg} kg</div>
         <div>Diameter: {ceil(body.radiusM * 2 * 0.001).toLocaleString()} km</div>
-        <div>Axial Tilt: {(body.axialTilt).toFixed(3)}°</div>
-        {/*<div>Velocity: {(body.velocity)}m/s</div>*/}
+        <div>Axial Tilt: {(body.axialTilt * RAD2DEG).toFixed(2)}°</div>
+        <div>Day Length: {abs(dayLength)} Earth {dayLengthPlural}</div>
 
-        {/*<Button fluid style={buttonStyle}>Start Navigation</Button>*/}
+        <Button fluid style={buttonStyle}>Start Navigation</Button>
       </div>
     );
   };
