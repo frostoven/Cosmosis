@@ -179,6 +179,17 @@ export default class Core {
     this._rendererHooks.push(callback);
   }
 
+  removeRenderHook(originalCallback: Function) {
+    const index = this._rendererHooks.indexOf(originalCallback);
+    if (index === -1) {
+      console.error(
+        'Cannot remove render hook because it was not found:', originalCallback,
+      );
+      return;
+    }
+    this._rendererHooks.splice(index, 1);
+  }
+
   // Renders the scene if a sufficient amount of time has passed.
   _renderIfNeeded = (timestamp: number = 0.1) => {
     let gfxDelta = timestamp - lastGfxRender;
