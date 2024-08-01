@@ -9,6 +9,7 @@ import {
 import {
   LargeGravitationalSource,
 } from '../../../../../../celestialBodies/LargeGravitationalSource';
+import { BodyListItem } from './solarSubComponents/BodyListItem';
 
 const RAD2DEG = THREE.MathUtils.RAD2DEG;
 const { abs, ceil, round } = Math;
@@ -19,6 +20,10 @@ const containerStyle: React.CSSProperties = {
 
 const gridStyle: React.CSSProperties = {
   height: '100%',
+};
+
+const rowStyle: React.CSSProperties = {
+  maxHeight: '100%',
 };
 
 const menuItemStyle = {
@@ -45,6 +50,15 @@ const buttonStyle: React.CSSProperties = {
   borderRadius: 4,
   border: 'none',
   marginTop: 20,
+};
+
+const listStyle: React.CSSProperties = {
+  maxHeight: '100%',
+  overflowY: 'scroll',
+};
+
+const previewStyle: React.CSSProperties = {
+  borderLeft: 'thin solid white',
 };
 
 // -- ✀ Plugin boilerplate ----------------------------------------------------
@@ -116,13 +130,11 @@ class SolarSystemNav extends React.Component<Props, State> {
     const jsx: JSX.Element[] = [];
     for (let i = 0, len = bodies.length; i < len; i++) {
       const body = bodies[i];
-
       let style = selectedBody === i ? selectedBodyStyle : unSelectedBodyStyle;
-
       jsx.push(
-        <div key={body.name} style={style}>
+        <BodyListItem key={body.name} body={body} style={style}>
           {body.name}
-        </div>,
+        </BodyListItem>,
       );
     }
     return jsx;
@@ -153,11 +165,11 @@ class SolarSystemNav extends React.Component<Props, State> {
       <div style={containerStyle}>
         <b>System: {this._pluginCache.navigation.getSystemName()}</b>
         <Grid columns={2} style={gridStyle}>
-          <GridRow>
-            <GridColumn>
+          <GridRow style={rowStyle}>
+            <GridColumn style={listStyle}>
               {this.genBodyList()}
             </GridColumn>
-            <GridColumn style={{ borderLeft: 'thin solid white' }}>
+            <GridColumn style={previewStyle}>
               {this.genBodyDetails()}
             </GridColumn>
           </GridRow>
