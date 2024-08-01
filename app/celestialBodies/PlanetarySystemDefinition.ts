@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { LocalStar } from './bodyTypes/LocalStar';
+import { Star } from './bodyTypes/Star';
 import { LocalPlanet } from './bodyTypes/LocalPlanet';
 import { LocalAsteroidBelt } from './bodyTypes/LocalAsteroidBelt';
 import { LocalComet } from './bodyTypes/LocalComet';
@@ -23,9 +23,9 @@ class PlanetarySystemDefinition {
   // The primary star in this system. While not technically realistic to think
   // of a star is the "center" (the center is generally the center of gravity
   // rather than a single body), it helps with scene management.
-  mainStar: LocalStar | null = null;
+  mainStar: Star | null = null;
   // Used for circumbinary and other systems.
-  siblingStars: LocalStar[] = [];
+  siblingStars: Star[] = [];
   planets: LocalPlanet[] = [];
   moons: LocalPlanet[] = [];
   asteroidBelts: LocalAsteroidBelt[] = [];
@@ -42,7 +42,7 @@ class PlanetarySystemDefinition {
   }
 
   /** Stores the main star, but does not add it to the scene. */
-  createMainStar(Star: new () => LocalStar) {
+  createMainStar(Star: new () => Star) {
     this.mainStar && console.warn('Replacing main star.');
     this.mainStar = new Star();
     this.allBodies.unshift(this.mainStar);
