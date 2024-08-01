@@ -14,12 +14,14 @@ import { EarthLuna } from './EarthLuna';
 import { Mars } from './Mars';
 import { SpacetimeControl } from '../../../../SpacetimeControl';
 import { eclipticAngle } from './defs';
+import { Navigation } from '../../../../Navigation';
 
 // -- ✀ Plugin boilerplate ----------------------------------------------------
 
 const pluginDependencies = {
   core: Core,
   spacetimeControl: SpacetimeControl,
+  navigation: Navigation,
 };
 const pluginList = Object.keys(pluginDependencies);
 type Dependencies = typeof pluginDependencies;
@@ -44,8 +46,6 @@ class Sol /*extends SceneOverride*/ {
       // relative Three.js galactic rotation.
       1.5, -1.5 - eclipticAngle, 0,
     ));
-    // @ts-ignore
-    window.planetaryEclipticPlane = planetaryEclipticPlane;
 
     this.constituents = new PlanetarySystemDefinition('Sol', planetaryEclipticPlane);
     this._pluginCache.core.onAnimate.getEveryChange(this.step);
@@ -63,7 +63,8 @@ class Sol /*extends SceneOverride*/ {
     this.constituents.createPlanet(Mars);
     this.constituents.createPlanet(Saturn);
 
-    this.constituents.addAllToScene();
+    this.constituents.activateSystem();
+    this._pluginCache.navigation.setLocalSystem(this.constituents);
     this._ready = true;
   }
 
