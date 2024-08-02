@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { MouseEventHandler } from 'react';
 import {
   LargeGravitationalSource,
 } from '../../../../../../../celestialBodies/LargeGravitationalSource';
@@ -37,6 +37,7 @@ interface Props {
   isActive: boolean,
   body: LargeGravitationalSource,
   style: React.CSSProperties,
+  onMouseDown: MouseEventHandler<HTMLDivElement>,
 }
 
 class BodyListItem extends React.Component<Props> {
@@ -88,7 +89,7 @@ class BodyListItem extends React.Component<Props> {
   };
 
   render() {
-    let { body, isActive, style } = this.props;
+    let { body, isActive, style, onMouseDown } = this.props;
 
     if (body.type === 'Moon') {
       style = { ...style, paddingLeft: 32 };
@@ -105,7 +106,7 @@ class BodyListItem extends React.Component<Props> {
     }
 
     return (
-      <div style={style}>
+      <div onMouseDown={onMouseDown} style={style}>
         <div style={subItemStyle}>{/* Icon here */}</div>
         <div style={subItemStyle}>{body.name}</div>
         <div ref={this.distanceRef} style={distanceStyle}>Distance</div>

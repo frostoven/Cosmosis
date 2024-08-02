@@ -120,6 +120,12 @@ class SolarSystemNav extends React.Component<Props, State> {
     selectedBody: 0,
   };
 
+  handleListItemClick = (i) => {
+    this.setState({
+      selectedBody: i,
+    });
+  };
+
   genBodyList = () => {
     const bodies = this._bodyCache;
     if (!bodies.length) {
@@ -138,6 +144,7 @@ class SolarSystemNav extends React.Component<Props, State> {
           initialFrameSkip={i}
           isActive={selectedBody === i}
           style={style}
+          onMouseDown={() => this.handleListItemClick(i)}
         >
           {body.name}
         </BodyListItem>,
