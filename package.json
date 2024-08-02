@@ -51,7 +51,7 @@
     "@types/three": "0.154.0",
     "babel-loader": "8.2.3",
     "cannon": "0.6.2",
-    "change-tracker": "1.3.0",
+    "change-tracker": "1.6.0",
     "css-loader": "0.28.11",
     "extract-text-webpack-plugin": "4.0.0-beta.0",
     "file-loader": "1.1.11",
