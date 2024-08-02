@@ -13,6 +13,9 @@ const NEAR_FACTOR = 10;
 type KnownGravitationalBodyTypes =
   'LargeGravitationalSource' | 'Star' | 'Planet' | 'Moon' | string;
 
+// Reusable vector storage.
+const _tmpPosition = new THREE.Vector3();
+
 /**
  * Includes local stars, planets, and moons.
  */
@@ -108,7 +111,12 @@ abstract class LargeGravitationalSource {
   }
 
   calculateDistance(viewerPosition: THREE.Vector3) {
-    this.squareMDistanceFromCamera = viewerPosition.distanceToSquared(this.positionM);
+    // TODO: Check if there's a cheaper way of doing this, such as baking
+    //  rotations on the parent and then assuming the viewerPosition (camera)
+    //  and the ecliptic plane line up automatically.
+    this.container.getWorldPosition(_tmpPosition);
+    this.squareMDistanceFromCamera = viewerPosition.distanceToSquared(_tmpPosition);
+
     this.isNearby = this.nearDistance > this.squareMDistanceFromCamera;
     this.bodyGlow.lookAt(0, 0, 0);
   }

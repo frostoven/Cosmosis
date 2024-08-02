@@ -15,11 +15,13 @@ import { Mars } from './Mars';
 import { SpacetimeControl } from '../../../../SpacetimeControl';
 import { eclipticAngle } from './defs';
 import { Navigation } from '../../../../Navigation';
+import Player from '../../../../Player';
 
 // -- ✀ Plugin boilerplate ----------------------------------------------------
 
 const pluginDependencies = {
   core: Core,
+  player: Player,
   spacetimeControl: SpacetimeControl,
   navigation: Navigation,
 };
@@ -74,8 +76,10 @@ class Sol /*extends SceneOverride*/ {
       return;
     }
 
-    const { j2000Time } = Core.animationData;
-    this.constituents.step(j2000Time, spacetimeControl.getLocalPosition());
+    this.constituents.step(
+      Core.animationData.j2000Time,
+      this._pluginCache.player.camWorldPosition,
+    );
   };
 }
 
