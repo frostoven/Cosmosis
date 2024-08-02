@@ -11,20 +11,20 @@
 }
 
 .kosm-scrollbar ::-webkit-scrollbar-track {
-    background-image: url(/css/kosm-scrollbar-img/scrollbar-track.png) !important;
+    background-image: url(/css/scrollbar-styles/kosm-scrollbar/img/scrollbar-track.png) !important;
 }
 
 .kosm-scrollbar ::-webkit-scrollbar-thumb:vertical {
     border-top: 3px solid #4f3f3f;
     border-bottom: 3px solid #4f3f3f;
-    background-image: url(/css/kosm-scrollbar-img/scrollbar-thumb.png) !important;
+    background-image: url(/css/scrollbar-styles/kosm-scrollbar/img/scrollbar-thumb.png) !important;
     border-radius: 0 !important;
 }
 
 .kosm-scrollbar ::-webkit-scrollbar-thumb:horizontal {
     border-left: 3px solid #4f3f3f;
     border-right: 3px solid #4f3f3f;
-    background-image: url(/css/kosm-scrollbar-img/scrollbar-thumb.png) !important;
+    background-image: url(/css/scrollbar-styles/kosm-scrollbar/img/scrollbar-thumb.png) !important;
     border-radius: 0 !important;
 }
 
@@ -37,20 +37,20 @@
 
 .kosm-scrollbar ::-webkit-scrollbar-button:vertical:start {
     height: 8px !important;
-    background-image: url(/css/kosm-scrollbar-img/scrollbar-button-vertical-start.png) !important;
+    background-image: url(/css/scrollbar-styles/kosm-scrollbar/img/scrollbar-button-vertical-start.png) !important;
 }
 
 .kosm-scrollbar ::-webkit-scrollbar-button:vertical:end {
     height: 8px !important;
-    background-image: url(/css/kosm-scrollbar-img/scrollbar-button-vertical-end.png) !important;
+    background-image: url(/css/scrollbar-styles/kosm-scrollbar/img/scrollbar-button-vertical-end.png) !important;
 }
 
 .kosm-scrollbar ::-webkit-scrollbar-button:horizontal:start {
     width: 8px !important;
-    background-image: url(/css/kosm-scrollbar-img/scrollbar-button-horizontal-start.png) !important;
+    background-image: url(/css/scrollbar-styles/kosm-scrollbar/img/scrollbar-button-horizontal-start.png) !important;
 }
 
 .kosm-scrollbar ::-webkit-scrollbar-button:horizontal:end {
     width: 8px !important;
-    background-image: url(/css/kosm-scrollbar-img/scrollbar-button-horizontal-end.png) !important;
+    background-image: url(/css/scrollbar-styles/kosm-scrollbar/img/scrollbar-button-horizontal-end.png) !important;
 }
