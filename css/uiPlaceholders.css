@@ -9,62 +9,62 @@
  */
 
 #speed-tracker {
-    display: none;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    z-index: 800;
-    padding: 4px;
-    font-size: 10pt;
-    font-weight: bold;
-    border: thin solid green;
-    margin: 3px;
-    color: white;
-    text-shadow: 0 0 8px black;
-    white-space: pre-wrap;
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  z-index: 800;
+  padding: 4px;
+  font-size: 10pt;
+  font-weight: bold;
+  border: thin solid green;
+  margin: 3px;
+  color: white;
+  text-shadow: 0 0 8px black;
+  white-space: pre-wrap;
 }
 
 #crosshairs {
-    pointer-events: none;
-    display: none;
-    position: fixed;
-    z-index: 800;
-    width: 24px;
-    content:url(/potatoLqAssets/icons/cross5.png);
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+  pointer-events: none;
+  display: none;
+  position: fixed;
+  z-index: 800;
+  width: 24px;
+  content: url(/potatoLqAssets/icons/cross5.png);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 #crosshairs > img {
-    opacity: 0;
-    display: block;
-    position: absolute;
-    right: 0;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    margin: auto;
-    width: 128px;
-    height: 128px;
+  opacity: 0;
+  display: block;
+  position: absolute;
+  right: 0;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  margin: auto;
+  width: 128px;
+  height: 128px;
 }
 
 #hyperdrive, #hyperdrive-stats {
-    color: white;
-    width: 240px;
-    height: 18px;
-    position: fixed;
-    margin: auto;
-    top: 0;
-    right: 0;
-    left: 0;
-    z-index: 800;
-    text-align: left;
-    pointer-events: none;
-    padding: 5px;
-    text-shadow: 1px 1px 1px black;
+  color: white;
+  width: 240px;
+  height: 18px;
+  position: fixed;
+  margin: auto;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 800;
+  text-align: left;
+  pointer-events: none;
+  padding: 5px;
+  text-shadow: 1px 1px 1px black;
 }
 
 #hyperdrive-stats {
-    top: 28px;
+  top: 28px;
 }

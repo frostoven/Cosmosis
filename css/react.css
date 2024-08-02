@@ -1,208 +1,213 @@
 table {
-    border: thin solid grey;
+  border: thin solid grey;
 }
 
 td {
-    padding: 4px;
+  padding: 4px;
 }
 
 tr:hover {
-    background-color: gray;
+  background-color: gray;
 }
 
 .all-controls-page > table {
-    padding: 10px;
+  padding: 10px;
 }
 
 .quick-controls-overlay {
-    font-family: monospace;
-    font-size: 7pt;
-    color: #fff;
-    background-color: #000000b0;
-    pointer-events: none;
-    position: fixed;
-    z-index: 1000;
-    top: 50px;
-    left: 0;
-    margin: auto;
-    text-align: left;
+  font-family: monospace;
+  font-size: 7pt;
+  color: #fff;
+  background-color: #000000b0;
+  pointer-events: none;
+  position: fixed;
+  z-index: 1000;
+  top: 50px;
+  left: 0;
+  margin: auto;
+  text-align: left;
 }
 
 .controls-menu-read-only {
-    color: #fff;
-    background-color: #000000d4;
-    position: fixed;
-    z-index: 90000;
-    top: 6px;
-    bottom: 6px;
-    left: 6px;
-    right: 6px;
-    text-align: left;
-    overflow: auto;
-    padding-inline: 6px;
-    border: gray;
+  color: #fff;
+  background-color: #000000d4;
+  position: fixed;
+  z-index: 90000;
+  top: 6px;
+  bottom: 6px;
+  left: 6px;
+  right: 6px;
+  text-align: left;
+  overflow: auto;
+  padding-inline: 6px;
+  border: gray;
 }
 
 .primary-menu, .secondary-menu {
-    color: #fff;
-    background-color: rgba(0, 0, 0, 0.56);
-    /* background-color: #ffffff2b; */ /* <- alternative colour; maybe do as gradient? */
-    position: fixed;
-    z-index: 900;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    min-width: 791px;
-    text-align: center;
-    overflow-y: auto;
-    overflow-x: hidden;
-    border: gray;
+  color: #fff;
+  background-color: rgba(0, 0, 0, 0.56);
+  /* background-color: #ffffff2b; */ /* <- alternative colour; maybe do as gradient? */
+  position: fixed;
+  z-index: 900;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  min-width: 791px;
+  text-align: center;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border: gray;
 }
 
 .ui.dropdown .divider {
-background-color: unset;
+  background-color: unset;
 }
 
 .ui.selection.visible.dropdown > .text:not(.default) {
-color: #ffffff;
+  color: #ffffff;
 }
 
 .visible.menu.transition > div {
-border: none !important;
+  border: none !important;
 }
 
 /* https://www.w3schools.com/howto/howto_css_center-vertical.asp */
 .vertical-center {
-    margin: 0;
-    position: absolute;
-    top: 50%;
-    -ms-transform: translateY(-50%);
-    transform: translateY(-50%);
-    height: 100%;
-    width: 100%;
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  -ms-transform: translateY(-50%);
+  transform: translateY(-50%);
+  height: 100%;
+  width: 100%;
 }
 
 .horizontal-center {
-    text-align: center !important;
+  text-align: center !important;
 }
 
 .terminal-font {
-    font-family: 'IBM_VGA_8x16' !important;
-    font-size: 16pt !important;
-    font-weight: 100 !important;
+  font-family: 'IBM_VGA_8x16' !important;
+  font-size: 16pt !important;
+  font-weight: 100 !important;
 }
 
 .button-fill-parent {
-    min-width: 117px;
-    width: 100%;
+  min-width: 117px;
+  width: 100%;
 }
 
 .ui.button {
-    cursor: unset;
+  cursor: unset;
 }
 
 .ui.accordion .title, .ui.accordion .accordion .title {
-    cursor: unset;
+  cursor: unset;
 }
 
-
 .game-menu {
-    padding: 24px !important;
+  padding: 24px !important;
 }
 
 .game-menu-background {
-    position: fixed;
-    background-color: red;
+  position: fixed;
+  background-color: red;
 }
 
 .secondary-menu {
-    background-color: #797979b8 !important;
+  background-color: #797979b8 !important;
 }
 
 .game-menu-back-animation {
-    /* https://www.gradient-animator.com/ */
-    background: linear-gradient(178deg, #246655, #662424);
-    background-size: 400% 400%;
-    animation: game-menu-back-animation 30s ease infinite;
+  /* https://www.gradient-animator.com/ */
+  background: linear-gradient(178deg, #246655, #662424);
+  background-size: 400% 400%;
+  animation: game-menu-back-animation 30s ease infinite;
 }
 
 @keyframes game-menu-back-animation {
-    0%{background-position:82% 0}
-    50%{background-position:19% 100%}
-    100%{background-position:82% 0}
+  0% {
+    background-position: 82% 0
+  }
+  50% {
+    background-position: 19% 100%
+  }
+  100% {
+    background-position: 82% 0
+  }
 }
 
 .hidden-menu {
-    opacity: 0;
+  opacity: 0;
 }
 
 .ui.modal > .content {
-    /* TODO: this background kinda kills the button gradients. Find a fix. */
-    background: rgba(33, 33, 37) !important;
+  /* TODO: this background kinda kills the button gradients. Find a fix. */
+  background: rgba(33, 33, 37) !important;
 }
 
 .floating-footer {
-    position: fixed;
-    background-color: red;
-    bottom: 0;
-    left: 0;
-    right: 16px; /* this gives the scrollbar space */
-    padding: 5px;
-    height: 28px;
+  position: fixed;
+  background-color: red;
+  bottom: 0;
+  left: 0;
+  right: 16px; /* this gives the scrollbar space */
+  padding: 5px;
+  height: 28px;
 }
 
 .ui.segment .twin-segment {
-    width: 100%;
-    padding: 12px;
+  width: 100%;
+  padding: 12px;
 }
 
 .ui.segment .twin-segment > div {
-    width: 100%;
-    top: 50%;
-    transform: translateY(-50%);
+  width: 100%;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 .ui.segment .twin-segment > div:first-child {
-    display: inline-block;
-    text-align: left;
-    /*color: red;*/
-    left: 16px;
-    position: absolute;
+  display: inline-block;
+  text-align: left;
+  /*color: red;*/
+  left: 16px;
+  position: absolute;
 }
 
 .ui.segment .twin-segment > div:last-child {
-    display: inline-block;
-    text-align: right;
-    /*color: blue;*/
-    right: 16px;
-    position: absolute;
+  display: inline-block;
+  text-align: right;
+  /*color: blue;*/
+  right: 16px;
+  position: absolute;
 }
 
 .ui.bottom.attached.segment.active.tab {
-    border: thin solid #45494b;
+  border: thin solid #45494b;
 }
 
 .ui.attached.tabular.menu {
-    border: none;
+  border: none;
 }
 
 textarea {
-    font-family: inherit;
-    cursor: text;
-    color: #ffffff;
-    background-color: #565b5d;
-    margin-top: 2px;
-    padding: 14px;
-    width: 100%;
-    border: thin solid black;
+  font-family: inherit;
+  cursor: text;
+  color: #ffffff;
+  background-color: #565b5d;
+  margin-top: 2px;
+  padding: 14px;
+  width: 100%;
+  border: thin solid black;
 }
 
 textarea::placeholder {
-    color: #adadad;
+  color: #adadad;
 }
 
 .ui.input > input::selection, textarea::selection {
-    color: #fff;
-    background: #6f9e77;
+  color: #fff;
+  background: #6f9e77;
 }

@@ -7,49 +7,53 @@
  * https://stackoverflow.com/questions/4011113/can-you-add-noise-to-a-css3-gradient
  */
 .kosm-gradient-box, .kosm-gradient-box-secondary {
-    align-items: center;
-    position: relative;
-    box-sizing: border-box;
+  align-items: center;
+  position: relative;
+  box-sizing: border-box;
 }
 
 .kosm-gradient-box:before, .kosm-gradient-box-secondary:before {
-    content: "";
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    z-index: -1;
-    margin-top: -3px;
-    margin-bottom: -3px;
-    border-radius: inherit;
-    /*background: linear-gradient(to right, #f8fccf, #6f706a, #f8fccf);*/
-    background: linear-gradient(to right, rgba(248, 252, 207, 0), #77af44, rgba(248, 252, 207, 0));
-    border: none !important;
-    border-top: 3px solid black !important;
-    border-bottom: 3px solid black !important;
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: -1;
+  margin-top: -3px;
+  margin-bottom: -3px;
+  border-radius: inherit;
+  /*background: linear-gradient(to right, #f8fccf, #6f706a, #f8fccf);*/
+  background: linear-gradient(to right, rgba(248, 252, 207, 0), #77af44, rgba(248, 252, 207, 0));
+  border: none !important;
+  border-top: 3px solid black !important;
+  border-bottom: 3px solid black !important;
 
-    animation-name: kosm-oscillate-opacity;
-    animation-duration: 872ms; /* Japanese style. */
-    animation-iteration-count: infinite;
-    animation-timing-function: linear;
-    animation-direction: alternate;
+  animation-name: kosm-oscillate-opacity;
+  animation-duration: 872ms; /* Japanese style. */
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+  animation-direction: alternate;
 }
 
 .kosm-gradient-box-secondary:before {
-    background: radial-gradient(circle farthest-side, #f8fccf, #daec7e, transparent);
-    margin: -2px;
+  background: radial-gradient(circle farthest-side, #f8fccf, #daec7e, transparent);
+  margin: -2px;
 }
 
 @keyframes kosm-oscillate-opacity {
-    0%   { opacity: 1;      }
-    100% { opacity: 0.6524; }
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.6524;
+  }
 }
 
 .kosm-active-primary-button {
-    /*background-color: #000000bf !important;*/
-    /*background: linear-gradient(90deg, rgb(0 0 0 / 69%) 0%, rgb(1 0 14 / 71%) 5%, rgb(0 0 0 / 67%) 50%, rgb(0 0 0 / 71%) 95%, rgb(0 0 0 / 69%) 100%) !important;*/
-    background-color: #00000000 !important;
+  /*background-color: #000000bf !important;*/
+  /*background: linear-gradient(90deg, rgb(0 0 0 / 69%) 0%, rgb(1 0 14 / 71%) 5%, rgb(0 0 0 / 67%) 50%, rgb(0 0 0 / 71%) 95%, rgb(0 0 0 / 69%) 100%) !important;*/
+  background-color: #00000000 !important;
 }
 
 /* TODO: figure out why we need '!important' for everything; using it for now
@@ -57,20 +61,20 @@
     should eventually be removed for many reasons.
  */
 .kosm-inactive-primary-button {
-    background-color: #0000007f !important;
-    border-left: none !important;
-    border-right: none !important;
+  background-color: #0000007f !important;
+  border-left: none !important;
+  border-right: none !important;
 
-    /* Simulate top and bottom border. We do this instead of using real */
-    /* borders because real border jump around when used with gradient */
-    /* borders. */
-    box-shadow: 0 0 0 1px black !important;
-    clip-path: inset(-5px 0px -5px 1px) !important;
+  /* Simulate top and bottom border. We do this instead of using real */
+  /* borders because real border jump around when used with gradient */
+  /* borders. */
+  box-shadow: 0 0 0 1px black !important;
+  clip-path: inset(-5px 0px -5px 1px) !important;
 }
 
 .kosm-active-secondary-button {
-    border-radius: 2px !important;
-    background-color: #000000bf !important;
+  border-radius: 2px !important;
+  background-color: #000000bf !important;
 }
 
 /* TODO: figure out why we need '!important' for everything; using it for now
@@ -78,137 +82,137 @@
     should eventually be removed for many reasons.
  */
 .kosm-inactive-secondary-button {
-    background-color: #00000042 !important;
-    border-left: none !important;
-    border-right: none !important;
+  background-color: #00000042 !important;
+  border-left: none !important;
+  border-right: none !important;
 
-    /* Simulate top and bottom border. We do this instead of using real */
-    /* borders because real border jump around when used with gradient */
-    /* borders. */
-    box-shadow: 0 0 0 1px black !important;
-    clip-path: inset(1px 1px -5px 1px) !important;
+  /* Simulate top and bottom border. We do this instead of using real */
+  /* borders because real border jump around when used with gradient */
+  /* borders. */
+  box-shadow: 0 0 0 1px black !important;
+  clip-path: inset(1px 1px -5px 1px) !important;
 }
 
 .kosm-modal-actions {
-    /* Background kills gradient orders here, too :/ */
-    /*background-color: #333333;*/
-    padding: 8px;
-    text-align: right;
+  /* Background kills gradient orders here, too :/ */
+  /*background-color: #333333;*/
+  padding: 8px;
+  text-align: right;
 }
 
 .kosm-modal-actions > * {
-    margin: 8px !important;
+  margin: 8px !important;
 }
 
 /* Modal background. */
 .ui.modal.transition.visible.active.kosm-modal {
-    background-color: rgb(25 28 27);
-    border-radius: 8px;
+  background-color: rgb(25 28 27);
+  border-radius: 8px;
 }
 
 .kosm-half-wide {
-    min-width: 156px;
+  min-width: 156px;
 }
 
 .kosm-wide {
-    min-width: 313px;
+  min-width: 313px;
 }
 
 .kosm-block, .kosm-inline-block {
-    margin-left: auto !important;
-    margin-right: auto !important;
-    margin-bottom: 9px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  margin-bottom: 9px !important;
 }
 
 .kosm-block {
-    display: block !important;
+  display: block !important;
 }
 
 .kosm-inline-block {
-    display: inline-block !important;
+  display: inline-block !important;
 }
 
 .kosm-invalid {
-    color: grey;
-    background-color: #ff00001c !important;
+  color: grey;
+  background-color: #ff00001c !important;
 }
 
 .kosm-collapsed-grid {
-    /* Please do not apply colour here; it messes up the button gradients */
-    /* for some reason. */
-    /*background: #00000094 !important;*/
-     margin: 0 !important;
-    padding: 18px !important;
+  /* Please do not apply colour here; it messes up the button gradients */
+  /* for some reason. */
+  /*background: #00000094 !important;*/
+  margin: 0 !important;
+  padding: 18px !important;
 }
 
 .kosm-collapsed-grid .column {
-    padding: 0 !important;
-    padding-right: 2px !important;
-    display: flex !important;
-    flex-wrap: wrap !important;
+  padding: 0 !important;
+  padding-right: 2px !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
 }
 
 .kosm-collapsed-grid .kosm-active-primary-button, .kosm-collapsed-grid .kosm-inactive-primary-button {
-    margin: 2px !important;
-    flex-grow: 1 !important;
+  margin: 2px !important;
+  flex-grow: 1 !important;
 }
 
 .kosm-collapsed-grid .kosm-active-primary-button, .kosm-collapsed-grid .kosm-inactive-primary-button {
-    margin: 4px !important;
-    margin-right: 2px !important;
+  margin: 4px !important;
+  margin-right: 2px !important;
 }
 
 .kosm-active-primary-button:hover, .kosm-active-secondary-button:hover,
 .kosm-inactive-primary-button:hover, .kosm-inactive-secondary-button:hover {
-    color: yellow !important;
+  color: yellow !important;
 }
 
 .kosm-collapsed-grid br {
-    /*clear: both !important;*/
-    content: '\A' !important;
-    display: contents !important;
-    white-space: pre !important;
+  /*clear: both !important;*/
+  content: '\A' !important;
+  display: contents !important;
+  white-space: pre !important;
 }
 
 .kosm-collapsed-grid .kosm-break {
-    /* https://tobiasahlin.com/blog/flexbox-break-to-new-row/ */
-    /* https://stackoverflow.com/questions/45087054/br-is-not-friendly-with-the-flexbox */
-    flex-basis: 100% !important;
-    height: 0 !important;
+  /* https://tobiasahlin.com/blog/flexbox-break-to-new-row/ */
+  /* https://stackoverflow.com/questions/45087054/br-is-not-friendly-with-the-flexbox */
+  flex-basis: 100% !important;
+  height: 0 !important;
 }
 
 .kosm-btn-plus {
-    background-color: #43563a4d !important;
+  background-color: #43563a4d !important;
 }
 
 .kosm-modal {
-    z-index: 9999;
-    white-space: pre-line;
+  z-index: 9999;
+  white-space: pre-line;
 }
 
 .kosm-modal .header {
-    background: url("/css/debuggerImages/background-2.png") -12px center !important;
-    border-radius: 8px 8px 0 0 !important;
+  background: url("/css/debuggerImages/background-2.png") -12px center !important;
+  border-radius: 8px 8px 0 0 !important;
 }
 
 .kosm-statusbar, .kosm-statusbar-sub {
-    text-align: left;
-    font-weight: bold;
+  text-align: left;
+  font-weight: bold;
 }
 
 .kosm-statusbar-sub {
-    float: left;
+  float: left;
 }
 
 .ui.page.modals.dimmer.transition.visible.active {
-    background-color: #0000002b;
+  background-color: #0000002b;
 }
 
 .kosm-modal input, .kosm-modal .icon.input {
-    color: white !important;
-    background-color: #333333 !important;
+  color: white !important;
+  background-color: #333333 !important;
 }
 
 .bold-on-hover:hover {
-   font-weight: bold;
+  font-weight: bold;
 }
