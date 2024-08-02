@@ -96,7 +96,11 @@ class NavigationConsole extends React.Component<Props> {
 
   render() {
     return (
-      <div ref={this.handleDivCreation} style={navConsoleStyle}>
+      <div
+        ref={this.handleDivCreation}
+        className={'virtual-display-scrollbar'}
+        style={navConsoleStyle}
+      >
         <div style={noiseBackgroundStyle}>
           <div className="crt-interference" style={noiseBackgroundImage}/>
         </div>

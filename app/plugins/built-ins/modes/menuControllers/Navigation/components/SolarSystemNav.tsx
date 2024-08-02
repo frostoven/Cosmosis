@@ -57,10 +57,6 @@ const listStyle: React.CSSProperties = {
   overflowY: 'scroll',
 };
 
-const previewStyle: React.CSSProperties = {
-  borderLeft: 'thin solid white',
-};
-
 // -- ✀ Plugin boilerplate ----------------------------------------------------
 
 const pluginDependencies = {
@@ -182,7 +178,7 @@ class SolarSystemNav extends React.Component<Props, State> {
             <GridColumn style={listStyle}>
               {this.genBodyList()}
             </GridColumn>
-            <GridColumn style={previewStyle}>
+            <GridColumn>
               {this.genBodyDetails()}
             </GridColumn>
           </GridRow>

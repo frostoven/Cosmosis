@@ -1,0 +1,56 @@
+.virtual-display-scrollbar ::-webkit-scrollbar {
+    width: 5px !important;
+}
+
+.virtual-display-scrollbar ::-webkit-scrollbar:horizontal {
+    height: 5px !important;
+}
+
+.virtual-display-scrollbar ::-webkit-scrollbar-corner {
+    background: #f9bf3d !important;
+}
+
+.virtual-display-scrollbar ::-webkit-scrollbar-track {
+    background-image: url(/css/scrollbar-styles/virtual-display-scrollbar/img/scrollbar-track.png) !important;
+}
+
+.virtual-display-scrollbar ::-webkit-scrollbar-thumb:vertical {
+    border-top: 3px solid #f9bf3d;
+    border-bottom: 3px solid #f9bf3d;
+    background-image: url(/css/scrollbar-styles/virtual-display-scrollbar/img/scrollbar-thumb.png) !important;
+    border-radius: 0 !important;
+}
+
+.virtual-display-scrollbar ::-webkit-scrollbar-thumb:horizontal {
+    border-left: 3px solid #f9bf3d;
+    border-right: 3px solid #f9bf3d;
+    background-image: url(/css/scrollbar-styles/virtual-display-scrollbar/img/scrollbar-thumb.png) !important;
+    border-radius: 0 !important;
+}
+
+.virtual-display-scrollbar ::-webkit-scrollbar-button:horizontal:start:decrement,
+.virtual-display-scrollbar ::-webkit-scrollbar-button:horizontal:end:increment,
+.virtual-display-scrollbar ::-webkit-scrollbar-button:vertical:start:decrement,
+.virtual-display-scrollbar ::-webkit-scrollbar-button:vertical:end:increment {
+    display: block !important;
+}
+
+.virtual-display-scrollbar ::-webkit-scrollbar-button:vertical:start {
+    height: 5px !important;
+    background-image: url(/css/scrollbar-styles/virtual-display-scrollbar/img/scrollbar-button-vertical-start.png) !important;
+}
+
+.virtual-display-scrollbar ::-webkit-scrollbar-button:vertical:end {
+    height: 5px !important;
+    background-image: url(/css/scrollbar-styles/virtual-display-scrollbar/img/scrollbar-button-vertical-end.png) !important;
+}
+
+.virtual-display-scrollbar ::-webkit-scrollbar-button:horizontal:start {
+    width: 5px !important;
+    background-image: url(/css/scrollbar-styles/virtual-display-scrollbar/img/scrollbar-button-horizontal-start.png) !important;
+}
+
+.virtual-display-scrollbar ::-webkit-scrollbar-button:horizontal:end {
+    width: 5px !important;
+    background-image: url(/css/scrollbar-styles/virtual-display-scrollbar/img/scrollbar-button-horizontal-end.png) !important;
+}
