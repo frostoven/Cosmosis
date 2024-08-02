@@ -39,28 +39,16 @@ interface Props {
   style: React.CSSProperties,
 }
 
-interface State {
-  // key: type,
-}
-
-class BodyListItem extends React.Component<Props, State> {
+class BodyListItem extends React.Component<Props> {
   private _pluginCache = new PluginCacheTracker<Dependencies>(pluginList).pluginCache;
   private _nextTick: number;
   private _previousDistance: number = Infinity;
   distanceRef: React.RefObject<HTMLDivElement> = React.createRef();
 
-  state = {
-    // key: value,
-  };
-
   constructor(props: Props | Readonly<Props>) {
     super(props);
     this._nextTick = props.initialFrameSkip;
   }
-
-  // constructor(props: Props | Readonly<Props>) {
-  //   super(props);
-  // }
 
   componentDidMount() {
     this._pluginCache.core.appendRenderHook(this.refreshData);
@@ -68,6 +56,11 @@ class BodyListItem extends React.Component<Props, State> {
 
   componentWillUnmount() {
     this._pluginCache.core.removeRenderHook(this.refreshData);
+  }
+
+  shouldComponentUpdate(nextProps: Readonly<Props>): boolean {
+    // Only rerender if the element's highlighting is no longer valid.
+    return nextProps.isActive !== this.props.isActive;
   }
 
   refreshData = () => {
