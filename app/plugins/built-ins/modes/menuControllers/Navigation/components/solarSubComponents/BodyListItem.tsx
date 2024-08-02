@@ -34,6 +34,7 @@ type Dependencies = typeof pluginDependencies;
 
 interface Props {
   initialFrameSkip: number,
+  isActive: boolean,
   body: LargeGravitationalSource,
   style: React.CSSProperties,
 }
@@ -94,13 +95,20 @@ class BodyListItem extends React.Component<Props, State> {
   };
 
   render() {
-    let { body, style } = this.props;
+    let { body, isActive, style } = this.props;
 
     if (body.type === 'Moon') {
       style = { ...style, paddingLeft: 32 };
     }
     else if (body.type !== 'Star') {
       style = { ...style, paddingLeft: 16 };
+    }
+
+    // Auto-scroll to highlighted menu items.
+    if (isActive && this.distanceRef.current) {
+      this.distanceRef.current.scrollIntoView({
+        block: 'nearest',
+      });
     }
 
     return (

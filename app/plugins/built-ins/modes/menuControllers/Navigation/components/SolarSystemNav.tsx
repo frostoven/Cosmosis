@@ -136,6 +136,7 @@ class SolarSystemNav extends React.Component<Props, State> {
           key={body.name}
           body={body}
           initialFrameSkip={i}
+          isActive={selectedBody === i}
           style={style}
         >
           {body.name}
