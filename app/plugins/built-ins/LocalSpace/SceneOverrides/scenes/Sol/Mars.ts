@@ -41,7 +41,7 @@ class Mars extends Planet {
     super({
       name: 'Mars',
       massKg: earthMass * 0.107,
-      radiusM: 3_000_000,                 // TODO: Check me.
+      radiusM: 3_389_500,
       rotationPeriodS: 24.6229 * 3600,
       axialTilt: 25.19 * DEG2RAD,
       orbitalElements: {
