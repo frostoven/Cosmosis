@@ -13,7 +13,7 @@ const pluginDependencies = {
 const shallowTracking = { player: { camera: 'camera' } };
 const pluginList = Object.keys(pluginDependencies);
 type Dependencies = typeof pluginDependencies & {
-  camera: THREE.Camera, // declare shallow-tracked aliases
+  camera: THREE.PerspectiveCamera, // declare shallow-tracked aliases
 };
 
 // -- ✀ -----------------------------------------------------------------------
