@@ -36,21 +36,25 @@
 }
 
 .virtual-display-scrollbar ::-webkit-scrollbar-button:vertical:start {
-    height: 5px !important;
-    background-image: url(/css/scrollbar-styles/virtual-display-scrollbar/img/scrollbar-button-vertical-start.png) !important;
+    height: 0;
+    /*height: 5px;*/
+    /*background-image: url(/css/scrollbar-styles/virtual-display-scrollbar/img/scrollbar-button-vertical-start.png) !important;*/
 }
 
 .virtual-display-scrollbar ::-webkit-scrollbar-button:vertical:end {
-    height: 5px !important;
-    background-image: url(/css/scrollbar-styles/virtual-display-scrollbar/img/scrollbar-button-vertical-end.png) !important;
+    height: 0;
+    /*height: 5px;*/
+    /*background-image: url(/css/scrollbar-styles/virtual-display-scrollbar/img/scrollbar-button-vertical-end.png) !important;*/
 }
 
 .virtual-display-scrollbar ::-webkit-scrollbar-button:horizontal:start {
-    width: 5px !important;
-    background-image: url(/css/scrollbar-styles/virtual-display-scrollbar/img/scrollbar-button-horizontal-start.png) !important;
+    width: 0;
+    /*width: 5px;*/
+    /*background-image: url(/css/scrollbar-styles/virtual-display-scrollbar/img/scrollbar-button-horizontal-start.png) !important;*/
 }
 
 .virtual-display-scrollbar ::-webkit-scrollbar-button:horizontal:end {
-    width: 5px !important;
-    background-image: url(/css/scrollbar-styles/virtual-display-scrollbar/img/scrollbar-button-horizontal-end.png) !important;
+    width: 0;
+    /*width: 5px;*/
+    /*background-image: url(/css/scrollbar-styles/virtual-display-scrollbar/img/scrollbar-button-horizontal-end.png) !important;*/
 }
