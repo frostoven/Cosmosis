@@ -6,7 +6,7 @@ import Core from '../../../../../Core';
 import PluginCacheTracker
   from '../../../../../../../emitters/PluginCacheTracker';
 
-const { round, sqrt } = Math;
+const { floor, sqrt } = Math;
 
 // How many frames to skip when the body is far away.
 const FRAME_SKIP = 3;
@@ -76,17 +76,20 @@ class BodyListItem extends React.Component<Props, State> {
     this._nextTick = FRAME_SKIP;
 
     const body = this.props.body;
-    const distanceKm = round(sqrt(body.squareMDistanceFromCamera) * 0.001);
-    if (this._previousDistance === distanceKm) {
+    const intDistance = floor(body.squareMDistanceFromCamera);
+    if (this._previousDistance === intDistance) {
       return;
     }
-    this._previousDistance = distanceKm;
+    this._previousDistance = intDistance;
 
     const element = this.distanceRef.current;
     if (!element) {
       return console.error(`Error updating UI nav distance for "${body.name}"`);
     }
 
+    const distanceKm = floor(
+      sqrt(body.squareMDistanceFromCamera - body.radiusM) * 0.001,
+    );
     element.textContent = distanceKm.toLocaleString() + ' km';
   };
 
