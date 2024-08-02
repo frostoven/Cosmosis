@@ -7,6 +7,7 @@ Changes from the official sources:
 
 * All `!important` statements have been removed.
 * All `cursor` definitions have been removed.
+* CSS font files no longer contact the internet (this slowed down game boot).
 
 Within Cosmosis, the purpose of Semantic UI is not to serve as a comprehensive
 solution, as it might for projects like websites. Instead, Semantic UI acts as
