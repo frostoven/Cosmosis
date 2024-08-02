@@ -82,10 +82,29 @@ class BodyListItem extends React.Component<Props> {
       return console.error(`Error updating UI nav distance for "${body.name}"`);
     }
 
-    const distanceKm = floor(
+    let distanceKm = floor(
       sqrt(body.squareMDistanceFromCamera - body.radiusM) * 0.001,
     );
-    element.textContent = distanceKm.toLocaleString() + ' km';
+
+    if (distanceKm > 10e14) {
+      // 105 light years. Unlikely the final game will count such distances as
+      // still being in the same system, but we may as well safeguard it.
+      element.textContent = 'Out of range';
+
+      if (distanceKm > 10e+17) {
+        // This is more than the length of the entire Milky Way. Let's assume
+        // the player is cheating, and give them a dn3d-style easter-egg:
+        const style = 'color: red; font-variant: small-caps; float:right;';
+        element.innerHTML =
+          `<sup style="${style} margin-top: -14px;">` +
+          'You\'re not supposed to be here' +
+          '</sup>' +
+          `<sup style="${style} margin-top: -4px;">Aggregate1166877</sup>`;
+      }
+    }
+    else {
+      element.textContent = distanceKm.toLocaleString() + ' km';
+    }
   };
 
   render() {
