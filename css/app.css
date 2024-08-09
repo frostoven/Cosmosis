@@ -82,7 +82,7 @@ button:active {
   background-position: center;
   background-repeat: no-repeat;
   width: 126px;
-  height: 126px;
+  height: 144px;
 
   /* All the below are used in combination to reduce jumpiness in the text. */
   transform: translate3d(0, 0, 0);
@@ -98,6 +98,7 @@ button:active {
   left: 50%;
   transform: translateX(-50%);
   padding: 4px 0 4px 0;
+  white-space: nowrap;
 }
 
 /* Snackbar - a toast implementation.*/
