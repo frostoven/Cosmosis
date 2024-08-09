@@ -64,8 +64,17 @@ csmType: areaLight
 [csmGfxqLight]: low/medium/high | force this light into a gfx quality category
 [csmDevHelper]: true/false | If true, shows outlines to help debug the light
 ```
+
+**Warning:** Area lights do not currently work with metal materials (they
+reflect no area light whatsoever). You can sort of force it by setting the
+material's metallicity to something other than 1 (e.g. 0.96) but this honestly
+looks horrible and should not be done.
+<!-- My disappoint is immeasurable and my day ruined. I now need to completely
+rework the DS69F ship's lighting situation. -->
+
 <!-- TODO: make csmGfxqLight comma delimited. -->
-Creates a surface that emits light uniformly across a rectangular face (see
+Area lights create a surface that emits light uniformly across a rectangular
+face (see
 [area light](https://threejs.org/docs/?q=light#api/en/lights/RectAreaLight)).
 
 You'll want to set csmModuleHook if you want this hooked up to the game's
