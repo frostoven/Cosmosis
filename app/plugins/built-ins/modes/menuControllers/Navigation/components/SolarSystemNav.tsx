@@ -10,6 +10,7 @@ import {
   LargeGravitationalSource,
 } from '../../../../../../celestialBodies/LargeGravitationalSource';
 import { BodyListItem } from './solarSubComponents/BodyListItem';
+import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer';
 
 const RAD2DEG = THREE.MathUtils.RAD2DEG;
 const { abs, ceil, round } = Math;
@@ -44,7 +45,7 @@ const unSelectedBodyStyle: React.CSSProperties = {
   backgroundColor: '#ff3e0029',
 };
 
-const buttonStyle: React.CSSProperties = {
+const buttonStartStyle: React.CSSProperties = {
   color: '#000',
   backgroundColor: '#ffc227f7',
   borderRadius: 4,
@@ -52,10 +53,21 @@ const buttonStyle: React.CSSProperties = {
   marginTop: 20,
 };
 
+const buttonEndStyle: React.CSSProperties = {
+  ...buttonStartStyle,
+  backgroundColor: 'rgba(255,166,166,0.97)',
+};
+
 const listStyle: React.CSSProperties = {
   maxHeight: '100%',
   overflowY: 'scroll',
 };
+
+interface PlanetTrackingData {
+  body: LargeGravitationalSource,
+  label: CSS2DObject,
+  index: number,
+}
 
 // -- ✀ Plugin boilerplate ----------------------------------------------------
 
@@ -79,6 +91,14 @@ class SolarSystemNav extends React.Component<Props, State> {
   private _pluginCache = new PluginCacheTracker<Dependencies>(pluginList).pluginCache;
   // noinspection JSMismatchedCollectionQueryUpdate - IDE bug?
   private _bodyCache: LargeGravitationalSource[] = [];
+  private static _currentlyTracking: PlanetTrackingData | null = null;
+
+  constructor(props: Props | Readonly<Props>) {
+    super(props);
+    if (SolarSystemNav._currentlyTracking) {
+      this.state.selectedBody = SolarSystemNav._currentlyTracking.index;
+    }
+  }
 
   componentDidMount() {
     const input = this.props.pluginOptions.getInputBridge();
@@ -109,11 +129,61 @@ class SolarSystemNav extends React.Component<Props, State> {
         return this.setState({
           selectedBody: this.nextOrOverflow(selectedBody, bodies.length),
         });
+      case 'select':
+        if (SolarSystemNav._currentlyTracking) {
+          console.log('-> end navigation');
+          this.endNavigation();
+          this.forceUpdate();
+        }
+        else if (this._bodyCache.length) {
+          console.log('-> start navigation');
+          const body = this._bodyCache[selectedBody];
+          this.startNavigation(body);
+          this.forceUpdate();
+        }
+        else {
+          console.log('-> CANNOT START NAV');
+        }
     }
   };
 
   state = {
     selectedBody: 0,
+  };
+
+  startNavigation = (body: LargeGravitationalSource) => {
+    if (SolarSystemNav._currentlyTracking) {
+      this.endNavigation();
+    }
+
+    const labelDiv = document.createElement('div');
+    labelDiv.className = 'css2d-label';
+    // labelDiv.textContent = body.name;
+    labelDiv.innerHTML = `${body.name}<br><br>Distance`;
+
+    const label = new CSS2DObject(labelDiv);
+    // label.position.set(0, body.radiusM * 10, 0);
+    body.sphereMesh.add(label);
+
+    console.log('startNavigation:', {
+      selected: this.state.selectedBody,
+      body,
+    });
+
+    const { selectedBody: index } = this.state;
+    SolarSystemNav._currentlyTracking = {
+      index, body, label,
+    };
+  };
+
+  endNavigation = () => {
+    if (!SolarSystemNav._currentlyTracking) {
+      return;
+    }
+
+    const { body, label } = SolarSystemNav._currentlyTracking;
+    body.sphereMesh.remove(label);
+    SolarSystemNav._currentlyTracking = null;
   };
 
   handleListItemClick = (i) => {
@@ -162,10 +232,41 @@ class SolarSystemNav extends React.Component<Props, State> {
         <div>Diameter: {ceil(body.radiusM * 2 * 0.001).toLocaleString()} km</div>
         <div>Axial Tilt: {(body.axialTilt * RAD2DEG).toFixed(2)}°</div>
         <div>Day Length: {abs(dayLength)} Earth {dayLengthPlural}</div>
-
-        <Button fluid style={buttonStyle}>Start Navigation</Button>
+        {this.genNavButton(body)}
       </div>
     );
+  };
+
+  genNavButton = (body: LargeGravitationalSource) => {
+    const trackingThisItem = SolarSystemNav._currentlyTracking?.body === body;
+    if (!trackingThisItem) {
+      return (
+        <Button
+          fluid
+          onClick={() => {
+            this.startNavigation(body);
+            this.forceUpdate();
+          }}
+          style={buttonStartStyle}
+        >
+          Start Navigation
+        </Button>
+      );
+    }
+    else {
+      return (
+        <Button
+          fluid
+          onClick={() => {
+            this.endNavigation();
+            this.forceUpdate();
+          }}
+          style={buttonEndStyle}
+        >
+          End Navigation
+        </Button>
+      );
+    }
   };
 
   render() {
