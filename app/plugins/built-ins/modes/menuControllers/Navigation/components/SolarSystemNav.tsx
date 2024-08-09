@@ -11,9 +11,10 @@ import {
 } from '../../../../../../celestialBodies/LargeGravitationalSource';
 import { BodyListItem } from './solarSubComponents/BodyListItem';
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer';
+import Core from '../../../../Core';
 
 const RAD2DEG = THREE.MathUtils.RAD2DEG;
-const { abs, ceil, round } = Math;
+const { abs, ceil, floor, round, sqrt } = Math;
 
 const containerStyle: React.CSSProperties = {
   height: '95%',
@@ -67,11 +68,13 @@ interface PlanetTrackingData {
   body: LargeGravitationalSource,
   label: CSS2DObject,
   index: number,
+  updateLabelText: Function,
 }
 
 // -- ✀ Plugin boilerplate ----------------------------------------------------
 
 const pluginDependencies = {
+  core: Core,
   navigation: Navigation,
 };
 type Dependencies = typeof pluginDependencies;
@@ -163,15 +166,16 @@ class SolarSystemNav extends React.Component<Props, State> {
     // Name of the body we're flying to.
     const labelDiv = document.createElement('div');
     labelDiv.className = 'css2d-label';
-    labelDiv.style.bottom = '0px';
+    labelDiv.style.top = '0px';
     labelDiv.textContent = body.name;
 
     // Distance to the body we're flying to. We use a hook elsewhere in this
     // class to update this on a per-frame basis.
     const distanceDiv = document.createElement('div');
     distanceDiv.className = 'css2d-label';
-    distanceDiv.style.top = '0px';
+    distanceDiv.style.bottom = '0px';
     distanceDiv.textContent = 'Distance';
+    distanceDiv.dataset.previousDistance = 'Infinity';
 
     // Add our detail divs to the container.
     containerDiv.appendChild(labelDiv);
@@ -189,8 +193,34 @@ class SolarSystemNav extends React.Component<Props, State> {
 
     const { selectedBody: index } = this.state;
     SolarSystemNav._currentlyTracking = {
-      index, body, label: container,
+      index,
+      body,
+      label: container,
+      // Note: It's important to inline this function and not point to a class
+      // method because we need the update hook to keep running after the
+      // component is terminated. This is eventually cleaned up by
+      // endNavigation. This is kinda dirty because React simply does not
+      // support our requirements here, we should eventually rewrite this.
+      updateLabelText: () => {
+        if (SolarSystemNav._currentlyTracking) {
+          const body = SolarSystemNav._currentlyTracking.body;
+          const stringDistance = floor(body.squareMDistanceFromCamera) + '';
+          if (distanceDiv.dataset.previousDistance === stringDistance + '') {
+            // Avoid HTML writes if there's no changes.
+            return;
+          }
+          let distanceKm = floor(
+            sqrt(body.squareMDistanceFromCamera - body.radiusM) * 0.001,
+          );
+          distanceDiv.textContent = distanceKm.toLocaleString() + ' km';
+          distanceDiv.dataset.previousDistance = stringDistance;
+        }
+      },
     };
+
+    this._pluginCache.core.appendRenderHook(
+      SolarSystemNav._currentlyTracking.updateLabelText,
+    );
   };
 
   endNavigation = () => {
@@ -198,12 +228,16 @@ class SolarSystemNav extends React.Component<Props, State> {
       return;
     }
 
+    this._pluginCache.core.removeRenderHook(
+      SolarSystemNav._currentlyTracking.updateLabelText,
+    );
+
     const { body, label } = SolarSystemNav._currentlyTracking;
     body.sphereMesh.remove(label);
     SolarSystemNav._currentlyTracking = null;
   };
 
-  handleListItemClick = (i) => {
+  handleListItemClick = (i: number) => {
     this.setState({
       selectedBody: i,
     });
