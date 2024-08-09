@@ -102,7 +102,7 @@ class NavTabs extends React.Component<Props, State> {
 
   componentDidMount() {
     const input = this.props.pluginOptions.getInputBridge();
-    input.onAction.getEveryChange(this.handleAction);
+    input.onAction.getEveryChange(this.handleAction, true);
   }
 
   componentWillUnmount() {

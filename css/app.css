@@ -1,156 +1,203 @@
 /* Core application CSS. */
 
 :root {
-    /* Overidden by doc ready boot process. */
-    /*--cursor: loading;*/
+  /* Overidden by doc ready boot process. */
+  /*--cursor: loading;*/
 
-    /*https://css-tricks.com/updating-a-css-variable-with-javascript/*/
-    /*let root = document.documentElement;*/
-    /*root.style.setProperty('--mouse-x', e.clientX + "px");*/
-    /*cursor: var() 3 3, auto !important;*/
+  /*https://css-tricks.com/updating-a-css-variable-with-javascript/*/
+  /*let root = document.documentElement;*/
+  /*root.style.setProperty('--mouse-x', e.clientX + "px");*/
+  /*cursor: var() 3 3, auto !important;*/
 }
 
 html, body {
-    height: 100%;
-    margin: 0;
+  height: 100%;
+  margin: 0;
 }
 
 * {
-    font-family: Helvetica, Arial, sans-serif;
-    cursor: url(/potatoLqAssets/icons/cursor1_sharp_32.png) 3 3, auto !important;
+  font-family: Helvetica, Arial, sans-serif;
+  cursor: url(/potatoLqAssets/icons/cursor1_sharp_32.png) 3 3, auto;
 }
 
 a {
-    color: #ffd07f;
-    font-weight: bold;
+  color: #ffd07f;
+  font-weight: bold;
 }
 
 a:hover {
-    color: #d4ffa0;
-    font-weight: bold;
+  color: #d4ffa0;
+  font-weight: bold;
+}
+
+button:active {
+  filter: brightness(85%);
+  transform: translateY(2%);
 }
 
 #galaxy-canvas, #far-object-canvas, #near-object-canvas {
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    width: 100%;
-    height: 100%;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
 }
 
 #galaxy-canvas {
-    z-index: 10;
-    bottom: 0;
-    right: 0;
-    width: 12px;
-    height: 12px;
+  z-index: 8;
+  bottom: 0;
+  right: 0;
+  width: 12px;
+  height: 12px;
 }
 
 #far-object-canvas {
-    z-index: 11;
+  z-index: 10;
+}
+
+#far-object-label-space {
+  position: fixed;
+  z-index: 12;
+  pointer-events: none;
 }
 
 #near-object-canvas {
-    z-index: 12;
+  z-index: 15;
 }
 
 #css3d-render-space {
-    position: fixed;
-    z-index: 26;
-    pointer-events: none;
+  position: fixed;
+  z-index: 26;
+  pointer-events: none;
+}
+
+.css2d-label-container {
+  color: #fff;
+  text-shadow: 0 0 4px rgba(0, 0, 0, 1);
+  font-weight: bold;
+  text-align: center;
+  background-image: url("/css/generalImages/navCircle.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  width: 126px;
+  height: 126px;
+
+  /* All the below are used in combination to reduce jumpiness in the text. */
+  transform: translate3d(0, 0, 0);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  will-change: transform;
+  position: absolute;
+}
+
+.css2d-label {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 0 4px 0;
 }
 
 /* Snackbar - a toast implementation.*/
 #snackbar {
-    visibility: hidden; /* Hidden by default. Visible on click */
-    min-width: 250px; /* Set a default minimum width */
-    margin-left: -125px; /* Divide value of min-width by 2 */
-    background-color: #333; /* Black background color */
-    color: #fff; /* White text color */
-    text-align: center; /* Centered text */
-    border-radius: 2px; /* Rounded borders */
-    padding: 16px; /* Padding */
-    position: fixed; /* Sit on top of the screen */
-    z-index: 1; /* Add a z-index if needed */
-    left: 50%; /* Center the snackbar */
-    bottom: 30px; /* 30px from the bottom */
+  visibility: hidden; /* Hidden by default. Visible on click */
+  min-width: 250px; /* Set a default minimum width */
+  margin-left: -125px; /* Divide value of min-width by 2 */
+  background-color: #333; /* Black background color */
+  color: #fff; /* White text color */
+  text-align: center; /* Centered text */
+  border-radius: 2px; /* Rounded borders */
+  padding: 16px; /* Padding */
+  position: fixed; /* Sit on top of the screen */
+  z-index: 1; /* Add a z-index if needed */
+  left: 50%; /* Center the snackbar */
+  bottom: 30px; /* 30px from the bottom */
 }
 
 /* Show the snackbar when clicking on a button (class added with JavaScript) */
 #snackbar.show {
-    visibility: visible; /* Show the snackbar */
-    /* Add animation: Take 0.5 seconds to fade in and out the snackbar.
-    However, delay the fade out process for 2.5 seconds */
-    animation: fadein 0.25s, fadeout 0.25s 1.25s;
+  visibility: visible; /* Show the snackbar */
+  /* Add animation: Take 0.5 seconds to fade in and out the snackbar.
+  However, delay the fade out process for 2.5 seconds */
+  animation: fadein 0.25s, fadeout 0.25s 1.25s;
 }
 
 .loading-indicator {
-    color: white;
-    pointer-events: none;
-    position: fixed;
-    z-index: 9000;
-    right: 0;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    margin: auto;
-    text-align: center;
+  color: white;
+  pointer-events: none;
+  position: fixed;
+  z-index: 9000;
+  right: 0;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  margin: auto;
+  text-align: center;
 }
 
 .loading-indicator > div, .loading-indicator > img {
-    display: block;
-    position: absolute;
-    right: 0;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    margin: auto;
-    width: 512px;
-    height: 128px;
+  display: block;
+  position: absolute;
+  right: 0;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  margin: auto;
+  width: 512px;
+  height: 128px;
 }
 
 .loading-indicator > img {
-    top: -108px;
+  top: -108px;
 }
 
 .loading-indicator > img {
-    width: 128px;
-    height: 128px;
+  width: 128px;
+  height: 128px;
 }
 
 input[type='range'] {
-    appearance: none;
-    background-color: #3a3f41;
-    height: 12px;
-    margin-top: 8px;
-    margin-bottom: 8px;
-    border-radius: 8px;
-    padding-top: 1px;
+  appearance: none;
+  background-color: #3a3f41;
+  height: 12px;
+  margin-top: 8px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  padding-top: 1px;
 }
 
 input[type='range']::-webkit-slider-thumb {
-    appearance: none;
-    background: #b2daab;
-    cursor: ew-resize;
-    width: 16px;
-    height: 16px;
-    margin-top: -1px;
-    border-radius: 8px;
+  appearance: none;
+  background: #b2daab;
+  cursor: ew-resize;
+  width: 16px;
+  height: 16px;
+  margin-top: -1px;
+  border-radius: 8px;
 }
 
-.ghost-down {}
+.ghost-down {
+}
 
 .ghost-down:before {
-    content: '{}';
-    animation: ghost-fade 0.375s linear forwards;
-    position: absolute;
-    width: 32px;
-    height: 32px;
-    margin-left: -28px;
+  content: '{}';
+  animation: ghost-fade 0.375s linear forwards;
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  margin-left: -28px;
 }
+
 @keyframes ghost-fade {
-    0% { opacity: 1; transform: translateY(0); }
-    100% { opacity: 0; transform: translate(-6px, 75px) scale(0.1, 1); filter: blur(4px); }
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-6px, 75px) scale(0.1, 1);
+    filter: blur(4px);
+  }
 }

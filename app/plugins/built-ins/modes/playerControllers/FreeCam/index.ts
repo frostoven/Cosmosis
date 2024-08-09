@@ -17,7 +17,7 @@ import Player from '../../../Player';
 const animationData = Core.animationData;
 
 // Directly affects flight movement speed.
-const SPEED_FACTOR = 5;
+const SPEED_FACTOR = 0.25;
 
 class FreeCam extends ModeController {
   // @ts-ignore

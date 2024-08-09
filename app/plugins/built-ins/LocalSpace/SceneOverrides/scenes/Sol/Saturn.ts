@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import {
-  LocalPlanet,
-} from '../../../../../../celestialBodies/bodyTypes/LocalPlanet';
+  Planet,
+} from '../../../../../../celestialBodies/bodyTypes/Planet';
 import { earthMass } from './defs';
 import { MeshBasicMaterial, ShaderMaterial } from 'three';
 import { localBody, LocalBodyGlslType } from '../../../shaders/localBody.glsl';
@@ -25,11 +25,11 @@ function buildMaterial() {
 }
 
 // https://nssdc.gsfc.nasa.gov/planetary/factsheet/saturnfact.html
-class Saturn extends LocalPlanet {
+class Saturn extends Planet {
   constructor() {
     // const color = new THREE.Color(1.0, 0.667, 0.333);
     const color = new THREE.Color(1.0, 0.0, 0.9);
-    let nearMaterial: ShaderMaterial | MeshBasicMaterial = new THREE.MeshBasicMaterial({ color, });
+    let nearMaterial: ShaderMaterial | MeshBasicMaterial = new THREE.MeshBasicMaterial({ color });
 
     const uniforms = {
       color: { value: color },

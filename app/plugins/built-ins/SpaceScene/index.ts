@@ -8,6 +8,7 @@ import { logBootTitleAndInfo } from '../../../local/windowLoadListener';
 import PluginLoader from '../../types/PluginLoader';
 import Player from '../Player';
 import PluginCacheTracker from '../../../emitters/PluginCacheTracker';
+import { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer';
 
 // -- ✀ Plugin boilerplate ----------------------------------------------------
 
@@ -31,6 +32,7 @@ export default class SpaceScene extends THREE.Scene {
 
   public skybox: THREE.Mesh<THREE.BoxGeometry, THREE.MeshBasicMaterial[]> | null = null;
   private _renderer: THREE.WebGLRenderer;
+  private _labelRenderer = new CSS2DRenderer();
 
   constructor() {
     super();
@@ -60,6 +62,19 @@ export default class SpaceScene extends THREE.Scene {
 
     this._renderer = renderer;
 
+    const css2dLabelSpace = document.getElementById('far-object-label-space');
+    if (!css2dLabelSpace) {
+      console.error(
+        'Failed to set up CSS2DRenderer: #far-object-label-space not found.',
+      );
+    }
+    else {
+      this._labelRenderer.setSize(window.innerWidth, window.innerHeight);
+      this._labelRenderer.domElement.style.position = 'absolute';
+      this._labelRenderer.domElement.style.top = '0px';
+      css2dLabelSpace.appendChild(this._labelRenderer.domElement);
+    }
+
     this._pluginCache.core.appendRenderHook(this.render);
 
     // --------------------------------------------------------------------- //
@@ -86,6 +101,8 @@ export default class SpaceScene extends THREE.Scene {
     this._renderer.setSize(screenWidth * scale, screenHeight * scale);
     this._renderer.domElement.style.width = '100%';
     this._renderer.domElement.style.height = '100%';
+
+    this._labelRenderer.setSize(window.innerWidth, window.innerHeight);
   }
 
   setSkyboxSides(newTextures: THREE.CanvasTexture[]) {
@@ -136,7 +153,9 @@ export default class SpaceScene extends THREE.Scene {
   }
 
   render = () => {
-    this._renderer.render(this, this._pluginCache.camera);
+    const camera = this._pluginCache.camera;
+    this._renderer.render(this, camera);
+    this._labelRenderer.render(this, camera);
   };
 }
 

@@ -1,13 +1,11 @@
 import * as THREE from 'three';
-import {
-  LocalPlanet,
-} from '../../../../../../celestialBodies/bodyTypes/LocalPlanet';
 import { localBody, LocalBodyGlslType } from '../../../shaders/localBody.glsl';
 import { Earth } from './Earth';
+import { Moon } from '../../../../../../celestialBodies/bodyTypes/Moon';
 
 const DEG2RAD = THREE.MathUtils.DEG2RAD;
 
-class EarthLuna extends LocalPlanet {
+class EarthLuna extends Moon {
   constructor(earth: Earth) {
     const color = new THREE.Color(1.0, 1.0, 1.0);
     const nearMaterial = new THREE.MeshBasicMaterial({ color });

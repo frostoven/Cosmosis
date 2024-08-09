@@ -589,7 +589,6 @@ body ::-webkit-scrollbar-track {
 }
 
 body ::-webkit-scrollbar-thumb {
-  cursor: pointer;
   border-radius: 5px;
   background: rgba(0, 0, 0, 0.25);
   -webkit-transition: color 0.2s ease;
@@ -673,7 +672,6 @@ pre .code {
 *******************************/
 
 .ui.button {
-  cursor: pointer;
   min-height: 1em;
   outline: none;
   border: thin solid black;
@@ -7063,7 +7061,6 @@ i.fitted.icon {
 
 i.link.icon,
 i.link.icons {
-  cursor: pointer;
   opacity: 0.8;
   -webkit-transition: opacity 0.1s ease;
   transition: opacity 0.1s ease;
@@ -8026,20 +8023,10 @@ img.ui.bordered.image {
   margin-top: -0.5em;
 }
 
-.ui.icon.input > i.link.icon {
-  cursor: pointer;
-}
-
-.ui.icon.input > i.circular.icon {
-}
-
 /* Left Icon Input */
 
 .ui[class*="left icon"].input > i.icon {
   border-radius: 0 0em 0em 0;
-}
-
-.ui[class*="left icon"].input > i.circular.icon {
 }
 
 .ui[class*="left icon"].input > input {
@@ -8317,16 +8304,9 @@ img.ui.bordered.image {
   margin-right: 0em;
 }
 
-/* Link */
-
-a.ui.label {
-  cursor: pointer;
-}
-
 /* Inside Link */
 
 .ui.label > a {
-  cursor: pointer;
   color: inherit;
   opacity: 0.5;
   -webkit-transition: 0.1s opacity ease;
@@ -8363,7 +8343,6 @@ a.ui.label {
 
 .ui.label > .close.icon,
 .ui.label > .delete.icon {
-  cursor: pointer;
   margin-right: 0em;
   margin-left: 0.5em;
   opacity: 0.5;
@@ -9739,18 +9718,10 @@ ol.ui.list ol li,
   color: #9caab7;
 }
 
-/* Child Link */
-
-.ui.list > .item a,
-.ui.list .list > .item a {
-  cursor: pointer;
-}
-
 /* Linking Item */
 
 .ui.list .list > a.item,
 .ui.list > a.item {
-  cursor: pointer;
   color: #fff;
 }
 
@@ -9770,7 +9741,6 @@ ol.ui.list ol li,
 
 .ui.list .list > .item a.header,
 .ui.list > .item a.header {
-  cursor: pointer;
   color: #fff;
 }
 
@@ -9935,7 +9905,6 @@ ol.ui.list ol li,
 
 .ui.inverted.list .list > a.item,
 .ui.inverted.list > a.item {
-  cursor: pointer;
   color: rgba(255, 255, 255, 0.9);
 }
 
@@ -10032,7 +10001,6 @@ ol.ui.list ol li,
 
 .ui.selection.list .list > .item,
 .ui.selection.list > .item {
-  cursor: pointer;
   background: transparent;
   color: rgba(255, 255, 255, 0.5);
   border-radius: 0.5em;
@@ -12231,13 +12199,6 @@ ol.ui.horizontal.list li:before,
 .ui.steps:not(.vertical) .step > .icon {
 }
 
-/* Link */
-
-.ui.steps .link.step,
-.ui.steps a.step {
-  cursor: pointer;
-}
-
 /*******************************
             Types
 *******************************/
@@ -12429,7 +12390,6 @@ ol.ui.horizontal.list li:before,
 .ui.steps .link.active.step:hover,
 .ui.steps a.active.step:hover::after,
 .ui.steps a.active.step:hover {
-  cursor: pointer;
   background: #19242f;
   color: #fff;
 }
@@ -12694,55 +12654,6 @@ ol.ui.horizontal.list li:before,
 
 .ui.breadcrumb .icon.divider {
   vertical-align: baseline;
-}
-
-/* Section */
-
-.ui.breadcrumb a.section {
-  cursor: pointer;
-}
-
-.ui.breadcrumb .section {
-}
-
-/* Loose Coupling */
-
-.ui.breadcrumb.segment {
-}
-
-/*******************************
-            States
-*******************************/
-
-.ui.breadcrumb .active.section {
-}
-
-/*******************************
-           Variations
-*******************************/
-
-.ui.mini.breadcrumb {
-}
-
-.ui.tiny.breadcrumb {
-}
-
-.ui.small.breadcrumb {
-}
-
-.ui.breadcrumb {
-}
-
-.ui.large.breadcrumb {
-}
-
-.ui.big.breadcrumb {
-}
-
-.ui.huge.breadcrumb {
-}
-
-.ui.massive.breadcrumb {
 }
 
 .ui.breadcrumb {
@@ -16224,7 +16135,6 @@ ol.ui.horizontal.list li:before,
 .ui.menu .dropdown.item:hover,
 .ui.menu .link.item:hover,
 .ui.menu a.item:hover {
-  cursor: pointer;
   background: #6c6c6c;
   color: #ffffff;
 }
@@ -17998,7 +17908,6 @@ Floated Menu / Item
 /* Close Icon */
 
 .ui.message > .close.icon {
-  cursor: pointer;
   opacity: 0.7;
   -webkit-transition: opacity 0.1s ease;
   transition: opacity 0.1s ease;
@@ -19338,7 +19247,6 @@ Floated Menu / Item
 ---------------*/
 
 .ui.sortable.table thead th {
-  cursor: pointer;
   white-space: nowrap;
   border-left: 1px solid #555555;
   color: #fff;
@@ -20010,7 +19918,6 @@ Floated Menu / Item
 
 .ui.cards > .card > .content .like.icon,
 .ui.card > .content .like.icon {
-  cursor: pointer;
   opacity: 0.75;
   -webkit-transition: color 0.1s ease;
   transition: color 0.1s ease;
@@ -20084,7 +19991,6 @@ a.ui.raised.card:hover,
 .ui.link.cards .card:hover,
 a.ui.card:hover,
 .ui.link.card:hover {
-  cursor: pointer;
   z-index: 5;
   background: #FFFFFF;
   border: none;
@@ -20358,10 +20264,6 @@ a.ui.card:hover,
   color: #fff;
 }
 
-.ui.comments .comment a.author {
-  cursor: pointer;
-}
-
 .ui.comments .comment a.author:hover {
   color: #df691a;
 }
@@ -20397,7 +20299,6 @@ a.ui.card:hover,
 ---------------------*/
 
 .ui.comments .comment .actions a {
-  cursor: pointer;
   color: rgba(255, 255, 255, 0.5);
 }
 
@@ -20526,12 +20427,6 @@ a.ui.card:hover,
   padding-bottom: 0em;
 }
 
-/* Link */
-
-.ui.feed > .event > .content a {
-  cursor: pointer;
-}
-
 /*--------------
       Date
 ---------------*/
@@ -20652,7 +20547,6 @@ a.ui.card:hover,
 
 .ui.feed > .event > .content .meta a,
 .ui.feed > .event > .content .meta > .icon {
-  cursor: pointer;
   opacity: 1;
   color: #dedede;
   -webkit-transition: color 0.1s ease;
@@ -20711,10 +20605,6 @@ a.ui.card:hover,
   transition: box-shadow 0.1s ease;
   transition: box-shadow 0.1s ease, -webkit-box-shadow 0.1s ease;
   z-index: '';
-}
-
-.ui.items > .item a {
-  cursor: pointer;
 }
 
 /*--------------
@@ -20928,7 +20818,6 @@ a.ui.card:hover,
 /* Icon */
 
 .ui.items > .item > .content .favorite.icon {
-  cursor: pointer;
   opacity: 0.75;
   -webkit-transition: color 0.1s ease;
   transition: color 0.1s ease;
@@ -20948,7 +20837,6 @@ a.ui.card:hover,
 /* Icon */
 
 .ui.items > .item > .content .like.icon {
-  cursor: pointer;
   opacity: 0.75;
   -webkit-transition: color 0.1s ease;
   transition: color 0.1s ease;
@@ -21100,11 +20988,6 @@ a.ui.card:hover,
 /*-------------------
         Link
 --------------------*/
-
-.ui.items a.item:hover,
-.ui.link.items > .item:hover {
-  cursor: pointer;
-}
 
 .ui.items a.item:hover .content .header,
 .ui.link.items > .item:hover .content .header {
@@ -21712,13 +21595,6 @@ a.ui.card:hover,
 .ui.accordion .accordion {
 }
 
-/* Title */
-
-.ui.accordion .title,
-.ui.accordion .accordion .title {
-  cursor: pointer;
-}
-
 /* Default Styling */
 
 .ui.accordion .title:not(.ui) {
@@ -21927,7 +21803,6 @@ a.ui.card:hover,
 
 .ui.checkbox input[type="checkbox"],
 .ui.checkbox input[type="radio"] {
-  cursor: pointer;
   opacity: 0;
   outline: none;
   z-index: 3;
@@ -22134,7 +22009,6 @@ a.ui.card:hover,
 /* Selectable Label */
 
 .ui.checkbox input.hidden + label {
-  cursor: pointer;
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
@@ -22724,7 +22598,6 @@ body.dimmable > .dimmer {
 *******************************/
 
 .ui.dropdown {
-  cursor: pointer;
   outline: none;
   text-align: left;
   -webkit-transition: width 0.1s ease, -webkit-box-shadow 0.1s ease;
@@ -22802,7 +22675,6 @@ body.dimmable > .dimmer {
 ---------------*/
 
 .ui.dropdown .menu > .item {
-  cursor: pointer;
   border: none;
   text-align: left;
   border-top: none;
@@ -23021,7 +22893,6 @@ body.dimmable > .dimmer {
 /* Displays like a select box */
 
 .ui.selection.dropdown {
-  cursor: pointer;
   word-wrap: break-word;
   line-height: 1em;
   white-space: normal;
@@ -23055,7 +22926,6 @@ select.ui.dropdown {
 .ui.selection.dropdown > .search.icon,
 .ui.selection.dropdown > .delete.icon,
 .ui.selection.dropdown > .dropdown.icon {
-  cursor: pointer;
   line-height: 1.21428571em;
   z-index: 3;
   opacity: 0.8;
@@ -23400,7 +23270,6 @@ select.ui.dropdown {
 ---------------*/
 
 .ui.inline.dropdown {
-  cursor: pointer;
   color: inherit;
 }
 
@@ -24092,7 +23961,6 @@ select.ui.dropdown {
 ---------------*/
 
 .ui.embed > .placeholder {
-  cursor: pointer;
   background-color: radial-gradient(transparent 45%, rgba(0, 0, 0, 0.3));
 }
 
@@ -24101,7 +23969,6 @@ select.ui.dropdown {
 ---------------*/
 
 .ui.embed > .icon {
-  cursor: pointer;
   z-index: 2;
 }
 
@@ -24234,7 +24101,6 @@ select.ui.dropdown {
 ---------------*/
 
 .ui.modal > .close {
-  cursor: pointer;
   z-index: 1;
   opacity: 0.8;
   color: #FFFFFF;
@@ -24736,16 +24602,11 @@ select.ui.dropdown {
   transition: 0.2s background ease;
 }
 
-a.ui.nag {
-  cursor: pointer;
-}
-
 .ui.nag > .title {
   color: #FFFFFF;
 }
 
 .ui.nag > .close.icon {
-  cursor: pointer;
   opacity: 0.4;
   color: #FFFFFF;
   -webkit-transition: opacity 0.2s ease;
@@ -26083,7 +25944,6 @@ a.ui.nag {
   -webkit-box-flex: 1;
   -ms-flex: 1 0 auto;
   flex: 1 0 auto;
-  cursor: pointer;
   -webkit-transition: opacity 0.1s ease, background 0.1s ease, text-shadow 0.1s ease, color 0.1s ease;
   transition: opacity 0.1s ease, background 0.1s ease, text-shadow 0.1s ease, color 0.1s ease;
 }
@@ -26343,14 +26203,6 @@ a.ui.nag {
 }
 
 /*--------------
-     Icon
----------------*/
-
-.ui.search .prompt ~ .search.icon {
-  cursor: pointer;
-}
-
-/*--------------
     Results
 ---------------*/
 
@@ -26380,7 +26232,6 @@ a.ui.nag {
 ---------------*/
 
 .ui.search > .results .result {
-  cursor: pointer;
   overflow: hidden;
   color: #fff;
   line-height: 1.33;
@@ -26551,7 +26402,6 @@ a.ui.nag {
 }
 
 .ui.search.selection > .icon.input > .active.remove.icon {
-  cursor: pointer;
   opacity: 0.8;
   pointer-events: auto;
 }

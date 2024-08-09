@@ -1,9 +1,9 @@
 import * as THREE from 'three';
-import { LocalStar } from './bodyTypes/LocalStar';
-import { LocalPlanet } from './bodyTypes/LocalPlanet';
-import { LocalAsteroidBelt } from './bodyTypes/LocalAsteroidBelt';
-import { LocalComet } from './bodyTypes/LocalComet';
-import { LocalOortCloud } from './bodyTypes/LocalOortCloud';
+import { Star } from './bodyTypes/Star';
+import { Planet } from './bodyTypes/Planet';
+import { AsteroidBelt } from './bodyTypes/AsteroidBelt';
+import { Comet } from './bodyTypes/Comet';
+import { OortCloud } from './bodyTypes/OortCloud';
 import { LargeGravitationalSource } from './LargeGravitationalSource';
 
 /**
@@ -23,14 +23,14 @@ class PlanetarySystemDefinition {
   // The primary star in this system. While not technically realistic to think
   // of a star is the "center" (the center is generally the center of gravity
   // rather than a single body), it helps with scene management.
-  mainStar: LocalStar | null = null;
+  mainStar: Star | null = null;
   // Used for circumbinary and other systems.
-  siblingStars: LocalStar[] = [];
-  planets: LocalPlanet[] = [];
-  moons: LocalPlanet[] = [];
-  asteroidBelts: LocalAsteroidBelt[] = [];
-  comets: LocalComet[] = [];
-  oortCloud: LocalOortCloud | null = null;
+  siblingStars: Star[] = [];
+  planets: Planet[] = [];
+  moons: Planet[] = [];
+  asteroidBelts: AsteroidBelt[] = [];
+  comets: Comet[] = [];
+  oortCloud: OortCloud | null = null;
   private _allBodies: LargeGravitationalSource[] = [];
   private _parentScene: THREE.Scene | THREE.Group;
 
@@ -42,7 +42,7 @@ class PlanetarySystemDefinition {
   }
 
   /** Stores the main star, but does not add it to the scene. */
-  createMainStar(Star: new () => LocalStar) {
+  createMainStar(Star: new () => Star) {
     this.mainStar && console.warn('Replacing main star.');
     this.mainStar = new Star();
     this.allBodies.unshift(this.mainStar);
@@ -50,8 +50,8 @@ class PlanetarySystemDefinition {
 
   /** Stores a planet, but does not add it to the scene. */
   createPlanet(
-    Planet: new () => LocalPlanet,
-    moons?: [ new (parent: LocalPlanet) => LocalPlanet ],
+    Planet: new () => Planet,
+    moons?: [ new (parent: Planet) => Planet ],
   ) {
     const planet = new Planet();
     this.planets.push(planet);

@@ -250,9 +250,7 @@ export default class MenuControlSetup extends React.Component<MenuControlSetupPr
 
   componentDidMount() {
     this._processedBindingCache = null;
-    console.log('==> this.props.pluginOptions:', this.props.pluginOptions);
     const input = this.props.pluginOptions.getInputBridge();
-    console.log('==> componentDidMount | input:', input);
     input.onAction.getEveryChange(this.handleAction);
     const defaultIndex = this.props.options.defaultIndex;
     if (typeof defaultIndex === 'number') {

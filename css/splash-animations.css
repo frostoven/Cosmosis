@@ -1,30 +1,36 @@
 /* CSS animations and the classes that implement them. */
 
 .splash-spinning {
-    animation-name: splash-spin;
-    animation-duration: 2000ms;
-    animation-iteration-count: infinite;
-    animation-timing-function: linear;
+  animation-name: splash-spin;
+  animation-duration: 2000ms;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
 }
 
 .splash-fade-out {
-    /*animation: splash-fade-out 0.25s 1.25s;*/
-    animation-name: splash-fade-out;
-    animation-duration: 0.5s;
-    animation-iteration-count: 1;
-    animation-fill-mode: both;
+  /*animation: splash-fade-out 0.25s 1.25s;*/
+  animation-name: splash-fade-out;
+  animation-duration: 0.5s;
+  animation-iteration-count: 1;
+  animation-fill-mode: both;
 }
 
 @keyframes splash-fade-out {
-    from {transform: translateY(0px); opacity: 1;}
-    to {transform: translateY(30px); opacity: 0;}
+  from {
+    transform: translateY(0px);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(30px);
+    opacity: 0;
+  }
 }
 
 @keyframes splash-spin {
-    from {
-        transform:rotate(0deg);
-    }
-    to {
-        transform:rotate(360deg);
-    }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }

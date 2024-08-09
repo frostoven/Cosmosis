@@ -9,6 +9,13 @@ import { BodyVisuals } from './interfaces/BodyVisuals';
 const DIST_UPDATE_FREQ = 2;
 const NEAR_FACTOR = 10;
 
+/** Grants us a bit of autocomplete while still allowing easy modding. */
+type KnownGravitationalBodyTypes =
+  'LargeGravitationalSource' | 'Star' | 'Planet' | 'Moon' | string;
+
+// Reusable vector storage.
+const _tmpPosition = new THREE.Vector3();
+
 /**
  * Includes local stars, planets, and moons.
  */
@@ -17,6 +24,8 @@ abstract class LargeGravitationalSource {
   static WIDTH_SEGMENTS = 512;
   // Stop increasing sphere detail beyond a certain size.
   static HEIGHT_SEGMENTS = 256;
+
+  type: KnownGravitationalBodyTypes = 'LargeGravitationalSource';
 
   // Name as displayed by the UI.
   name: string;
@@ -102,7 +111,12 @@ abstract class LargeGravitationalSource {
   }
 
   calculateDistance(viewerPosition: THREE.Vector3) {
-    this.squareMDistanceFromCamera = viewerPosition.distanceToSquared(this.positionM);
+    // TODO: Check if there's a cheaper way of doing this, such as baking
+    //  rotations on the parent and then assuming the viewerPosition (camera)
+    //  and the ecliptic plane line up automatically.
+    this.container.getWorldPosition(_tmpPosition);
+    this.squareMDistanceFromCamera = viewerPosition.distanceToSquared(_tmpPosition);
+
     this.isNearby = this.nearDistance > this.squareMDistanceFromCamera;
     this.bodyGlow.lookAt(0, 0, 0);
   }
@@ -129,4 +143,5 @@ abstract class LargeGravitationalSource {
 
 export {
   LargeGravitationalSource,
+  KnownGravitationalBodyTypes,
 };
