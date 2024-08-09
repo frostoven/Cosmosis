@@ -30,6 +30,11 @@ a:hover {
   font-weight: bold;
 }
 
+button:active {
+  filter: brightness(85%);
+  transform: translateY(2%);
+}
+
 #galaxy-canvas, #far-object-canvas, #near-object-canvas {
   position: fixed;
   top: 0;
