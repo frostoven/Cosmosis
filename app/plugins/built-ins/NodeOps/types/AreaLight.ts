@@ -9,12 +9,10 @@ export default class AreaLight {
   constructor(mesh: Object3D, createHelper=false) {
     const width = mesh.scale.x;
     const height = mesh.scale.y;
-    const intensity = 1;
-    const rectLight = new RectAreaLight(0xffffff, intensity, width, height);
-    rectLight.position.copy(mesh.position);
-    // rectLight.lookAt(0, 0, 0);
-    rectLight.rotateX(-Math.PI / 2);
-    // rectLight.scale.set(mesh.scale);
+    const intensity = 100000;
+    const rectLight = new RectAreaLight(0xfffaa9, intensity, width, height);
+    rectLight.power = 100000;
+    mesh.add(rectLight);
     this._rectLight = rectLight;
 
     if (createHelper) {
@@ -23,7 +21,7 @@ export default class AreaLight {
     }
   }
 
-  getLight(intensity: number | null = null) {
+  getLight(intensity: number | null = null): RectAreaLight {
     if (intensity !== null) {
       this._rectLight.intensity = intensity;
     }

@@ -80,10 +80,6 @@ export default class MeshCodeHandler {
     this.inventory[moduleName].push(objectData);
   }
 
-  // TODO: Find a way of aligning with original object. It should be possible,
-  //  but if it becomes a problem, we can add the property 'angle'; examples
-  //  values: 'top-down', 'bottom-up', 'left to right', 'front to back', etc,
-  //  or an angle number.
   areaLight({ node, userData }) {
     userData.typeId = MeshCodes.areaLight;
     const useDevHelper = userData.devHelper === 'true';
@@ -96,7 +92,6 @@ export default class MeshCodeHandler {
     }
 
     const light = new AreaLight(node, useDevHelper).getLight();
-    this._gltf.scene.add(light);
     node.attach(light);
     // visibility toggles lights in this case.
     light.visible = false;
