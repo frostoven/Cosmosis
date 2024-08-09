@@ -9,6 +9,7 @@ import { NavTabs } from './components/NavTabs';
 import {
   RegisteredMenu,
 } from '../../../ReactBase/types/compositionSignatures';
+import LevelScene from '../../../LevelScene';
 
 const navConsoleStyle: React.CSSProperties = {
   width: 640,
@@ -48,6 +49,7 @@ const noiseBackgroundImage: React.CSSProperties = {
 const pluginDependencies = {
   core: Core,
   player: Player,
+  levelScene: LevelScene,
   html3dRenderer: Html3dRenderer,
 };
 const shallowTracking = { player: { camera: 'camera' } };
@@ -69,11 +71,17 @@ class NavigationConsole extends React.Component<Props> {
 
   navDiv: HTMLDivElement | null = null;
   navCss3dObject: CSS3DObject | null = null;
+  holoLight = new THREE.PointLight(0x857d3a, 0.1, 2);
+
+  componentDidMount() {
+    this._pluginCache.levelScene.add(this.holoLight);
+  }
 
   componentWillUnmount() {
     if (this.navCss3dObject) {
       this._pluginCache.html3dRenderer.remove(this.navCss3dObject);
     }
+    this._pluginCache.levelScene.remove(this.holoLight);
   }
 
   handleDivCreation = (element: HTMLDivElement | null) => {
@@ -90,6 +98,8 @@ class NavigationConsole extends React.Component<Props> {
     this.navCss3dObject.position.set(-500, -300, -250);
     this.navCss3dObject.rotateY(Math.PI * 0.5);
     this.navCss3dObject.rotateX(Math.PI * -0.125);
+
+    this.holoLight.position.set(-0.5, 0.8, -0.25);
 
     this._pluginCache.html3dRenderer.add(this.navCss3dObject);
   };
