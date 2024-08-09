@@ -44,7 +44,7 @@ class BodyListItem extends React.Component<Props> {
   private _pluginCache = new PluginCacheTracker<Dependencies>(pluginList).pluginCache;
   private _nextTick: number;
   private _previousDistance: number = Infinity;
-  distanceRef: React.RefObject<HTMLDivElement> = React.createRef();
+  distanceRef: HTMLDivElement | null = null;
 
   constructor(props: Props | Readonly<Props>) {
     super(props);
@@ -77,7 +77,7 @@ class BodyListItem extends React.Component<Props> {
     }
     this._previousDistance = intDistance;
 
-    const element = this.distanceRef.current;
+    const element = this.distanceRef;
     if (!element) {
       return console.error(`Error updating UI nav distance for "${body.name}"`);
     }
@@ -107,8 +107,27 @@ class BodyListItem extends React.Component<Props> {
     }
   };
 
+  autoScrollToHighlighted = (delay = 0) => {
+    // The delay is needed when opening the menu from closed state. Scrolling
+    // is unfortunately a no-op if we attempt it while the opening animation is
+    // still progress, best we can do is wait longer than the animation. The
+    // animation is 75ms, so we wait 100ms upon first render.
+    setTimeout(() => {
+      if (this.props.isActive && this.distanceRef) {
+        this.distanceRef.scrollIntoView({
+          block: 'nearest',
+        });
+      }
+    }, delay);
+  };
+
+  handleDistanceRef = (element: HTMLDivElement) => {
+    this.distanceRef = element;
+    this.autoScrollToHighlighted(100);
+  };
+
   render() {
-    let { body, isActive, style, onMouseDown } = this.props;
+    let { body, style, onMouseDown } = this.props;
 
     if (body.type === 'Moon') {
       style = { ...style, paddingLeft: 32 };
@@ -117,18 +136,13 @@ class BodyListItem extends React.Component<Props> {
       style = { ...style, paddingLeft: 16 };
     }
 
-    // Auto-scroll to highlighted menu items.
-    if (isActive && this.distanceRef.current) {
-      this.distanceRef.current.scrollIntoView({
-        block: 'nearest',
-      });
-    }
+    this.autoScrollToHighlighted();
 
     return (
       <div onMouseDown={onMouseDown} style={style}>
         <div style={subItemStyle}>{/* Icon here */}</div>
         <div style={subItemStyle}>{body.name}</div>
-        <div ref={this.distanceRef} style={distanceStyle}>Distance</div>
+        <div ref={this.handleDistanceRef} style={distanceStyle}>Distance</div>
       </div>
     );
   }
