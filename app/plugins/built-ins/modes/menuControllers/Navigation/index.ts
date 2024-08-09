@@ -25,6 +25,10 @@ class NavMenu {
   );
 
   constructor() {
+    this._inputBridge.autoConfigurePulseKeys([
+      'select',
+    ]);
+
     this._pluginCache.reactBase.registerMenu({
       getInputBridge: () => this._inputBridge,
       getComponent: () => NavigationConsole,
