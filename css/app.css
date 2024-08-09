@@ -73,11 +73,16 @@ button:active {
   pointer-events: none;
 }
 
-.css2d-label {
+.css2d-label-container {
   color: #fff;
   text-shadow: 0 0 4px rgba(0, 0, 0, 1);
   font-weight: bold;
   text-align: center;
+  background-image: url("/css/generalImages/navCircle.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  width: 126px;
+  height: 126px;
 
   /* All the below are used in combination to reduce jumpiness in the text. */
   transform: translate3d(0, 0, 0);
@@ -86,6 +91,13 @@ button:active {
   -moz-osx-font-smoothing: grayscale;
   will-change: transform;
   position: absolute;
+}
+
+.css2d-label {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 0 4px 0;
 }
 
 /* Snackbar - a toast implementation.*/

@@ -156,14 +156,31 @@ class SolarSystemNav extends React.Component<Props, State> {
       this.endNavigation();
     }
 
+    // This div contains our nav labels and images.
+    const containerDiv = document.createElement('div');
+    containerDiv.className = 'css2d-label-container';
+
+    // Name of the body we're flying to.
     const labelDiv = document.createElement('div');
     labelDiv.className = 'css2d-label';
-    // labelDiv.textContent = body.name;
-    labelDiv.innerHTML = `${body.name}<br><br>Distance`;
+    labelDiv.style.bottom = '0px';
+    labelDiv.textContent = body.name;
 
-    const label = new CSS2DObject(labelDiv);
+    // Distance to the body we're flying to. We use a hook elsewhere in this
+    // class to update this on a per-frame basis.
+    const distanceDiv = document.createElement('div');
+    distanceDiv.className = 'css2d-label';
+    distanceDiv.style.top = '0px';
+    distanceDiv.textContent = 'Distance';
+
+    // Add our detail divs to the container.
+    containerDiv.appendChild(labelDiv);
+    containerDiv.appendChild(distanceDiv);
+
+    // Create a three.js object from the container div.
+    const container = new CSS2DObject(containerDiv);
     // label.position.set(0, body.radiusM * 10, 0);
-    body.sphereMesh.add(label);
+    body.sphereMesh.add(container);
 
     console.log('startNavigation:', {
       selected: this.state.selectedBody,
@@ -172,7 +189,7 @@ class SolarSystemNav extends React.Component<Props, State> {
 
     const { selectedBody: index } = this.state;
     SolarSystemNav._currentlyTracking = {
-      index, body, label,
+      index, body, label: container,
     };
   };
 
