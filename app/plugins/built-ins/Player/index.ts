@@ -43,26 +43,6 @@ export default class Player {
       display.fieldOfView, window.innerWidth / window.innerHeight, NEAR, FAR,
     );
     this.camera.name = 'primaryCamera';
-    // this.worldCoords = new Vector3();
-    // this.coordsType = CoordType.galaxyCentric;
-
-    // Ensure the player always has a tiny point-light emanating from their
-    // head so that the scene is never pitch black.
-    // const light = new PointLight(0xffffff, 2, 10);
-    const light = new THREE.AmbientLight(0xffffff);
-    // @ts-ignore
-    const illumination = new THREE.PointLight(0xffffff, 5);
-    this.camera.add(light);
-    this.camera.add(illumination);
-
-    // const timerId = setInterval(() => {
-    //   if (!window.debug.sol) {
-    //     return;
-    //   }
-    //   clearInterval(timerId);
-    //   // this.camera.position.set(-0.0038711067754775286, 0, 0.26675403118133545);
-    //   this.camera.position.copy(window.debug.sol);
-    // }, 20);
 
     window.addEventListener('resize', this.onWindowResize.bind(this));
     this.onWindowResize();
@@ -76,14 +56,9 @@ export default class Player {
   };
 
   onWindowResize() {
-    const { graphics } = userProfile.getCurrentConfig({
-      identifier: 'userOptions',
-    });
-
     let screenWidth = window.innerWidth;
     let screenHeight = window.innerHeight;
 
-    const scale = graphics.resolutionScale;
     // TODO: move this to player module.
     this.camera.aspect = screenWidth / screenHeight;
     this.camera.updateProjectionMatrix();

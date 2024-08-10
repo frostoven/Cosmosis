@@ -33,6 +33,7 @@ import { logBootTitleAndInfo } from '../../../local/windowLoadListener';
 import PluginLoader from '../../types/PluginLoader';
 import { NodeOps } from '../NodeOps';
 import PluginCacheTracker from '../../../emitters/PluginCacheTracker';
+import * as THREE from 'three';
 
 const BLOOM_SCENE = 1;
 const bloomLayer = new Layers();
@@ -119,6 +120,13 @@ export default class LevelScene extends Group {
 
     window.addEventListener('resize', this.onWindowResize.bind(this));
     this.onWindowResize();
+
+    // Just a bit of ambient light to give small ships a bit of mood instead of
+    // being completely dark.
+    // TODO: Move this to the mesh itself, and shut off when power goes out.
+    const light = new THREE.PointLight(0x684d44, 1, 5);
+    this.add(light);
+    light.translateZ(-0.75);
   }
 
   _configureRenderer() {
