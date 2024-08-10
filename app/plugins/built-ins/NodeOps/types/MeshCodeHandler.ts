@@ -1,8 +1,9 @@
 import _ from 'lodash';
 import { Object3D } from 'three';
-import AreaLight from './AreaLight';
 import { MeshCodes } from '../interfaces/MeshCodes';
+import AreaLight from './AreaLight';
 import ZSpotlight from './ZSpotlight';
+import ZPointLight from './ZPointLight';
 import { lowercaseFirst } from '../../../../local/utils';
 
 // Dev note on module hooks: they're sometimes optional, sometimes required,
@@ -63,7 +64,7 @@ export default class MeshCodeHandler {
       console.warn(
         '[MeshCodeHandler] The "typeId" field is reserved and will be ' +
         'replaced with an internal value; please consider removing it from ' +
-        'your mesh.'
+        'your mesh.',
       );
     }
 
@@ -101,24 +102,6 @@ export default class MeshCodeHandler {
     }
   }
 
-  spotlight({ node, userData }) {
-    userData.typeId = MeshCodes.spotlight;
-    const useDevHelper = userData.devHelper === 'true';
-
-    // TODO: remove this. It's a substitute for until we figure out how to deal
-    //  with spaceship lifecycles. This disable non-hq lights entirely.
-    if (userData.gfxqLight === 'low' || userData.gfxqLight === 'medium') {
-      node.visible = false;
-      return;
-    }
-
-    const light = new ZSpotlight(node, useDevHelper).getLight();
-
-    if (userData.moduleHook) {
-      this._targetModule(userData.moduleHook, { node: light, userData });
-    }
-  }
-
   fakeLight({ node, userData }) {
     userData.typeId = MeshCodes.fakeLight;
 
@@ -149,7 +132,46 @@ export default class MeshCodeHandler {
       }
     }
     if (userData.moduleHook && switchableChildren.length) {
-      this._targetModule(userData.moduleHook, { node: switchableChildren, userData });
+      this._targetModule(userData.moduleHook, {
+        node: switchableChildren,
+        userData,
+      });
+    }
+  }
+
+  pointLight({ node, userData }) {
+    userData.typeId = MeshCodes.pointLight;
+    const useDevHelper = userData.devHelper === 'true';
+
+    // TODO: remove this. It's a substitute for until we figure out how to deal
+    //  with spaceship lifecycles. This disable non-hq lights entirely.
+    if (userData.gfxqLight === 'low' || userData.gfxqLight === 'medium') {
+      node.visible = false;
+      return;
+    }
+
+    const light = new ZPointLight(node, useDevHelper).getLight();
+
+    if (userData.moduleHook) {
+      this._targetModule(userData.moduleHook, { node: light, userData });
+    }
+  }
+
+  spotlight({ node, userData }) {
+    userData.typeId = MeshCodes.spotlight;
+    const useDevHelper = userData.devHelper === 'true';
+
+    // TODO: remove this. It's a substitute for until we figure out how to deal
+    //  with spaceship lifecycles. This disable non-hq lights entirely.
+    if (userData.gfxqLight === 'low' || userData.gfxqLight === 'medium') {
+      node.visible = false;
+      return;
+    }
+
+    const light = new ZSpotlight(node, useDevHelper).getLight();
+
+    if (userData.moduleHook) {
+      this._targetModule(userData.moduleHook, { node: light, userData });
     }
   }
 }
