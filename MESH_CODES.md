@@ -110,6 +110,19 @@ optimisation for certain lights, clone their material in Blender and give them
 a different name.
 
 
+### Point light
+```
+csmType: pointLight
+[csmModuleHook]: Name of a module to bind to. Useful with, ex., 'cockpitLights'
+[csmGfxqLight]: low/medium/high | force this light into a gfx quality category
+[csmDevHelper]: true/false | If true, shows outlines to help debug the light
+```
+Create a light that emanates rays in all directions.
+
+You'll want to adjust csmModuleHook if you want this hooked up to the game's
+power grid and light switches.
+
+
 ### Spotlight
 ```
 csmType: spotlight
