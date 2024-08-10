@@ -18,6 +18,7 @@ import {
 import { logBootTitleAndInfo } from '../../../local/windowLoadListener';
 import PluginLoader from '../../types/PluginLoader';
 import PluginCacheTracker from '../../../emitters/PluginCacheTracker';
+import { pluginLoader } from '../../index';
 
 // -- ✀ Plugin boilerplate ----------------------------------------------------
 
@@ -143,6 +144,10 @@ class InputManager {
 
     this._pluginCache.core.onAnimate.getEveryChange(this.stepActiveControllers.bind(this));
     this._setupInputListeners();
+
+    pluginLoader.onLoaded.getOnce(() => {
+      this.buildBindingCache();
+    })
   }
 
   _setupInputListeners() {
