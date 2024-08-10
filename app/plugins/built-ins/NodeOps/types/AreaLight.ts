@@ -1,17 +1,18 @@
 // @ts-ignore
 import { Object3D, RectAreaLight } from 'three';
-import { RectAreaLightHelper } from 'three/examples/jsm/helpers/RectAreaLightHelper';
+import {
+  RectAreaLightHelper,
+} from 'three/examples/jsm/helpers/RectAreaLightHelper';
 
 export default class AreaLight {
   private readonly _rectLight: any;
 
-  // TODO: the dimensions this generates is weird. Investigate.
-  constructor(mesh: Object3D, createHelper=false) {
+  constructor(mesh: Object3D, createHelper = false) {
     const width = mesh.scale.x;
     const height = mesh.scale.y;
-    const intensity = 100000;
+    const intensity = 5;
     const rectLight = new RectAreaLight(0xfffaa9, intensity, width, height);
-    rectLight.power = 100000;
+    rectLight.power = 5;
     mesh.add(rectLight);
     this._rectLight = rectLight;
 
