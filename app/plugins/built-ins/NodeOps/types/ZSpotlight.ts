@@ -6,6 +6,7 @@ export default class ZSpotlight {
 
   constructor(mesh: Light, createHelper=false) {
     mesh.intensity = 1;
+    mesh.castShadow = true;
     this._light = mesh;
 
     // light.castShadow = true;
