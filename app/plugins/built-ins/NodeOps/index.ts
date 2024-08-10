@@ -1,10 +1,16 @@
 import CosmosisPlugin from '../../types/CosmosisPlugin';
 import { MeshCodes } from './interfaces/MeshCodes';
 
+const lightTypes = [
+  MeshCodes.areaLight,
+  MeshCodes.pointLight,
+  MeshCodes.spotlight,
+];
+
 class NodeOps {
   switchLights(node: any, userData: any = {}, powerOutput) {
     // console.log(`Switching lights [`, node, `]. visible=${powerOutput!==0}, intensity=${powerOutput}`);
-    if (userData.typeId === MeshCodes.areaLight || userData.typeId === MeshCodes.spotlight) {
+    if (lightTypes.includes(userData.typeId)) {
       node.visible = powerOutput !== 0;
       node.intensity = powerOutput * 5;
     }
@@ -22,4 +28,4 @@ const nodeOpsPlugin = new CosmosisPlugin('nodeOps', NodeOps);
 export {
   NodeOps,
   nodeOpsPlugin,
-}
+};
