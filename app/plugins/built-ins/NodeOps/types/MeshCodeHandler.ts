@@ -6,7 +6,7 @@ import ZSpotlight from './ZSpotlight';
 import ZPointLight from './ZPointLight';
 import { lowercaseFirst } from '../../../../local/utils';
 
-// Dev note on module hooks: they're sometimes optional, sometimes required,
+// Dev note on subsystems: they're sometimes optional, sometimes required,
 // and at other times implied. Which it is depends on the mesh code type. For
 // example, fake lights could as well just be normal meshes, so the ship maker
 // needs to explicitly indicate that it targets a lighting hook (of which there
@@ -22,7 +22,7 @@ export default class MeshCodeHandler {
   // Ship's hardware inventory. Inventory is grouped by the module handler that
   // should deal with it (unless that particular module has special
   // requirements).
-  inventory: { [moduleHookName: string]: Array<any> };
+  inventory: { [subsystemName: string]: Array<any> };
 
   // Between Blender and Three.js, they're smart enough to reuse the same
   // material on different meshes. This means that we don't need to loop
@@ -97,8 +97,8 @@ export default class MeshCodeHandler {
     // visibility toggles lights in this case.
     light.visible = false;
 
-    if (userData.moduleHook) {
-      this._targetModule(userData.moduleHook, { node: light, userData });
+    if (userData.subsystem) {
+      this._targetModule(userData.subsystem, { node: light, userData });
     }
   }
 
@@ -131,8 +131,8 @@ export default class MeshCodeHandler {
         }
       }
     }
-    if (userData.moduleHook && switchableChildren.length) {
-      this._targetModule(userData.moduleHook, {
+    if (userData.subsystem && switchableChildren.length) {
+      this._targetModule(userData.subsystem, {
         node: switchableChildren,
         userData,
       });
@@ -152,8 +152,8 @@ export default class MeshCodeHandler {
 
     const light = new ZPointLight(node, useDevHelper).getLight();
 
-    if (userData.moduleHook) {
-      this._targetModule(userData.moduleHook, { node: light, userData });
+    if (userData.subsystem) {
+      this._targetModule(userData.subsystem, { node: light, userData });
     }
   }
 
@@ -170,8 +170,8 @@ export default class MeshCodeHandler {
 
     const light = new ZSpotlight(node, useDevHelper).getLight();
 
-    if (userData.moduleHook) {
-      this._targetModule(userData.moduleHook, { node: light, userData });
+    if (userData.subsystem) {
+      this._targetModule(userData.subsystem, { node: light, userData });
     }
   }
 }

@@ -60,7 +60,7 @@ All optional properties below are written in `[square brackets]`.
 ### Area light
 ```
 csmType: areaLight
-[csmModuleHook]: Name of a module to bind to. Useful with, ex., 'cockpitLights'
+[csmSubsystem]: Name of a module to bind to. Useful with, ex., 'cockpitLights'
 [csmGfxqLight]: low/medium/high | force this light into a gfx quality category
 [csmDevHelper]: true/false | If true, shows outlines to help debug the light
 ```
@@ -77,7 +77,7 @@ Area lights create a surface that emits light uniformly across a rectangular
 face (see
 [area light](https://threejs.org/docs/?q=light#api/en/lights/RectAreaLight)).
 
-You'll want to set csmModuleHook if you want this hooked up to the game's
+You'll want to set csmSubsystem if you want this hooked up to the game's
 power grid and light switches.
 <!-- TODO: add: , or if used in a room with a switch,
 you can target the light with that switch. -->
@@ -86,7 +86,7 @@ you can target the light with that switch. -->
 ### Fake light
 ```
 csmType: fakeLight
-csmModuleHook: [module that deals with lighting] | example: 'cockpitLights'
+csmSubsystem: [module that deals with lighting] | example: 'cockpitLights'
 ```
 Use this with emissive textures. An emissive texture will have its emissive
 intensity cycled between 0 (off) and 1 (on) when being switched off and on.
@@ -98,7 +98,7 @@ light fixture meshes should be tagged as fake lights; when toggled,
 light-handler modules will toggle its emissive intensity.
 <!-- TODO: show example of fake light combined with area light here -->
 
-You'll want to adjust csmModuleHook if you want this hooked up to the game's
+You'll want to adjust csmSubsystem if you want this hooked up to the game's
 power grid and light switches.
 
 Important note: if in Blender you use a single emissive texture on multiple
@@ -113,26 +113,26 @@ a different name.
 ### Point light
 ```
 csmType: pointLight
-[csmModuleHook]: Name of a module to bind to. Useful with, ex., 'cockpitLights'
+[csmSubsystem]: Name of a module to bind to. Useful with, ex., 'cockpitLights'
 [csmGfxqLight]: low/medium/high | force this light into a gfx quality category
 [csmDevHelper]: true/false | If true, shows outlines to help debug the light
 ```
 Create a light that emanates rays in all directions.
 
-You'll want to adjust csmModuleHook if you want this hooked up to the game's
+You'll want to adjust csmSubsystem if you want this hooked up to the game's
 power grid and light switches.
 
 
 ### Spotlight
 ```
 csmType: spotlight
-[csmModuleHook]: Name of a module to bind to. Useful with, ex., 'cockpitLights'
+[csmSubsystem]: Name of a module to bind to. Useful with, ex., 'cockpitLights'
 [csmGfxqLight]: low/medium/high | force this light into a gfx quality category
 [csmDevHelper]: true/false | If true, shows outlines to help debug the light
 ```
 Create a focussed light cone.
 
-You'll want to adjust csmModuleHook if you want this hooked up to the game's
+You'll want to adjust csmSubsystem if you want this hooked up to the game's
 power grid and light switches.
 
 <!-- TODO / Planned items

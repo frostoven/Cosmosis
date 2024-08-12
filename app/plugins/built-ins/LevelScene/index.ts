@@ -82,7 +82,7 @@ export default class LevelScene extends Group {
   // @ts-ignore
   private _renderer: WebGLRenderer;
   private _vehicle: GLTFInterface;
-  private _vehicleInventory: { [moduleHookName: string]: Array<any> };
+  private _vehicleInventory: { [subsystemName: string]: Array<any> };
   private _eciRegistrations: Map<EciEnum, EciRegistrationObject[]> = new Map();
   private _ready = false;
 
