@@ -9,7 +9,7 @@ class CockpitLightsModule extends ModuleSpawner {
   constructor() {
     super();
 
-    gameRuntime.tracked.helmControl.getOnce((helmControl: HelmControl) => {
+    gameRuntime.tracked.helmControl.listen((helmControl: HelmControl) => {
       helmControl.extendControlSchema(cockpitLightControls);
     });
   }
