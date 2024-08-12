@@ -112,7 +112,9 @@ export default class MeshCodeHandler {
 
     const switchableChildren: Array<Object3D> = [];
 
-    const children = node.children;
+    // Fake lights are concerned with the emissive materials of both the parent
+    // and its direct descendants.
+    const children = [ node, ...node.children ];
     for (let i = 0, len = children.length; i < len; i++) {
       const child = children[i];
       if (child.material) {
